@@ -450,15 +450,6 @@ window.addEventListener("DOMContentLoaded", () => {
             currElem = currElem.parentNode;
         }
         if (needsToCloseMenus) {
-            openedMenus.forEach((elem) => {
-                elem.mdcSimpleMenu.open = false;
-                const ss = elem.parentNode.querySelector(".mdc-select__selected-text");
-                if (ss) {
-                    ss.style.transform = "initial";
-                    ss.style.opacity = "1";
-                    ss.focus();
-                }
-            });
         }
         else {
         }

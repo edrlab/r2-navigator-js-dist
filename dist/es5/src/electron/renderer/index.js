@@ -464,15 +464,6 @@ window.addEventListener("DOMContentLoaded", function () {
             currElem = currElem.parentNode;
         }
         if (needsToCloseMenus) {
-            openedMenus.forEach(function (elem) {
-                elem.mdcSimpleMenu.open = false;
-                var ss = elem.parentNode.querySelector(".mdc-select__selected-text");
-                if (ss) {
-                    ss.style.transform = "initial";
-                    ss.style.opacity = "1";
-                    ss.focus();
-                }
-            });
         }
         else {
         }
