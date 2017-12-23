@@ -2,9 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
 const fs = require("fs");
-const BufferUtils_1 = require("r2-streamer-js/dist/es6-es2015/src/_utils/stream/BufferUtils");
-const zipInjector_1 = require("r2-streamer-js/dist/es6-es2015/src/_utils/zip/zipInjector");
-const lcp_1 = require("r2-streamer-js/dist/es6-es2015/src/parser/epub/lcp");
+const lcp_1 = require("r2-shared-js/dist/es6-es2015/src/parser/epub/lcp");
+const BufferUtils_1 = require("r2-shared-js/dist/es6-es2015/src/_utils/stream/BufferUtils");
+const zipInjector_1 = require("r2-shared-js/dist/es6-es2015/src/_utils/zip/zipInjector");
 const debug_ = require("debug");
 const moment = require("moment");
 const request = require("request");

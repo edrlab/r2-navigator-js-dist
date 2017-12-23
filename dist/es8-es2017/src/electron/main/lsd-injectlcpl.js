@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs = require("fs");
-const BufferUtils_1 = require("r2-streamer-js/dist/es8-es2017/src/_utils/stream/BufferUtils");
-const zipInjector_1 = require("r2-streamer-js/dist/es8-es2017/src/_utils/zip/zipInjector");
-const lcp_1 = require("r2-streamer-js/dist/es8-es2017/src/parser/epub/lcp");
+const lcp_1 = require("r2-shared-js/dist/es8-es2017/src/parser/epub/lcp");
+const BufferUtils_1 = require("r2-shared-js/dist/es8-es2017/src/_utils/stream/BufferUtils");
+const zipInjector_1 = require("r2-shared-js/dist/es8-es2017/src/_utils/zip/zipInjector");
 const debug_ = require("debug");
 const moment = require("moment");
 const request = require("request");
