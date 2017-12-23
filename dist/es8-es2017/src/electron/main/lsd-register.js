@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const BufferUtils_1 = require("r2-shared-js/dist/es8-es2017/src/_utils/stream/BufferUtils");
+const BufferUtils_1 = require("r2-utils-js/dist/es8-es2017/src/_utils/stream/BufferUtils");
 const debug_ = require("debug");
 const request = require("request");
 const requestPromise = require("request-promise-native");
