@@ -1,4 +1,4 @@
-/* Riot v3.7.4, @license MIT */
+/* Riot v3.8.1, @license MIT */
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -1124,6 +1124,15 @@ var uid = (function() {
   return function () { return ++i; }
 })();
 
+
+/**
+ * Warn a message via console
+ * @param   {String} message - warning message
+ */
+function warn(message) {
+  if (console && console.warn) { console.warn(message); }
+}
+
 /**
  * Short alias for Object.getOwnPropertyDescriptor
  */
@@ -1164,6 +1173,7 @@ var misc = Object.freeze({
 	startsWith: startsWith,
 	defineProperty: defineProperty,
 	uid: uid,
+	warn: warn,
 	getPropDescriptor: getPropDescriptor,
 	extend: extend
 });
@@ -1870,7 +1880,9 @@ function parseExpressions(root, mustIncludeRoot) {
     }
 
     if (tagImpl && (dom !== root || mustIncludeRoot)) {
-      if(isVirtual && !getAttr(dom, IS_DIRECTIVE)) { // handled in update
+      if(isVirtual) { // handled in update
+        if (getAttr(dom, IS_DIRECTIVE))
+          { warn(("Virtual tags shouldn't be used together with the \"" + IS_DIRECTIVE + "\" attribute - https://github.com/riot/riot/issues/2511")); }
         // can not remove attribute like directives
         // so flag for removal after creation to prevent maximum stack error
         setAttr(dom, 'virtualized', true);
@@ -2235,7 +2247,7 @@ function unregister$1(name) {
   __TAG_IMPL[name] = null;
 }
 
-var version$1 = 'v3.7.4';
+var version$1 = 'v3.8.1';
 
 
 var core = Object.freeze({
