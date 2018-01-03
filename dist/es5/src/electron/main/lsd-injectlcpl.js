@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = require("tslib");
 var fs = require("fs");
-var lcp_1 = require("r2-shared-js/dist/es5/src/parser/epub/lcp");
+var lcp_1 = require("r2-lcp-js/dist/es5/src/parser/epub/lcp");
 var BufferUtils_1 = require("r2-utils-js/dist/es5/src/_utils/stream/BufferUtils");
 var zipInjector_1 = require("r2-utils-js/dist/es5/src/_utils/zip/zipInjector");
 var debug_ = require("debug");

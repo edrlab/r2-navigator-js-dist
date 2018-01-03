@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
 const fs = require("fs");
 const path = require("path");
-const lcp_1 = require("r2-shared-js/dist/es7-es2016/src/parser/epub/lcp");
+const lcp_1 = require("r2-lcp-js/dist/es7-es2016/src/parser/epub/lcp");
 const init_globals_1 = require("r2-shared-js/dist/es7-es2016/src/init-globals");
 const server_1 = require("r2-streamer-js/dist/es7-es2016/src/http/server");
 const UrlUtils_1 = require("r2-utils-js/dist/es7-es2016/src/_utils/http/UrlUtils");

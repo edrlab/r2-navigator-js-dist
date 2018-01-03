@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = require("tslib");
 var fs = require("fs");
 var path = require("path");
-var lcp_1 = require("r2-shared-js/dist/es5/src/parser/epub/lcp");
+var lcp_1 = require("r2-lcp-js/dist/es5/src/parser/epub/lcp");
 var init_globals_1 = require("r2-shared-js/dist/es5/src/init-globals");
 var server_1 = require("r2-streamer-js/dist/es5/src/http/server");
 var UrlUtils_1 = require("r2-utils-js/dist/es5/src/_utils/http/UrlUtils");
