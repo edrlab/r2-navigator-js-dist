@@ -277,10 +277,11 @@ form {
 .mdc-select {
   background-position-x: 96%;
 }
-.mdc-select__selected-text,
+
+/* .mdc-select__selected-text,
 .mdc-select__label {
   padding-left: 1em;
-}
+} */
 #drawerNav {
   height: 100%;
 }
@@ -290,6 +291,7 @@ form {
   borderxx: 2px solid red;
   box-sizing: border-box;
   display: inline-flex;
+  margin-top: 1px;
 }
 .tabPanel {
   display: none;
@@ -301,14 +303,22 @@ form {
 .tabPanel.active {
   display: block;
 }
+
+/* riot-linktree,
+[data-is="riot-linktree"] */
+#reader_controls_TOC,
+#reader_controls_TOC ul {
+  padding-left: 0;
+  list-style: none;
+  border-left: 1px solid #DDDDDD;
+}
+
 #reader_controls_ADVANCED, #reader_controls_TOOLS, #reader_controls_STYLES {
   padding: 1em;
 }
 #reader_controls_TOC a:focus {
   background-color: rgba(230, 230, 230, 1);
 }
-
-
 
 ::-webkit-scrollbar-button {
   height: 0px !important;
@@ -374,7 +384,7 @@ form {
 #tabsPanels .mdc-list-item__text {
   max-width: 100%;
 }
-#tabsPanels .mdc-list-item__text__secondary {
+#tabsPanels .mdc-list-item__secondary-text {
   word-wrap: break-word;
 }
 #lineHeightSelector {
@@ -383,11 +393,11 @@ form {
 #fontSizeSelector {
   margin-top: -22px;
 }
-#fontSelect .mdc-select__selected-text,
+/* #fontSelect .mdc-select__selected-text,
 #fontSelect .mdc-select__label {
   padding-left: 6px;
-}
-#fontSelect .mdc-select__selected-text::before,
+} */
+#fontSelect .mdc-select__selected-textxx::before,
 #fontSelect .mdc-select__label::before {
   font-family: 'Material Icons';
   font-weight: normal;
@@ -486,6 +496,7 @@ form {
 .mdc-theme--dark #reader_controls_TOC a:focus {
   background-color: rgba(70, 70, 70, 1);
 }
+.mdc-theme--dark #reader_controls_TOC,
 .mdc-theme--dark #reader_controls_TOC ul {
   border-left: 1px solid #000000;
 }

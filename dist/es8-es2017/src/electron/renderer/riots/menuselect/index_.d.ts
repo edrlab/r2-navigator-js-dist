@@ -5,6 +5,7 @@ export interface IRiotOptsMenuSelectItem {
 }
 export interface IRiotOptsMenuSelect {
     options: IRiotOptsMenuSelectItem[];
+    label: string;
     selected: string;
     disabled: boolean;
 }

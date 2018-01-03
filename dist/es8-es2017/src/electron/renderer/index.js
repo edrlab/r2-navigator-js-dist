@@ -338,6 +338,7 @@ const initFontSelector = () => {
     }
     const opts = {
         disabled: !electronStore.get("styling.readiumcss"),
+        label: "Font name",
         options,
         selected: selectedID,
     };
@@ -431,28 +432,6 @@ window.addEventListener("DOMContentLoaded", () => {
     drawerButton.addEventListener("click", () => {
         drawer.open = true;
     });
-    drawerElement.addEventListener("click", (ev) => {
-        const allMenus = drawerElement.querySelectorAll(".mdc-simple-menu");
-        const openedMenus = [];
-        allMenus.forEach((elem) => {
-            if (elem.mdcSimpleMenu && elem.mdcSimpleMenu.open) {
-                openedMenus.push(elem);
-            }
-        });
-        let needsToCloseMenus = true;
-        let currElem = ev.target;
-        while (currElem) {
-            if (openedMenus.indexOf(currElem) >= 0) {
-                needsToCloseMenus = false;
-                break;
-            }
-            currElem = currElem.parentNode;
-        }
-        if (needsToCloseMenus) {
-        }
-        else {
-        }
-    }, true);
     initFontSelector();
     initFontSizeSelector();
     initLineHeightSelector();
