@@ -14,6 +14,13 @@ function setReadiumCssJsonGetter(func) {
     _computeReadiumCssJsonMessage = func;
 }
 exports.setReadiumCssJsonGetter = setReadiumCssJsonGetter;
+var _saveReadingLocation = function (_docHref, _cssSelector) {
+    return;
+};
+function setReadingLocationSaver(func) {
+    _saveReadingLocation = func;
+}
+exports.setReadingLocationSaver = setReadingLocationSaver;
 function readiumCssOnOff() {
     if (!_computeReadiumCssJsonMessage) {
         return;
@@ -321,6 +328,12 @@ function createWebView(preloadScriptPath) {
         }
         else if (event.channel === events_1.R2_EVENT_WEBVIEW_READY) {
             unhideWebView(false);
+        }
+        else if (event.channel === events_1.R2_EVENT_READING_LOCATION) {
+            var cssSelector = event.args[0];
+            if (webview.READIUM2_LINK && _saveReadingLocation) {
+                _saveReadingLocation(webview.READIUM2_LINK.Href, cssSelector);
+            }
         }
         else if (event.channel === events_1.R2_EVENT_PAGE_TURN_RES) {
             if (!_publication) {
