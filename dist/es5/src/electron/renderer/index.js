@@ -78,7 +78,7 @@ function installNavigatorDOM(publication, publicationJsonUrl, rootHtmlElementID,
     }
     else {
         _webview2.classList.add("posRight");
-        _webview1.style.left = "50%";
+        _webview2.style.left = "50%";
     }
     var linkToLoad;
     var linkToLoadGoto;
@@ -138,9 +138,6 @@ exports.navLeftOrRight = navLeftOrRight;
 var getActiveWebView = function () {
     var activeWebView;
     var slidingViewport = document.getElementById("r2_navigator_sliding_viewport");
-    if (!slidingViewport) {
-        return document.body;
-    }
     if (slidingViewport.classList.contains("shiftedLeft")) {
         if (_webview1.classList.contains("posRight")) {
             activeWebView = _webview1;
