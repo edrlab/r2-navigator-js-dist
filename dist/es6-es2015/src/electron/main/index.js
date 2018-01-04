@@ -3,7 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
 const fs = require("fs");
 const path = require("path");
+const status_document_processing_1 = require("r2-lcp-js/dist/es6-es2015/src/lsd/status-document-processing");
 const lcp_1 = require("r2-lcp-js/dist/es6-es2015/src/parser/epub/lcp");
+const publication_download_1 = require("r2-lcp-js/dist/es6-es2015/src/publication-download");
 const init_globals_1 = require("r2-shared-js/dist/es6-es2015/src/init-globals");
 const server_1 = require("r2-streamer-js/dist/es6-es2015/src/http/server");
 const UrlUtils_1 = require("r2-utils-js/dist/es6-es2015/src/_utils/http/UrlUtils");
@@ -14,8 +16,8 @@ const portfinder = require("portfinder");
 const events_1 = require("../common/events");
 const browser_window_tracker_1 = require("./browser-window-tracker");
 const lcp_2 = require("./lcp");
-const lsd_1 = require("./lsd");
 const lsd_deviceid_manager_1 = require("./lsd-deviceid-manager");
+const lsd_injectlcpl_1 = require("./lsd-injectlcpl");
 const readium_css_1 = require("./readium-css");
 const sessions_1 = require("./sessions");
 init_globals_1.initGlobals();
@@ -51,9 +53,19 @@ function createElectronBrowserWindow(publicationFilePath, publicationUrl) {
         let lcpHint;
         if (publication && publication.LCP) {
             try {
-                yield lsd_1.launchStatusDocumentProcessing(publication, publicationFilePath, lsd_deviceid_manager_1.deviceIDManager, () => {
+                yield status_document_processing_1.launchStatusDocumentProcessing(publication.LCP, lsd_deviceid_manager_1.deviceIDManager, (licenseUpdateJson) => tslib_1.__awaiter(this, void 0, void 0, function* () {
                     debug("launchStatusDocumentProcessing DONE.");
-                });
+                    if (licenseUpdateJson) {
+                        let res;
+                        try {
+                            res = yield lsd_injectlcpl_1.lsdLcpUpdateInject(licenseUpdateJson, publication, publicationFilePath);
+                            debug("EPUB SAVED: " + res);
+                        }
+                        catch (err) {
+                            debug(err);
+                        }
+                    }
+                }));
             }
             catch (err) {
                 debug(err);
@@ -279,7 +291,7 @@ function openFileDownload(filePath) {
         if (ext === ".lcpl") {
             let epubFilePath;
             try {
-                epubFilePath = yield lcp_2.downloadFromLCPL(filePath, dir, destFileName);
+                epubFilePath = yield publication_download_1.downloadEPUBFromLCPL(filePath, dir, destFileName);
             }
             catch (err) {
                 process.nextTick(() => {

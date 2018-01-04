@@ -4,7 +4,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = require("tslib");
 var fs = require("fs");
 var path = require("path");
+var status_document_processing_1 = require("r2-lcp-js/dist/es5/src/lsd/status-document-processing");
 var lcp_1 = require("r2-lcp-js/dist/es5/src/parser/epub/lcp");
+var publication_download_1 = require("r2-lcp-js/dist/es5/src/publication-download");
 var init_globals_1 = require("r2-shared-js/dist/es5/src/init-globals");
 var server_1 = require("r2-streamer-js/dist/es5/src/http/server");
 var UrlUtils_1 = require("r2-utils-js/dist/es5/src/_utils/http/UrlUtils");
@@ -15,8 +17,8 @@ var portfinder = require("portfinder");
 var events_1 = require("../common/events");
 var browser_window_tracker_1 = require("./browser-window-tracker");
 var lcp_2 = require("./lcp");
-var lsd_1 = require("./lsd");
 var lsd_deviceid_manager_1 = require("./lsd-deviceid-manager");
+var lsd_injectlcpl_1 = require("./lsd-injectlcpl");
 var readium_css_1 = require("./readium-css");
 var sessions_1 = require("./sessions");
 init_globals_1.initGlobals();
@@ -41,6 +43,7 @@ electron_1.ipcMain.on(events_1.R2_EVENT_DEVTOOLS, function (_event, _arg) {
 });
 function createElectronBrowserWindow(publicationFilePath, publicationUrl) {
     return tslib_1.__awaiter(this, void 0, void 0, function () {
+        var _this = this;
         var publication, err_1, lcpHint, err_2, electronBrowserWindow, urlEncoded, fullUrl;
         return tslib_1.__generator(this, function (_a) {
             switch (_a.label) {
@@ -62,9 +65,30 @@ function createElectronBrowserWindow(publicationFilePath, publicationUrl) {
                     _a.label = 5;
                 case 5:
                     _a.trys.push([5, 7, , 8]);
-                    return [4, lsd_1.launchStatusDocumentProcessing(publication, publicationFilePath, lsd_deviceid_manager_1.deviceIDManager, function () {
-                            debug("launchStatusDocumentProcessing DONE.");
-                        })];
+                    return [4, status_document_processing_1.launchStatusDocumentProcessing(publication.LCP, lsd_deviceid_manager_1.deviceIDManager, function (licenseUpdateJson) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                            var res, err_3;
+                            return tslib_1.__generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0:
+                                        debug("launchStatusDocumentProcessing DONE.");
+                                        if (!licenseUpdateJson) return [3, 4];
+                                        res = void 0;
+                                        _a.label = 1;
+                                    case 1:
+                                        _a.trys.push([1, 3, , 4]);
+                                        return [4, lsd_injectlcpl_1.lsdLcpUpdateInject(licenseUpdateJson, publication, publicationFilePath)];
+                                    case 2:
+                                        res = _a.sent();
+                                        debug("EPUB SAVED: " + res);
+                                        return [3, 4];
+                                    case 3:
+                                        err_3 = _a.sent();
+                                        debug(err_3);
+                                        return [3, 4];
+                                    case 4: return [2];
+                                }
+                            });
+                        }); })];
                 case 6:
                     _a.sent();
                     return [3, 8];
@@ -118,7 +142,7 @@ electron_1.app.on("ready", function () {
     debug("app ready");
     (function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
         var _this = this;
-        var err_3, pubPaths, err_4;
+        var err_4, pubPaths, err_5;
         return tslib_1.__generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -131,8 +155,8 @@ electron_1.app.on("ready", function () {
                     _publicationsFilePaths = _a.sent();
                     return [3, 3];
                 case 2:
-                    err_3 = _a.sent();
-                    debug(err_3);
+                    err_4 = _a.sent();
+                    debug(err_4);
                     return [3, 3];
                 case 3:
                     debug(_publicationsFilePaths);
@@ -151,8 +175,8 @@ electron_1.app.on("ready", function () {
                     _publicationsServerPort = _a.sent();
                     return [3, 7];
                 case 6:
-                    err_4 = _a.sent();
-                    debug(err_4);
+                    err_5 = _a.sent();
+                    debug(err_5);
                     return [3, 7];
                 case 7:
                     _publicationsRootUrl = _publicationsServer.start(_publicationsServerPort);
@@ -334,7 +358,7 @@ function resetMenu() {
 function openFileDownload(filePath) {
     return tslib_1.__awaiter(this, void 0, void 0, function () {
         var _this = this;
-        var dir, ext, filename, destFileName, epubFilePath, err_5, result_1;
+        var dir, ext, filename, destFileName, epubFilePath, err_6, result_1;
         return tslib_1.__generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -349,16 +373,16 @@ function openFileDownload(filePath) {
                     _a.label = 1;
                 case 1:
                     _a.trys.push([1, 3, , 4]);
-                    return [4, lcp_2.downloadFromLCPL(filePath, dir, destFileName)];
+                    return [4, publication_download_1.downloadEPUBFromLCPL(filePath, dir, destFileName)];
                 case 2:
                     epubFilePath = _a.sent();
                     return [3, 4];
                 case 3:
-                    err_5 = _a.sent();
+                    err_6 = _a.sent();
                     process.nextTick(function () {
-                        var detail = (typeof err_5 === "string") ?
-                            err_5 :
-                            (err_5.toString ? err_5.toString() : "ERROR!?");
+                        var detail = (typeof err_6 === "string") ?
+                            err_6 :
+                            (err_6.toString ? err_6.toString() : "ERROR!?");
                         var message = "LCP EPUB download fail!]";
                         var res = electron_1.dialog.showMessageBox({
                             buttons: ["&OK"],

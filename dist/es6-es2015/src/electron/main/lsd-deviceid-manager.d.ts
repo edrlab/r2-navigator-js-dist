@@ -1,9 +1,4 @@
+import { IDeviceIDManager } from "r2-lcp-js/dist/es6-es2015/src/lsd/deviceid-manager";
 import { IStore } from "../common/store";
 export declare const electronStoreLSD: IStore;
-export interface IDeviceIDManager {
-    getDeviceNAME(): string;
-    getDeviceID(): string;
-    checkDeviceID(key: string): string | undefined;
-    recordDeviceID(key: string): void;
-}
 export declare const deviceIDManager: IDeviceIDManager;
