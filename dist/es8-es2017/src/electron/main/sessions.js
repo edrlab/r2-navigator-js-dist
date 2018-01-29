@@ -3,19 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const debug_ = require("debug");
 const electron_1 = require("electron");
 const sessions_1 = require("../common/sessions");
-const debug = debug_("r2:electron:main");
-function configureWebViewSession(server) {
-    const webViewSession = getWebViewSession();
-    if (!webViewSession) {
-        return;
-    }
-    const urlFilter = server.serverUrl() + "/*";
-    debug(urlFilter);
-    const filter = { urls: ["*"] };
-    webViewSession.webRequest.onBeforeSendHeaders(filter, (details, callback) => {
-        debug("onBeforeSendHeaders");
-        debug(details);
-        details.requestHeaders["User-Agent"] = "R2";
+const debug = debug_("r2:navigator:sessions");
+function secureSessions(server) {
+    const filter = { urls: ["*", "*://*/*"] };
+    const onBeforeSendHeadersCB = (details, callback) => {
         if (server.isSecured()) {
             const info = server.serverInfo();
             if (info) {
@@ -23,14 +14,11 @@ function configureWebViewSession(server) {
             }
         }
         callback({ cancel: false, requestHeaders: details.requestHeaders });
-    });
-    webViewSession.setCertificateVerifyProc((request, callback) => {
-        debug("setCertificateVerifyProc");
-        debug(request);
+    };
+    const setCertificateVerifyProcCB = (request, callback) => {
         if (server.isSecured()) {
             const info = server.serverInfo();
             if (info) {
-                debug(info);
                 if (request.hostname === info.urlHost) {
                     callback(0);
                     return;
@@ -38,17 +26,21 @@ function configureWebViewSession(server) {
             }
         }
         callback(-3);
-    });
-    electron_1.app.on("certificate-error", (event, _webContents, url, error, certificate, callback) => {
-        debug("certificate-error");
-        debug(url);
-        debug(error);
-        debug(certificate);
+    };
+    if (electron_1.session.defaultSession) {
+        electron_1.session.defaultSession.webRequest.onBeforeSendHeaders(filter, onBeforeSendHeadersCB);
+        electron_1.session.defaultSession.setCertificateVerifyProc(setCertificateVerifyProcCB);
+    }
+    const webViewSession = getWebViewSession();
+    if (webViewSession) {
+        webViewSession.webRequest.onBeforeSendHeaders(filter, onBeforeSendHeadersCB);
+        webViewSession.setCertificateVerifyProc(setCertificateVerifyProcCB);
+    }
+    electron_1.app.on("certificate-error", (event, _webContents, url, _error, _certificate, callback) => {
         if (server.isSecured()) {
             const info = server.serverInfo();
             if (info) {
-                debug(info);
-                if (url.indexOf(server.serverUrl()) >= 0) {
+                if (url.indexOf(info.urlScheme + "://" + info.urlHost) === 0) {
                     event.preventDefault();
                     callback(true);
                     return;
@@ -57,25 +49,8 @@ function configureWebViewSession(server) {
         }
         callback(false);
     });
-    electron_1.app.on("select-client-certificate", (event, _webContents, url, list, callback) => {
-        debug("select-client-certificate");
-        debug(url);
-        debug(list);
-        if (server.isSecured()) {
-            const info = server.serverInfo();
-            if (info) {
-                debug(info);
-                if (url.indexOf(server.serverUrl()) >= 0) {
-                    event.preventDefault();
-                    callback({ data: info.clientcert });
-                    return;
-                }
-            }
-        }
-        callback();
-    });
 }
-exports.configureWebViewSession = configureWebViewSession;
+exports.secureSessions = secureSessions;
 function initSessions() {
     electron_1.app.on("ready", () => {
         debug("app ready");
