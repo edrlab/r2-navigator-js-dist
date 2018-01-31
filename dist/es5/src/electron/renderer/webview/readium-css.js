@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var electron_1 = require("electron");
 var events_1 = require("../../common/events");
 var win = global.window;
-var urlRootReadiumCSS = win.location.origin + "/readium-css/iOS/";
+var urlRootReadiumCSS = win.location.origin + "/readium-css/";
 exports.DEBUG_VISUALS = false;
 var focusCssStyles = "\n*:focus {\noutline-style: solid !important;\noutline-width: 2px !important;\noutline-color: blue !important;\noutline-offset: 0px !important;\n}\n*.no-focus-outline:focus {\noutline-style: none !important;\n}\n";
 var selectionCssStyles = "\n::selection {\nbackground-color: rgb(155, 179, 240) !important;\ncolor: black !important;\n}\n\n:root.mdc-theme--dark ::selection {\nbackground-color: rgb(100, 122, 177) !important;\ncolor: white !important;\n}\n/*\n.readium2-hash {\n    color: black !important;\n    background-color: rgb(185, 207, 255) !important;\n}\n:root.mdc-theme--dark .readium2-hash {\n    color: white !important;\n    background-color: rgb(67, 64, 125) !important;\n}\n*/\n";
@@ -77,7 +77,7 @@ function computeVerticalRTL() {
                 }
             }
             if (!_isRTL) {
-                prop = htmlStyle.getPropertyValue("direction");
+                prop = bodyStyle.getPropertyValue("direction");
                 if (prop && prop.indexOf("rtl") >= 0) {
                     _isRTL = true;
                 }
@@ -291,17 +291,6 @@ function removeAllCSSInline() {
 function removeAllCSS() {
     removeCSS("before");
     removeCSS("after");
-    removeCSS("base");
-    removeCSS("html5patch");
-    removeCSS("safeguards");
     removeCSS("default");
-    removeCSS("highlights");
-    removeCSS("scroll");
-    removeCSS("pagination");
-    removeCSS("night_mode");
-    removeCSS("pagination");
-    removeCSS("os_a11y");
-    removeCSS("user_settings");
-    removeCSS("fs_normalize");
 }
 //# sourceMappingURL=readium-css.js.map

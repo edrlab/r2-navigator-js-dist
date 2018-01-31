@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const electron_1 = require("electron");
 const events_1 = require("../../common/events");
 const win = global.window;
-const urlRootReadiumCSS = win.location.origin + "/readium-css/iOS/";
+const urlRootReadiumCSS = win.location.origin + "/readium-css/";
 exports.DEBUG_VISUALS = false;
 const focusCssStyles = `
 *:focus {
@@ -180,7 +180,7 @@ function computeVerticalRTL() {
                 }
             }
             if (!_isRTL) {
-                prop = htmlStyle.getPropertyValue("direction");
+                prop = bodyStyle.getPropertyValue("direction");
                 if (prop && prop.indexOf("rtl") >= 0) {
                     _isRTL = true;
                 }
@@ -394,17 +394,6 @@ function removeAllCSSInline() {
 function removeAllCSS() {
     removeCSS("before");
     removeCSS("after");
-    removeCSS("base");
-    removeCSS("html5patch");
-    removeCSS("safeguards");
     removeCSS("default");
-    removeCSS("highlights");
-    removeCSS("scroll");
-    removeCSS("pagination");
-    removeCSS("night_mode");
-    removeCSS("pagination");
-    removeCSS("os_a11y");
-    removeCSS("user_settings");
-    removeCSS("fs_normalize");
 }
 //# sourceMappingURL=readium-css.js.map
