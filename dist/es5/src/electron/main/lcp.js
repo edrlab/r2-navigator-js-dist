@@ -51,7 +51,7 @@ function installLcpHandler(publicationsServer, deviceIDManager) {
                 switch (_a.label) {
                     case 0:
                         publication = publicationsServer.cachedPublication(publicationFilePath);
-                        if (!publication) {
+                        if (!publication || !publication.LCP) {
                             return [2, false];
                         }
                         if (isSha256Hex) {

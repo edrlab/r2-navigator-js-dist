@@ -1,4 +1,4 @@
-import { Publication } from "@models/publication";
+import { Publication } from "r2-shared-js/dist/es5/src/models/publication";
 export declare function setReadiumCssJsonGetter(func: () => string): void;
 export declare function setReadingLocationSaver(func: (docHref: string, cssSelector: string) => void): void;
 export declare function readiumCssOnOff(): void;
