@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var crypto = require("crypto");
 var debug_ = require("debug");
 var electron_1 = require("electron");
 var sessions_1 = require("../common/sessions");
@@ -9,8 +10,27 @@ function secureSessions(server) {
     var onBeforeSendHeadersCB = function (details, callback) {
         if (server.isSecured()) {
             var info = server.serverInfo();
-            if (info) {
-                details.requestHeaders["X-Debug-" + info.trustKey] = info.trustVal;
+            if (info && info.trustKey && info.trustCheck) {
+                var AES_BLOCK_SIZE = 16;
+                var encrypteds = [];
+                var ivBuff = new Buffer(info.trustCheck);
+                debug(ivBuff.length);
+                var iv = ivBuff.slice(0, AES_BLOCK_SIZE);
+                debug(iv.length);
+                encrypteds.push(iv);
+                var encryptStream = crypto.createCipheriv("aes-256-cbc", info.trustKey, iv);
+                encryptStream.setAutoPadding(true);
+                var buff1 = encryptStream.update(details.url);
+                if (buff1) {
+                    encrypteds.push(buff1);
+                }
+                var buff2 = encryptStream.final();
+                if (buff2) {
+                    encrypteds.push(buff2);
+                }
+                var encrypted = Buffer.concat(encrypteds);
+                var base64 = new Buffer(encrypted).toString("base64");
+                details.requestHeaders["X-" + info.trustCheck] = base64;
             }
         }
         callback({ cancel: false, requestHeaders: details.requestHeaders });
