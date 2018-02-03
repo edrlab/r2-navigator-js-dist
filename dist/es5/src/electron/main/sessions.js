@@ -10,15 +10,10 @@ function secureSessions(server) {
     var onBeforeSendHeadersCB = function (details, callback) {
         if (server.isSecured()) {
             var info = server.serverInfo();
-            if (info && info.trustKey && info.trustCheck) {
-                var AES_BLOCK_SIZE = 16;
+            if (info && info.trustKey && info.trustCheck && info.trustCheckIV) {
                 var encrypteds = [];
-                var ivBuff = new Buffer(info.trustCheck);
-                debug(ivBuff.length);
-                var iv = ivBuff.slice(0, AES_BLOCK_SIZE);
-                debug(iv.length);
-                encrypteds.push(iv);
-                var encryptStream = crypto.createCipheriv("aes-256-cbc", info.trustKey, iv);
+                encrypteds.push(info.trustCheckIV);
+                var encryptStream = crypto.createCipheriv("aes-256-cbc", info.trustKey, info.trustCheckIV);
                 encryptStream.setAutoPadding(true);
                 var buff1 = encryptStream.update(details.url);
                 if (buff1) {
