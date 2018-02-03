@@ -12,7 +12,6 @@ function secureSessions(server) {
             const info = server.serverInfo();
             if (info && info.trustKey && info.trustCheck && info.trustCheckIV) {
                 const encrypteds = [];
-                encrypteds.push(info.trustCheckIV);
                 const encryptStream = crypto.createCipheriv("aes-256-cbc", info.trustKey, info.trustCheckIV);
                 encryptStream.setAutoPadding(true);
                 const buff1 = encryptStream.update(details.url);
