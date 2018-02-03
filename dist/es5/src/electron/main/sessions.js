@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var debug_ = require("debug");
 var electron_1 = require("electron");
 var sessions_1 = require("../common/sessions");
-var debug = debug_("r2:navigator:sessions");
+var debug = debug_("r2:navigator#electron/main/sessions");
 function secureSessions(server) {
     var filter = { urls: ["*", "*://*/*"] };
     var onBeforeSendHeadersCB = function (details, callback) {

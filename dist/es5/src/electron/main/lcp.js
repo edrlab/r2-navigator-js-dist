@@ -5,7 +5,7 @@ var crypto = require("crypto");
 var debug_ = require("debug");
 var electron_1 = require("electron");
 var events_1 = require("../common/events");
-var debug = debug_("r2:electron:main:lcp");
+var debug = debug_("r2:navigator#electron/main/lcp");
 function installLcpHandler(publicationsServer) {
     var _this = this;
     electron_1.ipcMain.on(events_1.R2_EVENT_TRY_LCP_PASS, function (event, publicationFilePath, lcpPass, isSha256Hex) { return tslib_1.__awaiter(_this, void 0, void 0, function () {

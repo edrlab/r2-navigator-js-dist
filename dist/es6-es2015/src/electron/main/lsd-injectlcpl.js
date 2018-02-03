@@ -6,7 +6,7 @@ const lcp_1 = require("r2-lcp-js/dist/es6-es2015/src/parser/epub/lcp");
 const zipInjector_1 = require("r2-utils-js/dist/es6-es2015/src/_utils/zip/zipInjector");
 const debug_ = require("debug");
 const ta_json_1 = require("ta-json");
-const debug = debug_("r2:electron:main:lsd");
+const debug = debug_("r2:navigator#electron/main/lsd-injectlcpl");
 function lsdLcpUpdateInject(lcplStr, publication, publicationPath) {
     return tslib_1.__awaiter(this, void 0, void 0, function* () {
         const lcplJson = global.JSON.parse(lcplStr);

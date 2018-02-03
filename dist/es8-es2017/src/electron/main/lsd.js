@@ -6,7 +6,7 @@ const debug_ = require("debug");
 const electron_1 = require("electron");
 const moment = require("moment");
 const events_1 = require("../common/events");
-const debug = debug_("r2:electron:main:lsd");
+const debug = debug_("r2:navigator#electron/main/lsd");
 function installLsdHandler(publicationsServer, deviceIDManager) {
     electron_1.ipcMain.on(events_1.R2_EVENT_LCP_LSD_RETURN, async (event, publicationFilePath) => {
         const publication = publicationsServer.cachedPublication(publicationFilePath);

@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const debug_ = require("debug");
 const uuid = require("uuid");
-const debug = debug_("r2:electron:main:lsd");
+const debug = debug_("r2:navigator#electron/main/lsd-deviceid-manager");
 const LSD_STORE_DEVICEID_ENTRY_PREFIX = "deviceID_";
 function getDeviceIDManager(electronStoreLSD) {
     const deviceIDManager = {
