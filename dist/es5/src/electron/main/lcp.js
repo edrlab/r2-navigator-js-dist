@@ -9,36 +9,31 @@ var debug = debug_("r2:electron:main:lcp");
 function installLcpHandler(publicationsServer) {
     var _this = this;
     electron_1.ipcMain.on(events_1.R2_EVENT_TRY_LCP_PASS, function (event, publicationFilePath, lcpPass, isSha256Hex) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-        var okay, err_1, passSha256Hex, checkSum;
+        var passSha256Hex, checkSum, err_1;
         return tslib_1.__generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    okay = false;
-                    _a.label = 1;
-                case 1:
-                    _a.trys.push([1, 3, , 4]);
+                    _a.trys.push([0, 2, , 3]);
                     return [4, tryLcpPass(publicationFilePath, lcpPass, isSha256Hex)];
+                case 1:
+                    _a.sent();
+                    passSha256Hex = void 0;
+                    if (isSha256Hex) {
+                        passSha256Hex = lcpPass;
+                    }
+                    else {
+                        checkSum = crypto.createHash("sha256");
+                        checkSum.update(lcpPass);
+                        passSha256Hex = checkSum.digest("hex");
+                    }
+                    event.sender.send(events_1.R2_EVENT_TRY_LCP_PASS_RES, true, "Correct.", passSha256Hex);
+                    return [3, 3];
                 case 2:
-                    okay = _a.sent();
-                    return [3, 4];
-                case 3:
                     err_1 = _a.sent();
                     debug(err_1);
-                    okay = false;
-                    return [3, 4];
-                case 4:
-                    if (okay) {
-                        if (isSha256Hex) {
-                            passSha256Hex = lcpPass;
-                        }
-                        else {
-                            checkSum = crypto.createHash("sha256");
-                            checkSum.update(lcpPass);
-                            passSha256Hex = checkSum.digest("hex");
-                        }
-                    }
-                    event.sender.send(events_1.R2_EVENT_TRY_LCP_PASS_RES, okay, (okay ? "Correct." : "Please try again."), passSha256Hex ? passSha256Hex : "xxx");
-                    return [2];
+                    event.sender.send(events_1.R2_EVENT_TRY_LCP_PASS_RES, false, err_1, "xxx");
+                    return [3, 3];
+                case 3: return [2];
             }
         });
     }); });
@@ -50,7 +45,7 @@ function installLcpHandler(publicationsServer) {
                     case 0:
                         publication = publicationsServer.cachedPublication(publicationFilePath);
                         if (!publication || !publication.LCP) {
-                            return [2, false];
+                            return [2, Promise.reject("no publication LCP data?!")];
                         }
                         if (isSha256Hex) {
                             lcpPassHex = lcpPass;
@@ -71,8 +66,8 @@ function installLcpHandler(publicationsServer) {
                         err_2 = _a.sent();
                         debug(err_2);
                         debug("FAIL publication.LCP.tryUserKeys(): " + err_2);
-                        return [2, false];
-                    case 4: return [2, true];
+                        return [2, Promise.reject(err_2)];
+                    case 4: return [2, Promise.resolve(true)];
                 }
             });
         });
