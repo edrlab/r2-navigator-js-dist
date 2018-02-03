@@ -5,11 +5,9 @@ var crypto = require("crypto");
 var debug_ = require("debug");
 var electron_1 = require("electron");
 var events_1 = require("../common/events");
-var lsd_1 = require("./lsd");
 var debug = debug_("r2:electron:main:lcp");
-function installLcpHandler(publicationsServer, deviceIDManager) {
+function installLcpHandler(publicationsServer) {
     var _this = this;
-    lsd_1.installLsdHandler(publicationsServer, deviceIDManager);
     electron_1.ipcMain.on(events_1.R2_EVENT_TRY_LCP_PASS, function (event, publicationFilePath, lcpPass, isSha256Hex) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
         var okay, err_1, passSha256Hex, checkSum;
         return tslib_1.__generator(this, function (_a) {
@@ -46,7 +44,7 @@ function installLcpHandler(publicationsServer, deviceIDManager) {
     }); });
     function tryLcpPass(publicationFilePath, lcpPass, isSha256Hex) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var publication, lcpPassHex, checkSum, okay, err_2;
+            var publication, lcpPassHex, checkSum, err_2;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -62,24 +60,19 @@ function installLcpHandler(publicationsServer, deviceIDManager) {
                             checkSum.update(lcpPass);
                             lcpPassHex = checkSum.digest("hex");
                         }
-                        okay = false;
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 3, , 4]);
-                        return [4, publication.LCP.setUserPassphrase(lcpPassHex)];
+                        return [4, publication.LCP.tryUserKeys([lcpPassHex])];
                     case 2:
-                        okay = _a.sent();
+                        _a.sent();
                         return [3, 4];
                     case 3:
                         err_2 = _a.sent();
                         debug(err_2);
-                        okay = false;
-                        return [3, 4];
-                    case 4:
-                        if (!okay) {
-                            debug("FAIL publication.LCP.setUserPassphrase()");
-                        }
-                        return [2, okay];
+                        debug("FAIL publication.LCP.tryUserKeys(): " + err_2);
+                        return [2, false];
+                    case 4: return [2, true];
                 }
             });
         });

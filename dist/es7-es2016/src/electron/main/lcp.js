@@ -5,10 +5,8 @@ const crypto = require("crypto");
 const debug_ = require("debug");
 const electron_1 = require("electron");
 const events_1 = require("../common/events");
-const lsd_1 = require("./lsd");
 const debug = debug_("r2:electron:main:lcp");
-function installLcpHandler(publicationsServer, deviceIDManager) {
-    lsd_1.installLsdHandler(publicationsServer, deviceIDManager);
+function installLcpHandler(publicationsServer) {
     electron_1.ipcMain.on(events_1.R2_EVENT_TRY_LCP_PASS, (event, publicationFilePath, lcpPass, isSha256Hex) => tslib_1.__awaiter(this, void 0, void 0, function* () {
         let okay = false;
         try {
@@ -46,18 +44,15 @@ function installLcpHandler(publicationsServer, deviceIDManager) {
                 checkSum.update(lcpPass);
                 lcpPassHex = checkSum.digest("hex");
             }
-            let okay = false;
             try {
-                okay = yield publication.LCP.setUserPassphrase(lcpPassHex);
+                yield publication.LCP.tryUserKeys([lcpPassHex]);
             }
             catch (err) {
                 debug(err);
-                okay = false;
+                debug("FAIL publication.LCP.tryUserKeys(): " + err);
+                return false;
             }
-            if (!okay) {
-                debug("FAIL publication.LCP.setUserPassphrase()");
-            }
-            return okay;
+            return true;
         });
     }
 }
