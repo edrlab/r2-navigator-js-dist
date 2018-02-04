@@ -1,4 +1,5 @@
 export declare const DEBUG_VISUALS: boolean;
+export declare const configureFixedLayout: (isFixedLayout: boolean) => void;
 export declare const injectDefaultCSS: () => void;
 export declare const injectReadPosCSS: () => void;
 export declare function isVerticalWritingMode(): boolean;

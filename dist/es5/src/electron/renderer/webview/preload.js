@@ -45,7 +45,7 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, function (_event, messageS
 });
 var _lastAnimState;
 electron_1.ipcRenderer.on(events_1.R2_EVENT_PAGE_TURN, function (_event, messageString) {
-    if (!win.document.body) {
+    if (_isFixedLayout || !win.document.body) {
         electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, messageString);
         return;
     }
@@ -132,10 +132,13 @@ var checkReadyPass = function () {
         }
     }
     win.addEventListener("resize", function () {
+        readium_css_1.configureFixedLayout(_isFixedLayout);
         scrollToHashRaw(false);
     });
     setTimeout(function () {
-        scrollToHashRaw(true);
+        if (!_isFixedLayout) {
+            scrollToHashRaw(true);
+        }
         win.addEventListener("scroll", function (_ev) {
             if (_ignoreScrollEvent) {
                 _ignoreScrollEvent = false;
@@ -145,7 +148,7 @@ var checkReadyPass = function () {
             processXY(x, 0);
         });
     }, 800);
-    var useResizeSensor = true;
+    var useResizeSensor = !_isFixedLayout;
     if (useResizeSensor && win.document.body) {
         setTimeout(function () {
             window.requestAnimationFrame(function (_timestamp) {
@@ -324,11 +327,7 @@ var _locationHashOverride;
 var _locationHashOverrideCSSselector;
 var _readyPassDone = false;
 var _readyEventSent = false;
-var resetInitialState = function () {
-    _locationHashOverride = undefined;
-    _readyPassDone = false;
-    _readyEventSent = false;
-};
+var _isFixedLayout = false;
 win.addEventListener("load", function () {
     checkReadyPass();
 });
@@ -336,7 +335,27 @@ win.addEventListener("DOMContentLoaded", function () {
     if (win.location.hash && win.location.hash.length > 1) {
         _hashElement = win.document.getElementById(win.location.hash.substr(1));
     }
-    resetInitialState();
+    _locationHashOverride = undefined;
+    _readyPassDone = false;
+    _readyEventSent = false;
+    var readiumcssJson = {};
+    if (queryParams) {
+        var base64 = queryParams["readiumcss"];
+        if (base64) {
+            try {
+                var str = window.atob(base64);
+                readiumcssJson = JSON.parse(str);
+            }
+            catch (err) {
+                console.log(err);
+            }
+        }
+    }
+    _isFixedLayout = readiumcssJson && readiumcssJson.isFixedLayout;
+    readium_css_1.configureFixedLayout(_isFixedLayout);
+    if (_isFixedLayout) {
+        notifyReady();
+    }
     readium_css_1.injectDefaultCSS();
     if (readium_css_1.DEBUG_VISUALS) {
         readium_css_1.injectReadPosCSS();
@@ -360,18 +379,8 @@ win.addEventListener("DOMContentLoaded", function () {
         electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_LINK, href);
         return false;
     }, true);
-    try {
-        if (queryParams) {
-            var base64 = queryParams["readiumcss"];
-            if (base64) {
-                var str = window.atob(base64);
-                var messageJson = JSON.parse(str);
-                readium_css_1.readiumCSS(messageJson);
-            }
-        }
-    }
-    catch (err) {
-        console.log(err);
+    if (readiumcssJson) {
+        readium_css_1.readiumCSS(readiumcssJson);
     }
 });
 var processXYRaw = function (x, y) {

@@ -45,7 +45,7 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, (_event, messageString) =>
 });
 let _lastAnimState;
 electron_1.ipcRenderer.on(events_1.R2_EVENT_PAGE_TURN, (_event, messageString) => {
-    if (!win.document.body) {
+    if (_isFixedLayout || !win.document.body) {
         electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, messageString);
         return;
     }
@@ -132,10 +132,13 @@ const checkReadyPass = () => {
         }
     }
     win.addEventListener("resize", () => {
+        readium_css_1.configureFixedLayout(_isFixedLayout);
         scrollToHashRaw(false);
     });
     setTimeout(() => {
-        scrollToHashRaw(true);
+        if (!_isFixedLayout) {
+            scrollToHashRaw(true);
+        }
         win.addEventListener("scroll", (_ev) => {
             if (_ignoreScrollEvent) {
                 _ignoreScrollEvent = false;
@@ -145,7 +148,7 @@ const checkReadyPass = () => {
             processXY(x, 0);
         });
     }, 800);
-    const useResizeSensor = true;
+    const useResizeSensor = !_isFixedLayout;
     if (useResizeSensor && win.document.body) {
         setTimeout(() => {
             window.requestAnimationFrame((_timestamp) => {
@@ -324,11 +327,7 @@ let _locationHashOverride;
 let _locationHashOverrideCSSselector;
 let _readyPassDone = false;
 let _readyEventSent = false;
-const resetInitialState = () => {
-    _locationHashOverride = undefined;
-    _readyPassDone = false;
-    _readyEventSent = false;
-};
+let _isFixedLayout = false;
 win.addEventListener("load", () => {
     checkReadyPass();
 });
@@ -336,7 +335,27 @@ win.addEventListener("DOMContentLoaded", () => {
     if (win.location.hash && win.location.hash.length > 1) {
         _hashElement = win.document.getElementById(win.location.hash.substr(1));
     }
-    resetInitialState();
+    _locationHashOverride = undefined;
+    _readyPassDone = false;
+    _readyEventSent = false;
+    let readiumcssJson = {};
+    if (queryParams) {
+        const base64 = queryParams["readiumcss"];
+        if (base64) {
+            try {
+                const str = window.atob(base64);
+                readiumcssJson = JSON.parse(str);
+            }
+            catch (err) {
+                console.log(err);
+            }
+        }
+    }
+    _isFixedLayout = readiumcssJson && readiumcssJson.isFixedLayout;
+    readium_css_1.configureFixedLayout(_isFixedLayout);
+    if (_isFixedLayout) {
+        notifyReady();
+    }
     readium_css_1.injectDefaultCSS();
     if (readium_css_1.DEBUG_VISUALS) {
         readium_css_1.injectReadPosCSS();
@@ -360,18 +379,8 @@ win.addEventListener("DOMContentLoaded", () => {
         electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_LINK, href);
         return false;
     }, true);
-    try {
-        if (queryParams) {
-            const base64 = queryParams["readiumcss"];
-            if (base64) {
-                const str = window.atob(base64);
-                const messageJson = JSON.parse(str);
-                readium_css_1.readiumCSS(messageJson);
-            }
-        }
-    }
-    catch (err) {
-        console.log(err);
+    if (readiumcssJson) {
+        readium_css_1.readiumCSS(readiumcssJson);
     }
 });
 const processXYRaw = (x, y) => {

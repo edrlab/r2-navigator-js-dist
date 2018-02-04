@@ -9,6 +9,78 @@ var focusCssStyles = "\n*:focus {\noutline-style: solid !important;\noutline-wid
 var selectionCssStyles = "\n::selection {\nbackground-color: rgb(155, 179, 240) !important;\ncolor: black !important;\n}\n\n:root.mdc-theme--dark ::selection {\nbackground-color: rgb(100, 122, 177) !important;\ncolor: white !important;\n}\n/*\n.readium2-hash {\n    color: black !important;\n    background-color: rgb(185, 207, 255) !important;\n}\n:root.mdc-theme--dark .readium2-hash {\n    color: white !important;\n    background-color: rgb(67, 64, 125) !important;\n}\n*/\n";
 var scrollBarCssStyles = "\n::-webkit-scrollbar-button {\nheight: 0px !important;\nwidth: 0px !important;\n}\n\n::-webkit-scrollbar-corner {\nbackground: transparent !important;\n}\n\n/*::-webkit-scrollbar-track-piece {\nbackground-color: red;\n} */\n\n::-webkit-scrollbar {\nwidth:  14px;\nheight: 14px;\n}\n\n::-webkit-scrollbar-thumb {\nbackground: #727272;\nbackground-clip: padding-box !important;\nborder: 3px solid transparent !important;\nborder-radius: 30px;\n}\n\n::-webkit-scrollbar-thumb:hover {\nbackground: #4d4d4d;\n}\n\n::-webkit-scrollbar-track {\nbox-shadow: inset 0 0 3px rgba(40, 40, 40, 0.2);\nbackground: #dddddd;\nbox-sizing: content-box;\n}\n\n::-webkit-scrollbar-track:horizontal {\nborder-top: 1px solid silver;\n}\n::-webkit-scrollbar-track:vertical {\nborder-left: 1px solid silver;\n}\n\n:root.mdc-theme--dark ::-webkit-scrollbar-thumb {\nbackground: #a4a4a4;\nborder: 3px solid #545454;\n}\n\n:root.mdc-theme--dark ::-webkit-scrollbar-thumb:hover {\nbackground: #dedede;\n}\n\n:root.mdc-theme--dark ::-webkit-scrollbar-track {\nbackground: #545454;\n}\n\n:root.mdc-theme--dark ::-webkit-scrollbar-track:horizontal {\nborder-top: 1px solid black;\n}\n:root.mdc-theme--dark ::-webkit-scrollbar-track:vertical {\nborder-left: 1px solid black;\n}";
 var readPosCssStyles = "\n:root[style*=\"readium-sepia-on\"] .readium2-read-pos,\n:root[style*=\"readium-night-on\"] .readium2-read-pos,\n.readium2-read-pos {\n    color: red !important;\n    background-color: silver !important;\n}\n:root[style*=\"readium-sepia-on\"] .readium2-read-pos2,\n:root[style*=\"readium-night-on\"] .readium2-read-pos2,\n.readium2-read-pos2 {\n    color: blue !important;\n    background-color: yellow !important;\n}";
+exports.configureFixedLayout = function (isFixedLayout) {
+    if (!win.document || !win.document.head || !win.document.body) {
+        console.log("configureFixedLayout !win.document || !win.document.head || !win.document.body");
+        return;
+    }
+    var width = win.READIUM_FXL_VIEWPORT_WIDTH;
+    var height = win.READIUM_FXL_VIEWPORT_HEIGHT;
+    if (!width || !height) {
+        var metaViewport = win.document.head.querySelector("meta[name=viewport]");
+        if (!metaViewport) {
+            console.log("configureFixedLayout NO meta[name=viewport]");
+            return;
+        }
+        var attr = metaViewport.getAttribute("content");
+        if (!attr) {
+            console.log("configureFixedLayout NO meta[name=viewport && content]");
+            return;
+        }
+        var wMatch = attr.match(/\s*width\s*=\s*([0-9]+)/);
+        if (wMatch && wMatch.length >= 2) {
+            try {
+                width = parseInt(wMatch[1], 10);
+            }
+            catch (err) {
+                console.log(err);
+            }
+        }
+        else {
+            console.log("configureFixedLayout NO meta[name=viewport && content WIDTH]");
+        }
+        var hMatch = attr.match(/\s*height\s*=\s*([0-9]+)/);
+        if (hMatch && hMatch.length >= 2) {
+            try {
+                height = parseInt(hMatch[1], 10);
+            }
+            catch (err) {
+                console.log(err);
+            }
+        }
+        else {
+            console.log("configureFixedLayout NO meta[name=viewport && content HEIGHT]");
+        }
+        if (width && height) {
+            console.log("READIUM_FXL_VIEWPORT_WIDTH: " + width);
+            console.log("READIUM_FXL_VIEWPORT_HEIGHT: " + height);
+            win.READIUM_FXL_VIEWPORT_WIDTH = width;
+            win.READIUM_FXL_VIEWPORT_HEIGHT = height;
+        }
+    }
+    if (width && height && isFixedLayout) {
+        win.document.documentElement.style.overflow = "hidden";
+        win.document.body.style.width = width + "px";
+        win.document.body.style.height = height + "px";
+        win.document.body.style.overflow = "hidden";
+        win.document.body.style.margin = "0";
+        console.log("FXL width: " + width);
+        console.log("FXL height: " + height);
+        var visibleWidth = win.innerWidth;
+        var visibleHeight = win.innerHeight;
+        console.log("FXL visible width: " + visibleWidth);
+        console.log("FXL visible height: " + visibleHeight);
+        var ratioX = visibleWidth / width;
+        var ratioY = visibleHeight / height;
+        var ratio = Math.min(ratioX, ratioY);
+        var tx = (visibleWidth - (width * ratio)) / 2;
+        var ty = (visibleHeight - (height * ratio)) / 2;
+        console.log("FXL trans X: " + tx);
+        console.log("FXL trans Y: " + ty);
+        win.document.documentElement.style.transformOrigin = "0 0";
+        win.document.documentElement.style.transform = "translateX(" + tx + "px) translateY(" + ty + "px) scale(" + ratio + ")";
+    }
+};
 exports.injectDefaultCSS = function () {
     appendCSSInline("electron-selection", selectionCssStyles);
     appendCSSInline("electron-focus", focusCssStyles);
@@ -152,14 +224,19 @@ function readiumCSSInject(messageJson) {
     }
 }
 function readiumCSSSet(messageJson) {
-    if (typeof messageJson.setCSS === "undefined") {
+    if (!messageJson || typeof messageJson.setCSS === "undefined") {
         return;
     }
     var docElement = win.document.documentElement;
     var remove = (typeof messageJson.setCSS === "string" && messageJson.setCSS.indexOf("rollback") >= 0)
         || !messageJson.setCSS;
     if (remove) {
-        docElement.style.overflow = "auto";
+        if (messageJson.isFixedLayout) {
+            docElement.style.overflow = "hidden";
+        }
+        else {
+            docElement.style.overflow = "auto";
+        }
         var toRemove = [];
         for (var i = 0; i < docElement.style.length; i++) {
             var item = docElement.style.item(i);
