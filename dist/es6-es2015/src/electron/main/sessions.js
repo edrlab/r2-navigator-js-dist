@@ -5,16 +5,24 @@ const debug_ = require("debug");
 const electron_1 = require("electron");
 const sessions_1 = require("../common/sessions");
 const debug = debug_("r2:navigator#electron/main/sessions");
+const debugHttps = debug_("r2:https");
+const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 function secureSessions(server) {
     const filter = { urls: ["*", "*://*/*"] };
     const onBeforeSendHeadersCB = (details, callback) => {
         if (server.isSecured()) {
             const info = server.serverInfo();
             if (info && info.trustKey && info.trustCheck && info.trustCheckIV) {
+                let t1;
+                if (IS_DEV) {
+                    t1 = process.hrtime();
+                }
                 const encrypteds = [];
                 const encryptStream = crypto.createCipheriv("aes-256-cbc", info.trustKey, info.trustCheckIV);
                 encryptStream.setAutoPadding(true);
-                const buff1 = encryptStream.update(details.url);
+                const now = Date.now();
+                const jsonStr = `{"url":"${details.url}","time":${now}}`;
+                const buff1 = encryptStream.update(jsonStr, "utf8");
                 if (buff1) {
                     encrypteds.push(buff1);
                 }
@@ -25,6 +33,13 @@ function secureSessions(server) {
                 const encrypted = Buffer.concat(encrypteds);
                 const base64 = new Buffer(encrypted).toString("base64");
                 details.requestHeaders["X-" + info.trustCheck] = base64;
+                if (IS_DEV) {
+                    const t2 = process.hrtime(t1);
+                    const seconds = t2[0];
+                    const nanoseconds = t2[1];
+                    const milliseconds = nanoseconds / 1e6;
+                    debugHttps(`< A > ${seconds}s ${milliseconds}ms [ ${details.url} ]`);
+                }
             }
         }
         callback({ cancel: false, requestHeaders: details.requestHeaders });
