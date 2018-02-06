@@ -2,53 +2,32 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const crypto = require("crypto");
 const debug_ = require("debug");
-const electron_1 = require("electron");
-const events_1 = require("../common/events");
 const debug = debug_("r2:navigator#electron/main/lcp");
-function installLcpHandler(publicationsServer) {
-    electron_1.ipcMain.on(events_1.R2_EVENT_TRY_LCP_PASS, async (event, publicationFilePath, lcpPass, isSha256Hex) => {
-        try {
-            await tryLcpPass(publicationFilePath, lcpPass, isSha256Hex);
-            let passSha256Hex;
-            if (isSha256Hex) {
-                passSha256Hex = lcpPass;
-            }
-            else {
-                const checkSum = crypto.createHash("sha256");
-                checkSum.update(lcpPass);
-                passSha256Hex = checkSum.digest("hex");
-            }
-            event.sender.send(events_1.R2_EVENT_TRY_LCP_PASS_RES, true, "Correct.", passSha256Hex);
-        }
-        catch (err) {
-            debug(err);
-            event.sender.send(events_1.R2_EVENT_TRY_LCP_PASS_RES, false, err, "xxx");
-        }
-    });
-    async function tryLcpPass(publicationFilePath, lcpPass, isSha256Hex) {
-        const publication = publicationsServer.cachedPublication(publicationFilePath);
-        if (!publication || !publication.LCP) {
-            return Promise.reject("no publication LCP data?!");
-        }
-        let lcpPassHex;
-        if (isSha256Hex) {
-            lcpPassHex = lcpPass;
-        }
-        else {
+async function doTryLcpPass(publicationsServer, publicationFilePath, lcpPasses, isSha256Hex) {
+    const publication = publicationsServer.cachedPublication(publicationFilePath);
+    if (!publication || !publication.LCP) {
+        return Promise.reject("no publication LCP data?!");
+    }
+    let passesSha256Hex;
+    if (isSha256Hex) {
+        passesSha256Hex = lcpPasses;
+    }
+    else {
+        passesSha256Hex = lcpPasses.map((lcpPass) => {
             const checkSum = crypto.createHash("sha256");
             checkSum.update(lcpPass);
-            lcpPassHex = checkSum.digest("hex");
-        }
-        try {
-            await publication.LCP.tryUserKeys([lcpPassHex]);
-        }
-        catch (err) {
-            debug(err);
-            debug("FAIL publication.LCP.tryUserKeys(): " + err);
-            return Promise.reject(err);
-        }
-        return Promise.resolve(true);
+            const passSha256Hex = checkSum.digest("hex");
+            return passSha256Hex;
+        });
+    }
+    try {
+        return await publication.LCP.tryUserKeys(passesSha256Hex);
+    }
+    catch (err) {
+        debug(err);
+        debug("FAIL publication.LCP.tryUserKeys(): " + err);
+        return Promise.reject(err);
     }
 }
-exports.installLcpHandler = installLcpHandler;
+exports.doTryLcpPass = doTryLcpPass;
 //# sourceMappingURL=lcp.js.map

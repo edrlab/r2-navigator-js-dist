@@ -4,48 +4,45 @@ const tslib_1 = require("tslib");
 const renew_1 = require("r2-lcp-js/dist/es6-es2015/src/lsd/renew");
 const return_1 = require("r2-lcp-js/dist/es6-es2015/src/lsd/return");
 const debug_ = require("debug");
-const electron_1 = require("electron");
 const moment = require("moment");
-const events_1 = require("../common/events");
 const debug = debug_("r2:navigator#electron/main/lsd");
-function installLsdHandler(publicationsServer, deviceIDManager) {
-    electron_1.ipcMain.on(events_1.R2_EVENT_LCP_LSD_RETURN, (event, publicationFilePath) => tslib_1.__awaiter(this, void 0, void 0, function* () {
+function doLsdReturn(publicationsServer, deviceIDManager, publicationFilePath) {
+    return tslib_1.__awaiter(this, void 0, void 0, function* () {
         const publication = publicationsServer.cachedPublication(publicationFilePath);
         if (!publication || !publication.LCP || !publication.LCP.LSDJson) {
-            event.sender.send(events_1.R2_EVENT_LCP_LSD_RETURN_RES, false, "Internal error!");
-            return;
+            return Promise.reject("no publication LCP LSD data?!");
         }
         let renewResponseJson;
         try {
             renewResponseJson = yield return_1.lsdReturn(publication.LCP.LSDJson, deviceIDManager);
             publication.LCP.LSDJson = renewResponseJson;
-            event.sender.send(events_1.R2_EVENT_LCP_LSD_RETURN_RES, true, "Returned.");
-            return;
+            return Promise.resolve(renewResponseJson);
         }
         catch (err) {
             debug(err);
-            event.sender.send(events_1.R2_EVENT_LCP_LSD_RETURN_RES, false, err);
+            return Promise.reject(err);
         }
-    }));
-    electron_1.ipcMain.on(events_1.R2_EVENT_LCP_LSD_RENEW, (event, publicationFilePath, endDateStr) => tslib_1.__awaiter(this, void 0, void 0, function* () {
+    });
+}
+exports.doLsdReturn = doLsdReturn;
+function doLsdRenew(publicationsServer, deviceIDManager, publicationFilePath, endDateStr) {
+    return tslib_1.__awaiter(this, void 0, void 0, function* () {
         const publication = publicationsServer.cachedPublication(publicationFilePath);
         if (!publication || !publication.LCP || !publication.LCP.LSDJson) {
-            event.sender.send(events_1.R2_EVENT_LCP_LSD_RENEW_RES, false, "Internal error!");
-            return;
+            return Promise.reject("Internal error!");
         }
         const endDate = endDateStr.length ? moment(endDateStr).toDate() : undefined;
         let renewResponseJson;
         try {
             renewResponseJson = yield renew_1.lsdRenew(endDate, publication.LCP.LSDJson, deviceIDManager);
             publication.LCP.LSDJson = renewResponseJson;
-            event.sender.send(events_1.R2_EVENT_LCP_LSD_RENEW_RES, true, "Renewed.");
-            return;
+            return Promise.resolve(renewResponseJson);
         }
         catch (err) {
             debug(err);
-            event.sender.send(events_1.R2_EVENT_LCP_LSD_RENEW_RES, false, err);
+            return Promise.reject(err);
         }
-    }));
+    });
 }
-exports.installLsdHandler = installLsdHandler;
+exports.doLsdRenew = doLsdRenew;
 //# sourceMappingURL=lsd.js.map
