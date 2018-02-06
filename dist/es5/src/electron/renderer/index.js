@@ -7,6 +7,7 @@ var electron_1 = require("electron");
 var electron_2 = require("electron");
 var events_1 = require("../common/events");
 var sessions_1 = require("../common/sessions");
+var url_params_1 = require("./common/url-params");
 var IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 function isFixedLayout(link) {
     if (link && link.Properties) {
@@ -49,9 +50,9 @@ function setReadingLocationSaver(func) {
 }
 exports.setReadingLocationSaver = setReadingLocationSaver;
 function readiumCssOnOff() {
-    var readiumCssJsonMessage1 = __computeReadiumCssJsonMessage(_webview1.READIUM2_LINK);
+    var readiumCssJsonMessage1 = __computeReadiumCssJsonMessage(_webview1.READIUM2.link);
     _webview1.send(events_1.R2_EVENT_READIUMCSS, readiumCssJsonMessage1);
-    var readiumCssJsonMessage2 = __computeReadiumCssJsonMessage(_webview2.READIUM2_LINK);
+    var readiumCssJsonMessage2 = __computeReadiumCssJsonMessage(_webview2.READIUM2.link);
     _webview2.send(events_1.R2_EVENT_READIUMCSS, readiumCssJsonMessage2);
 }
 exports.readiumCssOnOff = readiumCssOnOff;
@@ -90,10 +91,16 @@ function installNavigatorDOM(publication, publicationJsonUrl, rootHtmlElementID,
     slidingViewport.setAttribute("style", "display: block; position: absolute; left: 0; width: 200%; " +
         "top: 0; bottom: 0; margin: 0; padding: 0; box-sizing: border-box; background: white; overflow: hidden;");
     _webview1 = createWebView(preloadScriptPath);
-    _webview1.readiumwebviewid = 1;
+    _webview1.READIUM2 = {
+        id: 1,
+        link: undefined,
+    };
     _webview1.setAttribute("id", "webview1");
     _webview2 = createWebView(preloadScriptPath);
-    _webview2.readiumwebviewid = 2;
+    _webview2.READIUM2 = {
+        id: 2,
+        link: undefined,
+    };
     _webview2.setAttribute("id", "webview2");
     slidingViewport.appendChild(_webview1);
     slidingViewport.appendChild(_webview2);
@@ -141,7 +148,7 @@ function installNavigatorDOM(publication, publicationJsonUrl, rootHtmlElementID,
     setTimeout(function () {
         if (linkToLoad) {
             var hrefToLoad = _publicationJsonUrl + "/../" + linkToLoad.Href +
-                (linkToLoadGoto ? ("?readiumgoto=" + UrlUtils_1.encodeURIComponent_RFC3986(linkToLoadGoto)) : "");
+                (linkToLoadGoto ? ("?" + url_params_1.URL_PARAM_GOTO + "=" + UrlUtils_1.encodeURIComponent_RFC3986(linkToLoadGoto)) : "");
             handleLink(hrefToLoad, undefined, true);
         }
     }, 100);
@@ -192,13 +199,13 @@ function loadLink(hrefFull, previous, useGoto) {
     var linkUri = new URI(hrefFull);
     linkUri.search(function (data) {
         if (typeof previous === "undefined") {
-            data.readiumprevious = undefined;
+            data[url_params_1.URL_PARAM_PREVIOUS] = undefined;
         }
         else {
-            data.readiumprevious = previous ? "true" : "false";
+            data[url_params_1.URL_PARAM_PREVIOUS] = previous ? "true" : "false";
         }
         if (!useGoto) {
-            data.readiumgoto = undefined;
+            data[url_params_1.URL_PARAM_GOTO] = undefined;
         }
     });
     if (useGoto) {
@@ -225,11 +232,11 @@ function loadLink(hrefFull, previous, useGoto) {
         data.readiumcss = rcssJsonstrBase64;
     });
     var activeWebView = getActiveWebView();
-    var wv1AlreadyLoaded = _webview1.READIUM2_LINK === pubLink;
-    var wv2AlreadyLoaded = _webview2.READIUM2_LINK === pubLink;
+    var wv1AlreadyLoaded = _webview1.READIUM2.link === pubLink;
+    var wv2AlreadyLoaded = _webview2.READIUM2.link === pubLink;
     if (wv1AlreadyLoaded || wv2AlreadyLoaded) {
         var msgJson = {
-            goto: useGoto ? linkUri.search("readiumgoto") : undefined,
+            goto: useGoto ? linkUri.search(url_params_1.URL_PARAM_GOTO) : undefined,
             hash: useGoto ? undefined : linkUri.fragment(),
             previous: previous,
         };
@@ -288,13 +295,13 @@ function loadLink(hrefFull, previous, useGoto) {
     }
     var uriStr = linkUri.toString();
     console.log("####### >>> ---");
-    console.log(activeWebView.readiumwebviewid);
+    console.log(activeWebView.READIUM2.id);
     console.log(pubLink.Href);
     console.log(linkUri.hash());
-    console.log(linkUri.search(true)["readiumgoto"]);
-    console.log(linkUri.search(true)["readiumprevious"]);
+    console.log(linkUri.search(true)[url_params_1.URL_PARAM_GOTO]);
+    console.log(linkUri.search(true)[url_params_1.URL_PARAM_PREVIOUS]);
     console.log("####### >>> ---");
-    activeWebView.READIUM2_LINK = pubLink;
+    activeWebView.READIUM2.link = pubLink;
     activeWebView.setAttribute("src", uriStr);
 }
 function createWebView(preloadScriptPath) {
@@ -329,8 +336,8 @@ function createWebView(preloadScriptPath) {
         }
         else if (event.channel === events_1.R2_EVENT_READING_LOCATION) {
             var cssSelector = event.args[0];
-            if (webview.READIUM2_LINK && _saveReadingLocation) {
-                _saveReadingLocation(webview.READIUM2_LINK.Href, cssSelector);
+            if (webview.READIUM2.link && _saveReadingLocation) {
+                _saveReadingLocation(webview.READIUM2.link.Href, cssSelector);
             }
         }
         else if (event.channel === events_1.R2_EVENT_PAGE_TURN_RES) {
@@ -340,13 +347,13 @@ function createWebView(preloadScriptPath) {
             var messageString = event.args[0];
             var messageJson = JSON.parse(messageString);
             var goPREVIOUS = messageJson.go === "PREVIOUS";
-            if (!webview.READIUM2_LINK) {
+            if (!webview.READIUM2.link) {
                 console.log("WEBVIEW READIUM2_LINK ??!!");
                 return;
             }
             var nextOrPreviousSpineItem = void 0;
             for (var i = 0; i < _publication.Spine.length; i++) {
-                if (_publication.Spine[i] === webview.READIUM2_LINK) {
+                if (_publication.Spine[i] === webview.READIUM2.link) {
                     if (goPREVIOUS && (i - 1) >= 0) {
                         nextOrPreviousSpineItem = _publication.Spine[i - 1];
                     }
@@ -392,7 +399,7 @@ var onResizeDebounced = debounce(function () {
     }, 1000);
 }, 200);
 window.addEventListener("resize", function () {
-    if (!isFixedLayout(_webview1.READIUM2_LINK)) {
+    if (!isFixedLayout(_webview1.READIUM2.link)) {
         var hidePanel = document.getElementById("r2_navigator_reader_chrome_HIDE");
         if (hidePanel && hidePanel.style.display !== "block") {
             hidePanel.style.display = "block";

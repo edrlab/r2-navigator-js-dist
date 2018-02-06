@@ -1,0 +1,1 @@
+{"version":3,"file":"url-params.js","sourceRoot":"","sources":["../../../../../../src/electron/renderer/common/url-params.ts"],"names":[],"mappings":";;AAAa,QAAA,kBAAkB,GAAG,iBAAiB,CAAC;AACvC,QAAA,cAAc,GAAG,aAAa,CAAC","sourcesContent":["export const URL_PARAM_PREVIOUS = \"readiumprevious\";\nexport const URL_PARAM_GOTO = \"readiumgoto\";\n"]}

@@ -8,44 +8,55 @@ const animateProperty_1 = require("../common/animateProperty");
 const cssselector_1 = require("../common/cssselector");
 const easings_1 = require("../common/easings");
 const querystring_1 = require("../common/querystring");
+const url_params_1 = require("../common/url-params");
 const readium_css_1 = require("./readium-css");
 const win = global.window;
-let queryParams = win.location.search ? querystring_1.getURLQueryParams(win.location.search) : undefined;
-let _hashElement;
+win.READIUM2 = {
+    fxlViewportHeight: 0,
+    fxlViewportWidth: 0,
+    hashElement: null,
+    isFixedLayout: false,
+    locationHashOverride: undefined,
+    locationHashOverrideCSSselector: undefined,
+    readyEventSent: false,
+    readyPassDone: false,
+    urlQueryParams: undefined,
+};
+win.READIUM2.urlQueryParams = win.location.search ? querystring_1.getURLQueryParams(win.location.search) : undefined;
 electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, (_event, messageString) => {
     const messageJson = JSON.parse(messageString);
-    if (!queryParams) {
-        queryParams = {};
+    if (!win.READIUM2.urlQueryParams) {
+        win.READIUM2.urlQueryParams = {};
     }
     if (messageJson.previous) {
-        queryParams["readiumprevious"] = "true";
+        win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_PREVIOUS] = "true";
     }
     else {
-        if (typeof queryParams["readiumprevious"] !== "undefined") {
-            delete queryParams["readiumprevious"];
+        if (typeof win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_PREVIOUS] !== "undefined") {
+            delete win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_PREVIOUS];
         }
     }
     if (messageJson.goto) {
-        queryParams["readiumgoto"] = "true";
+        win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_GOTO] = "true";
     }
     else {
-        if (typeof queryParams["readiumgoto"] !== "undefined") {
-            delete queryParams["readiumgoto"];
+        if (typeof win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_GOTO] !== "undefined") {
+            delete win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_GOTO];
         }
     }
     if (messageJson.hash) {
-        _hashElement = win.document.getElementById(messageJson.hash);
+        win.READIUM2.hashElement = win.document.getElementById(messageJson.hash);
     }
     else {
-        _hashElement = null;
+        win.READIUM2.hashElement = null;
     }
-    _readyEventSent = false;
-    _locationHashOverride = undefined;
+    win.READIUM2.readyEventSent = false;
+    win.READIUM2.locationHashOverride = undefined;
     scrollToHashRaw(false);
 });
 let _lastAnimState;
 electron_1.ipcRenderer.on(events_1.R2_EVENT_PAGE_TURN, (_event, messageString) => {
-    if (_isFixedLayout || !win.document.body) {
+    if (win.READIUM2.isFixedLayout || !win.document.body) {
         electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, messageString);
         return;
     }
@@ -122,21 +133,21 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_PAGE_TURN, (_event, messageString) =
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, messageString);
 });
 const checkReadyPass = () => {
-    if (_readyPassDone) {
+    if (win.READIUM2.readyPassDone) {
         return;
     }
-    _readyPassDone = true;
+    win.READIUM2.readyPassDone = true;
     if (readium_css_1.DEBUG_VISUALS) {
-        if (_hashElement) {
-            _hashElement.classList.add("readium2-read-pos");
+        if (win.READIUM2.hashElement) {
+            win.READIUM2.hashElement.classList.add("readium2-read-pos");
         }
     }
     win.addEventListener("resize", () => {
-        readium_css_1.configureFixedLayout(_isFixedLayout);
+        readium_css_1.configureFixedLayout(win.READIUM2.isFixedLayout);
         scrollToHashRaw(false);
     });
     setTimeout(() => {
-        if (!_isFixedLayout) {
+        if (!win.READIUM2.isFixedLayout) {
             scrollToHashRaw(true);
         }
         win.addEventListener("scroll", (_ev) => {
@@ -148,7 +159,7 @@ const checkReadyPass = () => {
             processXY(x, 0);
         });
     }, 800);
-    const useResizeSensor = !_isFixedLayout;
+    const useResizeSensor = !win.READIUM2.isFixedLayout;
     if (useResizeSensor && win.document.body) {
         setTimeout(() => {
             window.requestAnimationFrame((_timestamp) => {
@@ -168,10 +179,10 @@ const checkReadyPass = () => {
     }
 };
 const notifyReady = () => {
-    if (_readyEventSent) {
+    if (win.READIUM2.readyEventSent) {
         return;
     }
-    _readyEventSent = true;
+    win.READIUM2.readyEventSent = true;
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_WEBVIEW_READY, win.location.href);
 };
 function scrollIntoView(element) {
@@ -187,8 +198,8 @@ function scrollIntoView(element) {
 }
 const scrollToHashRaw = (firstCall) => {
     const isPaged = win.document.documentElement.classList.contains("readium-paginated");
-    if (_locationHashOverride) {
-        if (_locationHashOverride === win.document.body) {
+    if (win.READIUM2.locationHashOverride) {
+        if (win.READIUM2.locationHashOverride === win.document.body) {
             console.log("body...");
             return;
         }
@@ -196,10 +207,10 @@ const scrollToHashRaw = (firstCall) => {
         notifyReadingLocation();
         _ignoreScrollEvent = true;
         if (isPaged) {
-            scrollIntoView(_locationHashOverride);
+            scrollIntoView(win.READIUM2.locationHashOverride);
         }
         else {
-            _locationHashOverride.scrollIntoView({
+            win.READIUM2.locationHashOverride.scrollIntoView({
                 behavior: "instant",
                 block: "start",
                 inline: "start",
@@ -207,18 +218,18 @@ const scrollToHashRaw = (firstCall) => {
         }
         return;
     }
-    else if (_hashElement) {
-        console.log("_hashElement");
-        _locationHashOverride = _hashElement;
+    else if (win.READIUM2.hashElement) {
+        console.log("win.READIUM2.hashElement");
+        win.READIUM2.locationHashOverride = win.READIUM2.hashElement;
         notifyReady();
         notifyReadingLocation();
         if (!firstCall) {
             _ignoreScrollEvent = true;
             if (isPaged) {
-                scrollIntoView(_hashElement);
+                scrollIntoView(win.READIUM2.hashElement);
             }
             else {
-                _hashElement.scrollIntoView({
+                win.READIUM2.hashElement.scrollIntoView({
                     behavior: "instant",
                     block: "start",
                     inline: "start",
@@ -229,11 +240,11 @@ const scrollToHashRaw = (firstCall) => {
     }
     else {
         if (win.document.body) {
-            if (queryParams) {
-                const previous = queryParams["readiumprevious"];
+            if (win.READIUM2.urlQueryParams) {
+                const previous = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_PREVIOUS];
                 const isPreviousNavDirection = previous === "true";
                 if (isPreviousNavDirection) {
-                    console.log("readiumprevious");
+                    console.log(url_params_1.URL_PARAM_PREVIOUS);
                     const maxHeightShift = isPaged ?
                         ((readium_css_1.isVerticalWritingMode() ?
                             (win.document.body.scrollHeight - win.document.documentElement.offsetHeight) :
@@ -262,8 +273,8 @@ const scrollToHashRaw = (firstCall) => {
                             win.document.body.scrollTop = maxHeightShift;
                         }
                     }
-                    _locationHashOverride = undefined;
-                    _locationHashOverrideCSSselector = undefined;
+                    win.READIUM2.locationHashOverride = undefined;
+                    win.READIUM2.locationHashOverrideCSSselector = undefined;
                     processXYRaw(0, (isPaged ?
                         (readium_css_1.isVerticalWritingMode() ?
                             win.document.documentElement.offsetWidth :
@@ -273,12 +284,12 @@ const scrollToHashRaw = (firstCall) => {
                             win.document.documentElement.clientHeight))
                         - 1);
                     console.log("BOTTOM (previous):");
-                    console.log(_locationHashOverride);
+                    console.log(win.READIUM2.locationHashOverride);
                     notifyReady();
                     notifyReadingLocation();
                     return;
                 }
-                let gotoCssSelector = queryParams["readiumgoto"];
+                let gotoCssSelector = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_GOTO];
                 if (gotoCssSelector) {
                     gotoCssSelector = gotoCssSelector.replace(/\+/g, " ");
                     let selected = null;
@@ -289,8 +300,8 @@ const scrollToHashRaw = (firstCall) => {
                         console.log(err);
                     }
                     if (selected) {
-                        _locationHashOverride = selected;
-                        _locationHashOverrideCSSselector = gotoCssSelector;
+                        win.READIUM2.locationHashOverride = selected;
+                        win.READIUM2.locationHashOverrideCSSselector = gotoCssSelector;
                         notifyReady();
                         notifyReadingLocation();
                         _ignoreScrollEvent = true;
@@ -308,9 +319,9 @@ const scrollToHashRaw = (firstCall) => {
                     }
                 }
             }
-            console.log("_locationHashOverride = win.document.body");
-            _locationHashOverride = win.document.body;
-            _locationHashOverrideCSSselector = undefined;
+            console.log("win.READIUM2.locationHashOverride = win.document.body");
+            win.READIUM2.locationHashOverride = win.document.body;
+            win.READIUM2.locationHashOverrideCSSselector = undefined;
             _ignoreScrollEvent = true;
             win.document.body.scrollLeft = 0;
             win.document.body.scrollTop = 0;
@@ -323,24 +334,19 @@ const scrollToHash = debounce(() => {
     scrollToHashRaw(false);
 }, 500);
 let _ignoreScrollEvent = false;
-let _locationHashOverride;
-let _locationHashOverrideCSSselector;
-let _readyPassDone = false;
-let _readyEventSent = false;
-let _isFixedLayout = false;
 win.addEventListener("load", () => {
     checkReadyPass();
 });
 win.addEventListener("DOMContentLoaded", () => {
     if (win.location.hash && win.location.hash.length > 1) {
-        _hashElement = win.document.getElementById(win.location.hash.substr(1));
+        win.READIUM2.hashElement = win.document.getElementById(win.location.hash.substr(1));
     }
-    _locationHashOverride = undefined;
-    _readyPassDone = false;
-    _readyEventSent = false;
+    win.READIUM2.locationHashOverride = undefined;
+    win.READIUM2.readyPassDone = false;
+    win.READIUM2.readyEventSent = false;
     let readiumcssJson = {};
-    if (queryParams) {
-        const base64 = queryParams["readiumcss"];
+    if (win.READIUM2.urlQueryParams) {
+        const base64 = win.READIUM2.urlQueryParams["readiumcss"];
         if (base64) {
             try {
                 const str = window.atob(base64);
@@ -351,9 +357,9 @@ win.addEventListener("DOMContentLoaded", () => {
             }
         }
     }
-    _isFixedLayout = readiumcssJson && readiumcssJson.isFixedLayout;
-    readium_css_1.configureFixedLayout(_isFixedLayout);
-    if (_isFixedLayout) {
+    win.READIUM2.isFixedLayout = readiumcssJson && readiumcssJson.isFixedLayout;
+    readium_css_1.configureFixedLayout(win.READIUM2.isFixedLayout);
+    if (win.READIUM2.isFixedLayout) {
         notifyReady();
     }
     readium_css_1.injectDefaultCSS();
@@ -364,7 +370,7 @@ win.addEventListener("DOMContentLoaded", () => {
         const isPaged = win.document.documentElement.classList.contains("readium-paginated");
         if (isPaged) {
             setTimeout(() => {
-                _locationHashOverride = ev.target;
+                win.READIUM2.locationHashOverride = ev.target;
                 scrollIntoView(ev.target);
             }, 30);
         }
@@ -407,7 +413,7 @@ const processXYRaw = (x, y) => {
         });
     }
     if (element) {
-        _locationHashOverride = element;
+        win.READIUM2.locationHashOverride = element;
         notifyReadingLocation();
         if (readium_css_1.DEBUG_VISUALS) {
             element.classList.add("readium2-read-pos2");
@@ -418,13 +424,13 @@ const processXY = debounce((x, y) => {
     processXYRaw(x, y);
 }, 300);
 const notifyReadingLocation = () => {
-    if (!_locationHashOverride) {
+    if (!win.READIUM2.locationHashOverride) {
         return;
     }
     if (readium_css_1.DEBUG_VISUALS) {
-        _locationHashOverride.classList.add("readium2-read-pos");
+        win.READIUM2.locationHashOverride.classList.add("readium2-read-pos");
     }
-    _locationHashOverrideCSSselector = cssselector_1.fullQualifiedSelector(_locationHashOverride, false);
-    electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_READING_LOCATION, _locationHashOverrideCSSselector);
+    win.READIUM2.locationHashOverrideCSSselector = cssselector_1.fullQualifiedSelector(win.READIUM2.locationHashOverride, false);
+    electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_READING_LOCATION, win.READIUM2.locationHashOverrideCSSselector);
 };
 //# sourceMappingURL=preload.js.map
