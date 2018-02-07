@@ -44,7 +44,7 @@ function doLsdRenew(publicationsServer, deviceIDManager, publicationFilePath, en
                     if (!publication || !publication.LCP || !publication.LCP.LSDJson) {
                         return [2, Promise.reject("Internal error!")];
                     }
-                    endDate = endDateStr.length ? moment(endDateStr).toDate() : undefined;
+                    endDate = endDateStr ? moment(endDateStr).toDate() : undefined;
                     _a.label = 1;
                 case 1:
                     _a.trys.push([1, 3, , 4]);

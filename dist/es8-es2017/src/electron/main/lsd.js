@@ -27,7 +27,7 @@ async function doLsdRenew(publicationsServer, deviceIDManager, publicationFilePa
     if (!publication || !publication.LCP || !publication.LCP.LSDJson) {
         return Promise.reject("Internal error!");
     }
-    const endDate = endDateStr.length ? moment(endDateStr).toDate() : undefined;
+    const endDate = endDateStr ? moment(endDateStr).toDate() : undefined;
     let renewResponseJson;
     try {
         renewResponseJson = await renew_1.lsdRenew(endDate, publication.LCP.LSDJson, deviceIDManager);
