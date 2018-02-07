@@ -4,6 +4,7 @@ var electron_1 = require("electron");
 var events_1 = require("../../common/events");
 var styles_1 = require("./styles");
 var win = global.window;
+var CSS_CLASS_DARK_THEME = "mdc-theme--dark";
 var urlRootReadiumCSS = win.location.origin + "/readium-css/";
 exports.DEBUG_VISUALS = false;
 exports.configureFixedLayout = function (isFixedLayout) {
@@ -243,7 +244,7 @@ function readiumCSSSet(messageJson) {
         toRemove.forEach(function (item) {
             docElement.style.removeProperty(item);
         });
-        docElement.classList.remove("mdc-theme--dark");
+        docElement.classList.remove(CSS_CLASS_DARK_THEME);
     }
     else {
         var dark = false;
@@ -289,10 +290,10 @@ function readiumCSSSet(messageJson) {
             }
         }
         if (night) {
-            docElement.classList.add("mdc-theme--dark");
+            docElement.classList.add(CSS_CLASS_DARK_THEME);
         }
         else {
-            docElement.classList.remove("mdc-theme--dark");
+            docElement.classList.remove(CSS_CLASS_DARK_THEME);
         }
         var needsAdvanced = true;
         docElement.style.setProperty("--USER__advancedSettings", needsAdvanced ? "readium-advanced-on" : "readium-advanced-off");

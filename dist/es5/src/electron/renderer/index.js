@@ -2,13 +2,16 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var debounce = require("debounce");
 var URI = require("urijs");
-var UrlUtils_1 = require("r2-utils-js/dist/es5/src/_utils/http/UrlUtils");
+var UrlUtils_1 = require("@utils/http/UrlUtils");
 var electron_1 = require("electron");
 var electron_2 = require("electron");
 var events_1 = require("../common/events");
 var sessions_1 = require("../common/sessions");
 var url_params_1 = require("./common/url-params");
 var IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
+exports.DOM_EVENT_HIDE_VIEWPORT = "r2:hide-content-viewport";
+exports.DOM_EVENT_SHOW_VIEWPORT = "r2:show-content-viewport";
+var ELEMENT_ID_SLIDING_VIEWPORT = "r2_navigator_sliding_viewport";
 function isFixedLayout(link) {
     if (link && link.Properties) {
         if (link.Properties.Layout === "fixed") {
@@ -57,9 +60,9 @@ function readiumCssOnOff() {
 exports.readiumCssOnOff = readiumCssOnOff;
 var _webview1;
 var _webview2;
-var _viewHideInterval;
 var _publication;
 var _publicationJsonUrl;
+var _rootHtmlElement;
 function handleLink(href, previous, useGoto) {
     if (!_publicationJsonUrl) {
         return;
@@ -80,13 +83,13 @@ function installNavigatorDOM(publication, publicationJsonUrl, rootHtmlElementID,
         window.READIUM2_PUB = _publication;
         window.READIUM2_PUBURL = _publicationJsonUrl;
     }
-    var rootHtmlElement = document.getElementById(rootHtmlElementID);
-    if (!rootHtmlElement) {
+    _rootHtmlElement = document.getElementById(rootHtmlElementID);
+    if (!_rootHtmlElement) {
         console.log("!rootHtmlElement ???");
         return;
     }
     var slidingViewport = document.createElement("div");
-    slidingViewport.setAttribute("id", "r2_navigator_sliding_viewport");
+    slidingViewport.setAttribute("id", ELEMENT_ID_SLIDING_VIEWPORT);
     slidingViewport.setAttribute("style", "display: block; position: absolute; left: 0; width: 200%; " +
         "top: 0; bottom: 0; margin: 0; padding: 0; box-sizing: border-box; background: white; overflow: hidden;");
     _webview1 = createWebView(preloadScriptPath);
@@ -171,7 +174,7 @@ function navLeftOrRight(left) {
 exports.navLeftOrRight = navLeftOrRight;
 var getActiveWebView = function () {
     var activeWebView;
-    var slidingViewport = document.getElementById("r2_navigator_sliding_viewport");
+    var slidingViewport = document.getElementById(ELEMENT_ID_SLIDING_VIEWPORT);
     if (slidingViewport.classList.contains("shiftedLeft")) {
         if (_webview1.classList.contains("posRight")) {
             activeWebView = _webview1;
@@ -240,7 +243,7 @@ function loadLink(hrefFull, previous, useGoto) {
         var webviewToReuse = wv1AlreadyLoaded ? _webview1 : _webview2;
         if (webviewToReuse !== activeWebView) {
             console.log("INTO VIEW ...");
-            var slidingView = document.getElementById("r2_navigator_sliding_viewport");
+            var slidingView = document.getElementById(ELEMENT_ID_SLIDING_VIEWPORT);
             if (slidingView) {
                 var animate = true;
                 if (goto || hash) {
@@ -286,12 +289,8 @@ function loadLink(hrefFull, previous, useGoto) {
         return;
     }
     if (!isFixedLayout(pubLink)) {
-        var hidePanel = document.getElementById("r2_navigator_reader_chrome_HIDE");
-        if (hidePanel) {
-            hidePanel.style.display = "block";
-            _viewHideInterval = setInterval(function () {
-                unhideWebView(true);
-            }, 5000);
+        if (_rootHtmlElement) {
+            _rootHtmlElement.dispatchEvent(new Event(exports.DOM_EVENT_HIDE_VIEWPORT));
         }
     }
     var uriStr = linkUri.toString();
@@ -336,7 +335,9 @@ function createWebView(preloadScriptPath) {
         else if (event.channel === events_1.R2_EVENT_WEBVIEW_READY) {
             var payload = event.args[0];
             console.log("WEBVIEW READY: " + payload.href);
-            unhideWebView(false);
+            if (_rootHtmlElement) {
+                _rootHtmlElement.dispatchEvent(new Event(exports.DOM_EVENT_SHOW_VIEWPORT));
+            }
         }
         else if (event.channel === events_1.R2_EVENT_READING_LOCATION) {
             var payload = event.args[0];
@@ -398,17 +399,15 @@ var onResizeDebounced = debounce(function () {
     adjustResize(_webview1);
     adjustResize(_webview2);
     setTimeout(function () {
-        unhideWebView(false);
+        if (_rootHtmlElement) {
+            _rootHtmlElement.dispatchEvent(new Event(exports.DOM_EVENT_SHOW_VIEWPORT));
+        }
     }, 1000);
 }, 200);
 window.addEventListener("resize", function () {
     if (!isFixedLayout(_webview1.READIUM2.link)) {
-        var hidePanel = document.getElementById("r2_navigator_reader_chrome_HIDE");
-        if (hidePanel && hidePanel.style.display !== "block") {
-            hidePanel.style.display = "block";
-            _viewHideInterval = setInterval(function () {
-                unhideWebView(true);
-            }, 5000);
+        if (_rootHtmlElement) {
+            _rootHtmlElement.dispatchEvent(new Event(exports.DOM_EVENT_HIDE_VIEWPORT));
         }
     }
     onResizeDebounced();
@@ -418,20 +417,4 @@ electron_2.ipcRenderer.on(events_1.R2_EVENT_LINK, function (_event, payload) {
     console.log(payload.url);
     handleLink(payload.url, undefined, false);
 });
-var unhideWebView = function (forced) {
-    if (_viewHideInterval) {
-        clearInterval(_viewHideInterval);
-        _viewHideInterval = undefined;
-    }
-    var hidePanel = document.getElementById("r2_navigator_reader_chrome_HIDE");
-    if (!hidePanel || hidePanel.style.display === "none") {
-        return;
-    }
-    if (forced) {
-        console.log("unhideWebView FORCED");
-    }
-    if (hidePanel) {
-        hidePanel.style.display = "none";
-    }
-};
 //# sourceMappingURL=index.js.map

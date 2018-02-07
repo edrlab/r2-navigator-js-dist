@@ -1,5 +1,7 @@
-import { Publication } from "r2-shared-js/dist/es5/src/models/publication";
+import { Publication } from "@models/publication";
 import { IEventPayload_R2_EVENT_READIUMCSS } from "../common/events";
+export declare const DOM_EVENT_HIDE_VIEWPORT = "r2:hide-content-viewport";
+export declare const DOM_EVENT_SHOW_VIEWPORT = "r2:show-content-viewport";
 export declare function setReadiumCssJsonGetter(func: () => IEventPayload_R2_EVENT_READIUMCSS): void;
 export declare function setReadingLocationSaver(func: (docHref: string, cssSelector: string) => void): void;
 export declare function readiumCssOnOff(): void;

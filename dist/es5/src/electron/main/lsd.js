@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = require("tslib");
-var renew_1 = require("r2-lcp-js/dist/es5/src/lsd/renew");
-var return_1 = require("r2-lcp-js/dist/es5/src/lsd/return");
+var renew_1 = require("@r2-lcp-js/lsd/renew");
+var return_1 = require("@r2-lcp-js/lsd/return");
 var debug_ = require("debug");
 var moment = require("moment");
 var debug = debug_("r2:navigator#electron/main/lsd");

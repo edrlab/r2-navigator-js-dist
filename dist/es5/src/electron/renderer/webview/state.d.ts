@@ -1,4 +1,4 @@
-import { Link } from "r2-shared-js/dist/es5/src/models/publication-link";
+import { Link } from "@models/publication-link";
 import { IStringMap } from "../common/querystring";
 export interface IReadium2State {
     urlQueryParams: IStringMap | undefined;
