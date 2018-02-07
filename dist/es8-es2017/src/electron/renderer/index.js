@@ -26,17 +26,16 @@ function isFixedLayout(link) {
 }
 function __computeReadiumCssJsonMessage(link) {
     if (isFixedLayout(link)) {
-        const jsonMsg = { injectCSS: "rollback", setCSS: "rollback", isFixedLayout: true };
-        return JSON.stringify(jsonMsg, null, 0);
+        return { injectCSS: "rollback", setCSS: "rollback", isFixedLayout: true };
     }
     if (!_computeReadiumCssJsonMessage) {
-        return "{}";
+        return { injectCSS: "rollback", setCSS: "rollback", isFixedLayout: false };
     }
     const readiumCssJsonMessage = _computeReadiumCssJsonMessage();
     return readiumCssJsonMessage;
 }
 let _computeReadiumCssJsonMessage = () => {
-    return "{}";
+    return { injectCSS: "rollback", setCSS: "rollback", isFixedLayout: false };
 };
 function setReadiumCssJsonGetter(func) {
     _computeReadiumCssJsonMessage = func;
@@ -50,10 +49,10 @@ function setReadingLocationSaver(func) {
 }
 exports.setReadingLocationSaver = setReadingLocationSaver;
 function readiumCssOnOff() {
-    const readiumCssJsonMessage1 = __computeReadiumCssJsonMessage(_webview1.READIUM2.link);
-    _webview1.send(events_1.R2_EVENT_READIUMCSS, readiumCssJsonMessage1);
-    const readiumCssJsonMessage2 = __computeReadiumCssJsonMessage(_webview2.READIUM2.link);
-    _webview2.send(events_1.R2_EVENT_READIUMCSS, readiumCssJsonMessage2);
+    const payload1 = __computeReadiumCssJsonMessage(_webview1.READIUM2.link);
+    _webview1.send(events_1.R2_EVENT_READIUMCSS, payload1);
+    const payload2 = __computeReadiumCssJsonMessage(_webview2.READIUM2.link);
+    _webview2.send(events_1.R2_EVENT_READIUMCSS, payload2);
 }
 exports.readiumCssOnOff = readiumCssOnOff;
 let _webview1;
@@ -163,12 +162,11 @@ function navLeftOrRight(left) {
         _publication.Metadata.Direction &&
         _publication.Metadata.Direction.toLowerCase() === "rtl";
     const goPREVIOUS = left ? !isRTL : isRTL;
-    const messageJson = {
+    const payload = {
         direction: isRTL ? "RTL" : "LTR",
         go: goPREVIOUS ? "PREVIOUS" : "NEXT",
     };
-    const messageStr = JSON.stringify(messageJson);
-    activeWebView.send(events_1.R2_EVENT_PAGE_TURN, messageStr);
+    activeWebView.send(events_1.R2_EVENT_PAGE_TURN, payload);
 }
 exports.navLeftOrRight = navLeftOrRight;
 const getActiveWebView = () => {
@@ -226,7 +224,8 @@ function loadLink(hrefFull, previous, useGoto) {
         console.log("FATAL WEBVIEW READIUM2_LINK ??!! " + hrefFull + " ==> " + linkPath);
         return;
     }
-    const rcssJsonstr = __computeReadiumCssJsonMessage(pubLink);
+    const rcssJson = __computeReadiumCssJsonMessage(pubLink);
+    const rcssJsonstr = JSON.stringify(rcssJson, null, "");
     const rcssJsonstrBase64 = window.btoa(rcssJsonstr);
     linkUri.search((data) => {
         data.readiumcss = rcssJsonstrBase64;
@@ -235,21 +234,16 @@ function loadLink(hrefFull, previous, useGoto) {
     const wv1AlreadyLoaded = _webview1.READIUM2.link === pubLink;
     const wv2AlreadyLoaded = _webview2.READIUM2.link === pubLink;
     if (wv1AlreadyLoaded || wv2AlreadyLoaded) {
-        const msgJson = {
-            goto: useGoto ? linkUri.search(url_params_1.URL_PARAM_GOTO) : undefined,
-            hash: useGoto ? undefined : linkUri.fragment(),
-            previous,
-        };
-        const msgStr = JSON.stringify(msgJson);
+        const goto = useGoto ? linkUri.search(true)[url_params_1.URL_PARAM_GOTO] : undefined;
+        const hash = useGoto ? undefined : linkUri.fragment();
         console.log("ALREADY LOADED: " + pubLink.Href);
-        console.log(msgStr);
         const webviewToReuse = wv1AlreadyLoaded ? _webview1 : _webview2;
         if (webviewToReuse !== activeWebView) {
             console.log("INTO VIEW ...");
             const slidingView = document.getElementById("r2_navigator_sliding_viewport");
             if (slidingView) {
                 let animate = true;
-                if (msgJson.goto || msgJson.hash) {
+                if (goto || hash) {
                     console.log("DISABLE ANIM");
                     animate = false;
                 }
@@ -281,7 +275,14 @@ function loadLink(hrefFull, previous, useGoto) {
                 }
             }
         }
-        webviewToReuse.send(events_1.R2_EVENT_SCROLLTO, msgStr);
+        const payload = {
+            goto,
+            hash,
+            previous: previous ? true : false,
+        };
+        const msgStr = JSON.stringify(payload);
+        console.log(msgStr);
+        webviewToReuse.send(events_1.R2_EVENT_SCROLLTO, payload);
         return;
     }
     if (!isFixedLayout(pubLink)) {
@@ -329,24 +330,26 @@ function createWebView(preloadScriptPath) {
             return;
         }
         if (event.channel === events_1.R2_EVENT_LINK) {
-            handleLink(event.args[0], undefined, false);
+            const payload = event.args[0];
+            handleLink(payload.url, undefined, false);
         }
         else if (event.channel === events_1.R2_EVENT_WEBVIEW_READY) {
+            const payload = event.args[0];
+            console.log("WEBVIEW READY: " + payload.href);
             unhideWebView(false);
         }
         else if (event.channel === events_1.R2_EVENT_READING_LOCATION) {
-            const cssSelector = event.args[0];
+            const payload = event.args[0];
             if (webview.READIUM2.link && _saveReadingLocation) {
-                _saveReadingLocation(webview.READIUM2.link.Href, cssSelector);
+                _saveReadingLocation(webview.READIUM2.link.Href, payload.cssSelector);
             }
         }
         else if (event.channel === events_1.R2_EVENT_PAGE_TURN_RES) {
             if (!_publication) {
                 return;
             }
-            const messageString = event.args[0];
-            const messageJson = JSON.parse(messageString);
-            const goPREVIOUS = messageJson.go === "PREVIOUS";
+            const payload = event.args[0];
+            const goPREVIOUS = payload.go === "PREVIOUS";
             if (!webview.READIUM2.link) {
                 console.log("WEBVIEW READIUM2_LINK ??!!");
                 return;
@@ -410,10 +413,10 @@ window.addEventListener("resize", () => {
     }
     onResizeDebounced();
 });
-electron_2.ipcRenderer.on(events_1.R2_EVENT_LINK, (_event, href) => {
+electron_2.ipcRenderer.on(events_1.R2_EVENT_LINK, (_event, payload) => {
     console.log("R2_EVENT_LINK");
-    console.log(href);
-    handleLink(href, undefined, false);
+    console.log(payload.url);
+    handleLink(payload.url, undefined, false);
 });
 const unhideWebView = (forced) => {
     if (_viewHideInterval) {

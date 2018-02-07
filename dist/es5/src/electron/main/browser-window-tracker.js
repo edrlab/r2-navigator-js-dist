@@ -35,7 +35,10 @@ electron_1.app.on("web-contents-created", function (_evt, wc) {
                 var wcUrl = event.sender.getURL();
                 debug(wcUrl);
                 event.preventDefault();
-                win.webContents.send(events_1.R2_EVENT_LINK, url);
+                var payload = {
+                    url: url,
+                };
+                win.webContents.send(events_1.R2_EVENT_LINK, payload);
             });
         }
     });

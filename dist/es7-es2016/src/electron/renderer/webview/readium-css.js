@@ -171,9 +171,8 @@ const ensureHead = () => {
         }
     }
 };
-electron_1.ipcRenderer.on(events_1.R2_EVENT_READIUMCSS, (_event, messageString) => {
-    const messageJson = JSON.parse(messageString);
-    exports.readiumCSS(messageJson);
+electron_1.ipcRenderer.on(events_1.R2_EVENT_READIUMCSS, (_event, payload) => {
+    exports.readiumCSS(payload);
 });
 function readiumCSSInject(messageJson) {
     if (typeof messageJson.injectCSS === "undefined") {

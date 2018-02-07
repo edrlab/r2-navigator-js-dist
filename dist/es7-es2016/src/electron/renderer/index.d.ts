@@ -1,5 +1,6 @@
 import { Publication } from "r2-shared-js/dist/es7-es2016/src/models/publication";
-export declare function setReadiumCssJsonGetter(func: () => string): void;
+import { IEventPayload_R2_EVENT_READIUMCSS } from "../common/events";
+export declare function setReadiumCssJsonGetter(func: () => IEventPayload_R2_EVENT_READIUMCSS): void;
 export declare function setReadingLocationSaver(func: (docHref: string, cssSelector: string) => void): void;
 export declare function readiumCssOnOff(): void;
 export declare function handleLink(href: string, previous: boolean | undefined, useGoto: boolean): void;

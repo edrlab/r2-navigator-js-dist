@@ -23,12 +23,11 @@ win.READIUM2 = {
     urlQueryParams: undefined,
 };
 win.READIUM2.urlQueryParams = win.location.search ? querystring_1.getURLQueryParams(win.location.search) : undefined;
-electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, function (_event, messageString) {
-    var messageJson = JSON.parse(messageString);
+electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, function (_event, payload) {
     if (!win.READIUM2.urlQueryParams) {
         win.READIUM2.urlQueryParams = {};
     }
-    if (messageJson.previous) {
+    if (payload.previous) {
         win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_PREVIOUS] = "true";
     }
     else {
@@ -36,16 +35,16 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, function (_event, messageS
             delete win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_PREVIOUS];
         }
     }
-    if (messageJson.goto) {
-        win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_GOTO] = "true";
+    if (payload.goto) {
+        win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_GOTO] = payload.goto;
     }
     else {
         if (typeof win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_GOTO] !== "undefined") {
             delete win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_GOTO];
         }
     }
-    if (messageJson.hash) {
-        win.READIUM2.hashElement = win.document.getElementById(messageJson.hash);
+    if (payload.hash) {
+        win.READIUM2.hashElement = win.document.getElementById(payload.hash);
     }
     else {
         win.READIUM2.hashElement = null;
@@ -55,9 +54,9 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, function (_event, messageS
     scrollToHashRaw(false);
 });
 var _lastAnimState;
-electron_1.ipcRenderer.on(events_1.R2_EVENT_PAGE_TURN, function (_event, messageString) {
+electron_1.ipcRenderer.on(events_1.R2_EVENT_PAGE_TURN, function (_event, payload) {
     if (win.READIUM2.isFixedLayout || !win.document.body) {
-        electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, messageString);
+        electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, payload);
         return;
     }
     var isPaged = win.document.documentElement.classList.contains("readium-paginated");
@@ -68,8 +67,7 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_PAGE_TURN, function (_event, message
         ((readium_css_1.isVerticalWritingMode() ?
             (win.document.body.scrollWidth - win.document.documentElement.clientWidth) :
             (win.document.body.scrollHeight - win.document.documentElement.clientHeight)));
-    var messageJson = JSON.parse(messageString);
-    var goPREVIOUS = messageJson.go === "PREVIOUS";
+    var goPREVIOUS = payload.go === "PREVIOUS";
     if (!goPREVIOUS) {
         if (isPaged) {
             if (Math.abs(win.document.body.scrollLeft) < maxHeightShift) {
@@ -130,7 +128,7 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_PAGE_TURN, function (_event, message
             }
         }
     }
-    electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, messageString);
+    electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, payload);
 });
 var checkReadyPass = function () {
     if (win.READIUM2.readyPassDone) {
@@ -183,7 +181,10 @@ var notifyReady = function () {
         return;
     }
     win.READIUM2.readyEventSent = true;
-    electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_WEBVIEW_READY, win.location.href);
+    var payload = {
+        href: win.location.href,
+    };
+    electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_WEBVIEW_READY, payload);
 };
 function scrollIntoView(element) {
     if (!win.document.body) {
@@ -382,7 +383,10 @@ win.addEventListener("DOMContentLoaded", function () {
         }
         e.preventDefault();
         e.stopPropagation();
-        electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_LINK, href);
+        var payload = {
+            url: href,
+        };
+        electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_LINK, payload);
         return false;
     }, true);
     if (readiumcssJson) {
@@ -431,6 +435,9 @@ var notifyReadingLocation = function () {
         win.READIUM2.locationHashOverride.classList.add("readium2-read-pos");
     }
     win.READIUM2.locationHashOverrideCSSselector = cssselector_1.fullQualifiedSelector(win.READIUM2.locationHashOverride, false);
-    electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_READING_LOCATION, win.READIUM2.locationHashOverrideCSSselector);
+    var payload = {
+        cssSelector: win.READIUM2.locationHashOverrideCSSselector,
+    };
+    electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_READING_LOCATION, payload);
 };
 //# sourceMappingURL=preload.js.map
