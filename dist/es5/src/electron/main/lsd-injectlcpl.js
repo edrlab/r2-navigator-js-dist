@@ -2,8 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = require("tslib");
 var fs = require("fs");
-var lcp_1 = require("@r2-lcp-js/parser/epub/lcp");
-var zipInjector_1 = require("@utils/zip/zipInjector");
+var lcp_1 = require("r2-lcp-js/dist/es5/src/parser/epub/lcp");
+var zipInjector_1 = require("r2-utils-js/dist/es5/src/_utils/zip/zipInjector");
 var debug_ = require("debug");
 var ta_json_1 = require("ta-json");
 var debug = debug_("r2:navigator#electron/main/lsd-injectlcpl");

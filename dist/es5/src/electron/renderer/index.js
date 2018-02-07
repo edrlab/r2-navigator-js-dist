@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var debounce = require("debounce");
 var URI = require("urijs");
-var UrlUtils_1 = require("@utils/http/UrlUtils");
+var UrlUtils_1 = require("r2-utils-js/dist/es5/src/_utils/http/UrlUtils");
 var electron_1 = require("electron");
 var electron_2 = require("electron");
 var events_1 = require("../common/events");
@@ -106,7 +106,7 @@ function installNavigatorDOM(publication, publicationJsonUrl, rootHtmlElementID,
     _webview2.setAttribute("id", "webview2");
     slidingViewport.appendChild(_webview1);
     slidingViewport.appendChild(_webview2);
-    rootHtmlElement.appendChild(slidingViewport);
+    _rootHtmlElement.appendChild(slidingViewport);
     var isRTL = _publication.Metadata &&
         _publication.Metadata.Direction &&
         _publication.Metadata.Direction.toLowerCase() === "rtl";
