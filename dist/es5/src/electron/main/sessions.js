@@ -162,17 +162,11 @@ function clearSession(sess, str, callbackCache, callbackStorageData) {
         quotas: [
             "temporary",
             "persistent",
-            "syncable"
+            "syncable",
         ],
         storages: [
             "appcache",
-            "cookies",
-            "filesystem",
-            "indexdb",
-            "localstorage",
-            "shadercache",
-            "websql",
-            "serviceworkers"
+            "serviceworkers",
         ],
     }, function () {
         debug("SESSION STORAGE DATA CLEARED - " + str);

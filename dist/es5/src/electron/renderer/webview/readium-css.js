@@ -8,7 +8,7 @@ var win = global.window;
 var CSS_CLASS_DARK_THEME = "mdc-theme--dark";
 var origin = win.location.origin;
 if (origin.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
-    origin = sessions_1.convertCustomSchemeToHttpUrl(origin);
+    origin = sessions_1.convertCustomSchemeToHttpUrl(win.location.href);
     origin = origin.replace(/\/pub\/.*/, "");
 }
 var urlRootReadiumCSS = origin + "/readium-css/";

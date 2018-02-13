@@ -10,6 +10,9 @@ function setupReadiumCSS(server, folderPath) {
         index: false,
         maxAge: "1d",
         redirect: false,
+        setHeaders: function (res, _path, _stat) {
+            server.setResponseCORS(res);
+        },
     };
     server.expressUse("/readium-css", express.static(folderPath, staticOptions));
 }
