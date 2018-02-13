@@ -4,7 +4,6 @@ var debounce = require("debounce");
 var URI = require("urijs");
 var UrlUtils_1 = require("r2-utils-js/dist/es5/src/_utils/http/UrlUtils");
 var electron_1 = require("electron");
-var electron_2 = require("electron");
 var events_1 = require("../common/events");
 var sessions_1 = require("../common/sessions");
 var url_params_1 = require("./common/url-params");
@@ -64,14 +63,17 @@ var _publication;
 var _publicationJsonUrl;
 var _rootHtmlElement;
 function handleLink(href, previous, useGoto) {
-    if (!_publicationJsonUrl) {
-        return;
+    var okay = href.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://");
+    if (!okay && _publicationJsonUrl) {
+        var prefix = _publicationJsonUrl.replace("manifest.json", "");
+        okay = href.startsWith(prefix);
     }
-    var prefix = _publicationJsonUrl.replace("manifest.json", "");
-    if (href.startsWith(prefix)) {
+    if (okay) {
         loadLink(href, previous, useGoto);
     }
     else {
+        console.log("EXTERNAL LINK:");
+        console.log(href);
         electron_1.shell.openExternal(href);
     }
 }
@@ -197,6 +199,9 @@ function loadLink(hrefFull, previous, useGoto) {
     if (!_publication || !_publicationJsonUrl) {
         return;
     }
+    if (hrefFull.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
+        hrefFull = sessions_1.convertCustomSchemeToHttpUrl(hrefFull);
+    }
     var linkUri = new URI(hrefFull);
     linkUri.search(function (data) {
         if (typeof previous === "undefined") {
@@ -212,7 +217,9 @@ function loadLink(hrefFull, previous, useGoto) {
     if (useGoto) {
         linkUri.hash("").normalizeHash();
     }
-    var pubUri = new URI(_publicationJsonUrl);
+    var pubJsonUri = _publicationJsonUrl.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://") ?
+        sessions_1.convertCustomSchemeToHttpUrl(_publicationJsonUrl) : _publicationJsonUrl;
+    var pubUri = new URI(pubJsonUri);
     var pathPrefix = pubUri.path().replace("manifest.json", "");
     var linkPath = decodeURIComponent(linkUri.normalizePath().path().replace(pathPrefix, ""));
     var pubLink = _publication.Spine.find(function (spineLink) {
@@ -302,7 +309,12 @@ function loadLink(hrefFull, previous, useGoto) {
     console.log(linkUri.search(true)[url_params_1.URL_PARAM_PREVIOUS]);
     console.log("####### >>> ---");
     activeWebView.READIUM2.link = pubLink;
-    activeWebView.setAttribute("src", uriStr);
+    var needConvert = _publicationJsonUrl.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://");
+    var uriStr_ = uriStr.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://") ?
+        uriStr : (needConvert ? sessions_1.convertHttpUrlToCustomScheme(uriStr) : uriStr);
+    console.log("setAttribute SRC:");
+    console.log(uriStr_);
+    activeWebView.setAttribute("src", uriStr_);
 }
 function createWebView(preloadScriptPath) {
     var wv = document.createElement("webview");
@@ -412,7 +424,7 @@ window.addEventListener("resize", function () {
     }
     onResizeDebounced();
 });
-electron_2.ipcRenderer.on(events_1.R2_EVENT_LINK, function (_event, payload) {
+electron_1.ipcRenderer.on(events_1.R2_EVENT_LINK, function (_event, payload) {
     console.log("R2_EVENT_LINK");
     console.log(payload.url);
     handleLink(payload.url, undefined, false);

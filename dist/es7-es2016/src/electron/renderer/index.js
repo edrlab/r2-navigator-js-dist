@@ -4,7 +4,6 @@ const debounce = require("debounce");
 const URI = require("urijs");
 const UrlUtils_1 = require("r2-utils-js/dist/es7-es2016/src/_utils/http/UrlUtils");
 const electron_1 = require("electron");
-const electron_2 = require("electron");
 const events_1 = require("../common/events");
 const sessions_1 = require("../common/sessions");
 const url_params_1 = require("./common/url-params");
@@ -64,14 +63,17 @@ let _publication;
 let _publicationJsonUrl;
 let _rootHtmlElement;
 function handleLink(href, previous, useGoto) {
-    if (!_publicationJsonUrl) {
-        return;
+    let okay = href.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://");
+    if (!okay && _publicationJsonUrl) {
+        const prefix = _publicationJsonUrl.replace("manifest.json", "");
+        okay = href.startsWith(prefix);
     }
-    const prefix = _publicationJsonUrl.replace("manifest.json", "");
-    if (href.startsWith(prefix)) {
+    if (okay) {
         loadLink(href, previous, useGoto);
     }
     else {
+        console.log("EXTERNAL LINK:");
+        console.log(href);
         electron_1.shell.openExternal(href);
     }
 }
@@ -197,6 +199,9 @@ function loadLink(hrefFull, previous, useGoto) {
     if (!_publication || !_publicationJsonUrl) {
         return;
     }
+    if (hrefFull.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
+        hrefFull = sessions_1.convertCustomSchemeToHttpUrl(hrefFull);
+    }
     const linkUri = new URI(hrefFull);
     linkUri.search((data) => {
         if (typeof previous === "undefined") {
@@ -212,7 +217,9 @@ function loadLink(hrefFull, previous, useGoto) {
     if (useGoto) {
         linkUri.hash("").normalizeHash();
     }
-    const pubUri = new URI(_publicationJsonUrl);
+    const pubJsonUri = _publicationJsonUrl.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://") ?
+        sessions_1.convertCustomSchemeToHttpUrl(_publicationJsonUrl) : _publicationJsonUrl;
+    const pubUri = new URI(pubJsonUri);
     const pathPrefix = pubUri.path().replace("manifest.json", "");
     const linkPath = decodeURIComponent(linkUri.normalizePath().path().replace(pathPrefix, ""));
     let pubLink = _publication.Spine.find((spineLink) => {
@@ -302,7 +309,12 @@ function loadLink(hrefFull, previous, useGoto) {
     console.log(linkUri.search(true)[url_params_1.URL_PARAM_PREVIOUS]);
     console.log("####### >>> ---");
     activeWebView.READIUM2.link = pubLink;
-    activeWebView.setAttribute("src", uriStr);
+    const needConvert = _publicationJsonUrl.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://");
+    const uriStr_ = uriStr.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://") ?
+        uriStr : (needConvert ? sessions_1.convertHttpUrlToCustomScheme(uriStr) : uriStr);
+    console.log("setAttribute SRC:");
+    console.log(uriStr_);
+    activeWebView.setAttribute("src", uriStr_);
 }
 function createWebView(preloadScriptPath) {
     const wv = document.createElement("webview");
@@ -412,7 +424,7 @@ window.addEventListener("resize", () => {
     }
     onResizeDebounced();
 });
-electron_2.ipcRenderer.on(events_1.R2_EVENT_LINK, (_event, payload) => {
+electron_1.ipcRenderer.on(events_1.R2_EVENT_LINK, (_event, payload) => {
     console.log("R2_EVENT_LINK");
     console.log(payload.url);
     handleLink(payload.url, undefined, false);

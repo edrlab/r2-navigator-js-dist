@@ -80,12 +80,38 @@ function secureSessions(server) {
     });
 }
 exports.secureSessions = secureSessions;
+const httpProtocolHandler = (request, callback) => {
+    const url = sessions_1.convertCustomSchemeToHttpUrl(request.url);
+    callback({
+        method: request.method,
+        url,
+    });
+};
 function initSessions() {
+    electron_1.protocol.registerStandardSchemes([sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL], { secure: true });
     electron_1.app.on("ready", () => {
         debug("app ready");
         clearSessions(undefined, undefined);
+        if (electron_1.session.defaultSession) {
+            electron_1.session.defaultSession.protocol.registerHttpProtocol(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL, httpProtocolHandler, (error) => {
+                if (error) {
+                    debug(error);
+                }
+                else {
+                    debug("registerHttpProtocol OKAY (default session)");
+                }
+            });
+        }
         const webViewSession = getWebViewSession();
         if (webViewSession) {
+            webViewSession.protocol.registerHttpProtocol(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL, httpProtocolHandler, (error) => {
+                if (error) {
+                    debug(error);
+                }
+                else {
+                    debug("registerHttpProtocol OKAY (webview session)");
+                }
+            });
             webViewSession.setPermissionRequestHandler((wc, permission, callback) => {
                 debug("setPermissionRequestHandler");
                 debug(wc.getURL());
