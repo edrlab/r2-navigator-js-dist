@@ -1,9 +1,9 @@
 {
-  "short": "64c07c4",
-  "long": "64c07c40a8c81c1e31338762b6d048f4921ef9fa",
+  "short": "e060070",
+  "long": "e060070af6ffd9bee388effec2aec5f3844b3944",
   "branch": "develop",
-  "date": "2018-02-13T04:08:24.000Z",
+  "date": "2018-02-13T04:43:40.000Z",
   "dirty": true,
-  "urlHistory": "https://github.com/edrlab/r2-navigator-js/commits/64c07c40a8c81c1e31338762b6d048f4921ef9fa",
-  "urlDiff": "https://github.com/edrlab/r2-navigator-js/compare/64c07c40a8c81c1e31338762b6d048f4921ef9fa...develop"
+  "urlHistory": "https://github.com/edrlab/r2-navigator-js/commits/e060070af6ffd9bee388effec2aec5f3844b3944",
+  "urlDiff": "https://github.com/edrlab/r2-navigator-js/compare/e060070af6ffd9bee388effec2aec5f3844b3944...develop"
 }

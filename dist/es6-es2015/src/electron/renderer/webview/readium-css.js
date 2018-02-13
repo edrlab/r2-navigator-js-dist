@@ -3,9 +3,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const electron_1 = require("electron");
 const events_1 = require("../../common/events");
 const styles_1 = require("./styles");
+const sessions_1 = require("../../common/sessions");
 const win = global.window;
 const CSS_CLASS_DARK_THEME = "mdc-theme--dark";
-const urlRootReadiumCSS = win.location.origin + "/readium-css/";
+let origin = win.location.origin;
+if (origin.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
+    origin = sessions_1.convertCustomSchemeToHttpUrl(origin);
+    origin = origin.replace(/\/pub\/.*/, "");
+}
+const urlRootReadiumCSS = origin + "/readium-css/";
+console.log(urlRootReadiumCSS);
 exports.DEBUG_VISUALS = false;
 exports.configureFixedLayout = (isFixedLayout) => {
     if (!win.document || !win.document.head || !win.document.body) {
