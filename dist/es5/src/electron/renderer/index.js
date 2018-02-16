@@ -51,10 +51,14 @@ function setReadingLocationSaver(func) {
 }
 exports.setReadingLocationSaver = setReadingLocationSaver;
 function readiumCssOnOff() {
-    var payload1 = __computeReadiumCssJsonMessage(_webview1.READIUM2.link);
-    _webview1.send(events_1.R2_EVENT_READIUMCSS, payload1);
-    var payload2 = __computeReadiumCssJsonMessage(_webview2.READIUM2.link);
-    _webview2.send(events_1.R2_EVENT_READIUMCSS, payload2);
+    if (_webview1) {
+        var payload1 = __computeReadiumCssJsonMessage(_webview1.READIUM2.link);
+        _webview1.send(events_1.R2_EVENT_READIUMCSS, payload1);
+    }
+    if (_webview2) {
+        var payload2 = __computeReadiumCssJsonMessage(_webview2.READIUM2.link);
+        _webview2.send(events_1.R2_EVENT_READIUMCSS, payload2);
+    }
 }
 exports.readiumCssOnOff = readiumCssOnOff;
 var _webview1;
