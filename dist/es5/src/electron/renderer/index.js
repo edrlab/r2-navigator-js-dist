@@ -224,8 +224,9 @@ function loadLink(hrefFull, previous, useGoto) {
     var pubJsonUri = _publicationJsonUrl.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://") ?
         sessions_1.convertCustomSchemeToHttpUrl(_publicationJsonUrl) : _publicationJsonUrl;
     var pubUri = new URI(pubJsonUri);
-    var pathPrefix = pubUri.path().replace("manifest.json", "");
-    var linkPath = decodeURIComponent(linkUri.normalizePath().path().replace(pathPrefix, ""));
+    var pathPrefix = decodeURIComponent(pubUri.path().replace("manifest.json", ""));
+    var normPath = decodeURIComponent(linkUri.normalizePath().path());
+    var linkPath = normPath.replace(pathPrefix, "");
     var pubLink = _publication.Spine.find(function (spineLink) {
         return spineLink.Href === linkPath;
     });

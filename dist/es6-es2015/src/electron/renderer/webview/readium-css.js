@@ -220,11 +220,12 @@ function readiumCSSInject(messageJson) {
                 needsDefaultCSS = false;
             }
         }
-        appendCSS("before");
+        const urlRoot = messageJson.urlRoot ? messageJson.urlRoot : urlRootReadiumCSS;
+        appendCSS("before", urlRoot);
         if (needsDefaultCSS) {
-            appendCSS("default");
+            appendCSS("default", urlRoot);
         }
-        appendCSS("after");
+        appendCSS("after", urlRoot);
     }
 }
 function readiumCSSSet(messageJson) {
@@ -348,13 +349,13 @@ function appendCSSInline(id, css) {
     styleElement.appendChild(document.createTextNode(css));
     win.document.head.appendChild(styleElement);
 }
-function appendCSS(mod) {
+function appendCSS(mod, urlRoot) {
     ensureHead();
     const linkElement = win.document.createElement("link");
     linkElement.setAttribute("id", "ReadiumCSS-" + mod);
     linkElement.setAttribute("rel", "stylesheet");
     linkElement.setAttribute("type", "text/css");
-    linkElement.setAttribute("href", urlRootReadiumCSS + "ReadiumCSS-" + mod + ".css");
+    linkElement.setAttribute("href", urlRoot + "ReadiumCSS-" + mod + ".css");
     if (mod === "before" && win.document.head.childElementCount) {
         win.document.head.insertBefore(linkElement, win.document.head.firstElementChild);
     }

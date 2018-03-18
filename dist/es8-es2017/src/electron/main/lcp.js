@@ -6,7 +6,7 @@ const debug = debug_("r2:navigator#electron/main/lcp");
 async function doTryLcpPass(publicationsServer, publicationFilePath, lcpPasses, isSha256Hex) {
     const publication = publicationsServer.cachedPublication(publicationFilePath);
     if (!publication || !publication.LCP) {
-        return Promise.reject("no publication LCP data?!");
+        return Promise.reject("no publication LCP data?! " + publicationFilePath);
     }
     let passesSha256Hex;
     if (isSha256Hex) {

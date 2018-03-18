@@ -8,7 +8,7 @@ function doTryLcpPass(publicationsServer, publicationFilePath, lcpPasses, isSha2
     return tslib_1.__awaiter(this, void 0, void 0, function* () {
         const publication = publicationsServer.cachedPublication(publicationFilePath);
         if (!publication || !publication.LCP) {
-            return Promise.reject("no publication LCP data?!");
+            return Promise.reject("no publication LCP data?! " + publicationFilePath);
         }
         let passesSha256Hex;
         if (isSha256Hex) {

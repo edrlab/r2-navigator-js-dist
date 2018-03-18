@@ -12,7 +12,7 @@ function doTryLcpPass(publicationsServer, publicationFilePath, lcpPasses, isSha2
                 case 0:
                     publication = publicationsServer.cachedPublication(publicationFilePath);
                     if (!publication || !publication.LCP) {
-                        return [2, Promise.reject("no publication LCP data?!")];
+                        return [2, Promise.reject("no publication LCP data?! " + publicationFilePath)];
                     }
                     if (isSha256Hex) {
                         passesSha256Hex = lcpPasses;

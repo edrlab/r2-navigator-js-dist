@@ -14,6 +14,7 @@ export interface IEventPayload_R2_EVENT_READIUMCSS {
         sepia: boolean;
     };
     isFixedLayout?: boolean;
+    urlRoot?: string;
 }
 export declare const R2_EVENT_SCROLLTO = "R2_EVENT_SCROLLTO";
 export interface IEventPayload_R2_EVENT_SCROLLTO {
