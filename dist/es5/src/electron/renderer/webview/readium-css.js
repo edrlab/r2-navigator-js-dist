@@ -220,7 +220,9 @@ function readiumCSSInject(messageJson) {
                 needsDefaultCSS = false;
             }
         }
-        var urlRoot = messageJson.urlRoot ? messageJson.urlRoot : urlRootReadiumCSS;
+        var urlRoot = messageJson.urlRoot ?
+            messageJson.urlRoot + "/readium-css/" :
+            urlRootReadiumCSS;
         appendCSS("before", urlRoot);
         if (needsDefaultCSS) {
             appendCSS("default", urlRoot);
