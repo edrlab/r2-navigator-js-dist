@@ -70,7 +70,7 @@ function handleLink(href, previous, useGoto) {
     var okay = href.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://");
     if (!okay && _publicationJsonUrl) {
         var prefix = _publicationJsonUrl.replace("manifest.json", "");
-        okay = href.startsWith(prefix);
+        okay = decodeURIComponent(href).startsWith(decodeURIComponent(prefix));
     }
     if (okay) {
         loadLink(href, previous, useGoto);
