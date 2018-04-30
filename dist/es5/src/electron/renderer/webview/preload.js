@@ -9,6 +9,7 @@ var cssselector_1 = require("../common/cssselector");
 var easings_1 = require("../common/easings");
 var querystring_1 = require("../common/querystring");
 var url_params_1 = require("../common/url-params");
+var epubReadingSystem_1 = require("./epubReadingSystem");
 var readium_css_1 = require("./readium-css");
 var win = global.window;
 win.READIUM2 = {
@@ -346,17 +347,31 @@ win.addEventListener("DOMContentLoaded", function () {
     win.READIUM2.readyPassDone = false;
     win.READIUM2.readyEventSent = false;
     var readiumcssJson = {};
+    var readiumEpubReadingSystemJson = {};
     if (win.READIUM2.urlQueryParams) {
-        var base64 = win.READIUM2.urlQueryParams["readiumcss"];
-        if (base64) {
+        var base64ReadiumCSS = win.READIUM2.urlQueryParams["readiumcss"];
+        if (base64ReadiumCSS) {
             try {
-                var str = window.atob(base64);
+                var str = window.atob(base64ReadiumCSS);
                 readiumcssJson = JSON.parse(str);
             }
             catch (err) {
                 console.log(err);
             }
         }
+        var base64EpubReadingSystem = win.READIUM2.urlQueryParams["readiumEpubReadingSystem"];
+        if (base64EpubReadingSystem) {
+            try {
+                var str = window.atob(base64EpubReadingSystem);
+                readiumEpubReadingSystemJson = JSON.parse(str);
+            }
+            catch (err) {
+                console.log(err);
+            }
+        }
+    }
+    if (readiumEpubReadingSystemJson) {
+        epubReadingSystem_1.setWindowNavigatorEpubReadingSystem(win, readiumEpubReadingSystemJson);
     }
     win.READIUM2.isFixedLayout = readiumcssJson && readiumcssJson.isFixedLayout;
     readium_css_1.configureFixedLayout(win.READIUM2.isFixedLayout);

@@ -26,6 +26,13 @@ function isFixedLayout(link) {
         _publication.Metadata.Rendition.Layout === "fixed";
     return isFXL;
 }
+var _getEpubReadingSystem = function () {
+    return { name: "Readium2", version: "0.0.0" };
+};
+function setEpubReadingSystemJsonGetter(func) {
+    _getEpubReadingSystem = func;
+}
+exports.setEpubReadingSystemJsonGetter = setEpubReadingSystemJsonGetter;
 function __computeReadiumCssJsonMessage(link) {
     if (isFixedLayout(link)) {
         return { injectCSS: "rollback", setCSS: "rollback", isFixedLayout: true };
@@ -242,8 +249,12 @@ function loadLink(hrefFull, previous, useGoto) {
     var rcssJson = __computeReadiumCssJsonMessage(pubLink);
     var rcssJsonstr = JSON.stringify(rcssJson, null, "");
     var rcssJsonstrBase64 = window.btoa(rcssJsonstr);
+    var rersJson = _getEpubReadingSystem();
+    var rersJsonstr = JSON.stringify(rersJson, null, "");
+    var rersJsonstrBase64 = window.btoa(rersJsonstr);
     linkUri.search(function (data) {
         data.readiumcss = rcssJsonstrBase64;
+        data.readiumEpubReadingSystem = rersJsonstrBase64;
     });
     var activeWebView = getActiveWebView();
     var wv1AlreadyLoaded = _webview1.READIUM2.link === pubLink;

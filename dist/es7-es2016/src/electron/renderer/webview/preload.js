@@ -9,6 +9,7 @@ const cssselector_1 = require("../common/cssselector");
 const easings_1 = require("../common/easings");
 const querystring_1 = require("../common/querystring");
 const url_params_1 = require("../common/url-params");
+const epubReadingSystem_1 = require("./epubReadingSystem");
 const readium_css_1 = require("./readium-css");
 const win = global.window;
 win.READIUM2 = {
@@ -346,17 +347,31 @@ win.addEventListener("DOMContentLoaded", () => {
     win.READIUM2.readyPassDone = false;
     win.READIUM2.readyEventSent = false;
     let readiumcssJson = {};
+    let readiumEpubReadingSystemJson = {};
     if (win.READIUM2.urlQueryParams) {
-        const base64 = win.READIUM2.urlQueryParams["readiumcss"];
-        if (base64) {
+        const base64ReadiumCSS = win.READIUM2.urlQueryParams["readiumcss"];
+        if (base64ReadiumCSS) {
             try {
-                const str = window.atob(base64);
+                const str = window.atob(base64ReadiumCSS);
                 readiumcssJson = JSON.parse(str);
             }
             catch (err) {
                 console.log(err);
             }
         }
+        const base64EpubReadingSystem = win.READIUM2.urlQueryParams["readiumEpubReadingSystem"];
+        if (base64EpubReadingSystem) {
+            try {
+                const str = window.atob(base64EpubReadingSystem);
+                readiumEpubReadingSystemJson = JSON.parse(str);
+            }
+            catch (err) {
+                console.log(err);
+            }
+        }
+    }
+    if (readiumEpubReadingSystemJson) {
+        epubReadingSystem_1.setWindowNavigatorEpubReadingSystem(win, readiumEpubReadingSystemJson);
     }
     win.READIUM2.isFixedLayout = readiumcssJson && readiumcssJson.isFixedLayout;
     readium_css_1.configureFixedLayout(win.READIUM2.isFixedLayout);
