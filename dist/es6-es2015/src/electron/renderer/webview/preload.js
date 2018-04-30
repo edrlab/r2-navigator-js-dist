@@ -24,6 +24,22 @@ win.READIUM2 = {
     urlQueryParams: undefined,
 };
 win.READIUM2.urlQueryParams = win.location.search ? querystring_1.getURLQueryParams(win.location.search) : undefined;
+if (win.READIUM2.urlQueryParams) {
+    let readiumEpubReadingSystemJson = {};
+    const base64EpubReadingSystem = win.READIUM2.urlQueryParams["readiumEpubReadingSystem"];
+    if (base64EpubReadingSystem) {
+        try {
+            const str = window.atob(base64EpubReadingSystem);
+            readiumEpubReadingSystemJson = JSON.parse(str);
+        }
+        catch (err) {
+            console.log(err);
+        }
+    }
+    if (readiumEpubReadingSystemJson) {
+        epubReadingSystem_1.setWindowNavigatorEpubReadingSystem(win, readiumEpubReadingSystemJson);
+    }
+}
 electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, (_event, payload) => {
     if (!win.READIUM2.urlQueryParams) {
         win.READIUM2.urlQueryParams = {};
@@ -347,7 +363,6 @@ win.addEventListener("DOMContentLoaded", () => {
     win.READIUM2.readyPassDone = false;
     win.READIUM2.readyEventSent = false;
     let readiumcssJson = {};
-    let readiumEpubReadingSystemJson = {};
     if (win.READIUM2.urlQueryParams) {
         const base64ReadiumCSS = win.READIUM2.urlQueryParams["readiumcss"];
         if (base64ReadiumCSS) {
@@ -359,19 +374,6 @@ win.addEventListener("DOMContentLoaded", () => {
                 console.log(err);
             }
         }
-        const base64EpubReadingSystem = win.READIUM2.urlQueryParams["readiumEpubReadingSystem"];
-        if (base64EpubReadingSystem) {
-            try {
-                const str = window.atob(base64EpubReadingSystem);
-                readiumEpubReadingSystemJson = JSON.parse(str);
-            }
-            catch (err) {
-                console.log(err);
-            }
-        }
-    }
-    if (readiumEpubReadingSystemJson) {
-        epubReadingSystem_1.setWindowNavigatorEpubReadingSystem(win, readiumEpubReadingSystemJson);
     }
     win.READIUM2.isFixedLayout = readiumcssJson && readiumcssJson.isFixedLayout;
     readium_css_1.configureFixedLayout(win.READIUM2.isFixedLayout);
