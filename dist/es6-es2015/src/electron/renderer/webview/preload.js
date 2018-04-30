@@ -26,7 +26,7 @@ win.READIUM2 = {
 win.READIUM2.urlQueryParams = win.location.search ? querystring_1.getURLQueryParams(win.location.search) : undefined;
 if (win.READIUM2.urlQueryParams) {
     let readiumEpubReadingSystemJson = {};
-    const base64EpubReadingSystem = win.READIUM2.urlQueryParams["readiumEpubReadingSystem"];
+    const base64EpubReadingSystem = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_EPUBREADINGSYSTEM];
     if (base64EpubReadingSystem) {
         try {
             const str = window.atob(base64EpubReadingSystem);
@@ -60,15 +60,26 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, (_event, payload) => {
             delete win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_GOTO];
         }
     }
+    let delayScrollIntoView = false;
     if (payload.hash) {
+        console.log("R2_EVENT_SCROLLTO payload.hash: " + payload.hash);
         win.READIUM2.hashElement = win.document.getElementById(payload.hash);
+        win.location.href = "#" + payload.hash;
+        delayScrollIntoView = true;
     }
     else {
         win.READIUM2.hashElement = null;
     }
     win.READIUM2.readyEventSent = false;
     win.READIUM2.locationHashOverride = undefined;
-    scrollToHashRaw(false);
+    if (delayScrollIntoView) {
+        setTimeout(() => {
+            scrollToHashRaw(false);
+        }, 100);
+    }
+    else {
+        scrollToHashRaw(false);
+    }
 });
 let _lastAnimState;
 electron_1.ipcRenderer.on(events_1.R2_EVENT_PAGE_TURN, (_event, payload) => {
@@ -364,7 +375,7 @@ win.addEventListener("DOMContentLoaded", () => {
     win.READIUM2.readyEventSent = false;
     let readiumcssJson = {};
     if (win.READIUM2.urlQueryParams) {
-        const base64ReadiumCSS = win.READIUM2.urlQueryParams["readiumcss"];
+        const base64ReadiumCSS = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_CSS];
         if (base64ReadiumCSS) {
             try {
                 const str = window.atob(base64ReadiumCSS);

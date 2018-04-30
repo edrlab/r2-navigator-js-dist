@@ -2,8 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const electron_1 = require("electron");
 const events_1 = require("../../common/events");
-const styles_1 = require("./styles");
 const sessions_1 = require("../../common/sessions");
+const styles_1 = require("./styles");
 const win = global.window;
 const CSS_CLASS_DARK_THEME = "mdc-theme--dark";
 let origin = win.location.origin;
@@ -96,6 +96,7 @@ exports.injectReadPosCSS = () => {
         return;
     }
     appendCSSInline("electron-readPos", styles_1.readPosCssStyles);
+    appendCSSInline("electron-target", styles_1.targetCssStyles);
 };
 let _isVerticalWritingMode = false;
 function isVerticalWritingMode() {

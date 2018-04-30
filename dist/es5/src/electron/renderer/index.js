@@ -253,8 +253,8 @@ function loadLink(hrefFull, previous, useGoto) {
     var rersJsonstr = JSON.stringify(rersJson, null, "");
     var rersJsonstrBase64 = window.btoa(rersJsonstr);
     linkUri.search(function (data) {
-        data.readiumcss = rcssJsonstrBase64;
-        data.readiumEpubReadingSystem = rersJsonstrBase64;
+        data[url_params_1.URL_PARAM_CSS] = rcssJsonstrBase64;
+        data[url_params_1.URL_PARAM_EPUBREADINGSYSTEM] = rersJsonstrBase64;
     });
     var activeWebView = getActiveWebView();
     var wv1AlreadyLoaded = _webview1.READIUM2.link === pubLink;
@@ -321,6 +321,7 @@ function loadLink(hrefFull, previous, useGoto) {
     console.log(activeWebView.READIUM2.id);
     console.log(pubLink.Href);
     console.log(linkUri.hash());
+    console.log(linkUri.fragment());
     console.log(linkUri.search(true)[url_params_1.URL_PARAM_GOTO]);
     console.log(linkUri.search(true)[url_params_1.URL_PARAM_PREVIOUS]);
     console.log("####### >>> ---");
