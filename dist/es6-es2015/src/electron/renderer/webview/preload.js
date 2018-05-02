@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const ResizeSensor = require("css-element-queries/src/ResizeSensor");
 const debounce = require("debounce");
-const ResizeSensor = require("resize-sensor/ResizeSensor");
 const electron_1 = require("electron");
 const events_1 = require("../../common/events");
 const animateProperty_1 = require("../common/animateProperty");
