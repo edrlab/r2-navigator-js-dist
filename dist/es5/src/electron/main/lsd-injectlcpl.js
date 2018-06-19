@@ -9,8 +9,8 @@ var ta_json_1 = require("ta-json");
 var debug = debug_("r2:navigator#electron/main/lsd-injectlcpl");
 function lsdLcpUpdateInject(lcplStr, publication, publicationPath) {
     return tslib_1.__awaiter(this, void 0, void 0, function () {
-        var _this = this;
         var lcplJson, zipEntryPath, lcpl;
+        var _this = this;
         return tslib_1.__generator(this, function (_a) {
             lcplJson = global.JSON.parse(lcplStr);
             debug(lcplJson);
