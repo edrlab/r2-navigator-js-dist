@@ -50,7 +50,7 @@ function setReadiumCssJsonGetter(func) {
     _computeReadiumCssJsonMessage = func;
 }
 exports.setReadiumCssJsonGetter = setReadiumCssJsonGetter;
-var _saveReadingLocation = function (_docHref, _cssSelector) {
+var _saveReadingLocation = function (_docHref, _locator) {
     return;
 };
 function setReadingLocationSaver(func) {
@@ -89,7 +89,7 @@ function handleLink(href, previous, useGoto) {
     }
 }
 exports.handleLink = handleLink;
-function installNavigatorDOM(publication, publicationJsonUrl, rootHtmlElementID, preloadScriptPath, pubDocHrefToLoad, pubDocSelectorToGoto) {
+function installNavigatorDOM(publication, publicationJsonUrl, rootHtmlElementID, preloadScriptPath, pubDocHrefToLoad, location) {
     _publication = publication;
     _publicationJsonUrl = publicationJsonUrl;
     if (IS_DEV) {
@@ -138,8 +138,8 @@ function installNavigatorDOM(publication, publicationJsonUrl, rootHtmlElementID,
             linkToLoad = _publication.Spine.find(function (spineLink) {
                 return spineLink.Href === pubDocHrefToLoad;
             });
-            if (linkToLoad && pubDocSelectorToGoto) {
-                linkToLoadGoto = pubDocSelectorToGoto;
+            if (linkToLoad && location) {
+                linkToLoadGoto = location;
             }
         }
         if (!linkToLoad &&
@@ -147,8 +147,8 @@ function installNavigatorDOM(publication, publicationJsonUrl, rootHtmlElementID,
             linkToLoad = _publication.Resources.find(function (resLink) {
                 return resLink.Href === pubDocHrefToLoad;
             });
-            if (linkToLoad && pubDocSelectorToGoto) {
-                linkToLoadGoto = pubDocSelectorToGoto;
+            if (linkToLoad && location) {
+                linkToLoadGoto = location;
             }
         }
     }
@@ -163,7 +163,8 @@ function installNavigatorDOM(publication, publicationJsonUrl, rootHtmlElementID,
     setTimeout(function () {
         if (linkToLoad) {
             var hrefToLoad = _publicationJsonUrl + "/../" + linkToLoad.Href +
-                (linkToLoadGoto ? ("?" + url_params_1.URL_PARAM_GOTO + "=" + UrlUtils_1.encodeURIComponent_RFC3986(linkToLoadGoto)) : "");
+                (linkToLoadGoto ? ("?" + url_params_1.URL_PARAM_GOTO + "=" +
+                    UrlUtils_1.encodeURIComponent_RFC3986(linkToLoadGoto.cssSelector)) : "");
             handleLink(hrefToLoad, undefined, true);
         }
     }, 100);
@@ -371,7 +372,7 @@ function createWebView(preloadScriptPath) {
         else if (event.channel === events_1.R2_EVENT_READING_LOCATION) {
             var payload = event.args[0];
             if (webview.READIUM2.link && _saveReadingLocation) {
-                _saveReadingLocation(webview.READIUM2.link.Href, payload.cssSelector);
+                _saveReadingLocation(webview.READIUM2.link.Href, payload);
             }
         }
         else if (event.channel === events_1.R2_EVENT_PAGE_TURN_RES) {

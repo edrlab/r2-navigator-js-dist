@@ -30,6 +30,7 @@ export interface IEventPayload_R2_EVENT_PAGE_TURN {
 }
 export declare const R2_EVENT_READING_LOCATION = "R2_EVENT_READING_LOCATION";
 export interface IEventPayload_R2_EVENT_READING_LOCATION {
+    cfi: string | undefined;
     cssSelector: string;
 }
 export declare const R2_EVENT_LINK = "R2_EVENT_LINK";

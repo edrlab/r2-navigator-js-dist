@@ -18,6 +18,7 @@ win.READIUM2 = {
     hashElement: null,
     isFixedLayout: false,
     locationHashOverride: undefined,
+    locationHashOverrideCFI: undefined,
     locationHashOverrideCSSselector: undefined,
     readyEventSent: false,
     readyPassDone: false,
@@ -455,17 +456,46 @@ const processXYRaw = (x, y) => {
 const processXY = debounce((x, y) => {
     processXYRaw(x, y);
 }, 300);
+exports.computeCFI = (node) => {
+    if (node.nodeType !== Node.ELEMENT_NODE) {
+        return undefined;
+    }
+    let cfi = "";
+    let currentElement = node;
+    while (currentElement.parentNode && currentElement.parentNode.nodeType === Node.ELEMENT_NODE) {
+        const currentElementChildren = currentElement.parentNode.children;
+        let currentElementIndex = -1;
+        for (let i = 0; i < currentElementChildren.length; i++) {
+            if (currentElement === currentElementChildren[i]) {
+                currentElementIndex = i;
+                break;
+            }
+        }
+        if (currentElementIndex >= 0) {
+            const cfiIndex = (currentElementIndex + 1) * 2;
+            cfi = cfiIndex +
+                (currentElement.id ? ("[" + currentElement.id + "]") : "") +
+                (cfi.length ? ("/" + cfi) : "");
+        }
+        currentElement = currentElement.parentNode;
+    }
+    return "/" + cfi;
+};
 const notifyReadingLocation = () => {
     if (!win.READIUM2.locationHashOverride) {
         return;
     }
-    if (readium_css_1.DEBUG_VISUALS) {
-        win.READIUM2.locationHashOverride.classList.add("readium2-read-pos");
-    }
     win.READIUM2.locationHashOverrideCSSselector = cssselector_1.fullQualifiedSelector(win.READIUM2.locationHashOverride, false);
+    win.READIUM2.locationHashOverrideCFI = exports.computeCFI(win.READIUM2.locationHashOverride);
     const payload = {
+        cfi: win.READIUM2.locationHashOverrideCFI,
         cssSelector: win.READIUM2.locationHashOverrideCSSselector,
     };
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_READING_LOCATION, payload);
+    if (readium_css_1.DEBUG_VISUALS) {
+        win.READIUM2.locationHashOverride.classList.add("readium2-read-pos");
+        console.log("notifyReadingLocation CSS SELECTOR: " + win.READIUM2.locationHashOverrideCSSselector);
+        console.log("notifyReadingLocation CFI: " + win.READIUM2.locationHashOverrideCFI);
+    }
 };
 //# sourceMappingURL=preload.js.map
