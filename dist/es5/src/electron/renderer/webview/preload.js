@@ -11,6 +11,8 @@ var querystring_1 = require("../common/querystring");
 var url_params_1 = require("../common/url-params");
 var epubReadingSystem_1 = require("./epubReadingSystem");
 var readium_css_1 = require("./readium-css");
+var console_redirect_1 = require("../console-redirect");
+console_redirect_1.consoleRedirect("r2:navigator#electron/renderer/webview/preload", process.stdout, process.stderr, true);
 var win = global.window;
 win.READIUM2 = {
     fxlViewportHeight: 0,
