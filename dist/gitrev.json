@@ -1,9 +1,9 @@
 {
-  "short": "0937b0f",
-  "long": "0937b0f70a845e4b249be6253c9d85feab0c7e70",
+  "short": "2472daf",
+  "long": "2472daf864d0d6267a61ab3458668132bb92deb3",
   "branch": "develop",
-  "date": "2018-08-30T17:52:08.000Z",
+  "date": "2018-08-30T18:18:50.000Z",
   "dirty": true,
-  "urlHistory": "https://github.com/readium/r2-navigator-js/commits/0937b0f70a845e4b249be6253c9d85feab0c7e70",
-  "urlDiff": "https://github.com/readium/r2-navigator-js/compare/0937b0f70a845e4b249be6253c9d85feab0c7e70...develop"
+  "urlHistory": "https://github.com/readium/r2-navigator-js/commits/2472daf864d0d6267a61ab3458668132bb92deb3",
+  "urlDiff": "https://github.com/readium/r2-navigator-js/compare/2472daf864d0d6267a61ab3458668132bb92deb3...develop"
 }
