@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const util = require("util");
-const debugNode = require("debug/node");
+const debugNode = require("debug/src/node");
 const _consoleFunctionNames = ["error", "info", "log", "warn"];
 if (console.debug && (typeof console.debug === "function")) {
     _consoleFunctionNames.push("debug");

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var util = require("util");
-var debugNode = require("debug/node");
+var debugNode = require("debug/src/node");
 var _consoleFunctionNames = ["error", "info", "log", "warn"];
 if (console.debug && (typeof console.debug === "function")) {
     _consoleFunctionNames.push("debug");
