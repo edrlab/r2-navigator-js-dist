@@ -90,6 +90,9 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_PAGE_TURN, function (_event, payload
         electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, payload);
         return;
     }
+    if (!win.document || !win.document.documentElement) {
+        return;
+    }
     var isPaged = win.document.documentElement.classList.contains("readium-paginated");
     var maxHeightShift = isPaged ?
         ((readium_css_1.isVerticalWritingMode() ?
@@ -184,6 +187,9 @@ var checkReadyPass = function () {
                 _ignoreScrollEvent = false;
                 return;
             }
+            if (!win.document || !win.document.documentElement) {
+                return;
+            }
             var x = (readium_css_1.isRTL() ? win.document.documentElement.offsetWidth - 1 : 0);
             processXY(x, 0);
         });
@@ -218,6 +224,9 @@ var notifyReady = function () {
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_WEBVIEW_READY, payload);
 };
 function scrollIntoView(element) {
+    if (!win.document || !win.document.documentElement) {
+        return;
+    }
     if (!win.document.body) {
         return;
     }
@@ -229,6 +238,9 @@ function scrollIntoView(element) {
     win.document.body.scrollLeft = (readium_css_1.isRTL() ? -1 : 1) * left;
 }
 var scrollToHashRaw = function (firstCall) {
+    if (!win.document || !win.document.documentElement) {
+        return;
+    }
     var isPaged = win.document.documentElement.classList.contains("readium-paginated");
     if (win.READIUM2.locationHashOverride) {
         if (win.READIUM2.locationHashOverride === win.document.body) {
@@ -399,6 +411,9 @@ win.addEventListener("DOMContentLoaded", function () {
         readium_css_1.injectReadPosCSS();
     }
     win.document.body.addEventListener("focusin", function (ev) {
+        if (!win.document || !win.document.documentElement) {
+            return;
+        }
         var isPaged = win.document.documentElement.classList.contains("readium-paginated");
         if (isPaged) {
             setTimeout(function () {

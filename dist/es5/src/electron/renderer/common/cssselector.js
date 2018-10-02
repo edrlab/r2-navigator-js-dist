@@ -2,7 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fullQualifiedSelector = function (node, justSelector) {
     if (node.nodeType !== Node.ELEMENT_NODE) {
-        var lowerCaseName = (node.localName && node.localName.toLowerCase()) || node.nodeName.toLowerCase();
+        var lowerCaseName = (node.localName && node.localName.toLowerCase())
+            || node.nodeName.toLowerCase();
         return lowerCaseName;
     }
     return cssPath(node, justSelector);
@@ -72,7 +73,8 @@ var _cssPathStep = function (node, optimized, isTargetNode) {
     if (node.nodeType !== Node.ELEMENT_NODE) {
         return undefined;
     }
-    var lowerCaseName = (node.localName && node.localName.toLowerCase()) || node.nodeName.toLowerCase();
+    var lowerCaseName = (node.localName && node.localName.toLowerCase())
+        || node.nodeName.toLowerCase();
     var element = node;
     var id = element.getAttribute("id");
     if (optimized) {

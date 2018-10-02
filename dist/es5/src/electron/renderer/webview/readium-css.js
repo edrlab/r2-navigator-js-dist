@@ -63,7 +63,8 @@ exports.configureFixedLayout = function (isFixedLayout) {
             win.READIUM2.fxlViewportHeight = height;
         }
     }
-    if (width && height && isFixedLayout) {
+    if (width && height && isFixedLayout
+        && win.document && win.document.documentElement && win.document.body) {
         win.document.documentElement.style.overflow = "hidden";
         win.document.body.style.width = width + "px";
         win.document.body.style.height = height + "px";
@@ -109,6 +110,9 @@ function isRTL() {
 }
 exports.isRTL = isRTL;
 function computeVerticalRTL() {
+    if (!win.document || !win.document.documentElement) {
+        return;
+    }
     var dirAttr = win.document.documentElement.getAttribute("dir");
     if (dirAttr === "rtl") {
         _isRTL = true;
@@ -169,6 +173,9 @@ win.addEventListener("load", function () {
     computeVerticalRTL();
 });
 var ensureHead = function () {
+    if (!win.document || !win.document.documentElement) {
+        return;
+    }
     var docElement = win.document.documentElement;
     if (!win.document.head) {
         var headElement = win.document.createElement("head");
@@ -185,6 +192,9 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_READIUMCSS, function (_event, payloa
 });
 function readiumCSSInject(messageJson) {
     if (typeof messageJson.injectCSS === "undefined") {
+        return;
+    }
+    if (!win.document || !win.document.documentElement) {
         return;
     }
     var docElement = win.document.documentElement;
@@ -233,6 +243,9 @@ function readiumCSSInject(messageJson) {
 }
 function readiumCSSSet(messageJson) {
     if (!messageJson || typeof messageJson.setCSS === "undefined") {
+        return;
+    }
+    if (!win.document || !win.document.documentElement) {
         return;
     }
     var docElement = win.document.documentElement;
@@ -346,6 +359,9 @@ exports.readiumCSS = function (messageJson) {
 };
 function appendCSSInline(id, css) {
     ensureHead();
+    if (!win.document || !win.document.head) {
+        return;
+    }
     var styleElement = win.document.createElement("style");
     styleElement.setAttribute("id", "Readium2-" + id);
     styleElement.setAttribute("type", "text/css");
@@ -354,6 +370,9 @@ function appendCSSInline(id, css) {
 }
 function appendCSS(mod, urlRoot) {
     ensureHead();
+    if (!win.document || !win.document.head) {
+        return;
+    }
     var linkElement = win.document.createElement("link");
     linkElement.setAttribute("id", "ReadiumCSS-" + mod);
     linkElement.setAttribute("rel", "stylesheet");

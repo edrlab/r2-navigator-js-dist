@@ -5,7 +5,7 @@ var fs = require("fs");
 var lcp_1 = require("r2-lcp-js/dist/es5/src/parser/epub/lcp");
 var zipInjector_1 = require("r2-utils-js/dist/es5/src/_utils/zip/zipInjector");
 var debug_ = require("debug");
-var ta_json_1 = require("ta-json");
+var ta_json_x_1 = require("ta-json-x");
 var debug = debug_("r2:navigator#electron/main/lsd-injectlcpl");
 function lsdLcpUpdateInject(lcplStr, publication, publicationPath) {
     return tslib_1.__awaiter(this, void 0, void 0, function () {
@@ -16,7 +16,7 @@ function lsdLcpUpdateInject(lcplStr, publication, publicationPath) {
             debug(lcplJson);
             zipEntryPath = "META-INF/license.lcpl";
             try {
-                lcpl = ta_json_1.JSON.deserialize(lcplJson, lcp_1.LCP);
+                lcpl = ta_json_x_1.JSON.deserialize(lcplJson, lcp_1.LCP);
             }
             catch (erorz) {
                 return [2, Promise.reject(erorz)];

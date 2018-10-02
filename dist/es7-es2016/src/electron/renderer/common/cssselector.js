@@ -2,7 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fullQualifiedSelector = (node, justSelector) => {
     if (node.nodeType !== Node.ELEMENT_NODE) {
-        const lowerCaseName = (node.localName && node.localName.toLowerCase()) || node.nodeName.toLowerCase();
+        const lowerCaseName = (node.localName && node.localName.toLowerCase())
+            || node.nodeName.toLowerCase();
         return lowerCaseName;
     }
     return cssPath(node, justSelector);
@@ -72,7 +73,8 @@ const _cssPathStep = (node, optimized, isTargetNode) => {
     if (node.nodeType !== Node.ELEMENT_NODE) {
         return undefined;
     }
-    const lowerCaseName = (node.localName && node.localName.toLowerCase()) || node.nodeName.toLowerCase();
+    const lowerCaseName = (node.localName && node.localName.toLowerCase())
+        || node.nodeName.toLowerCase();
     const element = node;
     const id = element.getAttribute("id");
     if (optimized) {
