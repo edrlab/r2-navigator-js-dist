@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const debounce = require("debounce");
+const debounce_1 = require("debounce");
 const URI = require("urijs");
 const UrlUtils_1 = require("r2-utils-js/dist/es7-es2016/src/_utils/http/UrlUtils");
 const electron_1 = require("electron");
@@ -425,7 +425,7 @@ const adjustResize = (webview) => {
         });
     }
 };
-const onResizeDebounced = debounce(() => {
+const onResizeDebounced = debounce_1.debounce(() => {
     adjustResize(_webview1);
     adjustResize(_webview2);
     setTimeout(() => {

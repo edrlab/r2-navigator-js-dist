@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const ResizeSensor = require("css-element-queries/src/ResizeSensor");
-const debounce = require("debounce");
+const debounce_1 = require("debounce");
 const electron_1 = require("electron");
 const events_1 = require("../../common/events");
 const animateProperty_1 = require("../common/animateProperty");
@@ -374,7 +374,7 @@ const scrollToHashRaw = (firstCall) => {
     notifyReady();
     notifyReadingLocation();
 };
-const scrollToHash = debounce(() => {
+const scrollToHash = debounce_1.debounce(() => {
     scrollToHashRaw(false);
 }, 500);
 let _ignoreScrollEvent = false;
@@ -470,7 +470,7 @@ const processXYRaw = (x, y) => {
         }
     }
 };
-const processXY = debounce((x, y) => {
+const processXY = debounce_1.debounce((x, y) => {
     processXYRaw(x, y);
 }, 300);
 exports.computeCFI = (node) => {

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var debounce = require("debounce");
+var debounce_1 = require("debounce");
 var URI = require("urijs");
 var UrlUtils_1 = require("r2-utils-js/dist/es5/src/_utils/http/UrlUtils");
 var electron_1 = require("electron");
@@ -425,7 +425,7 @@ var adjustResize = function (webview) {
         });
     }
 };
-var onResizeDebounced = debounce(function () {
+var onResizeDebounced = debounce_1.debounce(function () {
     adjustResize(_webview1);
     adjustResize(_webview2);
     setTimeout(function () {

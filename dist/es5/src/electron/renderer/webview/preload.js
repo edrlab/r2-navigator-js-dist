@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ResizeSensor = require("css-element-queries/src/ResizeSensor");
-var debounce = require("debounce");
+var debounce_1 = require("debounce");
 var electron_1 = require("electron");
 var events_1 = require("../../common/events");
 var animateProperty_1 = require("../common/animateProperty");
@@ -374,7 +374,7 @@ var scrollToHashRaw = function (firstCall) {
     notifyReady();
     notifyReadingLocation();
 };
-var scrollToHash = debounce(function () {
+var scrollToHash = debounce_1.debounce(function () {
     scrollToHashRaw(false);
 }, 500);
 var _ignoreScrollEvent = false;
@@ -470,7 +470,7 @@ var processXYRaw = function (x, y) {
         }
     }
 };
-var processXY = debounce(function (x, y) {
+var processXY = debounce_1.debounce(function (x, y) {
     processXYRaw(x, y);
 }, 300);
 exports.computeCFI = function (node) {
