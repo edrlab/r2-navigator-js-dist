@@ -13,10 +13,9 @@ if (origin.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
 }
 var urlRootReadiumCSS = origin + "/readium-css/";
 console.log(urlRootReadiumCSS);
-exports.DEBUG_VISUALS = false;
+exports.DEBUG_VISUALS = true;
 exports.configureFixedLayout = function (isFixedLayout) {
     if (!win.document || !win.document.head || !win.document.body) {
-        console.log("configureFixedLayout !win.document || !win.document.head || !win.document.body");
         return;
     }
     var width = win.READIUM2.fxlViewportWidth;
@@ -90,6 +89,7 @@ exports.configureFixedLayout = function (isFixedLayout) {
 exports.injectDefaultCSS = function () {
     appendCSSInline("electron-selection", styles_1.selectionCssStyles);
     appendCSSInline("electron-focus", styles_1.focusCssStyles);
+    appendCSSInline("electron-target", styles_1.targetCssStyles);
     appendCSSInline("electron-scrollbars", styles_1.scrollBarCssStyles);
 };
 exports.injectReadPosCSS = function () {
@@ -97,7 +97,6 @@ exports.injectReadPosCSS = function () {
         return;
     }
     appendCSSInline("electron-readPos", styles_1.readPosCssStyles);
-    appendCSSInline("electron-target", styles_1.targetCssStyles);
 };
 var _isVerticalWritingMode = false;
 function isVerticalWritingMode() {
@@ -109,6 +108,63 @@ function isRTL() {
     return _isRTL;
 }
 exports.isRTL = isRTL;
+exports.isPaginated = function () {
+    return win && win.document && win.document.documentElement &&
+        win.document.documentElement.classList.contains("readium-paginated");
+};
+exports.calculateMaxScrollShift = function () {
+    if (!win || !win.document || !win.document.body || !win.document.documentElement) {
+        return 0;
+    }
+    var isPaged = exports.isPaginated();
+    var maxScrollShift = isPaged ?
+        ((isVerticalWritingMode() ?
+            (win.document.body.scrollHeight - win.document.documentElement.offsetHeight) :
+            (win.document.body.scrollWidth - win.document.documentElement.offsetWidth))) :
+        ((isVerticalWritingMode() ?
+            (win.document.body.scrollWidth - win.document.documentElement.clientWidth) :
+            (win.document.body.scrollHeight - win.document.documentElement.clientHeight)));
+    return maxScrollShift;
+};
+exports.isTwoPageSpread = function () {
+    if (!win || !win.document || !win.document.documentElement) {
+        return false;
+    }
+    var docStyle = win.getComputedStyle(win.document.documentElement);
+    var docColumnCount;
+    if (docStyle) {
+        docColumnCount = parseInt(docStyle.getPropertyValue("column-count"), 10);
+    }
+    return docColumnCount === 2;
+};
+exports.calculateTotalColumns = function () {
+    if (!win || !win.document || !win.document.body || !exports.isPaginated()) {
+        return 0;
+    }
+    var totalColumns = 0;
+    if (isVerticalWritingMode()) {
+        totalColumns = Math.ceil(win.document.body.offsetWidth / win.document.body.scrollWidth);
+    }
+    else {
+        totalColumns = Math.ceil(win.document.body.offsetHeight / win.document.body.scrollHeight);
+    }
+    return totalColumns;
+};
+function calculateColumnDimension() {
+    if (!win.document || !win.document.documentElement || !win.document.body || !exports.isPaginated()) {
+        return 0;
+    }
+    var isTwoPage = exports.isTwoPageSpread();
+    var columnDimension = 0;
+    if (isVerticalWritingMode()) {
+        columnDimension = win.document.documentElement.offsetHeight;
+    }
+    else {
+        columnDimension = (win.document.documentElement.offsetWidth * (isTwoPage ? 0.5 : 1));
+    }
+    return columnDimension;
+}
+exports.calculateColumnDimension = calculateColumnDimension;
 function computeVerticalRTL() {
     if (!win.document || !win.document.documentElement) {
         return;
@@ -123,7 +179,7 @@ function computeVerticalRTL() {
             _isRTL = true;
         }
     }
-    var htmlStyle = window.getComputedStyle(win.document.documentElement);
+    var htmlStyle = win.getComputedStyle(win.document.documentElement);
     if (htmlStyle) {
         var prop = htmlStyle.getPropertyValue("writing-mode");
         if (!prop) {
@@ -143,7 +199,7 @@ function computeVerticalRTL() {
         }
     }
     if ((!_isVerticalWritingMode || !_isRTL) && win.document.body) {
-        var bodyStyle = window.getComputedStyle(win.document.body);
+        var bodyStyle = win.getComputedStyle(win.document.body);
         if (bodyStyle) {
             var prop = void 0;
             if (!_isVerticalWritingMode) {
@@ -190,21 +246,35 @@ var ensureHead = function () {
 electron_1.ipcRenderer.on(events_1.R2_EVENT_READIUMCSS, function (_event, payload) {
     exports.readiumCSS(payload);
 });
-function readiumCSSInject(messageJson) {
-    if (typeof messageJson.injectCSS === "undefined") {
+function readiumCSSSet(messageJson) {
+    if (!messageJson) {
         return;
     }
     if (!win.document || !win.document.documentElement) {
         return;
     }
     var docElement = win.document.documentElement;
-    ensureHead();
-    var remove = (typeof messageJson.injectCSS === "string" && messageJson.injectCSS.indexOf("rollback") >= 0)
-        || !messageJson.injectCSS;
-    if (remove) {
+    if (!messageJson.setCSS) {
         docElement.removeAttribute("data-readiumcss");
         removeAllCSS();
         removeAllCSSInline();
+        if (messageJson.isFixedLayout) {
+            docElement.style.overflow = "hidden";
+        }
+        else {
+            docElement.style.overflow = "auto";
+        }
+        var toRemove = [];
+        for (var i = 0; i < docElement.style.length; i++) {
+            var item = docElement.style.item(i);
+            if (item.indexOf("--USER__") === 0) {
+                toRemove.push(item);
+            }
+        }
+        toRemove.forEach(function (item) {
+            docElement.style.removeProperty(item);
+        });
+        docElement.classList.remove(CSS_CLASS_DARK_THEME);
         return;
     }
     if (!docElement.hasAttribute("data-readiumcss")) {
@@ -240,121 +310,207 @@ function readiumCSSInject(messageJson) {
         }
         appendCSS("after", urlRoot);
     }
-}
-function readiumCSSSet(messageJson) {
-    if (!messageJson || typeof messageJson.setCSS === "undefined") {
-        return;
-    }
-    if (!win.document || !win.document.documentElement) {
-        return;
-    }
-    var docElement = win.document.documentElement;
-    var remove = (typeof messageJson.setCSS === "string" && messageJson.setCSS.indexOf("rollback") >= 0)
-        || !messageJson.setCSS;
-    if (remove) {
-        if (messageJson.isFixedLayout) {
-            docElement.style.overflow = "hidden";
-        }
-        else {
-            docElement.style.overflow = "auto";
-        }
-        var toRemove = [];
-        for (var i = 0; i < docElement.style.length; i++) {
-            var item = docElement.style.item(i);
-            if (item.indexOf("--USER__") === 0) {
-                toRemove.push(item);
-            }
-        }
-        toRemove.forEach(function (item) {
-            docElement.style.removeProperty(item);
-        });
-        docElement.classList.remove(CSS_CLASS_DARK_THEME);
+    var setCSS = messageJson.setCSS;
+    if (setCSS.night) {
+        docElement.classList.add(CSS_CLASS_DARK_THEME);
     }
     else {
-        var dark = false;
-        var night = false;
-        var sepia = false;
-        var invert = false;
-        var paged = false;
-        var font = void 0;
-        var fontSize = void 0;
-        var lineHeight = void 0;
-        var colCount = void 0;
-        var align = void 0;
-        if (typeof messageJson.setCSS === "object") {
-            if (messageJson.setCSS.dark) {
-                dark = true;
-            }
-            if (messageJson.setCSS.night) {
-                night = true;
-            }
-            if (messageJson.setCSS.sepia) {
-                sepia = true;
-            }
-            if (messageJson.setCSS.invert) {
-                invert = true;
-            }
-            if (messageJson.setCSS.paged) {
-                paged = true;
-            }
-            if (typeof messageJson.setCSS.font === "string") {
-                font = messageJson.setCSS.font;
-            }
-            if (typeof messageJson.setCSS.fontSize === "string") {
-                fontSize = messageJson.setCSS.fontSize;
-            }
-            if (typeof messageJson.setCSS.lineHeight === "string") {
-                lineHeight = messageJson.setCSS.lineHeight;
-            }
-            if (typeof messageJson.setCSS.colCount === "string") {
-                colCount = messageJson.setCSS.colCount;
-            }
-            if (typeof messageJson.setCSS.align === "string") {
-                align = messageJson.setCSS.align;
-            }
+        docElement.classList.remove(CSS_CLASS_DARK_THEME);
+    }
+    var needsAdvanced = true;
+    docElement.style.setProperty("--USER__advancedSettings", needsAdvanced ? "readium-advanced-on" : "readium-advanced-off");
+    if (typeof setCSS.darken === "undefined") {
+        docElement.style.removeProperty("--USER__darkenFilter");
+    }
+    else {
+        docElement.style.setProperty("--USER__darkenFilter", setCSS.darken ? "readium-darken-on" : "readium-darken-off");
+    }
+    if (typeof setCSS.invert === "undefined") {
+        docElement.style.removeProperty("--USER__invertFilter");
+    }
+    else {
+        docElement.style.setProperty("--USER__invertFilter", setCSS.invert ? "readium-invert-on" : "readium-invert-off");
+    }
+    docElement.style.setProperty("--USER__appearance", setCSS.sepia ? "readium-sepia-on" :
+        (setCSS.night ? "readium-night-on" : "readium-default-on"));
+    docElement.style.setProperty("--USER__view", setCSS.paged ? "readium-paged-on" : "readium-scroll-on");
+    if (setCSS.paged) {
+        docElement.style.overflow = "hidden";
+        docElement.classList.add("readium-paginated");
+    }
+    else {
+        docElement.style.overflow = "auto";
+        docElement.classList.remove("readium-paginated");
+    }
+    var defaultPublisherFont = !setCSS.font || setCSS.font === "DEFAULT";
+    var a11yNormalize = ((typeof setCSS.a11yNormalize !== "undefined") ?
+        (setCSS.a11yNormalize ? "readium-a11y-on" : "readium-a11y-off") :
+        "readium-a11y-off");
+    var needsFontOverride = a11yNormalize === "readium-a11y-on" || !defaultPublisherFont;
+    docElement.style.setProperty("--USER__fontOverride", needsFontOverride ? "readium-font-on" : "readium-font-off");
+    if (typeof setCSS.a11yNormalize === "undefined") {
+        docElement.style.removeProperty("--USER__a11yNormalize");
+    }
+    else {
+        docElement.style.setProperty("--USER__a11yNormalize", a11yNormalize);
+    }
+    if (defaultPublisherFont) {
+        docElement.style.removeProperty("--USER__fontFamily");
+    }
+    else {
+        var font = setCSS.font;
+        var fontValue = "";
+        if (font === "DUO" || font === "IA Writer Duospace") {
+            fontValue = "IA Writer Duospace";
         }
-        if (night) {
-            docElement.classList.add(CSS_CLASS_DARK_THEME);
+        else if (font === "DYS" || font === "AccessibleDfa") {
+            fontValue = "AccessibleDfa";
+        }
+        else if (font === "OLD" || font === "oldStyleTf") {
+            fontValue = "var(--RS__oldStyleTf)";
+        }
+        else if (font === "MODERN" || font === "modernTf") {
+            fontValue = "var(--RS__modernTf)";
+        }
+        else if (font === "SANS" || font === "sansTf") {
+            fontValue = "var(--RS__sansTf)";
+        }
+        else if (font === "HUMAN" || font === "humanistTf") {
+            fontValue = "var(--RS__humanistTf)";
+        }
+        else if (font === "MONO" || font === "monospaceTf") {
+            fontValue = "var(--RS__monospaceTf)";
+        }
+        else if (font === "JA" || font === "serif-ja") {
+            fontValue = "var(--RS__serif-ja)";
+        }
+        else if (font === "JA-SANS" || font === "sans-serif-ja") {
+            fontValue = "var(--RS__sans-serif-ja)";
+        }
+        else if (font === "JA-V" || font === "serif-ja-v") {
+            fontValue = "var(--RS__serif-ja-v)";
+        }
+        else if (font === "JA-V-SANS" || font === "sans-serif-ja-v") {
+            fontValue = "var(--RS__sans-serif-ja-v)";
+        }
+        else if (typeof font === "string") {
+            fontValue = font;
+        }
+        if (fontValue) {
+            docElement.style.setProperty("--USER__fontFamily", fontValue);
         }
         else {
-            docElement.classList.remove(CSS_CLASS_DARK_THEME);
+            docElement.style.removeProperty("--USER__fontFamily");
         }
-        var needsAdvanced = true;
-        docElement.style.setProperty("--USER__advancedSettings", needsAdvanced ? "readium-advanced-on" : "readium-advanced-off");
-        docElement.style.setProperty("--USER__darkenFilter", dark ? "readium-darken-on" : "readium-darken-off");
-        docElement.style.setProperty("--USER__invertFilter", invert ? "readium-invert-on" : "readium-invert-off");
-        docElement.style.setProperty("--USER__appearance", sepia ? "readium-sepia-on" : (night ? "readium-night-on" : "readium-default-on"));
-        docElement.style.setProperty("--USER__view", paged ? "readium-paged-on" : "readium-scroll-on");
-        if (paged) {
-            docElement.style.overflow = "hidden";
-            docElement.classList.add("readium-paginated");
+    }
+    if (setCSS.fontSize) {
+        docElement.style.setProperty("--USER__fontSize", setCSS.fontSize);
+    }
+    else {
+        docElement.style.removeProperty("--USER__fontSize");
+    }
+    if (setCSS.lineHeight) {
+        docElement.style.setProperty("--USER__lineHeight", setCSS.lineHeight);
+    }
+    else {
+        docElement.style.removeProperty("--USER__lineHeight");
+    }
+    if (setCSS.typeScale) {
+        docElement.style.setProperty("--USER__typeScale", setCSS.typeScale);
+    }
+    else {
+        docElement.style.removeProperty("--USER__typeScale");
+    }
+    if (setCSS.paraSpacing) {
+        docElement.style.setProperty("--USER__paraSpacing", setCSS.paraSpacing);
+    }
+    else {
+        docElement.style.removeProperty("--USER__paraSpacing");
+    }
+    var isCJK = false;
+    if (_isVerticalWritingMode || (isRTL || isCJK)) {
+        docElement.style.removeProperty("--USER__bodyHyphens");
+        docElement.style.removeProperty("--USER__wordSpacing");
+        docElement.style.removeProperty("--USER__letterSpacing");
+        if (_isVerticalWritingMode || isCJK) {
+            if (_isVerticalWritingMode) {
+                docElement.style.removeProperty("--USER__colCount");
+            }
+            docElement.style.removeProperty("--USER__paraIndent");
+            docElement.style.removeProperty("--USER__textAlign");
+        }
+        else if (isRTL) {
+            if (setCSS.ligatures) {
+                docElement.style.setProperty("--USER__ligatures", setCSS.ligatures);
+            }
+            else {
+                docElement.style.removeProperty("--USER__ligatures");
+            }
+        }
+    }
+    else {
+        if (setCSS.bodyHyphens) {
+            docElement.style.setProperty("--USER__bodyHyphens", setCSS.bodyHyphens);
         }
         else {
-            docElement.classList.remove("readium-paginated");
+            docElement.style.removeProperty("--USER__bodyHyphens");
         }
-        var needsFontOverride = typeof font !== "undefined" && font !== "DEFAULT";
-        docElement.style.setProperty("--USER__fontOverride", needsFontOverride ? "readium-font-on" : "readium-font-off");
-        docElement.style.setProperty("--USER__fontFamily", !needsFontOverride ? "" :
-            (font === "DUO" ? "IA Writer Duospace" :
-                (font === "DYS" ? "AccessibleDfa" :
-                    (font === "OLD" ? "var(--RS__oldStyleTf)" :
-                        (font === "MODERN" ? "var(--RS__modernTf)" :
-                            (font === "SANS" ? "var(--RS__sansTf)" :
-                                (font === "HUMAN" ? "var(--RS__humanistTf)" :
-                                    (font === "MONO" ? "var(--RS__monospaceTf)" :
-                                        (font ? font : "var(--RS__oldStyleTf)")))))))));
-        docElement.style.setProperty("--USER__textAlign", align === "justify" ? "justify" :
-            (align === "right" ? "right" :
-                (align === "left" ? "left" :
-                    (align === "center" ? "center" :
-                        (align === "initial" ? "initial" : "inherit")))));
-        docElement.style.setProperty("--USER__fontSize", fontSize ? fontSize : "100%");
-        docElement.style.setProperty("--USER__lineHeight", lineHeight ? lineHeight : "2");
-        docElement.style.setProperty("--USER__colCount", colCount ? colCount : "auto");
+        if (setCSS.wordSpacing) {
+            docElement.style.setProperty("--USER__wordSpacing", setCSS.wordSpacing);
+        }
+        else {
+            docElement.style.removeProperty("--USER__wordSpacing");
+        }
+        if (setCSS.letterSpacing) {
+            docElement.style.setProperty("--USER__letterSpacing", setCSS.letterSpacing);
+        }
+        else {
+            docElement.style.removeProperty("--USER__letterSpacing");
+        }
+        if (!_isVerticalWritingMode) {
+            if (setCSS.colCount) {
+                docElement.style.setProperty("--USER__colCount", setCSS.colCount);
+            }
+            else {
+                docElement.style.removeProperty("--USER__colCount");
+            }
+            if (setCSS.paraIndent) {
+                docElement.style.setProperty("--USER__paraIndent", setCSS.paraIndent);
+            }
+            else {
+                docElement.style.removeProperty("--USER__paraIndent");
+            }
+            if (setCSS.textAlign) {
+                docElement.style.setProperty("--USER__textAlign", setCSS.textAlign);
+            }
+            else {
+                docElement.style.removeProperty("--USER__textAlign");
+            }
+        }
+        else if (!isRTL) {
+            docElement.style.removeProperty("--USER__ligatures");
+        }
+    }
+    if (setCSS.pageMargins) {
+        docElement.style.setProperty("--USER__pageMargins", setCSS.pageMargins);
+    }
+    else {
+        docElement.style.removeProperty("--USER__pageMargins");
+    }
+    if (setCSS.backgroundColor) {
+        docElement.style.setProperty("--USER__backgroundColor", setCSS.backgroundColor);
+    }
+    else {
+        docElement.style.removeProperty("--USER__backgroundColor");
+    }
+    if (setCSS.textColor) {
+        docElement.style.setProperty("--USER__textColor", setCSS.textColor);
+    }
+    else {
+        docElement.style.removeProperty("--USER__textColor");
     }
 }
 exports.readiumCSS = function (messageJson) {
-    readiumCSSInject(messageJson);
     readiumCSSSet(messageJson);
 };
 function appendCSSInline(id, css) {

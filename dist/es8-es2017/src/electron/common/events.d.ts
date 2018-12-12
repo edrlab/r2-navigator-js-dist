@@ -1,18 +1,7 @@
+import { IReadiumCSS } from "./readium-css-settings";
 export declare const R2_EVENT_READIUMCSS = "R2_EVENT_READIUMCSS";
 export interface IEventPayload_R2_EVENT_READIUMCSS {
-    injectCSS: string;
-    setCSS: string | {
-        align: string;
-        colCount: string;
-        dark: boolean;
-        font: string;
-        fontSize: string;
-        invert: boolean;
-        lineHeight: string;
-        night: boolean;
-        paged: boolean;
-        sepia: boolean;
-    };
+    setCSS: IReadiumCSS | undefined;
     isFixedLayout?: boolean;
     urlRoot?: string;
 }
@@ -29,9 +18,18 @@ export interface IEventPayload_R2_EVENT_PAGE_TURN {
     go: string;
 }
 export declare const R2_EVENT_READING_LOCATION = "R2_EVENT_READING_LOCATION";
+export interface IEventPayload_R2_EVENT_READING_LOCATION_PAGINATION_INFO {
+    totalColumns: number | undefined;
+    currentColumn: number | undefined;
+    isTwoPageSpread: boolean | undefined;
+    spreadIndex: number | undefined;
+}
 export interface IEventPayload_R2_EVENT_READING_LOCATION {
     cfi: string | undefined;
-    cssSelector: string;
+    cssSelector: string | undefined;
+    progression: number | undefined;
+    position: number | undefined;
+    paginationInfo: IEventPayload_R2_EVENT_READING_LOCATION_PAGINATION_INFO | undefined;
 }
 export declare const R2_EVENT_LINK = "R2_EVENT_LINK";
 export interface IEventPayload_R2_EVENT_LINK {

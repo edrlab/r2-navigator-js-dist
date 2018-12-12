@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
 exports.fullQualifiedSelector = function (node, justSelector) {
     if (node.nodeType !== Node.ELEMENT_NODE) {
         var lowerCaseName = (node.localName && node.localName.toLowerCase())
@@ -29,6 +30,7 @@ var cssPath = function (node, optimized) {
     return steps.join(" > ");
 };
 var _cssPathStep = function (node, optimized, isTargetNode) {
+    var e_1, _a;
     var prefixedElementClassNames = function (nd) {
         var classAttribute = nd.getAttribute("class");
         if (!classAttribute) {
@@ -118,6 +120,7 @@ var _cssPathStep = function (node, optimized, isTargetNode) {
     var elementIndex = -1;
     var siblings = parent.children;
     var _loop_1 = function (i) {
+        var e_2, _a;
         var sibling = siblings[i];
         if (sibling.nodeType !== Node.ELEMENT_NODE) {
             return "continue";
@@ -151,17 +154,26 @@ var _cssPathStep = function (node, optimized, isTargetNode) {
                 siblingClassNamesArray.push(arrItem);
             }
         });
-        for (var _i = 0, siblingClassNamesArray_1 = siblingClassNamesArray; _i < siblingClassNamesArray_1.length; _i++) {
-            var siblingClass = siblingClassNamesArray_1[_i];
-            var ind = ownClassNames.indexOf(siblingClass);
-            if (ind < 0) {
-                continue;
+        try {
+            for (var siblingClassNamesArray_1 = tslib_1.__values(siblingClassNamesArray), siblingClassNamesArray_1_1 = siblingClassNamesArray_1.next(); !siblingClassNamesArray_1_1.done; siblingClassNamesArray_1_1 = siblingClassNamesArray_1.next()) {
+                var siblingClass = siblingClassNamesArray_1_1.value;
+                var ind = ownClassNames.indexOf(siblingClass);
+                if (ind < 0) {
+                    continue;
+                }
+                ownClassNames.splice(ind, 1);
+                if (!--ownClassNameCount) {
+                    needsNthChild = true;
+                    break;
+                }
             }
-            ownClassNames.splice(ind, 1);
-            if (!--ownClassNameCount) {
-                needsNthChild = true;
-                break;
+        }
+        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        finally {
+            try {
+                if (siblingClassNamesArray_1_1 && !siblingClassNamesArray_1_1.done && (_a = siblingClassNamesArray_1.return)) _a.call(siblingClassNamesArray_1);
             }
+            finally { if (e_2) throw e_2.error; }
         }
     };
     for (var i = 0; (ownIndex === -1 || !needsNthChild) && i < siblings.length; ++i) {
@@ -179,9 +191,18 @@ var _cssPathStep = function (node, optimized, isTargetNode) {
         result += ":nth-child(" + (ownIndex + 1) + ")";
     }
     else if (needsClassNames) {
-        for (var _i = 0, prefixedOwnClassNamesArray_1 = prefixedOwnClassNamesArray; _i < prefixedOwnClassNamesArray_1.length; _i++) {
-            var prefixedName = prefixedOwnClassNamesArray_1[_i];
-            result += "." + escapeIdentifierIfNeeded(prefixedName.substr(1));
+        try {
+            for (var prefixedOwnClassNamesArray_1 = tslib_1.__values(prefixedOwnClassNamesArray), prefixedOwnClassNamesArray_1_1 = prefixedOwnClassNamesArray_1.next(); !prefixedOwnClassNamesArray_1_1.done; prefixedOwnClassNamesArray_1_1 = prefixedOwnClassNamesArray_1.next()) {
+                var prefixedName = prefixedOwnClassNamesArray_1_1.value;
+                result += "." + escapeIdentifierIfNeeded(prefixedName.substr(1));
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (prefixedOwnClassNamesArray_1_1 && !prefixedOwnClassNamesArray_1_1.done && (_a = prefixedOwnClassNamesArray_1.return)) _a.call(prefixedOwnClassNamesArray_1);
+            }
+            finally { if (e_1) throw e_1.error; }
         }
     }
     return {
