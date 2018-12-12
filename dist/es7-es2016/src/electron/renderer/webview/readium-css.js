@@ -13,7 +13,7 @@ if (origin.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
 }
 const urlRootReadiumCSS = origin + "/readium-css/";
 console.log(urlRootReadiumCSS);
-exports.DEBUG_VISUALS = true;
+exports.DEBUG_VISUALS = false;
 exports.configureFixedLayout = (isFixedLayout) => {
     if (!win.document || !win.document.head || !win.document.body) {
         return;
