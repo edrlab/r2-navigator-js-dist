@@ -311,6 +311,11 @@ function readiumCSSSet(messageJson) {
         appendCSS("after", urlRoot);
     }
     var setCSS = messageJson.setCSS;
+    if (exports.DEBUG_VISUALS) {
+        console.log("---- setCSS -----");
+        console.log(setCSS);
+        console.log("-----");
+    }
     if (setCSS.night) {
         docElement.classList.add(CSS_CLASS_DARK_THEME);
     }
@@ -428,7 +433,7 @@ function readiumCSSSet(messageJson) {
         docElement.style.removeProperty("--USER__paraSpacing");
     }
     var isCJK = false;
-    if (_isVerticalWritingMode || (isRTL || isCJK)) {
+    if (_isVerticalWritingMode || (_isRTL || isCJK)) {
         docElement.style.removeProperty("--USER__bodyHyphens");
         docElement.style.removeProperty("--USER__wordSpacing");
         docElement.style.removeProperty("--USER__letterSpacing");
@@ -439,7 +444,7 @@ function readiumCSSSet(messageJson) {
             docElement.style.removeProperty("--USER__paraIndent");
             docElement.style.removeProperty("--USER__textAlign");
         }
-        else if (isRTL) {
+        else if (_isRTL) {
             if (setCSS.ligatures) {
                 docElement.style.setProperty("--USER__ligatures", setCSS.ligatures);
             }
@@ -487,7 +492,7 @@ function readiumCSSSet(messageJson) {
                 docElement.style.removeProperty("--USER__textAlign");
             }
         }
-        else if (!isRTL) {
+        else if (!_isRTL) {
             docElement.style.removeProperty("--USER__ligatures");
         }
     }
