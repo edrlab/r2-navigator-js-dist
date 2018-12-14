@@ -2,121 +2,22 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const electron_1 = require("electron");
 const events_1 = require("../../common/events");
+const readium_css_inject_1 = require("../../common/readium-css-inject");
+const readium_css_settings_1 = require("../../common/readium-css-settings");
 const sessions_1 = require("../../common/sessions");
-const styles_1 = require("./styles");
 const win = global.window;
-const CSS_CLASS_DARK_THEME = "mdc-theme--dark";
 let origin = win.location.origin;
 if (origin.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
     origin = sessions_1.convertCustomSchemeToHttpUrl(win.location.href);
     origin = origin.replace(/\/pub\/.*/, "");
 }
-const urlRootReadiumCSS = origin + "/readium-css/";
+const urlRootReadiumCSS = origin + "/" + readium_css_settings_1.READIUM_CSS_URL_PATH + "/";
 console.log(urlRootReadiumCSS);
-exports.DEBUG_VISUALS = false;
-exports.configureFixedLayout = (isFixedLayout) => {
-    if (!win.document || !win.document.head || !win.document.body) {
-        return;
-    }
-    let width = win.READIUM2.fxlViewportWidth;
-    let height = win.READIUM2.fxlViewportHeight;
-    if (!width || !height) {
-        const metaViewport = win.document.head.querySelector("meta[name=viewport]");
-        if (!metaViewport) {
-            console.log("configureFixedLayout NO meta[name=viewport]");
-            return;
-        }
-        const attr = metaViewport.getAttribute("content");
-        if (!attr) {
-            console.log("configureFixedLayout NO meta[name=viewport && content]");
-            return;
-        }
-        const wMatch = attr.match(/\s*width\s*=\s*([0-9]+)/);
-        if (wMatch && wMatch.length >= 2) {
-            try {
-                width = parseInt(wMatch[1], 10);
-            }
-            catch (err) {
-                console.log(err);
-            }
-        }
-        else {
-            console.log("configureFixedLayout NO meta[name=viewport && content WIDTH]");
-        }
-        const hMatch = attr.match(/\s*height\s*=\s*([0-9]+)/);
-        if (hMatch && hMatch.length >= 2) {
-            try {
-                height = parseInt(hMatch[1], 10);
-            }
-            catch (err) {
-                console.log(err);
-            }
-        }
-        else {
-            console.log("configureFixedLayout NO meta[name=viewport && content HEIGHT]");
-        }
-        if (width && height) {
-            console.log("READIUM_FXL_VIEWPORT_WIDTH: " + width);
-            console.log("READIUM_FXL_VIEWPORT_HEIGHT: " + height);
-            win.READIUM2.fxlViewportWidth = width;
-            win.READIUM2.fxlViewportHeight = height;
-        }
-    }
-    if (width && height && isFixedLayout
-        && win.document && win.document.documentElement && win.document.body) {
-        win.document.documentElement.style.overflow = "hidden";
-        win.document.body.style.width = width + "px";
-        win.document.body.style.height = height + "px";
-        win.document.body.style.overflow = "hidden";
-        win.document.body.style.margin = "0";
-        console.log("FXL width: " + width);
-        console.log("FXL height: " + height);
-        const visibleWidth = win.innerWidth;
-        const visibleHeight = win.innerHeight;
-        console.log("FXL visible width: " + visibleWidth);
-        console.log("FXL visible height: " + visibleHeight);
-        const ratioX = visibleWidth / width;
-        const ratioY = visibleHeight / height;
-        const ratio = Math.min(ratioX, ratioY);
-        const tx = (visibleWidth - (width * ratio)) / 2;
-        const ty = (visibleHeight - (height * ratio)) / 2;
-        console.log("FXL trans X: " + tx);
-        console.log("FXL trans Y: " + ty);
-        win.document.documentElement.style.transformOrigin = "0 0";
-        win.document.documentElement.style.transform = `translateX(${tx}px) translateY(${ty}px) scale(${ratio})`;
-    }
-};
-exports.injectDefaultCSS = () => {
-    appendCSSInline("electron-selection", styles_1.selectionCssStyles);
-    appendCSSInline("electron-focus", styles_1.focusCssStyles);
-    appendCSSInline("electron-target", styles_1.targetCssStyles);
-    appendCSSInline("electron-scrollbars", styles_1.scrollBarCssStyles);
-};
-exports.injectReadPosCSS = () => {
-    if (!exports.DEBUG_VISUALS) {
-        return;
-    }
-    appendCSSInline("electron-readPos", styles_1.readPosCssStyles);
-};
-let _isVerticalWritingMode = false;
-function isVerticalWritingMode() {
-    return _isVerticalWritingMode;
-}
-exports.isVerticalWritingMode = isVerticalWritingMode;
-let _isRTL = false;
-function isRTL() {
-    return _isRTL;
-}
-exports.isRTL = isRTL;
-exports.isPaginated = () => {
-    return win && win.document && win.document.documentElement &&
-        win.document.documentElement.classList.contains("readium-paginated");
-};
 exports.calculateMaxScrollShift = () => {
     if (!win || !win.document || !win.document.body || !win.document.documentElement) {
         return 0;
     }
-    const isPaged = exports.isPaginated();
+    const isPaged = readium_css_inject_1.isPaginated(win.document);
     const maxScrollShift = isPaged ?
         ((isVerticalWritingMode() ?
             (win.document.body.scrollHeight - win.document.documentElement.offsetHeight) :
@@ -138,7 +39,7 @@ exports.isTwoPageSpread = () => {
     return docColumnCount === 2;
 };
 exports.calculateTotalColumns = () => {
-    if (!win || !win.document || !win.document.body || !exports.isPaginated()) {
+    if (!win || !win.document || !win.document.body || !readium_css_inject_1.isPaginated(win.document)) {
         return 0;
     }
     let totalColumns = 0;
@@ -151,7 +52,7 @@ exports.calculateTotalColumns = () => {
     return totalColumns;
 };
 function calculateColumnDimension() {
-    if (!win.document || !win.document.documentElement || !win.document.body || !exports.isPaginated()) {
+    if (!win.document || !win.document.documentElement || !win.document.body || !readium_css_inject_1.isPaginated(win.document)) {
         return 0;
     }
     const isTwoPage = exports.isTwoPageSpread();
@@ -165,20 +66,22 @@ function calculateColumnDimension() {
     return columnDimension;
 }
 exports.calculateColumnDimension = calculateColumnDimension;
+let _isVerticalWritingMode = false;
+function isVerticalWritingMode() {
+    return _isVerticalWritingMode;
+}
+exports.isVerticalWritingMode = isVerticalWritingMode;
+let _isRTL = false;
+function isRTL() {
+    return _isRTL;
+}
+exports.isRTL = isRTL;
 function computeVerticalRTL() {
     if (!win.document || !win.document.documentElement) {
         return;
     }
-    let dirAttr = win.document.documentElement.getAttribute("dir");
-    if (dirAttr === "rtl") {
-        _isRTL = true;
-    }
-    if (!_isRTL && win.document.body) {
-        dirAttr = win.document.body.getAttribute("dir");
-        if (dirAttr === "rtl") {
-            _isRTL = true;
-        }
-    }
+    let rtl = readium_css_inject_1.isDocRTL(win.document);
+    let vertical = readium_css_inject_1.isDocVertical(win.document);
     const htmlStyle = win.getComputedStyle(win.document.documentElement);
     if (htmlStyle) {
         let prop = htmlStyle.getPropertyValue("writing-mode");
@@ -186,377 +89,50 @@ function computeVerticalRTL() {
             prop = htmlStyle.getPropertyValue("-epub-writing-mode");
         }
         if (prop && prop.indexOf("vertical") >= 0) {
-            _isVerticalWritingMode = true;
+            vertical = true;
         }
         if (prop && prop.indexOf("-rl") > 0) {
-            _isRTL = true;
+            rtl = true;
         }
-        if (!_isRTL) {
+        if (!rtl) {
             prop = htmlStyle.getPropertyValue("direction");
             if (prop && prop.indexOf("rtl") >= 0) {
-                _isRTL = true;
+                rtl = true;
             }
         }
     }
-    if ((!_isVerticalWritingMode || !_isRTL) && win.document.body) {
+    if ((!vertical || !rtl) && win.document.body) {
         const bodyStyle = win.getComputedStyle(win.document.body);
         if (bodyStyle) {
             let prop;
-            if (!_isVerticalWritingMode) {
+            if (!vertical) {
                 prop = bodyStyle.getPropertyValue("writing-mode");
                 if (!prop) {
                     prop = bodyStyle.getPropertyValue("-epub-writing-mode");
                 }
                 if (prop && prop.indexOf("vertical") >= 0) {
-                    _isVerticalWritingMode = true;
+                    vertical = true;
                 }
                 if (prop && prop.indexOf("-rl") > 0) {
-                    _isRTL = true;
+                    rtl = true;
                 }
             }
-            if (!_isRTL) {
+            if (!rtl) {
                 prop = bodyStyle.getPropertyValue("direction");
                 if (prop && prop.indexOf("rtl") >= 0) {
-                    _isRTL = true;
+                    rtl = true;
                 }
             }
         }
     }
-    console.log("_isVerticalWritingMode: " + _isVerticalWritingMode);
-    console.log("_isRTL: " + _isRTL);
+    _isVerticalWritingMode = vertical;
+    _isRTL = rtl;
 }
-win.addEventListener("load", () => {
-    computeVerticalRTL();
-});
-const ensureHead = () => {
-    if (!win.document || !win.document.documentElement) {
-        return;
-    }
-    const docElement = win.document.documentElement;
-    if (!win.document.head) {
-        const headElement = win.document.createElement("head");
-        if (win.document.body) {
-            docElement.insertBefore(headElement, win.document.body);
-        }
-        else {
-            docElement.appendChild(headElement);
-        }
-    }
-};
+exports.computeVerticalRTL = computeVerticalRTL;
 electron_1.ipcRenderer.on(events_1.R2_EVENT_READIUMCSS, (_event, payload) => {
-    exports.readiumCSS(payload);
+    exports.readiumCSS(win.document, payload);
 });
-function readiumCSSSet(messageJson) {
-    if (!messageJson) {
-        return;
-    }
-    if (!win.document || !win.document.documentElement) {
-        return;
-    }
-    const docElement = win.document.documentElement;
-    if (!messageJson.setCSS) {
-        docElement.removeAttribute("data-readiumcss");
-        removeAllCSS();
-        removeAllCSSInline();
-        if (messageJson.isFixedLayout) {
-            docElement.style.overflow = "hidden";
-        }
-        else {
-            docElement.style.overflow = "auto";
-        }
-        const toRemove = [];
-        for (let i = 0; i < docElement.style.length; i++) {
-            const item = docElement.style.item(i);
-            if (item.indexOf("--USER__") === 0) {
-                toRemove.push(item);
-            }
-        }
-        toRemove.forEach((item) => {
-            docElement.style.removeProperty(item);
-        });
-        docElement.classList.remove(CSS_CLASS_DARK_THEME);
-        return;
-    }
-    if (!docElement.hasAttribute("data-readiumcss")) {
-        docElement.setAttribute("data-readiumcss", "yes");
-        let needsDefaultCSS = true;
-        if (win.document.head && win.document.head.childElementCount) {
-            let elem = win.document.head.firstElementChild;
-            while (elem) {
-                if ((elem.localName && elem.localName.toLowerCase() === "style") ||
-                    (elem.getAttribute &&
-                        (elem.getAttribute("rel") === "stylesheet" ||
-                            elem.getAttribute("type") === "text/css" ||
-                            (elem.getAttribute("src") &&
-                                elem.getAttribute("src").endsWith(".css"))))) {
-                    needsDefaultCSS = false;
-                    break;
-                }
-                elem = elem.nextElementSibling;
-            }
-        }
-        if (needsDefaultCSS && win.document.body) {
-            const styleAttr = win.document.body.querySelector("*[style]");
-            if (styleAttr) {
-                needsDefaultCSS = false;
-            }
-        }
-        const urlRoot = messageJson.urlRoot ?
-            messageJson.urlRoot + "/readium-css/" :
-            urlRootReadiumCSS;
-        appendCSS("before", urlRoot);
-        if (needsDefaultCSS) {
-            appendCSS("default", urlRoot);
-        }
-        appendCSS("after", urlRoot);
-    }
-    const setCSS = messageJson.setCSS;
-    if (exports.DEBUG_VISUALS) {
-        console.log("---- setCSS -----");
-        console.log(setCSS);
-        console.log("-----");
-    }
-    if (setCSS.night) {
-        docElement.classList.add(CSS_CLASS_DARK_THEME);
-    }
-    else {
-        docElement.classList.remove(CSS_CLASS_DARK_THEME);
-    }
-    const needsAdvanced = true;
-    docElement.style.setProperty("--USER__advancedSettings", needsAdvanced ? "readium-advanced-on" : "readium-advanced-off");
-    if (typeof setCSS.darken === "undefined") {
-        docElement.style.removeProperty("--USER__darkenFilter");
-    }
-    else {
-        docElement.style.setProperty("--USER__darkenFilter", setCSS.darken ? "readium-darken-on" : "readium-darken-off");
-    }
-    if (typeof setCSS.invert === "undefined") {
-        docElement.style.removeProperty("--USER__invertFilter");
-    }
-    else {
-        docElement.style.setProperty("--USER__invertFilter", setCSS.invert ? "readium-invert-on" : "readium-invert-off");
-    }
-    docElement.style.setProperty("--USER__appearance", setCSS.sepia ? "readium-sepia-on" :
-        (setCSS.night ? "readium-night-on" : "readium-default-on"));
-    docElement.style.setProperty("--USER__view", setCSS.paged ? "readium-paged-on" : "readium-scroll-on");
-    if (setCSS.paged) {
-        docElement.style.overflow = "hidden";
-        docElement.classList.add("readium-paginated");
-    }
-    else {
-        docElement.style.overflow = "auto";
-        docElement.classList.remove("readium-paginated");
-    }
-    const defaultPublisherFont = !setCSS.font || setCSS.font === "DEFAULT";
-    const a11yNormalize = ((typeof setCSS.a11yNormalize !== "undefined") ?
-        (setCSS.a11yNormalize ? "readium-a11y-on" : "readium-a11y-off") :
-        "readium-a11y-off");
-    const needsFontOverride = a11yNormalize === "readium-a11y-on" || !defaultPublisherFont;
-    docElement.style.setProperty("--USER__fontOverride", needsFontOverride ? "readium-font-on" : "readium-font-off");
-    if (typeof setCSS.a11yNormalize === "undefined") {
-        docElement.style.removeProperty("--USER__a11yNormalize");
-    }
-    else {
-        docElement.style.setProperty("--USER__a11yNormalize", a11yNormalize);
-    }
-    if (defaultPublisherFont) {
-        docElement.style.removeProperty("--USER__fontFamily");
-    }
-    else {
-        const font = setCSS.font;
-        let fontValue = "";
-        if (font === "DUO" || font === "IA Writer Duospace") {
-            fontValue = "IA Writer Duospace";
-        }
-        else if (font === "DYS" || font === "AccessibleDfa") {
-            fontValue = "AccessibleDfa";
-        }
-        else if (font === "OLD" || font === "oldStyleTf") {
-            fontValue = "var(--RS__oldStyleTf)";
-        }
-        else if (font === "MODERN" || font === "modernTf") {
-            fontValue = "var(--RS__modernTf)";
-        }
-        else if (font === "SANS" || font === "sansTf") {
-            fontValue = "var(--RS__sansTf)";
-        }
-        else if (font === "HUMAN" || font === "humanistTf") {
-            fontValue = "var(--RS__humanistTf)";
-        }
-        else if (font === "MONO" || font === "monospaceTf") {
-            fontValue = "var(--RS__monospaceTf)";
-        }
-        else if (font === "JA" || font === "serif-ja") {
-            fontValue = "var(--RS__serif-ja)";
-        }
-        else if (font === "JA-SANS" || font === "sans-serif-ja") {
-            fontValue = "var(--RS__sans-serif-ja)";
-        }
-        else if (font === "JA-V" || font === "serif-ja-v") {
-            fontValue = "var(--RS__serif-ja-v)";
-        }
-        else if (font === "JA-V-SANS" || font === "sans-serif-ja-v") {
-            fontValue = "var(--RS__sans-serif-ja-v)";
-        }
-        else if (typeof font === "string") {
-            fontValue = font;
-        }
-        if (fontValue) {
-            docElement.style.setProperty("--USER__fontFamily", fontValue);
-        }
-        else {
-            docElement.style.removeProperty("--USER__fontFamily");
-        }
-    }
-    if (setCSS.fontSize) {
-        docElement.style.setProperty("--USER__fontSize", setCSS.fontSize);
-    }
-    else {
-        docElement.style.removeProperty("--USER__fontSize");
-    }
-    if (setCSS.lineHeight) {
-        docElement.style.setProperty("--USER__lineHeight", setCSS.lineHeight);
-    }
-    else {
-        docElement.style.removeProperty("--USER__lineHeight");
-    }
-    if (setCSS.typeScale) {
-        docElement.style.setProperty("--USER__typeScale", setCSS.typeScale);
-    }
-    else {
-        docElement.style.removeProperty("--USER__typeScale");
-    }
-    if (setCSS.paraSpacing) {
-        docElement.style.setProperty("--USER__paraSpacing", setCSS.paraSpacing);
-    }
-    else {
-        docElement.style.removeProperty("--USER__paraSpacing");
-    }
-    const isCJK = false;
-    if (_isVerticalWritingMode || (_isRTL || isCJK)) {
-        docElement.style.removeProperty("--USER__bodyHyphens");
-        docElement.style.removeProperty("--USER__wordSpacing");
-        docElement.style.removeProperty("--USER__letterSpacing");
-        if (_isVerticalWritingMode || isCJK) {
-            if (_isVerticalWritingMode) {
-                docElement.style.removeProperty("--USER__colCount");
-            }
-            docElement.style.removeProperty("--USER__paraIndent");
-            docElement.style.removeProperty("--USER__textAlign");
-        }
-        else if (_isRTL) {
-            if (setCSS.ligatures) {
-                docElement.style.setProperty("--USER__ligatures", setCSS.ligatures);
-            }
-            else {
-                docElement.style.removeProperty("--USER__ligatures");
-            }
-        }
-    }
-    else {
-        if (setCSS.bodyHyphens) {
-            docElement.style.setProperty("--USER__bodyHyphens", setCSS.bodyHyphens);
-        }
-        else {
-            docElement.style.removeProperty("--USER__bodyHyphens");
-        }
-        if (setCSS.wordSpacing) {
-            docElement.style.setProperty("--USER__wordSpacing", setCSS.wordSpacing);
-        }
-        else {
-            docElement.style.removeProperty("--USER__wordSpacing");
-        }
-        if (setCSS.letterSpacing) {
-            docElement.style.setProperty("--USER__letterSpacing", setCSS.letterSpacing);
-        }
-        else {
-            docElement.style.removeProperty("--USER__letterSpacing");
-        }
-        if (!_isVerticalWritingMode) {
-            if (setCSS.colCount) {
-                docElement.style.setProperty("--USER__colCount", setCSS.colCount);
-            }
-            else {
-                docElement.style.removeProperty("--USER__colCount");
-            }
-            if (setCSS.paraIndent) {
-                docElement.style.setProperty("--USER__paraIndent", setCSS.paraIndent);
-            }
-            else {
-                docElement.style.removeProperty("--USER__paraIndent");
-            }
-            if (setCSS.textAlign) {
-                docElement.style.setProperty("--USER__textAlign", setCSS.textAlign);
-            }
-            else {
-                docElement.style.removeProperty("--USER__textAlign");
-            }
-        }
-        else if (!_isRTL) {
-            docElement.style.removeProperty("--USER__ligatures");
-        }
-    }
-    if (setCSS.pageMargins) {
-        docElement.style.setProperty("--USER__pageMargins", setCSS.pageMargins);
-    }
-    else {
-        docElement.style.removeProperty("--USER__pageMargins");
-    }
-    if (setCSS.backgroundColor) {
-        docElement.style.setProperty("--USER__backgroundColor", setCSS.backgroundColor);
-    }
-    else {
-        docElement.style.removeProperty("--USER__backgroundColor");
-    }
-    if (setCSS.textColor) {
-        docElement.style.setProperty("--USER__textColor", setCSS.textColor);
-    }
-    else {
-        docElement.style.removeProperty("--USER__textColor");
-    }
-}
-exports.readiumCSS = (messageJson) => {
-    readiumCSSSet(messageJson);
+exports.readiumCSS = (document, messageJson) => {
+    readium_css_inject_1.readiumCSSSet(document, messageJson, urlRootReadiumCSS, _isVerticalWritingMode, _isRTL);
 };
-function appendCSSInline(id, css) {
-    ensureHead();
-    if (!win.document || !win.document.head) {
-        return;
-    }
-    const styleElement = win.document.createElement("style");
-    styleElement.setAttribute("id", "Readium2-" + id);
-    styleElement.setAttribute("type", "text/css");
-    styleElement.appendChild(document.createTextNode(css));
-    win.document.head.appendChild(styleElement);
-}
-function appendCSS(mod, urlRoot) {
-    ensureHead();
-    if (!win.document || !win.document.head) {
-        return;
-    }
-    const linkElement = win.document.createElement("link");
-    linkElement.setAttribute("id", "ReadiumCSS-" + mod);
-    linkElement.setAttribute("rel", "stylesheet");
-    linkElement.setAttribute("type", "text/css");
-    linkElement.setAttribute("href", urlRoot + "ReadiumCSS-" + mod + ".css");
-    if (mod === "before" && win.document.head.childElementCount) {
-        win.document.head.insertBefore(linkElement, win.document.head.firstElementChild);
-    }
-    else {
-        win.document.head.appendChild(linkElement);
-    }
-}
-function removeCSS(mod) {
-    const linkElement = win.document.getElementById("ReadiumCSS-" + mod);
-    if (linkElement && linkElement.parentNode) {
-        linkElement.parentNode.removeChild(linkElement);
-    }
-}
-function removeAllCSSInline() {
-}
-function removeAllCSS() {
-    removeCSS("before");
-    removeCSS("after");
-    removeCSS("default");
-}
 //# sourceMappingURL=readium-css.js.map

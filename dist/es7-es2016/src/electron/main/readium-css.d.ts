@@ -1,2 +1,5 @@
+import { Publication } from "r2-shared-js/dist/es7-es2016/src/models/publication";
+import { Link } from "r2-shared-js/dist/es7-es2016/src/models/publication-link";
 import { Server } from "r2-streamer-js/dist/es7-es2016/src/http/server";
-export declare function setupReadiumCSS(server: Server, folderPath: string): void;
+import { IEventPayload_R2_EVENT_READIUMCSS } from "../common/events";
+export declare function setupReadiumCSS(server: Server, folderPath: string, readiumCssGetter: (publication: Publication, link: Link) => IEventPayload_R2_EVENT_READIUMCSS): void;

@@ -1,7 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var transformer_1 = require("r2-shared-js/dist/es5/src/transform/transformer");
+var transformer_html_1 = require("r2-shared-js/dist/es5/src/transform/transformer-html");
 var express = require("express");
-function setupReadiumCSS(server, folderPath) {
+var readium_css_inject_1 = require("../common/readium-css-inject");
+var readium_css_settings_1 = require("../common/readium-css-settings");
+function setupReadiumCSS(server, folderPath, readiumCssGetter) {
     var staticOptions = {
         dotfiles: "ignore",
         etag: true,
@@ -14,7 +18,23 @@ function setupReadiumCSS(server, folderPath) {
             server.setResponseCORS(res);
         },
     };
-    server.expressUse("/readium-css", express.static(folderPath, staticOptions));
+    server.expressUse("/" + readium_css_settings_1.READIUM_CSS_URL_PATH, express.static(folderPath, staticOptions));
+    if (readiumCssGetter) {
+        var transformer = function (publication, link, str) {
+            var mediaType = "application/xhtml+xml";
+            if (link && link.TypeLink) {
+                mediaType = link.TypeLink;
+            }
+            var readiumcssJson = readiumCssGetter(publication, link);
+            if (readiumcssJson) {
+                return readium_css_inject_1.transformHTML(str, readiumcssJson, mediaType);
+            }
+            else {
+                return str;
+            }
+        };
+        transformer_1.Transformers.instance().add(new transformer_html_1.TransformerHTML(transformer));
+    }
 }
 exports.setupReadiumCSS = setupReadiumCSS;
 //# sourceMappingURL=readium-css.js.map

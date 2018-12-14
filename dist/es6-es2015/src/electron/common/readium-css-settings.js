@@ -61,4 +61,5 @@ exports.readiumCSSDefaults = {
     typeScale: undefined,
     wordSpacing: undefined,
 };
+exports.READIUM_CSS_URL_PATH = "readium-css";
 //# sourceMappingURL=readium-css-settings.js.map

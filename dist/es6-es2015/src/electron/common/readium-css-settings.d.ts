@@ -77,3 +77,4 @@ export declare const readiumCSSDefaults: {
     typeScale: undefined;
     wordSpacing: undefined;
 };
+export declare const READIUM_CSS_URL_PATH = "readium-css";

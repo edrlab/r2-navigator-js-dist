@@ -4,6 +4,7 @@ var ResizeSensor = require("css-element-queries/src/ResizeSensor");
 var debounce_1 = require("debounce");
 var electron_1 = require("electron");
 var events_1 = require("../../common/events");
+var readium_css_inject_1 = require("../../common/readium-css-inject");
 var animateProperty_1 = require("../common/animateProperty");
 var cssselector2_1 = require("../common/cssselector2");
 var easings_1 = require("../common/easings");
@@ -34,7 +35,7 @@ win.READIUM2 = {
 };
 win.READIUM2.urlQueryParams = win.location.search ? querystring_1.getURLQueryParams(win.location.search) : undefined;
 if (win.READIUM2.urlQueryParams) {
-    var readiumEpubReadingSystemJson = {};
+    var readiumEpubReadingSystemJson = void 0;
     var base64EpubReadingSystem = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_EPUBREADINGSYSTEM];
     if (base64EpubReadingSystem) {
         try {
@@ -72,6 +73,11 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, function (_event, payload)
     var delayScrollIntoView = false;
     if (payload.hash) {
         win.READIUM2.hashElement = win.document.getElementById(payload.hash);
+        if (readium_css_inject_1.DEBUG_VISUALS) {
+            if (win.READIUM2.hashElement) {
+                win.READIUM2.hashElement.setAttribute(styles_1.readPosCssStylesAttr1, "R2_EVENT_SCROLLTO hashElement");
+            }
+        }
         win.location.href = "#" + payload.hash;
         delayScrollIntoView = true;
     }
@@ -89,11 +95,11 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, function (_event, payload)
     };
     if (delayScrollIntoView) {
         setTimeout(function () {
-            scrollToHashRaw(false);
+            scrollToHashRaw();
         }, 100);
     }
     else {
-        scrollToHashRaw(false);
+        scrollToHashRaw();
     }
 });
 var _lastAnimState;
@@ -105,7 +111,7 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_PAGE_TURN, function (_event, payload
     if (!win.document || !win.document.documentElement) {
         return;
     }
-    var isPaged = readium_css_1.isPaginated();
+    var isPaged = readium_css_inject_1.isPaginated(win.document);
     var maxScrollShift = readium_css_1.calculateMaxScrollShift();
     var goPREVIOUS = payload.go === "PREVIOUS";
     if (!goPREVIOUS) {
@@ -175,19 +181,15 @@ var checkReadyPass = function () {
         return;
     }
     win.READIUM2.readyPassDone = true;
-    if (readium_css_1.DEBUG_VISUALS) {
-        if (win.READIUM2.hashElement) {
-            win.READIUM2.hashElement.setAttribute(styles_1.readPosCssStylesAttr1, "checkReadyPass hashElement");
-        }
-    }
     win.addEventListener("resize", function () {
-        readium_css_1.configureFixedLayout(win.READIUM2.isFixedLayout);
-        scrollToHashRaw(false);
+        var wh = readium_css_inject_1.configureFixedLayout(win.document, win.READIUM2.isFixedLayout, win.READIUM2.fxlViewportWidth, win.READIUM2.fxlViewportHeight, win.innerWidth, win.innerHeight);
+        if (wh) {
+            win.READIUM2.fxlViewportWidth = wh.width;
+            win.READIUM2.fxlViewportHeight = wh.height;
+        }
+        scrollToHashRaw();
     });
     setTimeout(function () {
-        if (!win.READIUM2.isFixedLayout) {
-            scrollToHashRaw(true);
-        }
         win.addEventListener("scroll", function (_ev) {
             if (_ignoreScrollEvent) {
                 _ignoreScrollEvent = false;
@@ -197,7 +199,7 @@ var checkReadyPass = function () {
                 return;
             }
             var x = (readium_css_1.isRTL() ? win.document.documentElement.offsetWidth - 1 : 0);
-            processXY(x, 0);
+            processXYDebounced(x, 0);
         });
     }, 800);
     var useResizeSensor = !win.READIUM2.isFixedLayout;
@@ -206,7 +208,7 @@ var checkReadyPass = function () {
             window.requestAnimationFrame(function (_timestamp) {
                 new ResizeSensor(win.document.body, function () {
                     console.log("ResizeSensor");
-                    scrollToHash();
+                    scrollToHashDebounced();
                 });
             });
         }, 2000);
@@ -215,7 +217,7 @@ var checkReadyPass = function () {
         win.document.body.addEventListener("click", function (ev) {
             var x = ev.clientX;
             var y = ev.clientY;
-            processXY(x, y);
+            processXYDebounced(x, y);
         });
     }
 };
@@ -230,14 +232,14 @@ var notifyReady = function () {
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_WEBVIEW_READY, payload);
 };
 function scrollElementIntoView(element) {
-    if (readium_css_1.DEBUG_VISUALS) {
+    if (readium_css_inject_1.DEBUG_VISUALS) {
         var existings = document.querySelectorAll("*[" + styles_1.readPosCssStylesAttr3 + "]");
         existings.forEach(function (existing) {
             existing.removeAttribute("" + styles_1.readPosCssStylesAttr3);
         });
         element.setAttribute(styles_1.readPosCssStylesAttr3, "scrollElementIntoView");
     }
-    var isPaged = readium_css_1.isPaginated();
+    var isPaged = readium_css_inject_1.isPaginated(win.document);
     if (isPaged) {
         scrollIntoView(element);
     }
@@ -250,7 +252,7 @@ function scrollElementIntoView(element) {
     }
 }
 function scrollIntoView(element) {
-    if (!win.document || !win.document.documentElement || !win.document.body || !readium_css_1.isPaginated()) {
+    if (!win.document || !win.document.documentElement || !win.document.body || !readium_css_inject_1.isPaginated(win.document)) {
         return;
     }
     var rect = element.getBoundingClientRect();
@@ -263,11 +265,11 @@ function scrollIntoView(element) {
     win.document.body.scrollLeft = (readium_css_1.isRTL() ? -1 : 1) *
         (spreadIndex * (columnDimension * (isTwoPage ? 2 : 1)));
 }
-var scrollToHashRaw = function (firstCall) {
+var scrollToHashRaw = function () {
     if (!win.document || !win.document.documentElement) {
         return;
     }
-    var isPaged = readium_css_1.isPaginated();
+    var isPaged = readium_css_inject_1.isPaginated(win.document);
     if (win.READIUM2.locationHashOverride) {
         if (win.READIUM2.locationHashOverride === win.document.body) {
             return;
@@ -275,17 +277,15 @@ var scrollToHashRaw = function (firstCall) {
         notifyReady();
         _ignoreScrollEvent = true;
         scrollElementIntoView(win.READIUM2.locationHashOverride);
-        notifyReadingLocation();
+        notifyReadingLocationDebounced();
         return;
     }
     else if (win.READIUM2.hashElement) {
         win.READIUM2.locationHashOverride = win.READIUM2.hashElement;
         notifyReady();
-        if (!firstCall) {
-            _ignoreScrollEvent = true;
-            scrollElementIntoView(win.READIUM2.hashElement);
-        }
-        notifyReadingLocation();
+        _ignoreScrollEvent = true;
+        scrollElementIntoView(win.READIUM2.hashElement);
+        notifyReadingLocationDebounced();
         return;
     }
     else {
@@ -335,7 +335,7 @@ var scrollToHashRaw = function (firstCall) {
                     processXYRaw(0, y);
                     notifyReady();
                     if (!win.READIUM2.locationHashOverride) {
-                        notifyReadingLocation();
+                        notifyReadingLocationDebounced();
                     }
                     return;
                 }
@@ -361,7 +361,7 @@ var scrollToHashRaw = function (firstCall) {
                         notifyReady();
                         _ignoreScrollEvent = true;
                         scrollElementIntoView(selected);
-                        notifyReadingLocation();
+                        notifyReadingLocationDebounced();
                         return;
                     }
                 }
@@ -380,23 +380,25 @@ var scrollToHashRaw = function (firstCall) {
         }
     }
     notifyReady();
-    notifyReadingLocation();
+    notifyReadingLocationDebounced();
 };
-var scrollToHash = debounce_1.debounce(function () {
-    scrollToHashRaw(false);
+var scrollToHashDebounced = debounce_1.debounce(function () {
+    scrollToHashRaw();
 }, 500);
 var _ignoreScrollEvent = false;
-win.addEventListener("load", function () {
-    checkReadyPass();
-});
 win.addEventListener("DOMContentLoaded", function () {
     if (win.location.hash && win.location.hash.length > 1) {
         win.READIUM2.hashElement = win.document.getElementById(win.location.hash.substr(1));
+        if (readium_css_inject_1.DEBUG_VISUALS) {
+            if (win.READIUM2.hashElement) {
+                win.READIUM2.hashElement.setAttribute(styles_1.readPosCssStylesAttr1, "DOMContentLoaded hashElement");
+            }
+        }
     }
     win.READIUM2.locationHashOverride = undefined;
     win.READIUM2.readyPassDone = false;
     win.READIUM2.readyEventSent = false;
-    var readiumcssJson = {};
+    var readiumcssJson;
     if (win.READIUM2.urlQueryParams) {
         var base64ReadiumCSS = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_CSS];
         if (base64ReadiumCSS) {
@@ -409,20 +411,29 @@ win.addEventListener("DOMContentLoaded", function () {
             }
         }
     }
-    win.READIUM2.isFixedLayout = readiumcssJson && readiumcssJson.isFixedLayout;
-    readium_css_1.configureFixedLayout(win.READIUM2.isFixedLayout);
+    if (readiumcssJson) {
+        win.READIUM2.isFixedLayout = (typeof readiumcssJson.isFixedLayout !== "undefined") ?
+            readiumcssJson.isFixedLayout : false;
+    }
+    var wh = readium_css_inject_1.configureFixedLayout(win.document, win.READIUM2.isFixedLayout, win.READIUM2.fxlViewportWidth, win.READIUM2.fxlViewportHeight, win.innerWidth, win.innerHeight);
+    if (wh) {
+        win.READIUM2.fxlViewportWidth = wh.width;
+        win.READIUM2.fxlViewportHeight = wh.height;
+    }
     if (win.READIUM2.isFixedLayout) {
         notifyReady();
     }
-    readium_css_1.injectDefaultCSS();
-    if (readium_css_1.DEBUG_VISUALS) {
-        readium_css_1.injectReadPosCSS();
+    if (!win.document.documentElement.hasAttribute("data-readiumcss")) {
+        readium_css_inject_1.injectDefaultCSS(win.document);
+        if (readium_css_inject_1.DEBUG_VISUALS) {
+            readium_css_inject_1.injectReadPosCSS(win.document);
+        }
     }
     win.document.body.addEventListener("focusin", function (ev) {
         if (!win.document || !win.document.documentElement) {
             return;
         }
-        var isPaged = readium_css_1.isPaginated();
+        var isPaged = readium_css_inject_1.isPaginated(win.document);
         if (isPaged) {
             setTimeout(function () {
                 win.READIUM2.locationHashOverride = ev.target;
@@ -445,9 +456,19 @@ win.addEventListener("DOMContentLoaded", function () {
         electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_LINK, payload);
         return false;
     }, true);
+    readium_css_1.computeVerticalRTL();
     if (readiumcssJson) {
-        readium_css_1.readiumCSS(readiumcssJson);
+        if (readium_css_1.isVerticalWritingMode() ||
+            !win.document.documentElement.hasAttribute("data-readiumcss")) {
+            readium_css_1.readiumCSS(win.document, readiumcssJson);
+        }
     }
+});
+win.addEventListener("load", function () {
+    if (!win.READIUM2.isFixedLayout) {
+        scrollToHashRaw();
+    }
+    checkReadyPass();
 });
 var processXYRaw = function (x, y) {
     var element;
@@ -467,8 +488,8 @@ var processXYRaw = function (x, y) {
     }
     if (element) {
         win.READIUM2.locationHashOverride = element;
-        notifyReadingLocation();
-        if (readium_css_1.DEBUG_VISUALS) {
+        notifyReadingLocationDebounced();
+        if (readium_css_inject_1.DEBUG_VISUALS) {
             var existings = document.querySelectorAll("*[" + styles_1.readPosCssStylesAttr2 + "]");
             existings.forEach(function (existing) {
                 existing.removeAttribute("" + styles_1.readPosCssStylesAttr2);
@@ -477,11 +498,11 @@ var processXYRaw = function (x, y) {
         }
     }
 };
-var processXY = debounce_1.debounce(function (x, y) {
+var processXYDebounced = debounce_1.debounce(function (x, y) {
     processXYRaw(x, y);
 }, 300);
 exports.computeProgressionData = function () {
-    var isPaged = readium_css_1.isPaginated();
+    var isPaged = readium_css_inject_1.isPaginated(win.document);
     var isTwoPage = readium_css_1.isTwoPageSpread();
     var maxScrollShift = readium_css_1.calculateMaxScrollShift();
     var totalColumns = readium_css_1.calculateTotalColumns();
@@ -489,22 +510,32 @@ exports.computeProgressionData = function () {
     var currentColumn = 0;
     var spreadIndex = 0;
     if (isPaged) {
-        if (readium_css_1.isVerticalWritingMode()) {
-            progressionRatio = win.document.body.scrollTop / maxScrollShift;
+        if (maxScrollShift <= 0) {
+            progressionRatio = 0;
         }
         else {
-            progressionRatio = ((readium_css_1.isRTL() ? -1 : 1) * win.document.body.scrollLeft) / maxScrollShift;
+            if (readium_css_1.isVerticalWritingMode()) {
+                progressionRatio = win.document.body.scrollTop / maxScrollShift;
+            }
+            else {
+                progressionRatio = ((readium_css_1.isRTL() ? -1 : 1) * win.document.body.scrollLeft) / maxScrollShift;
+            }
         }
         var adjustedTotalColumns = (totalColumns - (isTwoPage ? 2 : 1));
         currentColumn = adjustedTotalColumns * progressionRatio;
         currentColumn = Math.round(currentColumn);
     }
     else {
-        if (readium_css_1.isVerticalWritingMode()) {
-            progressionRatio = ((readium_css_1.isRTL() ? -1 : 1) * win.document.body.scrollLeft) / maxScrollShift;
+        if (maxScrollShift <= 0) {
+            progressionRatio = 0;
         }
         else {
-            progressionRatio = win.document.body.scrollTop / maxScrollShift;
+            if (readium_css_1.isVerticalWritingMode()) {
+                progressionRatio = ((readium_css_1.isRTL() ? -1 : 1) * win.document.body.scrollLeft) / maxScrollShift;
+            }
+            else {
+                progressionRatio = win.document.body.scrollTop / maxScrollShift;
+            }
         }
     }
     if (win.READIUM2.locationHashOverride) {
@@ -593,28 +624,26 @@ var notifyReadingLocationRaw = function () {
         progressionData = exports.computeProgressionData();
         progression = progressionData.percentRatio;
     }
+    var pinfo = (progressionData && progressionData.paginationInfo) ?
+        progressionData.paginationInfo : undefined;
     win.READIUM2.locationHashOverrideInfo = {
         cfi: cfi,
         cssSelector: cssSelector,
-        paginationInfo: (progressionData && progressionData.paginationInfo) ?
-            progressionData.paginationInfo : undefined,
+        paginationInfo: pinfo,
         position: undefined,
         progression: progression,
     };
     var payload = win.READIUM2.locationHashOverrideInfo;
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_READING_LOCATION, payload);
-    if (readium_css_1.DEBUG_VISUALS) {
+    if (readium_css_inject_1.DEBUG_VISUALS) {
         var existings = document.querySelectorAll("*[" + styles_1.readPosCssStylesAttr4 + "]");
         existings.forEach(function (existing) {
             existing.removeAttribute("" + styles_1.readPosCssStylesAttr4);
         });
         win.READIUM2.locationHashOverride.setAttribute(styles_1.readPosCssStylesAttr4, "notifyReadingLocationRaw");
-        console.log("notifyReadingLocation CSS SELECTOR: " + cssSelector);
-        console.log("notifyReadingLocation CFI: " + cfi);
-        console.log("notifyReadingLocation PROGRESSION: " + progression);
     }
 };
-var notifyReadingLocation = debounce_1.debounce(function () {
+var notifyReadingLocationDebounced = debounce_1.debounce(function () {
     notifyReadingLocationRaw();
 }, 500);
 //# sourceMappingURL=preload.js.map

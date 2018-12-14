@@ -1,13 +1,9 @@
 import { IEventPayload_R2_EVENT_READIUMCSS } from "../../common/events";
-export declare const DEBUG_VISUALS = false;
-export declare const configureFixedLayout: (isFixedLayout: boolean) => void;
-export declare const injectDefaultCSS: () => void;
-export declare const injectReadPosCSS: () => void;
-export declare function isVerticalWritingMode(): boolean;
-export declare function isRTL(): boolean;
-export declare const isPaginated: () => boolean;
 export declare const calculateMaxScrollShift: () => number;
 export declare const isTwoPageSpread: () => boolean;
 export declare const calculateTotalColumns: () => number;
 export declare function calculateColumnDimension(): number;
-export declare const readiumCSS: (messageJson: IEventPayload_R2_EVENT_READIUMCSS) => void;
+export declare function isVerticalWritingMode(): boolean;
+export declare function isRTL(): boolean;
+export declare function computeVerticalRTL(): void;
+export declare const readiumCSS: (document: Document, messageJson: IEventPayload_R2_EVENT_READIUMCSS) => void;

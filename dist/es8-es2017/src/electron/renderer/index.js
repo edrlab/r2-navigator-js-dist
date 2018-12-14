@@ -11,6 +11,14 @@ const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV =
 exports.DOM_EVENT_HIDE_VIEWPORT = "r2:hide-content-viewport";
 exports.DOM_EVENT_SHOW_VIEWPORT = "r2:show-content-viewport";
 const ELEMENT_ID_SLIDING_VIEWPORT = "r2_navigator_sliding_viewport";
+function isRTL() {
+    if (_publication &&
+        _publication.Metadata &&
+        _publication.Metadata.Direction) {
+        return _publication.Metadata.Direction.toLowerCase() === "rtl";
+    }
+    return false;
+}
 function isFixedLayout(link) {
     if (link && link.Properties) {
         if (link.Properties.Layout === "fixed") {
@@ -20,11 +28,12 @@ function isFixedLayout(link) {
             return false;
         }
     }
-    const isFXL = _publication &&
+    if (_publication &&
         _publication.Metadata &&
-        _publication.Metadata.Rendition &&
-        _publication.Metadata.Rendition.Layout === "fixed";
-    return isFXL;
+        _publication.Metadata.Rendition) {
+        return _publication.Metadata.Rendition.Layout === "fixed";
+    }
+    return false;
 }
 let _getEpubReadingSystem = () => {
     return { name: "Readium2", version: "0.0.0" };
@@ -43,6 +52,7 @@ function __computeReadiumCssJsonMessage(link) {
     const readiumCssJsonMessage = _computeReadiumCssJsonMessage();
     return readiumCssJsonMessage;
 }
+exports.__computeReadiumCssJsonMessage = __computeReadiumCssJsonMessage;
 let _computeReadiumCssJsonMessage = () => {
     return { setCSS: undefined, isFixedLayout: false };
 };
@@ -63,8 +73,8 @@ const _saveReadingLocation = (docHref, locator) => {
             locations: {
                 cfi: locator.cfi ? locator.cfi : undefined,
                 cssSelector: locator.cssSelector ? locator.cssSelector : undefined,
-                position: locator.position ? locator.position : undefined,
-                progression: locator.progression ? locator.progression : undefined,
+                position: (typeof locator.position !== "undefined") ? locator.position : undefined,
+                progression: (typeof locator.progression !== "undefined") ? locator.progression : undefined,
             },
         },
         paginationInfo: locator.paginationInfo,
@@ -188,10 +198,7 @@ function installNavigatorDOM(publication, publicationJsonUrl, rootHtmlElementID,
     slidingViewport.appendChild(_webview1);
     slidingViewport.appendChild(_webview2);
     _rootHtmlElement.appendChild(slidingViewport);
-    const isRTL = _publication.Metadata &&
-        _publication.Metadata.Direction &&
-        _publication.Metadata.Direction.toLowerCase() === "rtl";
-    if (isRTL) {
+    if (isRTL()) {
         _webview1.classList.add("posRight");
         _webview1.style.left = "50%";
     }
@@ -246,12 +253,10 @@ function navLeftOrRight(left) {
         return;
     }
     const activeWebView = getActiveWebView();
-    const isRTL = _publication.Metadata &&
-        _publication.Metadata.Direction &&
-        _publication.Metadata.Direction.toLowerCase() === "rtl";
-    const goPREVIOUS = left ? !isRTL : isRTL;
+    const rtl = isRTL();
+    const goPREVIOUS = left ? !rtl : rtl;
     const payload = {
-        direction: isRTL ? "RTL" : "LTR",
+        direction: rtl ? "RTL" : "LTR",
         go: goPREVIOUS ? "PREVIOUS" : "NEXT",
     };
     activeWebView.send(events_1.R2_EVENT_PAGE_TURN, payload);
