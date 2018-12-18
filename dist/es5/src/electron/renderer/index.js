@@ -325,10 +325,10 @@ function loadLink(hrefFull, previous, useGoto) {
     }
     var rcssJson = __computeReadiumCssJsonMessage(pubLink);
     var rcssJsonstr = JSON.stringify(rcssJson, null, "");
-    var rcssJsonstrBase64 = window.btoa(rcssJsonstr);
+    var rcssJsonstrBase64 = UrlUtils_1.encodeURIComponent_RFC3986(new Buffer(rcssJsonstr).toString("base64"));
     var rersJson = _getEpubReadingSystem();
     var rersJsonstr = JSON.stringify(rersJson, null, "");
-    var rersJsonstrBase64 = window.btoa(rersJsonstr);
+    var rersJsonstrBase64 = UrlUtils_1.encodeURIComponent_RFC3986(new Buffer(rersJsonstr).toString("base64"));
     linkUri.search(function (data) {
         data[url_params_1.URL_PARAM_CSS] = rcssJsonstrBase64;
         data[url_params_1.URL_PARAM_EPUBREADINGSYSTEM] = rersJsonstrBase64;

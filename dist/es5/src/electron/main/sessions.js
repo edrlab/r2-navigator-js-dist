@@ -1,45 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var crypto = require("crypto");
 var debug_ = require("debug");
 var electron_1 = require("electron");
 var sessions_1 = require("../common/sessions");
 var debug = debug_("r2:navigator#electron/main/sessions");
-var debugHttps = debug_("r2:https");
-var IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 function secureSessions(server) {
     var filter = { urls: ["*", "*://*/*"] };
     var onBeforeSendHeadersCB = function (details, callback) {
         if (server.isSecured()) {
-            var info = server.serverInfo();
-            if (info && info.trustKey && info.trustCheck && info.trustCheckIV) {
-                var t1 = void 0;
-                if (IS_DEV) {
-                    t1 = process.hrtime();
-                }
-                var encrypteds = [];
-                var encryptStream = crypto.createCipheriv("aes-256-cbc", info.trustKey, info.trustCheckIV);
-                encryptStream.setAutoPadding(true);
-                var now = Date.now();
-                var jsonStr = "{\"url\":\"" + details.url + "\",\"time\":" + now + "}";
-                var buff1 = encryptStream.update(jsonStr, "utf8");
-                if (buff1) {
-                    encrypteds.push(buff1);
-                }
-                var buff2 = encryptStream.final();
-                if (buff2) {
-                    encrypteds.push(buff2);
-                }
-                var encrypted = Buffer.concat(encrypteds);
-                var base64 = new Buffer(encrypted).toString("base64");
-                details.requestHeaders["X-" + info.trustCheck] = base64;
-                if (IS_DEV) {
-                    var t2 = process.hrtime(t1);
-                    var seconds = t2[0];
-                    var nanoseconds = t2[1];
-                    var milliseconds = nanoseconds / 1e6;
-                    debugHttps("< A > " + seconds + "s " + milliseconds + "ms [ " + details.url + " ]");
-                }
+            var header = server.getSecureHTTPHeader(details.url);
+            if (header) {
+                details.requestHeaders[header.name] = header.value;
             }
         }
         callback({ cancel: false, requestHeaders: details.requestHeaders });

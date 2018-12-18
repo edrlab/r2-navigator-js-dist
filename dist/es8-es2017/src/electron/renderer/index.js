@@ -325,10 +325,10 @@ function loadLink(hrefFull, previous, useGoto) {
     }
     const rcssJson = __computeReadiumCssJsonMessage(pubLink);
     const rcssJsonstr = JSON.stringify(rcssJson, null, "");
-    const rcssJsonstrBase64 = window.btoa(rcssJsonstr);
+    const rcssJsonstrBase64 = UrlUtils_1.encodeURIComponent_RFC3986(new Buffer(rcssJsonstr).toString("base64"));
     const rersJson = _getEpubReadingSystem();
     const rersJsonstr = JSON.stringify(rersJson, null, "");
-    const rersJsonstrBase64 = window.btoa(rersJsonstr);
+    const rersJsonstrBase64 = UrlUtils_1.encodeURIComponent_RFC3986(new Buffer(rersJsonstr).toString("base64"));
     linkUri.search((data) => {
         data[url_params_1.URL_PARAM_CSS] = rcssJsonstrBase64;
         data[url_params_1.URL_PARAM_EPUBREADINGSYSTEM] = rersJsonstrBase64;
