@@ -107,6 +107,7 @@ function handleLink(href, previous, useGoto) {
     var okay = href.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://");
     if (!okay && _publicationJsonUrl) {
         var prefix = _publicationJsonUrl.replace("manifest.json", "");
+        console.log("handleLink: ", href, " -- ", prefix);
         okay = decodeURIComponent(href).startsWith(decodeURIComponent(prefix));
     }
     if (okay) {
@@ -325,10 +326,10 @@ function loadLink(hrefFull, previous, useGoto) {
     }
     var rcssJson = __computeReadiumCssJsonMessage(pubLink);
     var rcssJsonstr = JSON.stringify(rcssJson, null, "");
-    var rcssJsonstrBase64 = UrlUtils_1.encodeURIComponent_RFC3986(new Buffer(rcssJsonstr).toString("base64"));
+    var rcssJsonstrBase64 = new Buffer(rcssJsonstr).toString("base64");
     var rersJson = _getEpubReadingSystem();
     var rersJsonstr = JSON.stringify(rersJson, null, "");
-    var rersJsonstrBase64 = UrlUtils_1.encodeURIComponent_RFC3986(new Buffer(rersJsonstr).toString("base64"));
+    var rersJsonstrBase64 = new Buffer(rersJsonstr).toString("base64");
     linkUri.search(function (data) {
         data[url_params_1.URL_PARAM_CSS] = rcssJsonstrBase64;
         data[url_params_1.URL_PARAM_EPUBREADINGSYSTEM] = rersJsonstrBase64;
@@ -397,10 +398,12 @@ function loadLink(hrefFull, previous, useGoto) {
     console.log("####### >>> ---");
     console.log(activeWebView.READIUM2.id);
     console.log(pubLink.Href);
+    console.log(uriStr);
     console.log(linkUri.hash());
     console.log(linkUri.fragment());
     console.log(linkUri.search(true)[url_params_1.URL_PARAM_GOTO]);
     console.log(linkUri.search(true)[url_params_1.URL_PARAM_PREVIOUS]);
+    console.log(linkUri.search(true)[url_params_1.URL_PARAM_CSS]);
     console.log("####### >>> ---");
     activeWebView.READIUM2.link = pubLink;
     var needConvert = _publicationJsonUrl.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://");
