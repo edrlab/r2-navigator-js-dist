@@ -3,9 +3,7 @@ import { Publication } from "r2-shared-js/dist/es7-es2016/src/models/publication
 import { Link } from "r2-shared-js/dist/es7-es2016/src/models/publication-link";
 import { IEventPayload_R2_EVENT_READING_LOCATION_PAGINATION_INFO, IEventPayload_R2_EVENT_READIUMCSS } from "../common/events";
 import { INameVersion } from "./webview/epubReadingSystem";
-export declare const DOM_EVENT_HIDE_VIEWPORT = "r2:hide-content-viewport";
-export declare const DOM_EVENT_SHOW_VIEWPORT = "r2:show-content-viewport";
-export declare function setEpubReadingSystemJsonGetter(func: () => INameVersion): void;
+export declare function setEpubReadingSystemInfo(nv: INameVersion): void;
 export declare function __computeReadiumCssJsonMessage(link: Link | undefined): IEventPayload_R2_EVENT_READIUMCSS;
 export declare function setReadiumCssJsonGetter(func: () => IEventPayload_R2_EVENT_READIUMCSS): void;
 export interface LocatorExtended {

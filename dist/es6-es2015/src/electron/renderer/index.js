@@ -5,12 +5,12 @@ const debounce_1 = require("debounce");
 const electron_1 = require("electron");
 const events_1 = require("../common/events");
 const sessions_1 = require("../common/sessions");
+const console_redirect_1 = require("./common/console-redirect");
 const url_params_1 = require("./common/url-params");
 const URI = require("urijs");
 const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
-exports.DOM_EVENT_HIDE_VIEWPORT = "r2:hide-content-viewport";
-exports.DOM_EVENT_SHOW_VIEWPORT = "r2:show-content-viewport";
 const ELEMENT_ID_SLIDING_VIEWPORT = "r2_navigator_sliding_viewport";
+console_redirect_1.consoleRedirect("r2:navigator#electron/renderer/index", process.stdout, process.stderr, true);
 function isRTL() {
     if (_publication &&
         _publication.Metadata &&
@@ -35,13 +35,11 @@ function isFixedLayout(link) {
     }
     return false;
 }
-let _getEpubReadingSystem = () => {
-    return { name: "Readium2", version: "0.0.0" };
-};
-function setEpubReadingSystemJsonGetter(func) {
-    _getEpubReadingSystem = func;
+let _epubReadingSystemNameVersion = { name: "Readium2", version: "0.0.0" };
+function setEpubReadingSystemInfo(nv) {
+    _epubReadingSystemNameVersion = nv;
 }
-exports.setEpubReadingSystemJsonGetter = setEpubReadingSystemJsonGetter;
+exports.setEpubReadingSystemInfo = setEpubReadingSystemInfo;
 function __computeReadiumCssJsonMessage(link) {
     if (isFixedLayout(link)) {
         return { setCSS: undefined, isFixedLayout: true };
@@ -327,7 +325,7 @@ function loadLink(hrefFull, previous, useGoto) {
     const rcssJson = __computeReadiumCssJsonMessage(pubLink);
     const rcssJsonstr = JSON.stringify(rcssJson, null, "");
     const rcssJsonstrBase64 = new Buffer(rcssJsonstr).toString("base64");
-    const rersJson = _getEpubReadingSystem();
+    const rersJson = _epubReadingSystemNameVersion;
     const rersJsonstr = JSON.stringify(rersJson, null, "");
     const rersJsonstrBase64 = new Buffer(rersJsonstr).toString("base64");
     linkUri.search((data) => {
@@ -389,11 +387,6 @@ function loadLink(hrefFull, previous, useGoto) {
         webviewToReuse.send(events_1.R2_EVENT_SCROLLTO, payload);
         return;
     }
-    if (!isFixedLayout(pubLink)) {
-        if (_rootHtmlElement) {
-            _rootHtmlElement.dispatchEvent(new Event(exports.DOM_EVENT_HIDE_VIEWPORT));
-        }
-    }
     const uriStr = linkUri.toString();
     console.log("####### >>> ---");
     console.log(activeWebView.READIUM2.id);
@@ -444,9 +437,6 @@ function createWebView(preloadScriptPath) {
         else if (event.channel === events_1.R2_EVENT_WEBVIEW_READY) {
             const payload = event.args[0];
             console.log("WEBVIEW READY: " + payload.href);
-            if (_rootHtmlElement) {
-                _rootHtmlElement.dispatchEvent(new Event(exports.DOM_EVENT_SHOW_VIEWPORT));
-            }
         }
         else if (event.channel === events_1.R2_EVENT_READING_LOCATION) {
             const payload = event.args[0];
@@ -507,18 +497,8 @@ const adjustResize = (webview) => {
 const onResizeDebounced = debounce_1.debounce(() => {
     adjustResize(_webview1);
     adjustResize(_webview2);
-    setTimeout(() => {
-        if (_rootHtmlElement) {
-            _rootHtmlElement.dispatchEvent(new Event(exports.DOM_EVENT_SHOW_VIEWPORT));
-        }
-    }, 1000);
 }, 200);
 window.addEventListener("resize", () => {
-    if (!isFixedLayout(_webview1.READIUM2.link)) {
-        if (_rootHtmlElement) {
-            _rootHtmlElement.dispatchEvent(new Event(exports.DOM_EVENT_HIDE_VIEWPORT));
-        }
-    }
     onResizeDebounced();
 });
 electron_1.ipcRenderer.on(events_1.R2_EVENT_LINK, (_event, payload) => {

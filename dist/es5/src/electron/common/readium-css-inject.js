@@ -2,8 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = require("tslib");
 var xmldom = require("xmldom");
-var styles_1 = require("../renderer/webview/styles");
 var readium_css_settings_1 = require("./readium-css-settings");
+var styles_1 = require("./styles");
 exports.DEBUG_VISUALS = false;
 var CSS_CLASS_DARK_THEME = "mdc-theme--dark";
 function isDocVertical(document) {

@@ -5,15 +5,15 @@ var debounce_1 = require("debounce");
 var electron_1 = require("electron");
 var events_1 = require("../../common/events");
 var readium_css_inject_1 = require("../../common/readium-css-inject");
+var styles_1 = require("../../common/styles");
 var animateProperty_1 = require("../common/animateProperty");
+var console_redirect_1 = require("../common/console-redirect");
 var cssselector2_1 = require("../common/cssselector2");
 var easings_1 = require("../common/easings");
 var querystring_1 = require("../common/querystring");
 var url_params_1 = require("../common/url-params");
-var console_redirect_1 = require("../console-redirect");
 var epubReadingSystem_1 = require("./epubReadingSystem");
 var readium_css_1 = require("./readium-css");
-var styles_1 = require("./styles");
 console_redirect_1.consoleRedirect("r2:navigator#electron/renderer/webview/preload", process.stdout, process.stderr, true);
 var win = global.window;
 win.READIUM2 = {

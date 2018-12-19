@@ -5,15 +5,15 @@ const debounce_1 = require("debounce");
 const electron_1 = require("electron");
 const events_1 = require("../../common/events");
 const readium_css_inject_1 = require("../../common/readium-css-inject");
+const styles_1 = require("../../common/styles");
 const animateProperty_1 = require("../common/animateProperty");
+const console_redirect_1 = require("../common/console-redirect");
 const cssselector2_1 = require("../common/cssselector2");
 const easings_1 = require("../common/easings");
 const querystring_1 = require("../common/querystring");
 const url_params_1 = require("../common/url-params");
-const console_redirect_1 = require("../console-redirect");
 const epubReadingSystem_1 = require("./epubReadingSystem");
 const readium_css_1 = require("./readium-css");
-const styles_1 = require("./styles");
 console_redirect_1.consoleRedirect("r2:navigator#electron/renderer/webview/preload", process.stdout, process.stderr, true);
 const win = global.window;
 win.READIUM2 = {

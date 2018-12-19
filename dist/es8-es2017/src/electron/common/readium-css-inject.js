@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const xmldom = require("xmldom");
-const styles_1 = require("../renderer/webview/styles");
 const readium_css_settings_1 = require("./readium-css-settings");
+const styles_1 = require("./styles");
 exports.DEBUG_VISUALS = false;
 const CSS_CLASS_DARK_THEME = "mdc-theme--dark";
 function isDocVertical(document) {

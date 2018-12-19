@@ -5,6 +5,22 @@ const transformer_html_1 = require("r2-shared-js/dist/es6-es2015/src/transform/t
 const express = require("express");
 const readium_css_inject_1 = require("../common/readium-css-inject");
 const readium_css_settings_1 = require("../common/readium-css-settings");
+function isFixedLayout(publication, link) {
+    if (link && link.Properties) {
+        if (link.Properties.Layout === "fixed") {
+            return true;
+        }
+        if (typeof link.Properties.Layout !== "undefined") {
+            return false;
+        }
+    }
+    if (publication &&
+        publication.Metadata &&
+        publication.Metadata.Rendition) {
+        return publication.Metadata.Rendition.Layout === "fixed";
+    }
+    return false;
+}
 function setupReadiumCSS(server, folderPath, readiumCssGetter) {
     const staticOptions = {
         dotfiles: "ignore",
@@ -25,8 +41,11 @@ function setupReadiumCSS(server, folderPath, readiumCssGetter) {
             if (link && link.TypeLink) {
                 mediaType = link.TypeLink;
             }
-            const readiumcssJson = readiumCssGetter(publication, link);
+            const readiumcssJson = isFixedLayout(publication, link) ?
+                { setCSS: undefined, isFixedLayout: true } :
+                readiumCssGetter(publication, link);
             if (readiumcssJson) {
+                readiumcssJson.urlRoot = server.serverUrl();
                 return readium_css_inject_1.transformHTML(str, readiumcssJson, mediaType);
             }
             else {
