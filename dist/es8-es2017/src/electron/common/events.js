@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.R2_EVENT_READIUMCSS = "R2_EVENT_READIUMCSS";
+exports.R2_EVENT_DEBUG_VISUALS = "R2_EVENT_DEBUG_VISUALS";
 exports.R2_EVENT_SCROLLTO = "R2_EVENT_SCROLLTO";
 exports.R2_EVENT_PAGE_TURN = "R2_EVENT_PAGE_TURN";
 exports.R2_EVENT_PAGE_TURN_RES = "R2_EVENT_PAGE_TURN_RES";

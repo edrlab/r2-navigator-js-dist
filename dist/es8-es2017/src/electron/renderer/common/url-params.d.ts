@@ -1,4 +1,5 @@
-export declare const URL_PARAM_PREVIOUS = "readiumprevious";
-export declare const URL_PARAM_GOTO = "readiumgoto";
-export declare const URL_PARAM_CSS = "readiumcss";
-export declare const URL_PARAM_EPUBREADINGSYSTEM = "readiumEpubReadingSystem";
+export declare const URL_PARAM_PREVIOUS = "r2_PREV";
+export declare const URL_PARAM_GOTO = "r2_GOTO";
+export declare const URL_PARAM_CSS = "r2_CSS";
+export declare const URL_PARAM_EPUBREADINGSYSTEM = "r2_ERS";
+export declare const URL_PARAM_DEBUG_VISUALS = "r2_DEBUG";

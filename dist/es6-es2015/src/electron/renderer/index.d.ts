@@ -15,6 +15,6 @@ export declare function setReadingLocationSaver(func: (locator: LocatorExtended)
 export declare function readiumCssOnOff(): void;
 export declare function handleLink(href: string, previous: boolean | undefined, useGoto: boolean): void;
 export declare function handleLinkUrl(href: string): void;
-export declare function handleLinkLocator(location: Locator): void;
+export declare function handleLinkLocator(location: Locator | undefined): void;
 export declare function installNavigatorDOM(publication: Publication, publicationJsonUrl: string, rootHtmlElementID: string, preloadScriptPath: string, location: Locator | undefined): void;
 export declare function navLeftOrRight(left: boolean): void;

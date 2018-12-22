@@ -12,7 +12,6 @@ if (origin.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
     origin = origin.replace(/\/pub\/.*/, "");
 }
 const urlRootReadiumCSS = origin + "/" + readium_css_settings_1.READIUM_CSS_URL_PATH + "/";
-console.log(urlRootReadiumCSS);
 exports.calculateMaxScrollShift = () => {
     if (!win || !win.document || !win.document.body || !win.document.documentElement) {
         return 0;
@@ -133,6 +132,8 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_READIUMCSS, (_event, payload) => {
     exports.readiumCSS(win.document, payload);
 });
 exports.readiumCSS = (document, messageJson) => {
+    console.log("urlRootReadiumCSS: ", urlRootReadiumCSS);
+    console.log("messageJson.urlRoot: ", messageJson.urlRoot);
     readium_css_inject_1.readiumCSSSet(document, messageJson, urlRootReadiumCSS, _isVerticalWritingMode, _isRTL);
 };
 //# sourceMappingURL=readium-css.js.map

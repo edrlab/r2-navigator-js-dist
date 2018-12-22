@@ -1,16 +1,23 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
+if (IS_DEV) {
+    var cr = require("./common/console-redirect");
+    cr.consoleRedirect("r2:navigator#electron/renderer/index", process.stdout, process.stderr, true);
+}
 var UrlUtils_1 = require("r2-utils-js/dist/es5/src/_utils/http/UrlUtils");
 var debounce_1 = require("debounce");
+var debug_ = require("debug");
 var electron_1 = require("electron");
 var events_1 = require("../common/events");
 var sessions_1 = require("../common/sessions");
-var console_redirect_1 = require("./common/console-redirect");
 var url_params_1 = require("./common/url-params");
 var URI = require("urijs");
-var IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
+var CLASS_POS_RIGHT = "r2_posRight";
+var CLASS_SHIFT_LEFT = "r2_shiftedLeft";
+var CLASS_ANIMATED = "r2_animated";
 var ELEMENT_ID_SLIDING_VIEWPORT = "r2_navigator_sliding_viewport";
-console_redirect_1.consoleRedirect("r2:navigator#electron/renderer/index", process.stdout, process.stderr, true);
+var debug = debug_("r2:navigator#electron/renderer/index");
 function isRTL() {
     if (_publication &&
         _publication.Metadata &&
@@ -90,14 +97,9 @@ function readiumCssOnOff() {
         var payload1 = __computeReadiumCssJsonMessage(_webview1.READIUM2.link);
         _webview1.send(events_1.R2_EVENT_READIUMCSS, payload1);
     }
-    if (_webview2) {
-        var payload2 = __computeReadiumCssJsonMessage(_webview2.READIUM2.link);
-        _webview2.send(events_1.R2_EVENT_READIUMCSS, payload2);
-    }
 }
 exports.readiumCssOnOff = readiumCssOnOff;
 var _webview1;
-var _webview2;
 var _publication;
 var _publicationJsonUrl;
 var _rootHtmlElement;
@@ -105,15 +107,15 @@ function handleLink(href, previous, useGoto) {
     var okay = href.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://");
     if (!okay && _publicationJsonUrl) {
         var prefix = _publicationJsonUrl.replace("manifest.json", "");
-        console.log("handleLink: ", href, " -- ", prefix);
+        debug("handleLink: ", href, " -- ", prefix);
         okay = decodeURIComponent(href).startsWith(decodeURIComponent(prefix));
     }
     if (okay) {
         loadLink(href, previous, useGoto);
     }
     else {
-        console.log("EXTERNAL LINK:");
-        console.log(href);
+        debug("EXTERNAL LINK:");
+        debug(href);
         electron_1.shell.openExternal(href);
     }
 }
@@ -156,12 +158,11 @@ function handleLinkLocator(location) {
         }
     }
     if (linkToLoad) {
-        var useGoto = typeof linkToLoadGoto !== "undefined" &&
-            typeof linkToLoadGoto.cssSelector !== "undefined";
+        var useGoto = typeof linkToLoadGoto !== "undefined";
         var hrefToLoad = _publicationJsonUrl + "/../" + linkToLoad.Href +
-            ((useGoto && linkToLoadGoto && linkToLoadGoto.cssSelector) ?
-                ("?" + url_params_1.URL_PARAM_GOTO + "=" +
-                    UrlUtils_1.encodeURIComponent_RFC3986(linkToLoadGoto.cssSelector)) : "");
+            ((useGoto) ? ("?" + url_params_1.URL_PARAM_GOTO + "=" +
+                UrlUtils_1.encodeURIComponent_RFC3986(new Buffer(JSON.stringify(linkToLoadGoto, null, "")).toString("base64"))) :
+                "");
         handleLink(hrefToLoad, undefined, useGoto);
     }
 }
@@ -170,12 +171,36 @@ function installNavigatorDOM(publication, publicationJsonUrl, rootHtmlElementID,
     _publication = publication;
     _publicationJsonUrl = publicationJsonUrl;
     if (IS_DEV) {
-        window.READIUM2_PUB = _publication;
-        window.READIUM2_PUBURL = _publicationJsonUrl;
+        debug("|||||||||||||| installNavigatorDOM: ", JSON.stringify(location));
+        var debugVisuals = (window.localStorage &&
+            window.localStorage.getItem(url_params_1.URL_PARAM_DEBUG_VISUALS) === "true") ? true : false;
+        debug("debugVisuals GET: ", debugVisuals);
+        window.READIUM2 = {
+            DEBUG_VISUALS: debugVisuals,
+            publication: _publication,
+            publicationURL: _publicationJsonUrl,
+        };
+        window.READIUM2.debug = function (debugVisualz) {
+            debug("debugVisuals SET: ", debugVisualz);
+            window.READIUM2.DEBUG_VISUALS = debugVisualz;
+            if (_webview1) {
+                _webview1.send(events_1.R2_EVENT_DEBUG_VISUALS, debugVisualz ? "true" : "false");
+            }
+            if (window.localStorage) {
+                window.localStorage.setItem(url_params_1.URL_PARAM_DEBUG_VISUALS, debugVisualz ? "true" : "false");
+            }
+            setTimeout(function () {
+                var loc = getCurrentReadingLocation();
+                debug("|||||||||||||| getCurrentReadingLocation: ", JSON.stringify(loc));
+                if (loc) {
+                    handleLinkLocator(loc.locator);
+                }
+            }, 100);
+        };
     }
     _rootHtmlElement = document.getElementById(rootHtmlElementID);
     if (!_rootHtmlElement) {
-        console.log("!rootHtmlElement ???");
+        debug("!rootHtmlElement ???");
         return;
     }
     var slidingViewport = document.createElement("div");
@@ -188,62 +213,14 @@ function installNavigatorDOM(publication, publicationJsonUrl, rootHtmlElementID,
         link: undefined,
     };
     _webview1.setAttribute("id", "webview1");
-    _webview2 = createWebView(preloadScriptPath);
-    _webview2.READIUM2 = {
-        id: 2,
-        link: undefined,
-    };
-    _webview2.setAttribute("id", "webview2");
     slidingViewport.appendChild(_webview1);
-    slidingViewport.appendChild(_webview2);
     _rootHtmlElement.appendChild(slidingViewport);
     if (isRTL()) {
-        _webview1.classList.add("posRight");
+        _webview1.classList.add(CLASS_POS_RIGHT);
         _webview1.style.left = "50%";
     }
-    else {
-        _webview2.classList.add("posRight");
-        _webview2.style.left = "50%";
-    }
-    var linkToLoad;
-    var linkToLoadGoto;
-    if (location && location.href) {
-        if (_publication.Spine && _publication.Spine.length) {
-            linkToLoad = _publication.Spine.find(function (spineLink) {
-                return spineLink.Href === location.href;
-            });
-            if (linkToLoad && location.locations) {
-                linkToLoadGoto = location.locations;
-            }
-        }
-        if (!linkToLoad &&
-            _publication.Resources && _publication.Resources.length) {
-            linkToLoad = _publication.Resources.find(function (resLink) {
-                return resLink.Href === location.href;
-            });
-            if (linkToLoad && location.locations) {
-                linkToLoadGoto = location.locations;
-            }
-        }
-    }
-    if (!linkToLoad) {
-        if (_publication.Spine && _publication.Spine.length) {
-            var firstLinear = _publication.Spine[0];
-            if (firstLinear) {
-                linkToLoad = firstLinear;
-            }
-        }
-    }
     setTimeout(function () {
-        if (linkToLoad) {
-            var useGoto = typeof linkToLoadGoto !== "undefined" &&
-                typeof linkToLoadGoto.cssSelector !== "undefined";
-            var hrefToLoad = _publicationJsonUrl + "/../" + linkToLoad.Href +
-                ((useGoto && linkToLoadGoto && linkToLoadGoto.cssSelector) ?
-                    ("?" + url_params_1.URL_PARAM_GOTO + "=" +
-                        UrlUtils_1.encodeURIComponent_RFC3986(linkToLoadGoto.cssSelector)) : "");
-            handleLink(hrefToLoad, undefined, useGoto);
-        }
+        handleLinkLocator(location);
     }, 100);
 }
 exports.installNavigatorDOM = installNavigatorDOM;
@@ -262,25 +239,7 @@ function navLeftOrRight(left) {
 }
 exports.navLeftOrRight = navLeftOrRight;
 var getActiveWebView = function () {
-    var activeWebView;
-    var slidingViewport = document.getElementById(ELEMENT_ID_SLIDING_VIEWPORT);
-    if (slidingViewport.classList.contains("shiftedLeft")) {
-        if (_webview1.classList.contains("posRight")) {
-            activeWebView = _webview1;
-        }
-        else {
-            activeWebView = _webview2;
-        }
-    }
-    else {
-        if (_webview2.classList.contains("posRight")) {
-            activeWebView = _webview1;
-        }
-        else {
-            activeWebView = _webview2;
-        }
-    }
-    return activeWebView;
+    return _webview1;
 };
 function loadLink(hrefFull, previous, useGoto) {
     if (!_publication || !_publicationJsonUrl) {
@@ -319,7 +278,7 @@ function loadLink(hrefFull, previous, useGoto) {
         });
     }
     if (!pubLink) {
-        console.log("FATAL WEBVIEW READIUM2_LINK ??!! " + hrefFull + " ==> " + linkPath);
+        debug("FATAL WEBVIEW READIUM2_LINK ??!! " + hrefFull + " ==> " + linkPath);
         return;
     }
     var rcssJson = __computeReadiumCssJsonMessage(pubLink);
@@ -331,48 +290,49 @@ function loadLink(hrefFull, previous, useGoto) {
     linkUri.search(function (data) {
         data[url_params_1.URL_PARAM_CSS] = rcssJsonstrBase64;
         data[url_params_1.URL_PARAM_EPUBREADINGSYSTEM] = rersJsonstrBase64;
+        data[url_params_1.URL_PARAM_DEBUG_VISUALS] = (IS_DEV && window.READIUM2.DEBUG_VISUALS) ?
+            "true" : "false";
     });
     var activeWebView = getActiveWebView();
     var wv1AlreadyLoaded = _webview1.READIUM2.link === pubLink;
-    var wv2AlreadyLoaded = _webview2.READIUM2.link === pubLink;
-    if (wv1AlreadyLoaded || wv2AlreadyLoaded) {
+    if (wv1AlreadyLoaded) {
         var goto = useGoto ? linkUri.search(true)[url_params_1.URL_PARAM_GOTO] : undefined;
         var hash = useGoto ? undefined : linkUri.fragment();
-        console.log("ALREADY LOADED: " + pubLink.Href);
-        var webviewToReuse = wv1AlreadyLoaded ? _webview1 : _webview2;
+        debug("ALREADY LOADED: " + pubLink.Href);
+        var webviewToReuse = _webview1;
         if (webviewToReuse !== activeWebView) {
-            console.log("INTO VIEW ...");
+            debug("INTO VIEW ...");
             var slidingView = document.getElementById(ELEMENT_ID_SLIDING_VIEWPORT);
             if (slidingView) {
                 var animate = true;
                 if (goto || hash) {
-                    console.log("DISABLE ANIM");
+                    debug("DISABLE ANIM");
                     animate = false;
                 }
                 else if (previous) {
-                    if (!slidingView.classList.contains("shiftedLeft")) {
-                        console.log("DISABLE ANIM");
+                    if (!slidingView.classList.contains(CLASS_SHIFT_LEFT)) {
+                        debug("DISABLE ANIM");
                         animate = false;
                     }
                 }
                 if (animate) {
-                    if (!slidingView.classList.contains("animated")) {
-                        slidingView.classList.add("animated");
+                    if (!slidingView.classList.contains(CLASS_ANIMATED)) {
+                        slidingView.classList.add(CLASS_ANIMATED);
                         slidingView.style.transition = "left 500ms ease-in-out";
                     }
                 }
                 else {
-                    if (slidingView.classList.contains("animated")) {
-                        slidingView.classList.remove("animated");
+                    if (slidingView.classList.contains(CLASS_ANIMATED)) {
+                        slidingView.classList.remove(CLASS_ANIMATED);
                         slidingView.style.transition = "none";
                     }
                 }
-                if (slidingView.classList.contains("shiftedLeft")) {
-                    slidingView.classList.remove("shiftedLeft");
+                if (slidingView.classList.contains(CLASS_SHIFT_LEFT)) {
+                    slidingView.classList.remove(CLASS_SHIFT_LEFT);
                     slidingView.style.left = "0";
                 }
                 else {
-                    slidingView.classList.add("shiftedLeft");
+                    slidingView.classList.add(CLASS_SHIFT_LEFT);
                     slidingView.style.left = "-100%";
                 }
             }
@@ -382,28 +342,35 @@ function loadLink(hrefFull, previous, useGoto) {
             hash: hash,
             previous: previous ? true : false,
         };
-        var msgStr = JSON.stringify(payload);
-        console.log(msgStr);
+        if (IS_DEV) {
+            var msgStr = JSON.stringify(payload);
+            debug(msgStr);
+        }
         webviewToReuse.send(events_1.R2_EVENT_SCROLLTO, payload);
         return;
     }
     var uriStr = linkUri.toString();
-    console.log("####### >>> ---");
-    console.log(activeWebView.READIUM2.id);
-    console.log(pubLink.Href);
-    console.log(uriStr);
-    console.log(linkUri.hash());
-    console.log(linkUri.fragment());
-    console.log(linkUri.search(true)[url_params_1.URL_PARAM_GOTO]);
-    console.log(linkUri.search(true)[url_params_1.URL_PARAM_PREVIOUS]);
-    console.log(linkUri.search(true)[url_params_1.URL_PARAM_CSS]);
-    console.log("####### >>> ---");
+    if (IS_DEV) {
+        debug("####### >>> ---");
+        debug(activeWebView.READIUM2.id);
+        debug(pubLink.Href);
+        debug(uriStr);
+        debug(linkUri.hash());
+        debug(linkUri.fragment());
+        var gto = linkUri.search(true)[url_params_1.URL_PARAM_GOTO];
+        debug(gto ? (new Buffer(gto, "base64").toString("utf8")) : "");
+        debug(linkUri.search(true)[url_params_1.URL_PARAM_PREVIOUS]);
+        debug(linkUri.search(true)[url_params_1.URL_PARAM_CSS]);
+        debug("####### >>> ---");
+    }
     activeWebView.READIUM2.link = pubLink;
     var needConvert = _publicationJsonUrl.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://");
     var uriStr_ = uriStr.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://") ?
         uriStr : (needConvert ? sessions_1.convertHttpUrlToCustomScheme(uriStr) : uriStr);
-    console.log("setAttribute SRC:");
-    console.log(uriStr_);
+    if (IS_DEV) {
+        debug("setAttribute SRC:");
+        debug(uriStr_);
+    }
     activeWebView.setAttribute("src", uriStr_);
 }
 function createWebView(preloadScriptPath) {
@@ -436,7 +403,7 @@ function createWebView(preloadScriptPath) {
         }
         else if (event.channel === events_1.R2_EVENT_WEBVIEW_READY) {
             var payload = event.args[0];
-            console.log("WEBVIEW READY: " + payload.href);
+            debug("WEBVIEW READY: " + payload.href);
         }
         else if (event.channel === events_1.R2_EVENT_READING_LOCATION) {
             var payload = event.args[0];
@@ -451,7 +418,7 @@ function createWebView(preloadScriptPath) {
             var payload = event.args[0];
             var goPREVIOUS = payload.go === "PREVIOUS";
             if (!webview.READIUM2.link) {
-                console.log("WEBVIEW READIUM2_LINK ??!!");
+                debug("WEBVIEW READIUM2_LINK ??!!");
                 return;
             }
             var nextOrPreviousSpineItem = void 0;
@@ -475,8 +442,8 @@ function createWebView(preloadScriptPath) {
             }
         }
         else {
-            console.log("webview1 ipc-message");
-            console.log(event.channel);
+            debug("webview1 ipc-message");
+            debug(event.channel);
         }
     });
     return wv;
@@ -496,14 +463,13 @@ var adjustResize = function (webview) {
 };
 var onResizeDebounced = debounce_1.debounce(function () {
     adjustResize(_webview1);
-    adjustResize(_webview2);
 }, 200);
 window.addEventListener("resize", function () {
     onResizeDebounced();
 });
 electron_1.ipcRenderer.on(events_1.R2_EVENT_LINK, function (_event, payload) {
-    console.log("R2_EVENT_LINK");
-    console.log(payload.url);
+    debug("R2_EVENT_LINK");
+    debug(payload.url);
     handleLinkUrl(payload.url);
 });
 //# sourceMappingURL=index.js.map

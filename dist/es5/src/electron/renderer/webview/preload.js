@@ -1,22 +1,28 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
+if (IS_DEV) {
+    var cr = require("../common/console-redirect");
+    cr.consoleRedirect("r2:navigator#electron/renderer/webview/preload", process.stdout, process.stderr, true);
+}
 var ResizeSensor = require("css-element-queries/src/ResizeSensor");
 var debounce_1 = require("debounce");
+var debug_ = require("debug");
 var electron_1 = require("electron");
 var events_1 = require("../../common/events");
 var readium_css_inject_1 = require("../../common/readium-css-inject");
 var styles_1 = require("../../common/styles");
 var animateProperty_1 = require("../common/animateProperty");
-var console_redirect_1 = require("../common/console-redirect");
 var cssselector2_1 = require("../common/cssselector2");
 var easings_1 = require("../common/easings");
 var querystring_1 = require("../common/querystring");
 var url_params_1 = require("../common/url-params");
 var epubReadingSystem_1 = require("./epubReadingSystem");
 var readium_css_1 = require("./readium-css");
-console_redirect_1.consoleRedirect("r2:navigator#electron/renderer/webview/preload", process.stdout, process.stderr, true);
+var debug = debug_("r2:navigator#electron/renderer/webview/preload");
 var win = global.window;
 win.READIUM2 = {
+    DEBUG_VISUALS: false,
     fxlViewportHeight: 0,
     fxlViewportWidth: 0,
     hashElement: null,
@@ -43,12 +49,27 @@ if (win.READIUM2.urlQueryParams) {
             readiumEpubReadingSystemJson = JSON.parse(str);
         }
         catch (err) {
-            console.log(err);
+            debug(err);
         }
     }
     if (readiumEpubReadingSystemJson) {
         epubReadingSystem_1.setWindowNavigatorEpubReadingSystem(win, readiumEpubReadingSystemJson);
     }
+    win.READIUM2.DEBUG_VISUALS = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_DEBUG_VISUALS] === "true";
+}
+if (IS_DEV) {
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_DEBUG_VISUALS, function (_event, payload) {
+        win.READIUM2.DEBUG_VISUALS = payload === "true";
+        if (!win.READIUM2.DEBUG_VISUALS) {
+            var existings = document.querySelectorAll("*[" + styles_1.readPosCssStylesAttr1 + "], *[" + styles_1.readPosCssStylesAttr2 + "], *[" + styles_1.readPosCssStylesAttr3 + "], *[" + styles_1.readPosCssStylesAttr4 + "]");
+            existings.forEach(function (existing) {
+                existing.removeAttribute("" + styles_1.readPosCssStylesAttr1);
+                existing.removeAttribute("" + styles_1.readPosCssStylesAttr2);
+                existing.removeAttribute("" + styles_1.readPosCssStylesAttr3);
+                existing.removeAttribute("" + styles_1.readPosCssStylesAttr4);
+            });
+        }
+    });
 }
 electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, function (_event, payload) {
     if (!win.READIUM2.urlQueryParams) {
@@ -73,7 +94,7 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, function (_event, payload)
     var delayScrollIntoView = false;
     if (payload.hash) {
         win.READIUM2.hashElement = win.document.getElementById(payload.hash);
-        if (readium_css_inject_1.DEBUG_VISUALS) {
+        if (win.READIUM2.DEBUG_VISUALS) {
             if (win.READIUM2.hashElement) {
                 win.READIUM2.hashElement.setAttribute(styles_1.readPosCssStylesAttr1, "R2_EVENT_SCROLLTO hashElement");
             }
@@ -207,7 +228,7 @@ var checkReadyPass = function () {
         setTimeout(function () {
             window.requestAnimationFrame(function (_timestamp) {
                 new ResizeSensor(win.document.body, function () {
-                    console.log("ResizeSensor");
+                    debug("ResizeSensor");
                     scrollToHashDebounced();
                 });
             });
@@ -232,7 +253,7 @@ var notifyReady = function () {
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_WEBVIEW_READY, payload);
 };
 function scrollElementIntoView(element) {
-    if (readium_css_inject_1.DEBUG_VISUALS) {
+    if (win.READIUM2.DEBUG_VISUALS) {
         var existings = document.querySelectorAll("*[" + styles_1.readPosCssStylesAttr3 + "]");
         existings.forEach(function (existing) {
             existing.removeAttribute("" + styles_1.readPosCssStylesAttr3);
@@ -339,7 +360,13 @@ var scrollToHashRaw = function () {
                     }
                     return;
                 }
-                var gotoCssSelector = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_GOTO];
+                var gto = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_GOTO];
+                var gotoCssSelector = void 0;
+                if (gto) {
+                    var s = new Buffer(gto, "base64").toString("utf8");
+                    var js = JSON.parse(s);
+                    gotoCssSelector = js.cssSelector;
+                }
                 if (gotoCssSelector) {
                     gotoCssSelector = gotoCssSelector.replace(/\+/g, " ");
                     var selected = null;
@@ -347,7 +374,7 @@ var scrollToHashRaw = function () {
                         selected = document.querySelector(gotoCssSelector);
                     }
                     catch (err) {
-                        console.log(err);
+                        debug(err);
                     }
                     if (selected) {
                         win.READIUM2.locationHashOverride = selected;
@@ -389,7 +416,7 @@ var _ignoreScrollEvent = false;
 win.addEventListener("DOMContentLoaded", function () {
     if (win.location.hash && win.location.hash.length > 1) {
         win.READIUM2.hashElement = win.document.getElementById(win.location.hash.substr(1));
-        if (readium_css_inject_1.DEBUG_VISUALS) {
+        if (win.READIUM2.DEBUG_VISUALS) {
             if (win.READIUM2.hashElement) {
                 win.READIUM2.hashElement.setAttribute(styles_1.readPosCssStylesAttr1, "DOMContentLoaded hashElement");
             }
@@ -408,10 +435,10 @@ win.addEventListener("DOMContentLoaded", function () {
                 readiumcssJson = JSON.parse(str);
             }
             catch (err) {
-                console.log("################## READIUM CSS PARSE ERROR?!");
-                console.log(base64ReadiumCSS);
-                console.log(err);
-                console.log(str);
+                debug("################## READIUM CSS PARSE ERROR?!");
+                debug(base64ReadiumCSS);
+                debug(err);
+                debug(str);
             }
         }
     }
@@ -427,9 +454,14 @@ win.addEventListener("DOMContentLoaded", function () {
     if (win.READIUM2.isFixedLayout) {
         notifyReady();
     }
-    if (!win.document.documentElement.hasAttribute("data-readiumcss")) {
+    var alreadedInjected = win.document.documentElement.hasAttribute("data-readiumcss");
+    if (alreadedInjected) {
+        debug(">>>>>1 ReadiumCSS already injected by streamer");
+        console.log(">>>>>2 ReadiumCSS already injected by streamer");
+    }
+    if (!alreadedInjected) {
         readium_css_inject_1.injectDefaultCSS(win.document);
-        if (readium_css_inject_1.DEBUG_VISUALS) {
+        if (IS_DEV) {
             readium_css_inject_1.injectReadPosCSS(win.document);
         }
     }
@@ -463,7 +495,8 @@ win.addEventListener("DOMContentLoaded", function () {
     readium_css_1.computeVerticalRTL();
     if (readiumcssJson) {
         if (readium_css_1.isVerticalWritingMode() ||
-            !win.document.documentElement.hasAttribute("data-readiumcss")) {
+            !alreadedInjected) {
+            debug(">>>>>> ReadiumCSS inject again");
             readium_css_1.readiumCSS(win.document, readiumcssJson);
         }
     }
@@ -493,7 +526,7 @@ var processXYRaw = function (x, y) {
     if (element) {
         win.READIUM2.locationHashOverride = element;
         notifyReadingLocationDebounced();
-        if (readium_css_inject_1.DEBUG_VISUALS) {
+        if (win.READIUM2.DEBUG_VISUALS) {
             var existings = document.querySelectorAll("*[" + styles_1.readPosCssStylesAttr2 + "]");
             existings.forEach(function (existing) {
                 existing.removeAttribute("" + styles_1.readPosCssStylesAttr2);
@@ -639,13 +672,14 @@ var notifyReadingLocationRaw = function () {
     };
     var payload = win.READIUM2.locationHashOverrideInfo;
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_READING_LOCATION, payload);
-    if (readium_css_inject_1.DEBUG_VISUALS) {
+    if (win.READIUM2.DEBUG_VISUALS) {
         var existings = document.querySelectorAll("*[" + styles_1.readPosCssStylesAttr4 + "]");
         existings.forEach(function (existing) {
             existing.removeAttribute("" + styles_1.readPosCssStylesAttr4);
         });
         win.READIUM2.locationHashOverride.setAttribute(styles_1.readPosCssStylesAttr4, "notifyReadingLocationRaw");
     }
+    debug("|||||||||||||| notifyReadingLocation: ", JSON.stringify(payload));
 };
 var notifyReadingLocationDebounced = debounce_1.debounce(function () {
     notifyReadingLocationRaw();

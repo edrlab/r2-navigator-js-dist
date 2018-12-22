@@ -1,3 +1,4 @@
+import { LocatorLocations } from "r2-shared-js/dist/es8-es2017/src/models/locator";
 import { IReadiumCSS } from "./readium-css-settings";
 export declare const R2_EVENT_READIUMCSS = "R2_EVENT_READIUMCSS";
 export interface IEventPayload_R2_EVENT_READIUMCSS {
@@ -5,6 +6,7 @@ export interface IEventPayload_R2_EVENT_READIUMCSS {
     isFixedLayout?: boolean;
     urlRoot?: string;
 }
+export declare const R2_EVENT_DEBUG_VISUALS = "R2_EVENT_DEBUG_VISUALS";
 export declare const R2_EVENT_SCROLLTO = "R2_EVENT_SCROLLTO";
 export interface IEventPayload_R2_EVENT_SCROLLTO {
     goto: string | undefined;
@@ -24,11 +26,7 @@ export interface IEventPayload_R2_EVENT_READING_LOCATION_PAGINATION_INFO {
     isTwoPageSpread: boolean | undefined;
     spreadIndex: number | undefined;
 }
-export interface IEventPayload_R2_EVENT_READING_LOCATION {
-    cfi: string | undefined;
-    cssSelector: string | undefined;
-    progression: number | undefined;
-    position: number | undefined;
+export interface IEventPayload_R2_EVENT_READING_LOCATION extends LocatorLocations {
     paginationInfo: IEventPayload_R2_EVENT_READING_LOCATION_PAGINATION_INFO | undefined;
 }
 export declare const R2_EVENT_LINK = "R2_EVENT_LINK";

@@ -1,42 +1,55 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const debug_ = require("debug");
 const xmldom = require("xmldom");
 const readium_css_settings_1 = require("./readium-css-settings");
 const styles_1 = require("./styles");
-exports.DEBUG_VISUALS = false;
 const CSS_CLASS_DARK_THEME = "mdc-theme--dark";
-function isDocVertical(document) {
-    if (!document || !document.documentElement) {
+const CLASS_PAGINATED = "r2-css-paginated";
+const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
+const debug = debug_("r2:navigator#electron/common/readium-css-inject");
+function isDEBUG_VISUALS(documant) {
+    if (!IS_DEV) {
+        return false;
+    }
+    if (documant.defaultView && documant.defaultView.READIUM2 &&
+        documant.defaultView.READIUM2.DEBUG_VISUALS) {
+        return true;
+    }
+    return false;
+}
+function isDocVertical(documant) {
+    if (!documant || !documant.documentElement) {
         return false;
     }
     return false;
 }
 exports.isDocVertical = isDocVertical;
-function isDocRTL(document) {
-    if (!document || !document.documentElement) {
+function isDocRTL(documant) {
+    if (!documant || !documant.documentElement) {
         return false;
     }
     let rtl = false;
     let foundDir = false;
-    let dirAttr = document.documentElement.getAttribute("dir");
+    let dirAttr = documant.documentElement.getAttribute("dir");
     if (dirAttr === "rtl") {
         foundDir = true;
         rtl = true;
     }
-    if (!rtl && document.body) {
-        dirAttr = document.body.getAttribute("dir");
+    if (!rtl && documant.body) {
+        dirAttr = documant.body.getAttribute("dir");
         if (dirAttr === "rtl") {
             foundDir = true;
             rtl = true;
         }
     }
     if (!rtl) {
-        let langAttr = document.documentElement.getAttribute("lang");
+        let langAttr = documant.documentElement.getAttribute("lang");
         if (!langAttr) {
-            langAttr = document.documentElement.getAttribute("xml:lang");
+            langAttr = documant.documentElement.getAttribute("xml:lang");
         }
         if (!langAttr) {
-            langAttr = document.documentElement.getAttributeNS("http://www.w3.org/XML/1998/", "lang");
+            langAttr = documant.documentElement.getAttributeNS("http://www.w3.org/XML/1998/", "lang");
         }
         if (langAttr &&
             (langAttr === "ar" || langAttr.startsWith("ar-") ||
@@ -49,28 +62,28 @@ function isDocRTL(document) {
     }
     if (rtl) {
         if (!foundDir) {
-            document.documentElement.setAttribute("dir", "rtl");
+            documant.documentElement.setAttribute("dir", "rtl");
         }
     }
     return rtl;
 }
 exports.isDocRTL = isDocRTL;
-function isPaginated(document) {
-    return document && document.documentElement &&
-        document.documentElement.classList.contains("readium-paginated");
+function isPaginated(documant) {
+    return documant && documant.documentElement &&
+        documant.documentElement.classList.contains(CLASS_PAGINATED);
 }
 exports.isPaginated = isPaginated;
-function readiumCSSSet(document, messageJson, urlRootReadiumCSS, isVerticalWritingMode, isRTL) {
+function readiumCSSSet(documant, messageJson, urlRootReadiumCSS, isVerticalWritingMode, isRTL) {
     if (!messageJson) {
         return;
     }
-    if (!document || !document.documentElement) {
+    if (!documant || !documant.documentElement) {
         return;
     }
-    const docElement = document.documentElement;
+    const docElement = documant.documentElement;
     if (!messageJson.setCSS) {
         docElement.removeAttribute("data-readiumcss");
-        removeAllCSS(document);
+        removeAllCSS(documant);
         if (messageJson.isFixedLayout) {
             docElement.style.overflow = "hidden";
         }
@@ -93,9 +106,9 @@ function readiumCSSSet(document, messageJson, urlRootReadiumCSS, isVerticalWriti
     if (!docElement.hasAttribute("data-readiumcss")) {
         docElement.setAttribute("data-readiumcss", "yes");
         let needsDefaultCSS = true;
-        if (document.head && document.head.childNodes && document.head.childNodes.length) {
-            for (let i = 0; i < document.head.childNodes.length; i++) {
-                const child = document.head.childNodes[i];
+        if (documant.head && documant.head.childNodes && documant.head.childNodes.length) {
+            for (let i = 0; i < documant.head.childNodes.length; i++) {
+                const child = documant.head.childNodes[i];
                 if (child.nodeType === 1) {
                     const element = child;
                     if ((element.localName && element.localName.toLowerCase() === "style") ||
@@ -110,8 +123,8 @@ function readiumCSSSet(document, messageJson, urlRootReadiumCSS, isVerticalWriti
                 }
             }
         }
-        if (needsDefaultCSS && document.body) {
-            const styleAttr = document.body.getAttribute("style");
+        if (needsDefaultCSS && documant.body) {
+            const styleAttr = documant.body.getAttribute("style");
             if (styleAttr) {
                 needsDefaultCSS = false;
             }
@@ -119,17 +132,17 @@ function readiumCSSSet(document, messageJson, urlRootReadiumCSS, isVerticalWriti
         const urlRoot = messageJson.urlRoot ?
             (messageJson.urlRoot + "/" + readium_css_settings_1.READIUM_CSS_URL_PATH + "/") :
             (urlRootReadiumCSS ? urlRootReadiumCSS : ("/" + readium_css_settings_1.READIUM_CSS_URL_PATH + "/"));
-        appendCSS(document, "before", urlRoot);
+        appendCSS(documant, "before", urlRoot);
         if (needsDefaultCSS) {
-            appendCSS(document, "default", urlRoot);
+            appendCSS(documant, "default", urlRoot);
         }
-        appendCSS(document, "after", urlRoot);
+        appendCSS(documant, "after", urlRoot);
     }
     const setCSS = messageJson.setCSS;
-    if (exports.DEBUG_VISUALS) {
-        console.log("---- setCSS -----");
-        console.log(setCSS);
-        console.log("-----");
+    if (isDEBUG_VISUALS(documant)) {
+        debug("---- setCSS -----");
+        debug(setCSS);
+        debug("-----");
     }
     if (setCSS.night) {
         docElement.classList.add(CSS_CLASS_DARK_THEME);
@@ -156,11 +169,11 @@ function readiumCSSSet(document, messageJson, urlRootReadiumCSS, isVerticalWriti
     docElement.style.setProperty("--USER__view", setCSS.paged ? "readium-paged-on" : "readium-scroll-on");
     if (setCSS.paged) {
         docElement.style.overflow = "hidden";
-        docElement.classList.add("readium-paginated");
+        docElement.classList.add(CLASS_PAGINATED);
     }
     else {
         docElement.style.overflow = "auto";
-        docElement.classList.remove("readium-paginated");
+        docElement.classList.remove(CLASS_PAGINATED);
     }
     const defaultPublisherFont = !setCSS.font || setCSS.font === "DEFAULT";
     const a11yNormalize = ((typeof setCSS.a11yNormalize !== "undefined") ?
@@ -331,8 +344,8 @@ function readiumCSSSet(document, messageJson, urlRootReadiumCSS, isVerticalWriti
     }
 }
 exports.readiumCSSSet = readiumCSSSet;
-function configureFixedLayout(document, isFixedLayout, fxlViewportWidth, fxlViewportHeight, innerWidth, innerHeight) {
-    if (!document || !document.head || !document.body) {
+function configureFixedLayout(documant, isFixedLayout, fxlViewportWidth, fxlViewportHeight, innerWidth, innerHeight) {
+    if (!documant || !documant.head || !documant.body) {
         return undefined;
     }
     let wh;
@@ -340,13 +353,13 @@ function configureFixedLayout(document, isFixedLayout, fxlViewportWidth, fxlView
     let height = fxlViewportHeight;
     if (!width || !height) {
         let metaViewport = null;
-        if (document.head.querySelector) {
-            metaViewport = document.head.querySelector("meta[name=viewport]");
+        if (documant.head.querySelector) {
+            metaViewport = documant.head.querySelector("meta[name=viewport]");
         }
         else {
-            if (document.head.childNodes && document.head.childNodes.length) {
-                for (let i = 0; i < document.head.childNodes.length; i++) {
-                    const child = document.head.childNodes[i];
+            if (documant.head.childNodes && documant.head.childNodes.length) {
+                for (let i = 0; i < documant.head.childNodes.length; i++) {
+                    const child = documant.head.childNodes[i];
                     if (child.nodeType === 1) {
                         const element = child;
                         if (element.localName && element.localName.toLowerCase() === "meta") {
@@ -360,12 +373,16 @@ function configureFixedLayout(document, isFixedLayout, fxlViewportWidth, fxlView
             }
         }
         if (!metaViewport) {
-            console.log("configureFixedLayout NO meta[name=viewport]");
+            if (isDEBUG_VISUALS(documant)) {
+                debug("configureFixedLayout NO meta[name=viewport]");
+            }
             return undefined;
         }
         const attr = metaViewport.getAttribute("content");
         if (!attr) {
-            console.log("configureFixedLayout NO meta[name=viewport && content]");
+            if (isDEBUG_VISUALS(documant)) {
+                debug("configureFixedLayout NO meta[name=viewport && content]");
+            }
             return undefined;
         }
         const wMatch = attr.match(/\s*width\s*=\s*([0-9]+)/);
@@ -374,11 +391,13 @@ function configureFixedLayout(document, isFixedLayout, fxlViewportWidth, fxlView
                 width = parseInt(wMatch[1], 10);
             }
             catch (err) {
-                console.log(err);
+                debug(err);
             }
         }
         else {
-            console.log("configureFixedLayout NO meta[name=viewport && content WIDTH]");
+            if (isDEBUG_VISUALS(documant)) {
+                debug("configureFixedLayout NO meta[name=viewport && content WIDTH]");
+            }
         }
         const hMatch = attr.match(/\s*height\s*=\s*([0-9]+)/);
         if (hMatch && hMatch.length >= 2) {
@@ -386,15 +405,19 @@ function configureFixedLayout(document, isFixedLayout, fxlViewportWidth, fxlView
                 height = parseInt(hMatch[1], 10);
             }
             catch (err) {
-                console.log(err);
+                debug(err);
             }
         }
         else {
-            console.log("configureFixedLayout NO meta[name=viewport && content HEIGHT]");
+            if (isDEBUG_VISUALS(documant)) {
+                debug("configureFixedLayout NO meta[name=viewport && content HEIGHT]");
+            }
         }
         if (width && height) {
-            console.log("READIUM_FXL_VIEWPORT_WIDTH: " + width);
-            console.log("READIUM_FXL_VIEWPORT_HEIGHT: " + height);
+            if (isDEBUG_VISUALS(documant)) {
+                debug("READIUM_FXL_VIEWPORT_WIDTH: " + width);
+                debug("READIUM_FXL_VIEWPORT_HEIGHT: " + height);
+            }
             wh = {
                 height,
                 width,
@@ -402,40 +425,46 @@ function configureFixedLayout(document, isFixedLayout, fxlViewportWidth, fxlView
         }
     }
     if (innerWidth && innerHeight && width && height && isFixedLayout
-        && document && document.documentElement && document.body) {
-        document.documentElement.style.overflow = "hidden";
-        document.body.style.width = width + "px";
-        document.body.style.height = height + "px";
-        document.body.style.overflow = "hidden";
-        document.body.style.margin = "0";
-        console.log("FXL width: " + width);
-        console.log("FXL height: " + height);
+        && documant && documant.documentElement && documant.body) {
+        documant.documentElement.style.overflow = "hidden";
+        documant.body.style.width = width + "px";
+        documant.body.style.height = height + "px";
+        documant.body.style.overflow = "hidden";
+        documant.body.style.margin = "0";
+        if (isDEBUG_VISUALS(documant)) {
+            debug("FXL width: " + width);
+            debug("FXL height: " + height);
+        }
         const visibleWidth = innerWidth;
         const visibleHeight = innerHeight;
-        console.log("FXL visible width: " + visibleWidth);
-        console.log("FXL visible height: " + visibleHeight);
+        if (isDEBUG_VISUALS(documant)) {
+            debug("FXL visible width: " + visibleWidth);
+            debug("FXL visible height: " + visibleHeight);
+        }
         const ratioX = visibleWidth / width;
         const ratioY = visibleHeight / height;
         const ratio = Math.min(ratioX, ratioY);
         const tx = (visibleWidth - (width * ratio)) / 2;
         const ty = (visibleHeight - (height * ratio)) / 2;
-        console.log("FXL trans X: " + tx);
-        console.log("FXL trans Y: " + ty);
-        document.documentElement.style.transformOrigin = "0 0";
-        document.documentElement.style.transform = `translateX(${tx}px) translateY(${ty}px) scale(${ratio})`;
+        if (isDEBUG_VISUALS(documant)) {
+            debug("FXL trans X: " + tx);
+            debug("FXL trans Y: " + ty);
+        }
+        documant.documentElement.style.transformOrigin = "0 0";
+        documant.documentElement.style.transform = `translateX(${tx}px) translateY(${ty}px) scale(${ratio})`;
     }
     return wh;
 }
 exports.configureFixedLayout = configureFixedLayout;
-function ensureHead(document) {
-    if (!document || !document.documentElement) {
+function ensureHead(documant) {
+    if (!documant || !documant.documentElement) {
         return;
     }
-    const docElement = document.documentElement;
-    if (!document.head) {
-        const headElement = document.createElement("head");
-        if (document.body) {
-            docElement.insertBefore(headElement, document.body);
+    const docElement = documant.documentElement;
+    if (!documant.head) {
+        const headElement = documant.createElement("head");
+        if (documant.body) {
+            docElement.insertBefore(headElement, documant.body);
         }
         else {
             docElement.appendChild(headElement);
@@ -443,38 +472,38 @@ function ensureHead(document) {
     }
 }
 exports.ensureHead = ensureHead;
-function appendCSSInline(document, id, css) {
-    ensureHead(document);
-    if (!document || !document.head) {
+function appendCSSInline(documant, id, css) {
+    ensureHead(documant);
+    if (!documant || !documant.head) {
         return;
     }
-    const styleElement = document.createElement("style");
+    const styleElement = documant.createElement("style");
     styleElement.setAttribute("id", "Readium2-" + id);
     styleElement.setAttribute("type", "text/css");
-    styleElement.appendChild(document.createTextNode(css));
-    document.head.appendChild(styleElement);
+    styleElement.appendChild(documant.createTextNode(css));
+    documant.head.appendChild(styleElement);
 }
 exports.appendCSSInline = appendCSSInline;
-function appendCSS(document, mod, urlRoot) {
-    ensureHead(document);
-    if (!document || !document.head) {
+function appendCSS(documant, mod, urlRoot) {
+    ensureHead(documant);
+    if (!documant || !documant.head) {
         return;
     }
-    const linkElement = document.createElement("link");
+    const linkElement = documant.createElement("link");
     linkElement.setAttribute("id", "ReadiumCSS-" + mod);
     linkElement.setAttribute("rel", "stylesheet");
     linkElement.setAttribute("type", "text/css");
     linkElement.setAttribute("href", urlRoot + "ReadiumCSS-" + mod + ".css");
     let childElementCount = 0;
     let firstElementChild = null;
-    if (typeof document.head.childElementCount !== "undefined") {
-        childElementCount = document.head.childElementCount;
-        firstElementChild = document.head.firstElementChild;
+    if (typeof documant.head.childElementCount !== "undefined") {
+        childElementCount = documant.head.childElementCount;
+        firstElementChild = documant.head.firstElementChild;
     }
     else {
-        if (document.head && document.head.childNodes && document.head.childNodes.length) {
-            for (let i = 0; i < document.head.childNodes.length; i++) {
-                const child = document.head.childNodes[i];
+        if (documant.head && documant.head.childNodes && documant.head.childNodes.length) {
+            for (let i = 0; i < documant.head.childNodes.length; i++) {
+                const child = documant.head.childNodes[i];
                 if (child.nodeType === 1) {
                     childElementCount++;
                     if (!firstElementChild) {
@@ -485,39 +514,39 @@ function appendCSS(document, mod, urlRoot) {
         }
     }
     if (mod === "before" && childElementCount && firstElementChild) {
-        document.head.insertBefore(linkElement, firstElementChild);
+        documant.head.insertBefore(linkElement, firstElementChild);
     }
     else {
-        document.head.appendChild(linkElement);
+        documant.head.appendChild(linkElement);
     }
 }
 exports.appendCSS = appendCSS;
-function removeCSS(document, mod) {
-    const linkElement = document.getElementById("ReadiumCSS-" + mod);
+function removeCSS(documant, mod) {
+    const linkElement = documant.getElementById("ReadiumCSS-" + mod);
     if (linkElement && linkElement.parentNode) {
         linkElement.parentNode.removeChild(linkElement);
     }
 }
 exports.removeCSS = removeCSS;
-function removeAllCSS(document) {
-    removeCSS(document, "before");
-    removeCSS(document, "after");
-    removeCSS(document, "default");
+function removeAllCSS(documant) {
+    removeCSS(documant, "before");
+    removeCSS(documant, "after");
+    removeCSS(documant, "default");
 }
 exports.removeAllCSS = removeAllCSS;
-function injectDefaultCSS(document) {
-    appendCSSInline(document, "electron-selection", styles_1.selectionCssStyles);
-    appendCSSInline(document, "electron-focus", styles_1.focusCssStyles);
-    appendCSSInline(document, "electron-target", styles_1.targetCssStyles);
-    appendCSSInline(document, "electron-scrollbars", styles_1.scrollBarCssStyles);
+function injectDefaultCSS(documant) {
+    appendCSSInline(documant, "electron-selection", styles_1.selectionCssStyles);
+    appendCSSInline(documant, "electron-focus", styles_1.focusCssStyles);
+    appendCSSInline(documant, "electron-target", styles_1.targetCssStyles);
+    appendCSSInline(documant, "electron-scrollbars", styles_1.scrollBarCssStyles);
 }
 exports.injectDefaultCSS = injectDefaultCSS;
-function injectReadPosCSS(document) {
-    appendCSSInline(document, "electron-readPos", styles_1.readPosCssStyles);
+function injectReadPosCSS(documant) {
+    appendCSSInline(documant, "electron-readPos", styles_1.readPosCssStyles);
 }
 exports.injectReadPosCSS = injectReadPosCSS;
-function definePropertyGetterSetter_DocHeadBody(docu, elementName) {
-    Object.defineProperty(docu, elementName, {
+function definePropertyGetterSetter_DocHeadBody(documant, elementName) {
+    Object.defineProperty(documant, elementName, {
         get() {
             const doc = this;
             const key = elementName + "_";
@@ -531,9 +560,6 @@ function definePropertyGetterSetter_DocHeadBody(docu, elementName) {
                         const element = child;
                         if (element.localName && element.localName.toLowerCase() === elementName) {
                             doc[key] = element;
-                            if (exports.DEBUG_VISUALS) {
-                                console.log(`XMLDOM - cached document.${elementName}`);
-                            }
                             return element;
                         }
                     }
@@ -542,7 +568,7 @@ function definePropertyGetterSetter_DocHeadBody(docu, elementName) {
             return undefined;
         },
         set(_val) {
-            console.log("document." + elementName + " CANNOT BE SET!!");
+            debug("documant." + elementName + " CANNOT BE SET!!");
         },
     });
 }
@@ -559,9 +585,6 @@ function cssRemoveProperty(cssProperty) {
 function cssStyleItem(i) {
     const style = this;
     const elem = style.element;
-    if (exports.DEBUG_VISUALS) {
-        console.log(`XMLDOM - cssStyleItem: ${i}`);
-    }
     const styleAttr = elem.getAttribute("style");
     if (!styleAttr) {
         return undefined;
@@ -577,9 +600,6 @@ function cssStyleItem(i) {
                 const regex = new RegExp(regExStr, "g");
                 const regexMatch = regex.exec(trimmed);
                 if (regexMatch) {
-                    if (exports.DEBUG_VISUALS) {
-                        console.log(`XMLDOM - cssStyleItem: ${i} => ${regexMatch[1]}`);
-                    }
                     return regexMatch[1];
                 }
             }
@@ -588,9 +608,6 @@ function cssStyleItem(i) {
     return undefined;
 }
 function cssStyleGet(cssProperty, elem) {
-    if (exports.DEBUG_VISUALS) {
-        console.log(`XMLDOM - cssStyleGet: ${cssProperty}`);
-    }
     const styleAttr = elem.getAttribute("style");
     if (!styleAttr) {
         return undefined;
@@ -603,18 +620,12 @@ function cssStyleGet(cssProperty, elem) {
         const regexMatch = regex.exec(cssProp.trim());
         if (regexMatch) {
             cssPropertyValue = regexMatch[1];
-            if (exports.DEBUG_VISUALS) {
-                console.log(`XMLDOM - cssStyleGet: ${cssProperty} => ${cssPropertyValue}`);
-            }
             break;
         }
     }
     return cssPropertyValue ? cssPropertyValue : undefined;
 }
 function cssStyleSet(cssProperty, val, elem) {
-    if (exports.DEBUG_VISUALS) {
-        console.log(`XMLDOM - cssStyleSet: ${cssProperty}: ${val};`);
-    }
     const str = val ? `${cssProperty}: ${val}` : undefined;
     const styleAttr = elem.getAttribute("style");
     if (!styleAttr) {
@@ -646,9 +657,6 @@ function definePropertyGetterSetter_ElementStyle(element) {
         get() {
             const style = this;
             const elem = style.element;
-            if (exports.DEBUG_VISUALS) {
-                console.log(`XMLDOM - style.length`);
-            }
             const styleAttr = elem.getAttribute("style");
             if (!styleAttr) {
                 return 0;
@@ -660,13 +668,10 @@ function definePropertyGetterSetter_ElementStyle(element) {
                     count++;
                 }
             }
-            if (exports.DEBUG_VISUALS) {
-                console.log(`XMLDOM - style.length: ${count}`);
-            }
             return count;
         },
         set(_val) {
-            console.log("style.length CANNOT BE SET!!");
+            debug("style.length CANNOT BE SET!!");
         },
     });
     const cssProperties = ["overflow", "width", "height", "margin", "transformOrigin", "transform"];
@@ -689,9 +694,6 @@ function definePropertyGetterSetter_ElementStyle(element) {
 function classListContains(className) {
     const style = this;
     const elem = style.element;
-    if (exports.DEBUG_VISUALS) {
-        console.log(`XMLDOM - classListContains: ${className}`);
-    }
     const classAttr = elem.getAttribute("class");
     if (!classAttr) {
         return false;
@@ -699,9 +701,6 @@ function classListContains(className) {
     const classes = classAttr.split(" ");
     for (const clazz of classes) {
         if (clazz === className) {
-            if (exports.DEBUG_VISUALS) {
-                console.log(`XMLDOM - classListContains TRUE: ${className}`);
-            }
             return true;
         }
     }
@@ -710,9 +709,6 @@ function classListContains(className) {
 function classListAdd(className) {
     const style = this;
     const elem = style.element;
-    if (exports.DEBUG_VISUALS) {
-        console.log(`XMLDOM - classListAdd: ${className}`);
-    }
     const classAttr = elem.getAttribute("class");
     if (!classAttr) {
         elem.setAttribute("class", className);
@@ -733,9 +729,6 @@ function classListAdd(className) {
 function classListRemove(className) {
     const style = this;
     const elem = style.element;
-    if (exports.DEBUG_VISUALS) {
-        console.log(`XMLDOM - classListRemove: ${className}`);
-    }
     const classAttr = elem.getAttribute("class");
     if (!classAttr) {
         return;
@@ -758,34 +751,34 @@ function definePropertyGetterSetter_ElementClassList(element) {
     element.classList = classListObj;
 }
 function transformHTML(htmlStr, readiumcssJson, mediaType) {
-    const doc = typeof mediaType === "string" ?
+    const documant = typeof mediaType === "string" ?
         new xmldom.DOMParser().parseFromString(htmlStr, mediaType) :
         new xmldom.DOMParser().parseFromString(htmlStr);
-    if (!doc.head) {
-        definePropertyGetterSetter_DocHeadBody(doc, "head");
+    if (!documant.head) {
+        definePropertyGetterSetter_DocHeadBody(documant, "head");
     }
-    if (!doc.body) {
-        definePropertyGetterSetter_DocHeadBody(doc, "body");
+    if (!documant.body) {
+        definePropertyGetterSetter_DocHeadBody(documant, "body");
     }
-    if (!doc.documentElement.style) {
-        definePropertyGetterSetter_ElementStyle(doc.documentElement);
+    if (!documant.documentElement.style) {
+        definePropertyGetterSetter_ElementStyle(documant.documentElement);
     }
-    if (!doc.body.style) {
-        definePropertyGetterSetter_ElementStyle(doc.body);
+    if (!documant.body.style) {
+        definePropertyGetterSetter_ElementStyle(documant.body);
     }
-    if (!doc.documentElement.classList) {
-        definePropertyGetterSetter_ElementClassList(doc.documentElement);
+    if (!documant.documentElement.classList) {
+        definePropertyGetterSetter_ElementClassList(documant.documentElement);
     }
-    injectDefaultCSS(doc);
-    if (exports.DEBUG_VISUALS) {
-        injectReadPosCSS(doc);
+    injectDefaultCSS(documant);
+    if (IS_DEV) {
+        injectReadPosCSS(documant);
     }
-    const rtl = isDocRTL(doc);
-    const vertical = isDocVertical(doc);
+    const rtl = isDocRTL(documant);
+    const vertical = isDocVertical(documant);
     if (readiumcssJson) {
-        readiumCSSSet(doc, readiumcssJson, undefined, vertical, rtl);
+        readiumCSSSet(documant, readiumcssJson, undefined, vertical, rtl);
     }
-    return new xmldom.XMLSerializer().serializeToString(doc);
+    return new xmldom.XMLSerializer().serializeToString(documant);
 }
 exports.transformHTML = transformHTML;
 //# sourceMappingURL=readium-css-inject.js.map

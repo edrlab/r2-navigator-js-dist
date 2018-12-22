@@ -1,7 +1,8 @@
+import { Publication } from "r2-shared-js/dist/es8-es2017/src/models/publication";
 import { Link } from "r2-shared-js/dist/es8-es2017/src/models/publication-link";
 import { IEventPayload_R2_EVENT_READING_LOCATION } from "../../common/events";
 import { IStringMap } from "../common/querystring";
-export interface IReadium2State {
+export interface IElectronWebviewTagWindowState {
     urlQueryParams: IStringMap | undefined;
     hashElement: Element | null;
     locationHashOverride: Element | undefined;
@@ -11,14 +12,23 @@ export interface IReadium2State {
     isFixedLayout: boolean;
     fxlViewportWidth: number;
     fxlViewportHeight: number;
+    DEBUG_VISUALS: boolean;
 }
-export interface IWebViewState {
+export interface IElectronWebviewTagWindow extends Window {
+    READIUM2: IElectronWebviewTagWindowState;
+}
+export interface IElectronWebviewTagState {
     id: number;
     link: Link | undefined;
 }
 export interface IElectronWebviewTag extends Electron.WebviewTag {
-    READIUM2: IWebViewState;
+    READIUM2: IElectronWebviewTagState;
 }
-export interface IElectronWebviewTagWindow extends Window {
-    READIUM2: IReadium2State;
+export interface IElectronBrowserWindowState {
+    publication: Publication;
+    publicationURL: string;
+    DEBUG_VISUALS: boolean;
+}
+export interface IElectronBrowserWindow extends Window {
+    READIUM2: IElectronBrowserWindowState;
 }
