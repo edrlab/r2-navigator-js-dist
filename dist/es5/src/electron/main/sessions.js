@@ -1,11 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
 var debug_ = require("debug");
 var electron_1 = require("electron");
 var sessions_1 = require("../common/sessions");
 var debug = debug_("r2:navigator#electron/main/sessions");
 function secureSessions(server) {
     var filter = { urls: ["*", "*://*/*"] };
+    var onHeadersReceivedCB = function (details, callback) {
+        callback({ responseHeaders: tslib_1.__assign({}, details.responseHeaders, { "Content-Security-Policy": ["default-src 'self' 'unsafe-inline' 'unsafe-eval' " + sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + ": " + server.serverUrl()] }) });
+    };
     var onBeforeSendHeadersCB = function (details, callback) {
         if (server.isSecured()) {
             var header = server.getSecureHTTPHeader(details.url);
@@ -28,11 +32,13 @@ function secureSessions(server) {
         callback(-3);
     };
     if (electron_1.session.defaultSession) {
+        electron_1.session.defaultSession.webRequest.onHeadersReceived(onHeadersReceivedCB);
         electron_1.session.defaultSession.webRequest.onBeforeSendHeaders(filter, onBeforeSendHeadersCB);
         electron_1.session.defaultSession.setCertificateVerifyProc(setCertificateVerifyProcCB);
     }
     var webViewSession = getWebViewSession();
     if (webViewSession) {
+        webViewSession.webRequest.onHeadersReceived(onHeadersReceivedCB);
         webViewSession.webRequest.onBeforeSendHeaders(filter, onBeforeSendHeadersCB);
         webViewSession.setCertificateVerifyProc(setCertificateVerifyProcCB);
     }

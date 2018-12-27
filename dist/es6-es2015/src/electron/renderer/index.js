@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const tslib_1 = require("tslib");
 const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 if (IS_DEV) {
     const cr = require("./common/console-redirect");
@@ -13,6 +14,7 @@ const events_1 = require("../common/events");
 const sessions_1 = require("../common/sessions");
 const url_params_1 = require("./common/url-params");
 const URI = require("urijs");
+const ENABLE_WEBVIEW_RESIZE = true;
 const CLASS_POS_RIGHT = "r2_posRight";
 const CLASS_SHIFT_LEFT = "r2_shiftedLeft";
 const CLASS_ANIMATED = "r2_animated";
@@ -99,6 +101,42 @@ function readiumCssOnOff() {
     }
 }
 exports.readiumCssOnOff = readiumCssOnOff;
+function isLocatorVisible(locator) {
+    return tslib_1.__awaiter(this, void 0, void 0, function* () {
+        return new Promise((resolve, reject) => {
+            if (!_webview1) {
+                reject("No navigator webview?!");
+                return;
+            }
+            if (!_webview1.READIUM2.link) {
+                reject("No navigator webview link?!");
+                return;
+            }
+            if (_webview1.READIUM2.link.Href !== locator.href) {
+                debug(`isLocatorVisible FALSE: ${_webview1.READIUM2.link.Href} !== ${locator.href}`);
+                resolve(false);
+                return;
+            }
+            const cb = (event) => {
+                if (event.channel === events_1.R2_EVENT_LOCATOR_VISIBLE) {
+                    const webview = event.currentTarget;
+                    if (webview !== _webview1) {
+                        reject("Wrong navigator webview?!");
+                        return;
+                    }
+                    const payload_ = event.args[0];
+                    debug(`isLocatorVisible: ${payload_.visible}`);
+                    _webview1.removeEventListener("ipc-message", cb);
+                    resolve(payload_.visible);
+                }
+            };
+            _webview1.addEventListener("ipc-message", cb);
+            const payload = { location: locator.locations, visible: false };
+            _webview1.send(events_1.R2_EVENT_LOCATOR_VISIBLE, payload);
+        });
+    });
+}
+exports.isLocatorVisible = isLocatorVisible;
 let _webview1;
 let _publication;
 let _publicationJsonUrl;
@@ -384,7 +422,9 @@ function createWebView(preloadScriptPath) {
     wv.setAttribute("style", "display: flex; margin: 0; padding: 0; box-sizing: border-box; " +
         "position: absolute; left: 0; width: 50%; bottom: 0; top: 0;");
     wv.setAttribute("preload", preloadScriptPath);
-    wv.setAttribute("disableguestresize", "");
+    if (ENABLE_WEBVIEW_RESIZE) {
+        wv.setAttribute("disableguestresize", "");
+    }
     setTimeout(() => {
         wv.removeAttribute("tabindex");
     }, 500);
@@ -398,6 +438,7 @@ function createWebView(preloadScriptPath) {
             return;
         }
         if (event.channel === events_1.R2_EVENT_LINK) {
+            debug("R2_EVENT_LINK (webview.addEventListener('ipc-message')");
             const payload = event.args[0];
             handleLinkUrl(payload.url);
         }
@@ -448,27 +489,29 @@ function createWebView(preloadScriptPath) {
     });
     return wv;
 }
-const adjustResize = (webview) => {
-    const width = webview.clientWidth;
-    const height = webview.clientHeight;
-    const wc = webview.getWebContents();
-    if (wc && width && height) {
-        wc.setSize({
-            normal: {
-                height,
-                width,
-            },
-        });
-    }
-};
-const onResizeDebounced = debounce_1.debounce(() => {
-    adjustResize(_webview1);
-}, 200);
-window.addEventListener("resize", () => {
-    onResizeDebounced();
-});
+if (ENABLE_WEBVIEW_RESIZE) {
+    const adjustResize = (webview) => {
+        const width = webview.clientWidth;
+        const height = webview.clientHeight;
+        const wc = webview.getWebContents();
+        if (wc && wc.setSize && width && height) {
+            wc.setSize({
+                normal: {
+                    height,
+                    width,
+                },
+            });
+        }
+    };
+    const onResizeDebounced = debounce_1.debounce(() => {
+        adjustResize(_webview1);
+    }, 200);
+    window.addEventListener("resize", () => {
+        onResizeDebounced();
+    });
+}
 electron_1.ipcRenderer.on(events_1.R2_EVENT_LINK, (_event, payload) => {
-    debug("R2_EVENT_LINK");
+    debug("R2_EVENT_LINK (ipcRenderer.on)");
     debug(payload.url);
     handleLinkUrl(payload.url);
 });

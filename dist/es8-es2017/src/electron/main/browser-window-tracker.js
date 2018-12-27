@@ -3,9 +3,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const debug_ = require("debug");
 const electron_1 = require("electron");
 const events_1 = require("../common/events");
+const sessions_1 = require("../common/sessions");
 const debug = debug_("r2:navigator#electron/main/browser-window-tracker");
 let _electronBrowserWindows;
-function trackBrowserWindow(win) {
+let _serverURL;
+function trackBrowserWindow(win, serverURL) {
+    _serverURL = serverURL;
     if (!_electronBrowserWindows) {
         _electronBrowserWindows = [];
     }
@@ -20,6 +23,22 @@ function trackBrowserWindow(win) {
 }
 exports.trackBrowserWindow = trackBrowserWindow;
 electron_1.app.on("web-contents-created", (_evt, wc) => {
+    wc.on("will-attach-webview", (event, webPreferences, params) => {
+        debug("WEBVIEW will-attach-webview: " + params.src);
+        webPreferences.contextIsolation = false;
+        webPreferences.javascript = true;
+        webPreferences.webSecurity = true;
+        webPreferences.nodeIntegration = false;
+        webPreferences.nodeIntegrationInWorker = false;
+        webPreferences.allowRunningInsecureContent = false;
+        const fail = !params.src.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL) &&
+            (_serverURL ? !params.src.startsWith(_serverURL) :
+                !(/^http[s]?:\/\/127\.0\.0\.1/.test(params.src)));
+        if (fail) {
+            debug("WEBVIEW will-attach-webview FAIL: " + params.src);
+            event.preventDefault();
+        }
+    });
     if (!wc.hostWebContents) {
         return;
     }

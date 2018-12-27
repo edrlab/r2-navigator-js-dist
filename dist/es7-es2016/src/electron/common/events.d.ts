@@ -1,5 +1,10 @@
 import { LocatorLocations } from "r2-shared-js/dist/es7-es2016/src/models/locator";
 import { IReadiumCSS } from "./readium-css-settings";
+export declare const R2_EVENT_LOCATOR_VISIBLE = "R2_EVENT_LOCATOR_VISIBLE";
+export interface IEventPayload_R2_EVENT_LOCATOR_VISIBLE {
+    visible: boolean;
+    location: LocatorLocations;
+}
 export declare const R2_EVENT_READIUMCSS = "R2_EVENT_READIUMCSS";
 export interface IEventPayload_R2_EVENT_READIUMCSS {
     setCSS: IReadiumCSS | undefined;

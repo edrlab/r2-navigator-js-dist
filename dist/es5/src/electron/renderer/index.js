@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
 var IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 if (IS_DEV) {
     var cr = require("./common/console-redirect");
@@ -13,6 +14,7 @@ var events_1 = require("../common/events");
 var sessions_1 = require("../common/sessions");
 var url_params_1 = require("./common/url-params");
 var URI = require("urijs");
+var ENABLE_WEBVIEW_RESIZE = true;
 var CLASS_POS_RIGHT = "r2_posRight";
 var CLASS_SHIFT_LEFT = "r2_shiftedLeft";
 var CLASS_ANIMATED = "r2_animated";
@@ -99,6 +101,44 @@ function readiumCssOnOff() {
     }
 }
 exports.readiumCssOnOff = readiumCssOnOff;
+function isLocatorVisible(locator) {
+    return tslib_1.__awaiter(this, void 0, void 0, function () {
+        return tslib_1.__generator(this, function (_a) {
+            return [2, new Promise(function (resolve, reject) {
+                    if (!_webview1) {
+                        reject("No navigator webview?!");
+                        return;
+                    }
+                    if (!_webview1.READIUM2.link) {
+                        reject("No navigator webview link?!");
+                        return;
+                    }
+                    if (_webview1.READIUM2.link.Href !== locator.href) {
+                        debug("isLocatorVisible FALSE: " + _webview1.READIUM2.link.Href + " !== " + locator.href);
+                        resolve(false);
+                        return;
+                    }
+                    var cb = function (event) {
+                        if (event.channel === events_1.R2_EVENT_LOCATOR_VISIBLE) {
+                            var webview = event.currentTarget;
+                            if (webview !== _webview1) {
+                                reject("Wrong navigator webview?!");
+                                return;
+                            }
+                            var payload_ = event.args[0];
+                            debug("isLocatorVisible: " + payload_.visible);
+                            _webview1.removeEventListener("ipc-message", cb);
+                            resolve(payload_.visible);
+                        }
+                    };
+                    _webview1.addEventListener("ipc-message", cb);
+                    var payload = { location: locator.locations, visible: false };
+                    _webview1.send(events_1.R2_EVENT_LOCATOR_VISIBLE, payload);
+                })];
+        });
+    });
+}
+exports.isLocatorVisible = isLocatorVisible;
 var _webview1;
 var _publication;
 var _publicationJsonUrl;
@@ -384,7 +424,9 @@ function createWebView(preloadScriptPath) {
     wv.setAttribute("style", "display: flex; margin: 0; padding: 0; box-sizing: border-box; " +
         "position: absolute; left: 0; width: 50%; bottom: 0; top: 0;");
     wv.setAttribute("preload", preloadScriptPath);
-    wv.setAttribute("disableguestresize", "");
+    if (ENABLE_WEBVIEW_RESIZE) {
+        wv.setAttribute("disableguestresize", "");
+    }
     setTimeout(function () {
         wv.removeAttribute("tabindex");
     }, 500);
@@ -398,6 +440,7 @@ function createWebView(preloadScriptPath) {
             return;
         }
         if (event.channel === events_1.R2_EVENT_LINK) {
+            debug("R2_EVENT_LINK (webview.addEventListener('ipc-message')");
             var payload = event.args[0];
             handleLinkUrl(payload.url);
         }
@@ -448,27 +491,29 @@ function createWebView(preloadScriptPath) {
     });
     return wv;
 }
-var adjustResize = function (webview) {
-    var width = webview.clientWidth;
-    var height = webview.clientHeight;
-    var wc = webview.getWebContents();
-    if (wc && width && height) {
-        wc.setSize({
-            normal: {
-                height: height,
-                width: width,
-            },
-        });
-    }
-};
-var onResizeDebounced = debounce_1.debounce(function () {
-    adjustResize(_webview1);
-}, 200);
-window.addEventListener("resize", function () {
-    onResizeDebounced();
-});
+if (ENABLE_WEBVIEW_RESIZE) {
+    var adjustResize_1 = function (webview) {
+        var width = webview.clientWidth;
+        var height = webview.clientHeight;
+        var wc = webview.getWebContents();
+        if (wc && wc.setSize && width && height) {
+            wc.setSize({
+                normal: {
+                    height: height,
+                    width: width,
+                },
+            });
+        }
+    };
+    var onResizeDebounced_1 = debounce_1.debounce(function () {
+        adjustResize_1(_webview1);
+    }, 200);
+    window.addEventListener("resize", function () {
+        onResizeDebounced_1();
+    });
+}
 electron_1.ipcRenderer.on(events_1.R2_EVENT_LINK, function (_event, payload) {
-    debug("R2_EVENT_LINK");
+    debug("R2_EVENT_LINK (ipcRenderer.on)");
     debug(payload.url);
     handleLinkUrl(payload.url);
 });

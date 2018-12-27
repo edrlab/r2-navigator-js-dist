@@ -6,6 +6,9 @@ const sessions_1 = require("../common/sessions");
 const debug = debug_("r2:navigator#electron/main/sessions");
 function secureSessions(server) {
     const filter = { urls: ["*", "*://*/*"] };
+    const onHeadersReceivedCB = (details, callback) => {
+        callback({ responseHeaders: Object.assign({}, details.responseHeaders, { "Content-Security-Policy": [`default-src 'self' 'unsafe-inline' 'unsafe-eval' ${sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL}: ${server.serverUrl()}`] }) });
+    };
     const onBeforeSendHeadersCB = (details, callback) => {
         if (server.isSecured()) {
             const header = server.getSecureHTTPHeader(details.url);
@@ -28,11 +31,13 @@ function secureSessions(server) {
         callback(-3);
     };
     if (electron_1.session.defaultSession) {
+        electron_1.session.defaultSession.webRequest.onHeadersReceived(onHeadersReceivedCB);
         electron_1.session.defaultSession.webRequest.onBeforeSendHeaders(filter, onBeforeSendHeadersCB);
         electron_1.session.defaultSession.setCertificateVerifyProc(setCertificateVerifyProcCB);
     }
     const webViewSession = getWebViewSession();
     if (webViewSession) {
+        webViewSession.webRequest.onHeadersReceived(onHeadersReceivedCB);
         webViewSession.webRequest.onBeforeSendHeaders(filter, onBeforeSendHeadersCB);
         webViewSession.setCertificateVerifyProc(setCertificateVerifyProcCB);
     }

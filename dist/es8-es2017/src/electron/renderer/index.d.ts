@@ -13,6 +13,7 @@ export interface LocatorExtended {
 export declare function getCurrentReadingLocation(): LocatorExtended | undefined;
 export declare function setReadingLocationSaver(func: (locator: LocatorExtended) => void): void;
 export declare function readiumCssOnOff(): void;
+export declare function isLocatorVisible(locator: Locator): Promise<boolean>;
 export declare function handleLink(href: string, previous: boolean | undefined, useGoto: boolean): void;
 export declare function handleLinkUrl(href: string): void;
 export declare function handleLinkLocator(location: Locator | undefined): void;
