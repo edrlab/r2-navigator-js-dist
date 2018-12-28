@@ -8,16 +8,37 @@ var debug = debug_("r2:navigator#electron/main/sessions");
 function secureSessions(server) {
     var filter = { urls: ["*", "*://*/*"] };
     var onHeadersReceivedCB = function (details, callback) {
-        callback({ responseHeaders: tslib_1.__assign({}, details.responseHeaders, { "Content-Security-Policy": ["default-src 'self' 'unsafe-inline' 'unsafe-eval' " + sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + ": " + server.serverUrl()] }) });
+        if (!details.url) {
+            callback({});
+            return;
+        }
+        var serverUrl = server.serverUrl();
+        if ((serverUrl && details.url.startsWith(serverUrl)) ||
+            details.url.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
+            callback({ responseHeaders: tslib_1.__assign({}, details.responseHeaders, { "Content-Security-Policy": ["default-src 'self' 'unsafe-inline' 'unsafe-eval' " + sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + ": " + serverUrl] }) });
+        }
+        else {
+            callback({});
+        }
     };
     var onBeforeSendHeadersCB = function (details, callback) {
-        if (server.isSecured()) {
+        if (!details.url) {
+            callback({});
+            return;
+        }
+        var serverUrl = server.serverUrl();
+        if (server.isSecured() &&
+            ((serverUrl && details.url.startsWith(serverUrl)) ||
+                details.url.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://"))) {
             var header = server.getSecureHTTPHeader(details.url);
             if (header) {
                 details.requestHeaders[header.name] = header.value;
             }
+            callback({ cancel: false, requestHeaders: details.requestHeaders });
         }
-        callback({ cancel: false, requestHeaders: details.requestHeaders });
+        else {
+            callback({ cancel: false });
+        }
     };
     var setCertificateVerifyProcCB = function (request, callback) {
         if (server.isSecured()) {
@@ -32,13 +53,13 @@ function secureSessions(server) {
         callback(-3);
     };
     if (electron_1.session.defaultSession) {
-        electron_1.session.defaultSession.webRequest.onHeadersReceived(onHeadersReceivedCB);
+        electron_1.session.defaultSession.webRequest.onHeadersReceived(filter, onHeadersReceivedCB);
         electron_1.session.defaultSession.webRequest.onBeforeSendHeaders(filter, onBeforeSendHeadersCB);
         electron_1.session.defaultSession.setCertificateVerifyProc(setCertificateVerifyProcCB);
     }
     var webViewSession = getWebViewSession();
     if (webViewSession) {
-        webViewSession.webRequest.onHeadersReceived(onHeadersReceivedCB);
+        webViewSession.webRequest.onHeadersReceived(filter, onHeadersReceivedCB);
         webViewSession.webRequest.onBeforeSendHeaders(filter, onBeforeSendHeadersCB);
         webViewSession.setCertificateVerifyProc(setCertificateVerifyProcCB);
     }
