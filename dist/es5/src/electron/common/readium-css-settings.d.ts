@@ -20,6 +20,7 @@ export interface IReadiumCSS {
     night: boolean | undefined;
     sepia: boolean | undefined;
     a11yNormalize: boolean | undefined;
+    noFootnotes: boolean | undefined;
 }
 export declare enum bodyHyphensEnum {
     auto = "auto",
@@ -67,6 +68,7 @@ export declare const readiumCSSDefaults: {
     ligatures: ligaturesEnum;
     lineHeight: undefined;
     night: boolean;
+    noFootnotes: boolean;
     pageMargins: undefined;
     paged: boolean;
     paraIndent: undefined;

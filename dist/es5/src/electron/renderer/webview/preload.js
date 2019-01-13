@@ -1,24 +1,29 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
 var IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 if (IS_DEV) {
     var cr = require("../common/console-redirect");
     cr.consoleRedirect("r2:navigator#electron/renderer/webview/preload", process.stdout, process.stderr, true);
 }
-var ResizeSensor = require("css-element-queries/src/ResizeSensor");
 var debounce_1 = require("debounce");
 var debug_ = require("debug");
 var electron_1 = require("electron");
+var tabbable = require("tabbable");
 var events_1 = require("../../common/events");
 var readium_css_inject_1 = require("../../common/readium-css-inject");
 var styles_1 = require("../../common/styles");
 var animateProperty_1 = require("../common/animateProperty");
 var cssselector2_1 = require("../common/cssselector2");
 var easings_1 = require("../common/easings");
+var popup_dialog_1 = require("../common/popup-dialog");
 var querystring_1 = require("../common/querystring");
 var url_params_1 = require("../common/url-params");
 var epubReadingSystem_1 = require("./epubReadingSystem");
+var popupFootNotes_1 = require("./popupFootNotes");
+var readaloud_1 = require("./readaloud");
 var readium_css_1 = require("./readium-css");
+var ResizeSensor = require("css-element-queries/src/ResizeSensor");
 var debug = debug_("r2:navigator#electron/renderer/webview/preload");
 var win = global.window;
 win.READIUM2 = {
@@ -37,7 +42,31 @@ win.READIUM2 = {
     },
     readyEventSent: false,
     readyPassDone: false,
+    ttsClickEnabled: false,
     urlQueryParams: undefined,
+};
+win.alert = function () {
+    var args = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i] = arguments[_i];
+    }
+    console.log.apply(win, args);
+};
+win.confirm = function () {
+    var args = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i] = arguments[_i];
+    }
+    console.log.apply(win, args);
+    return false;
+};
+win.prompt = function () {
+    var args = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i] = arguments[_i];
+    }
+    console.log.apply(win, args);
+    return "";
 };
 win.READIUM2.urlQueryParams = win.location.search ? querystring_1.getURLQueryParams(win.location.search) : undefined;
 if (win.READIUM2.urlQueryParams) {
@@ -61,7 +90,7 @@ if (IS_DEV) {
     electron_1.ipcRenderer.on(events_1.R2_EVENT_DEBUG_VISUALS, function (_event, payload) {
         win.READIUM2.DEBUG_VISUALS = payload === "true";
         if (!win.READIUM2.DEBUG_VISUALS) {
-            var existings = document.querySelectorAll("*[" + styles_1.readPosCssStylesAttr1 + "], *[" + styles_1.readPosCssStylesAttr2 + "], *[" + styles_1.readPosCssStylesAttr3 + "], *[" + styles_1.readPosCssStylesAttr4 + "]");
+            var existings = win.document.querySelectorAll("*[" + styles_1.readPosCssStylesAttr1 + "], *[" + styles_1.readPosCssStylesAttr2 + "], *[" + styles_1.readPosCssStylesAttr3 + "], *[" + styles_1.readPosCssStylesAttr4 + "]");
             existings.forEach(function (existing) {
                 existing.removeAttribute("" + styles_1.readPosCssStylesAttr1);
                 existing.removeAttribute("" + styles_1.readPosCssStylesAttr2);
@@ -111,7 +140,7 @@ function computeVisibility(location) {
     else {
         var selected = null;
         try {
-            selected = document.querySelector(location.cssSelector);
+            selected = win.document.querySelector(location.cssSelector);
         }
         catch (err) {
             debug(err);
@@ -127,6 +156,7 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_LOCATOR_VISIBLE, function (_event, p
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_LOCATOR_VISIBLE, payload);
 });
 electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, function (_event, payload) {
+    popup_dialog_1.closePopupDialogs(win.document);
     _cancelInitialScrollCheck = true;
     if (!win.READIUM2.urlQueryParams) {
         win.READIUM2.urlQueryParams = {};
@@ -159,6 +189,7 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, function (_event, payload)
         delayScrollIntoView = true;
     }
     else {
+        win.location.href = "#";
         win.READIUM2.hashElement = null;
     }
     win.READIUM2.readyEventSent = false;
@@ -180,7 +211,43 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, function (_event, payload)
     }
 });
 var _lastAnimState;
-electron_1.ipcRenderer.on(events_1.R2_EVENT_PAGE_TURN, function (_event, payload) {
+function elementCapturesKeyboardArrowKeys(target) {
+    var curElement = target;
+    while (curElement && curElement.nodeType === Node.ELEMENT_NODE) {
+        var editable = curElement.getAttribute("contenteditable");
+        if (editable) {
+            return true;
+        }
+        var arrayOfKeyboardCaptureElements = ["input", "textarea", "video", "audio", "select"];
+        if (arrayOfKeyboardCaptureElements.indexOf(curElement.tagName.toLowerCase()) >= 0) {
+            return true;
+        }
+        curElement = curElement.parentNode;
+    }
+    return false;
+}
+function onEventPageTurn(payload) {
+    var leftRightKeyWasUsedInsideKeyboardCapture = false;
+    if (win.document.activeElement &&
+        elementCapturesKeyboardArrowKeys(win.document.activeElement)) {
+        if (win.document.hasFocus()) {
+            leftRightKeyWasUsedInsideKeyboardCapture = true;
+        }
+        else {
+            var oldDate = win.document.activeElement.r2_leftrightKeyboardTimeStamp;
+            if (oldDate) {
+                var newDate = new Date();
+                var msDiff = newDate.getTime() - oldDate.getTime();
+                if (msDiff <= 300) {
+                    leftRightKeyWasUsedInsideKeyboardCapture = true;
+                }
+            }
+        }
+    }
+    if (leftRightKeyWasUsedInsideKeyboardCapture) {
+        return;
+    }
+    popup_dialog_1.closePopupDialogs(win.document);
     if (win.READIUM2.isFixedLayout || !win.document.body) {
         electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, payload);
         return;
@@ -252,6 +319,11 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_PAGE_TURN, function (_event, payload
         }
     }
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, payload);
+}
+electron_1.ipcRenderer.on(events_1.R2_EVENT_PAGE_TURN, function (_event, payload) {
+    setTimeout(function () {
+        onEventPageTurn(payload);
+    }, 100);
 });
 var checkReadyPass = function () {
     if (win.READIUM2.readyPassDone) {
@@ -285,6 +357,7 @@ var checkReadyPass = function () {
             window.requestAnimationFrame(function (_timestamp) {
                 new ResizeSensor(win.document.body, function () {
                     debug("ResizeSensor");
+                    win.document.body.tabbables = undefined;
                     scrollToHashDebounced();
                 });
             });
@@ -292,9 +365,41 @@ var checkReadyPass = function () {
     }
     if (win.document.body) {
         win.document.body.addEventListener("click", function (ev) {
+            if (popup_dialog_1.isPopupDialogOpen(win.document)) {
+                return;
+            }
             var x = ev.clientX;
             var y = ev.clientY;
             processXYDebounced(x, y);
+        });
+        win.document.body.addEventListener("click", function (ev) {
+            if (popup_dialog_1.isPopupDialogOpen(win.document)) {
+                return;
+            }
+            var x = ev.clientX;
+            var y = ev.clientY;
+            var element;
+            var range = win.document.caretRangeFromPoint(x, y);
+            if (range) {
+                var node = range.startContainer;
+                if (node) {
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        element = node;
+                    }
+                    else if (node.nodeType === Node.TEXT_NODE) {
+                        if (node.parentNode && node.parentNode.nodeType === Node.ELEMENT_NODE) {
+                            element = node.parentNode;
+                        }
+                    }
+                }
+            }
+            if (win.READIUM2.ttsClickEnabled && element) {
+                if (ev.altKey) {
+                    readaloud_1.ttsPlay(focusScrollRaw, element, undefined);
+                    return;
+                }
+                readaloud_1.ttsPlay(focusScrollRaw, element.ownerDocument.body, element);
+            }
         });
     }
 };
@@ -310,7 +415,7 @@ var notifyReady = function () {
 };
 function scrollElementIntoView(element) {
     if (win.READIUM2.DEBUG_VISUALS) {
-        var existings = document.querySelectorAll("*[" + styles_1.readPosCssStylesAttr3 + "]");
+        var existings = win.document.querySelectorAll("*[" + styles_1.readPosCssStylesAttr3 + "]");
         existings.forEach(function (existing) {
             existing.removeAttribute("" + styles_1.readPosCssStylesAttr3);
         });
@@ -321,11 +426,16 @@ function scrollElementIntoView(element) {
         scrollIntoView(element);
     }
     else {
-        element.scrollIntoView({
-            behavior: "auto",
-            block: "start",
-            inline: "start",
-        });
+        var rect = element.getBoundingClientRect();
+        var scrollTopMax = win.document.body.scrollHeight - win.document.documentElement.clientHeight;
+        var offset = win.document.body.scrollTop + (rect.top - (win.document.documentElement.clientHeight / 2));
+        if (offset > scrollTopMax) {
+            offset = scrollTopMax;
+        }
+        else if (offset < 0) {
+            offset = 0;
+        }
+        win.document.body.scrollTop = offset;
     }
 }
 function scrollOffsetIntoView(element) {
@@ -416,6 +526,7 @@ var scrollToHashRaw = function () {
                             win.document.documentElement.clientHeight))
                         - 1;
                     processXYRaw(0, y);
+                    showHideContentMask(false);
                     notifyReady();
                     if (!win.READIUM2.locationHashOverride) {
                         notifyReadingLocationDebounced();
@@ -433,7 +544,7 @@ var scrollToHashRaw = function () {
                     gotoCssSelector = gotoCssSelector.replace(/\+/g, " ");
                     var selected = null;
                     try {
-                        selected = document.querySelector(gotoCssSelector);
+                        selected = win.document.querySelector(gotoCssSelector);
                     }
                     catch (err) {
                         debug(err);
@@ -475,6 +586,91 @@ var scrollToHashDebounced = debounce_1.debounce(function () {
     scrollToHashRaw();
 }, 500);
 var _ignoreScrollEvent = false;
+function showHideContentMask(doHide) {
+    if (win.document.body) {
+        if (win.READIUM2.urlQueryParams) {
+            var previous = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_PREVIOUS];
+            var isPreviousNavDirection = previous === "true";
+            if (isPreviousNavDirection) {
+                if (doHide) {
+                    win.document.body.classList.add(styles_1.ROOT_CLASS_INVISIBLE_MASK);
+                }
+                else {
+                    win.document.body.classList.remove(styles_1.ROOT_CLASS_INVISIBLE_MASK);
+                }
+            }
+        }
+    }
+}
+function focusScrollRaw(el, doFocus) {
+    win.READIUM2.locationHashOverride = el;
+    scrollElementIntoView(win.READIUM2.locationHashOverride);
+    if (doFocus) {
+        setTimeout(function () {
+            el.focus();
+        }, 10);
+    }
+    notifyReadingLocationDebounced();
+}
+var focusScrollDebounced = debounce_1.debounce(function (el, doFocus) {
+    focusScrollRaw(el, doFocus);
+}, 80);
+var _ignoreFocusInEvent = false;
+function handleTab(target, tabKeyDownEvent) {
+    if (!target || !win.document.body) {
+        return;
+    }
+    _ignoreFocusInEvent = false;
+    var tabbables = win.document.body.tabbables ?
+        win.document.body.tabbables :
+        (win.document.body.tabbables = tabbable(win.document.body));
+    var i = tabbables.indexOf(target);
+    if (i === 0) {
+        if (!tabKeyDownEvent || tabKeyDownEvent.shiftKey) {
+            _ignoreFocusInEvent = true;
+            focusScrollDebounced(target, true);
+            return;
+        }
+        if (i < (tabbables.length - 1)) {
+            tabKeyDownEvent.preventDefault();
+            var nextTabbable = tabbables[i + 1];
+            focusScrollDebounced(nextTabbable, true);
+            return;
+        }
+    }
+    else if (i === (tabbables.length - 1)) {
+        if (!tabKeyDownEvent || !tabKeyDownEvent.shiftKey) {
+            _ignoreFocusInEvent = true;
+            focusScrollDebounced(target, true);
+            return;
+        }
+        if (i > 0) {
+            tabKeyDownEvent.preventDefault();
+            var previousTabbable = tabbables[i - 1];
+            focusScrollDebounced(previousTabbable, true);
+            return;
+        }
+    }
+    else if (i > 0) {
+        if (tabKeyDownEvent) {
+            if (tabKeyDownEvent.shiftKey) {
+                tabKeyDownEvent.preventDefault();
+                var previousTabbable = tabbables[i - 1];
+                focusScrollDebounced(previousTabbable, true);
+                return;
+            }
+            else {
+                tabKeyDownEvent.preventDefault();
+                var nextTabbable = tabbables[i + 1];
+                focusScrollDebounced(nextTabbable, true);
+                return;
+            }
+        }
+    }
+    if (!tabKeyDownEvent) {
+        focusScrollDebounced(target, true);
+    }
+}
 win.addEventListener("DOMContentLoaded", function () {
     _cancelInitialScrollCheck = true;
     if (win.location.hash && win.location.hash.length > 1) {
@@ -488,6 +684,7 @@ win.addEventListener("DOMContentLoaded", function () {
     win.READIUM2.locationHashOverride = undefined;
     win.READIUM2.readyPassDone = false;
     win.READIUM2.readyEventSent = false;
+    win.READIUM2.ttsClickEnabled = false;
     var readiumcssJson;
     if (win.READIUM2.urlQueryParams) {
         var base64ReadiumCSS = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_CSS];
@@ -509,18 +706,17 @@ win.addEventListener("DOMContentLoaded", function () {
         win.READIUM2.isFixedLayout = (typeof readiumcssJson.isFixedLayout !== "undefined") ?
             readiumcssJson.isFixedLayout : false;
     }
+    if (!win.READIUM2.isFixedLayout) {
+        showHideContentMask(true);
+    }
     var wh = readium_css_inject_1.configureFixedLayout(win.document, win.READIUM2.isFixedLayout, win.READIUM2.fxlViewportWidth, win.READIUM2.fxlViewportHeight, win.innerWidth, win.innerHeight);
     if (wh) {
         win.READIUM2.fxlViewportWidth = wh.width;
         win.READIUM2.fxlViewportHeight = wh.height;
     }
-    if (win.READIUM2.isFixedLayout) {
-        notifyReady();
-    }
-    var alreadedInjected = win.document.documentElement.hasAttribute("data-readiumcss");
+    var alreadedInjected = win.document.documentElement.hasAttribute("data-readiumcss-injected");
     if (alreadedInjected) {
-        debug(">>>>>1 ReadiumCSS already injected by streamer");
-        console.log(">>>>>2 ReadiumCSS already injected by streamer");
+        debug(">>>>> ReadiumCSS already injected by streamer");
     }
     if (!alreadedInjected) {
         readium_css_inject_1.injectDefaultCSS(win.document);
@@ -529,19 +725,53 @@ win.addEventListener("DOMContentLoaded", function () {
         }
     }
     win.document.body.addEventListener("focusin", function (ev) {
-        if (!win.document || !win.document.documentElement) {
+        if (_ignoreFocusInEvent) {
+            _ignoreFocusInEvent = false;
             return;
         }
-        var isPaged = readium_css_inject_1.isPaginated(win.document);
-        if (isPaged) {
-            setTimeout(function () {
-                win.READIUM2.locationHashOverride = ev.target;
-                if (win.READIUM2.locationHashOverride) {
-                    scrollElementIntoView(win.READIUM2.locationHashOverride);
+        if (popup_dialog_1.isPopupDialogOpen(win.document)) {
+            return;
+        }
+        if (ev.target) {
+            var mouseClickOnLink = false;
+            if (win.document && win.document.documentElement) {
+                if (!win.document.documentElement.classList.contains(styles_1.ROOT_CLASS_KEYBOARD_INTERACT)) {
+                    if (ev.target.tagName.toLowerCase() === "a" && ev.target.href) {
+                        mouseClickOnLink = true;
+                    }
                 }
-            }, 30);
+            }
+            if (!mouseClickOnLink) {
+                handleTab(ev.target, undefined);
+            }
         }
     });
+    win.document.body.addEventListener("keydown", function (ev) {
+        if (popup_dialog_1.isPopupDialogOpen(win.document)) {
+            return;
+        }
+        var TAB_KEY = 9;
+        if (ev.which === TAB_KEY) {
+            if (ev.target) {
+                handleTab(ev.target, ev);
+            }
+        }
+    }, true);
+    win.document.documentElement.addEventListener("keydown", function (ev) {
+        if (win.document && win.document.documentElement) {
+            win.document.documentElement.classList.add(styles_1.ROOT_CLASS_KEYBOARD_INTERACT);
+        }
+        if (ev.keyCode === 37 || ev.keyCode === 39) {
+            if (ev.target && elementCapturesKeyboardArrowKeys(ev.target)) {
+                ev.target.r2_leftrightKeyboardTimeStamp = new Date();
+            }
+        }
+    }, true);
+    win.document.documentElement.addEventListener("mousedown", function (_ev) {
+        if (win.document && win.document.documentElement) {
+            win.document.documentElement.classList.remove(styles_1.ROOT_CLASS_KEYBOARD_INTERACT);
+        }
+    }, true);
     win.document.addEventListener("click", function (e) {
         var href = e.target.href;
         if (!href) {
@@ -549,10 +779,17 @@ win.addEventListener("DOMContentLoaded", function () {
         }
         e.preventDefault();
         e.stopPropagation();
-        var payload = {
-            url: href,
-        };
-        electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_LINK, payload);
+        var done = popupFootNotes_1.popupFootNote(e.target, focusScrollRaw, href);
+        if (!done) {
+            focusScrollDebounced.clear();
+            processXYDebounced.clear();
+            notifyReadingLocationDebounced.clear();
+            scrollToHashDebounced.clear();
+            var payload = {
+                url: href,
+            };
+            electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_LINK, payload);
+        }
         return false;
     }, true);
     readium_css_1.computeVerticalRTL();
@@ -589,11 +826,18 @@ win.addEventListener("load", function () {
             }
         }, 500);
     }
+    else {
+        processXYDebounced(0, 0);
+        notifyReady();
+    }
     checkReadyPass();
 });
 var processXYRaw = function (x, y) {
+    if (popup_dialog_1.isPopupDialogOpen(win.document)) {
+        return;
+    }
     var element;
-    var range = document.caretRangeFromPoint(x, y);
+    var range = win.document.caretRangeFromPoint(x, y);
     if (range) {
         var node = range.startContainer;
         if (node) {
@@ -611,7 +855,7 @@ var processXYRaw = function (x, y) {
         win.READIUM2.locationHashOverride = element;
         notifyReadingLocationDebounced();
         if (win.READIUM2.DEBUG_VISUALS) {
-            var existings = document.querySelectorAll("*[" + styles_1.readPosCssStylesAttr2 + "]");
+            var existings = win.document.querySelectorAll("*[" + styles_1.readPosCssStylesAttr2 + "]");
             existings.forEach(function (existing) {
                 existing.removeAttribute("" + styles_1.readPosCssStylesAttr2);
             });
@@ -705,26 +949,55 @@ exports.computeProgressionData = function () {
         percentRatio: progressionRatio,
     };
 };
+var _blacklistIdClassForCssSelectors = [styles_1.TTS_ID_INJECTED_PARENT, styles_1.TTS_ID_SPEAKING_DOC_ELEMENT, styles_1.POPUP_DIALOG_CLASS, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN, styles_1.ROOT_CLASS_KEYBOARD_INTERACT, styles_1.ROOT_CLASS_INVISIBLE_MASK, readium_css_inject_1.CLASS_PAGINATED, styles_1.ROOT_CLASS_NO_FOOTNOTES];
+var _blacklistIdClassForCFI = [styles_1.POPUP_DIALOG_CLASS, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN];
 exports.computeCFI = function (node) {
+    var e_1, _a;
     if (node.nodeType !== Node.ELEMENT_NODE) {
         return undefined;
     }
     var cfi = "";
     var currentElement = node;
     while (currentElement.parentNode && currentElement.parentNode.nodeType === Node.ELEMENT_NODE) {
-        var currentElementChildren = currentElement.parentNode.children;
-        var currentElementIndex = -1;
-        for (var i = 0; i < currentElementChildren.length; i++) {
-            if (currentElement === currentElementChildren[i]) {
-                currentElementIndex = i;
-                break;
+        var blacklistedId = void 0;
+        var id = currentElement.getAttribute("id");
+        if (id && _blacklistIdClassForCFI.indexOf(id) >= 0) {
+            console.log("CFI BLACKLIST ID: " + id);
+            blacklistedId = id;
+        }
+        var blacklistedClass = void 0;
+        try {
+            for (var _blacklistIdClassForCFI_1 = tslib_1.__values(_blacklistIdClassForCFI), _blacklistIdClassForCFI_1_1 = _blacklistIdClassForCFI_1.next(); !_blacklistIdClassForCFI_1_1.done; _blacklistIdClassForCFI_1_1 = _blacklistIdClassForCFI_1.next()) {
+                var item = _blacklistIdClassForCFI_1_1.value;
+                if (currentElement.classList.contains(item)) {
+                    console.log("CFI BLACKLIST CLASS: " + item);
+                    blacklistedClass = item;
+                    break;
+                }
             }
         }
-        if (currentElementIndex >= 0) {
-            var cfiIndex = (currentElementIndex + 1) * 2;
-            cfi = cfiIndex +
-                (currentElement.id ? ("[" + currentElement.id + "]") : "") +
-                (cfi.length ? ("/" + cfi) : "");
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (_blacklistIdClassForCFI_1_1 && !_blacklistIdClassForCFI_1_1.done && (_a = _blacklistIdClassForCFI_1.return)) _a.call(_blacklistIdClassForCFI_1);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+        if (!blacklistedId && !blacklistedClass) {
+            var currentElementParentChildren = currentElement.parentNode.children;
+            var currentElementIndex = -1;
+            for (var i = 0; i < currentElementParentChildren.length; i++) {
+                if (currentElement === currentElementParentChildren[i]) {
+                    currentElementIndex = i;
+                    break;
+                }
+            }
+            if (currentElementIndex >= 0) {
+                var cfiIndex = (currentElementIndex + 1) * 2;
+                cfi = cfiIndex +
+                    (currentElement.id ? ("[" + currentElement.id + "]") : "") +
+                    (cfi.length ? ("/" + cfi) : "");
+            }
         }
         currentElement = currentElement.parentNode;
     }
@@ -735,7 +1008,15 @@ var notifyReadingLocationRaw = function () {
         return;
     }
     var progressionData;
-    var cssSelector = cssselector2_1.uniqueCssSelector(win.READIUM2.locationHashOverride, win.document);
+    var options = {
+        className: function (str) {
+            return _blacklistIdClassForCssSelectors.indexOf(str) < 0;
+        },
+        idName: function (str) {
+            return _blacklistIdClassForCssSelectors.indexOf(str) < 0;
+        },
+    };
+    var cssSelector = cssselector2_1.uniqueCssSelector(win.READIUM2.locationHashOverride, win.document, options);
     var cfi = exports.computeCFI(win.READIUM2.locationHashOverride);
     var progression = 0;
     if (win.READIUM2.isFixedLayout) {
@@ -757,7 +1038,7 @@ var notifyReadingLocationRaw = function () {
     var payload = win.READIUM2.locationHashOverrideInfo;
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_READING_LOCATION, payload);
     if (win.READIUM2.DEBUG_VISUALS) {
-        var existings = document.querySelectorAll("*[" + styles_1.readPosCssStylesAttr4 + "]");
+        var existings = win.document.querySelectorAll("*[" + styles_1.readPosCssStylesAttr4 + "]");
         existings.forEach(function (existing) {
             existing.removeAttribute("" + styles_1.readPosCssStylesAttr4);
         });
@@ -768,4 +1049,27 @@ var notifyReadingLocationRaw = function () {
 var notifyReadingLocationDebounced = debounce_1.debounce(function () {
     notifyReadingLocationRaw();
 }, 500);
+electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_PLAY, function (_event, payload) {
+    var rootElement = win.document.querySelector(payload.rootElement);
+    var startElement = payload.startElement ? win.document.querySelector(payload.startElement) : null;
+    readaloud_1.ttsPlay(focusScrollRaw, rootElement ? rootElement : undefined, startElement ? startElement : undefined);
+});
+electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_STOP, function (_event) {
+    readaloud_1.ttsStop();
+});
+electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_PAUSE, function (_event) {
+    readaloud_1.ttsPause();
+});
+electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_RESUME, function (_event) {
+    readaloud_1.ttsResume();
+});
+electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_NEXT, function (_event) {
+    readaloud_1.ttsNext();
+});
+electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_PREVIOUS, function (_event) {
+    readaloud_1.ttsPrevious();
+});
+electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_CLICK_ENABLE, function (_event, payload) {
+    win.READIUM2.ttsClickEnabled = payload.doEnable;
+});
 //# sourceMappingURL=preload.js.map

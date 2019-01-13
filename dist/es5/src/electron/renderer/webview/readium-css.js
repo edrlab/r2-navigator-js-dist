@@ -131,9 +131,9 @@ exports.computeVerticalRTL = computeVerticalRTL;
 electron_1.ipcRenderer.on(events_1.R2_EVENT_READIUMCSS, function (_event, payload) {
     exports.readiumCSS(win.document, payload);
 });
-exports.readiumCSS = function (document, messageJson) {
+exports.readiumCSS = function (documant, messageJson) {
     console.log("urlRootReadiumCSS: ", urlRootReadiumCSS);
     console.log("messageJson.urlRoot: ", messageJson.urlRoot);
-    readium_css_inject_1.readiumCSSSet(document, messageJson, urlRootReadiumCSS, _isVerticalWritingMode, _isRTL);
+    readium_css_inject_1.readiumCSSSet(documant, messageJson, urlRootReadiumCSS, _isVerticalWritingMode, _isRTL);
 };
 //# sourceMappingURL=readium-css.js.map

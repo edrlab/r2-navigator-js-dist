@@ -51,6 +51,7 @@ exports.readiumCSSDefaults = {
     ligatures: ligaturesEnum.none,
     lineHeight: undefined,
     night: false,
+    noFootnotes: false,
     pageMargins: undefined,
     paged: false,
     paraIndent: undefined,

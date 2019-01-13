@@ -42,3 +42,20 @@ export declare const R2_EVENT_WEBVIEW_READY = "R2_EVENT_WEBVIEW_READY";
 export interface IEventPayload_R2_EVENT_WEBVIEW_READY {
     href: string;
 }
+export declare const R2_EVENT_TTS_CLICK_ENABLE = "R2_EVENT_TTS_CLICK_ENABLE";
+export interface IEventPayload_R2_EVENT_TTS_CLICK_ENABLE {
+    doEnable: boolean;
+}
+export declare const R2_EVENT_TTS_DO_PLAY = "R2_EVENT_TTS_DO_PLAY";
+export interface IEventPayload_R2_EVENT_TTS_DO_PLAY {
+    rootElement: string;
+    startElement: string | undefined;
+}
+export declare const R2_EVENT_TTS_DO_PAUSE = "R2_EVENT_TTS_DO_PAUSE";
+export declare const R2_EVENT_TTS_DO_RESUME = "R2_EVENT_TTS_DO_RESUME";
+export declare const R2_EVENT_TTS_DO_STOP = "R2_EVENT_TTS_DO_STOP";
+export declare const R2_EVENT_TTS_IS_STOPPED = "R2_EVENT_TTS_IS_STOPPED";
+export declare const R2_EVENT_TTS_IS_PAUSED = "R2_EVENT_TTS_IS_PAUSED";
+export declare const R2_EVENT_TTS_IS_PLAYING = "R2_EVENT_TTS_IS_PLAYING";
+export declare const R2_EVENT_TTS_DO_NEXT = "R2_EVENT_TTS_DO_NEXT";
+export declare const R2_EVENT_TTS_DO_PREVIOUS = "R2_EVENT_TTS_DO_PREVIOUS";

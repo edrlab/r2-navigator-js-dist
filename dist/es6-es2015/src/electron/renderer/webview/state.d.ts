@@ -13,6 +13,7 @@ export interface IElectronWebviewTagWindowState {
     fxlViewportWidth: number;
     fxlViewportHeight: number;
     DEBUG_VISUALS: boolean;
+    ttsClickEnabled: boolean;
 }
 export interface IElectronWebviewTagWindow extends Window {
     READIUM2: IElectronWebviewTagWindowState;
@@ -28,6 +29,7 @@ export interface IElectronBrowserWindowState {
     publication: Publication;
     publicationURL: string;
     DEBUG_VISUALS: boolean;
+    ttsClickEnabled: boolean;
 }
 export interface IElectronBrowserWindow extends Window {
     READIUM2: IElectronBrowserWindowState;

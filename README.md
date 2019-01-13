@@ -94,7 +94,9 @@ Alternatively, GitHub mirror with semantic-versioning release tags:
 
 https://raw.githack.com/edrlab/r2-navigator-js-dist/develop/dist/gitrev.json
 
-## Developer quick start
+## Developer Primer
+
+### Quick Start
 
 Command line steps (NPM, but similar with YARN):
 
@@ -105,7 +107,23 @@ Command line steps (NPM, but similar with YARN):
 5) `npm run build:all` (invoke the main build script: clean, lint, compile)
 6) `ls dist` (that's the build output which gets published as NPM package)
 
-## Documentation
+### Local Workflow (NPM packages not published yet)
+
+Strictly-speaking, a developer needs to clone only the GitHub repository he/she wants to modify code in.
+However, for this documentation let's assume that all `r2-xxx-js` GitHub repositories are cloned, as siblings within the same parent folder.
+The dependency chain is as follows: `r2-utils-js` - `r2-lcp-js` - `r2-shared-js` - `r2-opds-js` - `r2-streamer-js` - `r2-navigator-js` - `r2-testapp-js`
+(for example, this means that `r2-shared-js` depends on `r2-utils-js` and `r2-lcp-js` to compile and function properly).
+Note that `readium-desktop` can be cloned in there too, and this project has the same level as `r2-testapp-js` in terms of its `r2-XXX-js` dependencies.
+
+1) `cd MY_CODE_FOLDER`
+2) `git clone https://github.com/readium/r2-XXX-js.git` (replace `XXX` for each repository name mentioned above)
+3) `cd r2-XXX-js && npm install && npm run build:all` (the order of the `XXX` repositories does not matter here, as we are just pulling dependencies from NPM, and testing that the build works)
+4) Now change some code in `r2-navigator-js` (for example), and invoke `npm run build` (for a quick ES8-2017 build) or `npm run build:all` (for all ECMAScript variants).
+5) To update the `r2-navigator-js` package in `r2-testapp-js` without having to publish an official package with strict semantic versioning, simply invoke `npm run copydist`. This command is available in each `r2-XXX-js` package to "propagate" (compiled) code changes into all dependants.
+6) From time to time, an `r2-XXX-js` package will have new package dependencies in `node_modules` (for example when `npm install --save` is used to fetch a new utility library). In this case ; using the `r2-navigator-js` example above ; the new package dependencies must be manually copied into the `node_modules` folder of `r2-testapp-js`, as these are not known and therefore not handled by the `npm run copydist` command (which only cares about propagating code changes specific to `r2-XXX-js` packages). Such mismatch may typically occur when working from the `develop` branch, as the formal `package-lock.json` definition of dependencies has not yet been published to NPM.
+7) Lastly, once the `r2-navigator-js` code changes are built and copied across into `r2-testapp-js`, simply invoke `npm run electron PATH_TO_EPUB` to launch the test app and check your code modifications (or with `readium-desktop` use `npm run start:dev`).
+
+## Programmer Documentation
 
 An Electron app has one `main` process, and potentially several `renderer` processes (one per `BrowserWindow`).
 In addition, there is a separate runtime for each `webview` embedded inside each `BrowserWindow`
@@ -126,6 +144,8 @@ This explains why there is no object model in the navigator design pattern,
 i.e. no `const nav = new Navigator()` calls.
 
 ### Electron main process
+
+#### Session initialization
 
 ```javascript
 // ES5 import (assuming node_modules/r2-navigator-js/):
@@ -159,6 +179,8 @@ app.on("ready", () => {
 }
 ```
 
+#### URL scheme conversion
+
 ```javascript
 import { READIUM2_ELECTRON_HTTP_PROTOCOL, convertHttpUrlToCustomScheme, convertCustomSchemeToHttpUrl }
   from "@r2-navigator-js/electron/common/sessions";
@@ -180,6 +202,8 @@ if (url.startsWith(READIUM2_ELECTRON_HTTP_PROTOCOL)) {
 }
 ```
 
+#### Electron browser window tracking
+
 ```javascript
 import { trackBrowserWindow } from "@r2-navigator-js/electron/main/browser-window-tracker";
 
@@ -198,6 +222,8 @@ app.on("ready", () => {
   trackBrowserWindow(electronBrowserWindow);
 }
 ```
+
+#### Readium CSS configuration (streamer-level injection)
 
 ```javascript
 import { IEventPayload_R2_EVENT_READIUMCSS } from "@r2-navigator-js/electron/common/events";
@@ -248,6 +274,8 @@ app.on("ready", () => {
 
 ### Electron renderer process(es), for each Electron BrowserWindow
 
+#### Navigator initial injection
+
 ```javascript
 import {
     installNavigatorDOM,
@@ -279,6 +307,8 @@ const response = await fetch(publicationURL);
 const publicationJSON = await response.json();
 const publication = TAJSON.deserialize<Publication>(publicationJSON, Publication);
 ```
+
+#### Readium CSS configuration (after stream-level injection)
 
 ```javascript
 import {
@@ -342,6 +372,8 @@ import {
 readiumCssOnOff();
 ```
 
+#### EPUB reading system information
+
 ```javascript
 import {
     setEpubReadingSystemInfo
@@ -350,6 +382,8 @@ import {
 // This sets the EPUB3 `navigator.epubReadingSystem` object with the provided `name` and `version` values:
 setEpubReadingSystemInfo({ name: "My R2 Application", version: "0.0.1-alpha.1" });
 ```
+
+#### Logging, redirection from web console to shell
 
 ```javascript
 // This should not be called explicitly on the application side,
@@ -366,6 +400,8 @@ const releaseConsoleRedirect = consoleRedirect(loggingTag, process.stdout, proce
 // and
 // "r2:navigator#electron/renderer/index"
 ```
+
+#### Reading location, linking with locators
 
 ```javascript
 import {
@@ -439,6 +475,8 @@ try {
 }
 ```
 
+#### Navigating using arrow keys
+
 ```javascript
 import {
     navLeftOrRight
@@ -458,11 +496,202 @@ window.document.addEventListener("keydown", (ev: KeyboardEvent) => {
 });
 ```
 
+#### Read aloud, TTS (Text To Speech), Synthetic Speech
+
 ```javascript
-// TODO LCP
-import { lsdLcpUpdateInject } from "@r2-navigator-js/electron/main/lsd-injectlcpl";
-import { doTryLcpPass } from "@r2-navigator-js/electron/main/lcp";
+import {
+    TTSStateEnum,
+    ttsClickEnable,
+    ttsListen,
+    ttsNext,
+    ttsPause,
+    ttsPlay,
+    ttsPrevious,
+    ttsResume,
+    ttsStop,
+} from "@r2-navigator-js/electron/renderer/index";
+
+// When true, mouse clicks on text inside publication documents
+// trigger TTS readaloud playback at the pointed location.
+// The default is false. Once set to true, this setting persists
+// for any new loading document within the same publication.
+// This resets to false for any newly opened publication.
+// The ALT key modifier triggers playback for the pointed DOM fragment only.
+ttsClickEnable(false);
+
+// Starts playing TTS read aloud for the entire document, from the begining of the document,
+// or from the last-known reading location (i.e. currently visible in the viewport).
+// This does not automatically move to the next document.
+// If called when already playing, stops and starts again from the current location.
+// Highlighted word-by-word synthetic speech is rendered inside a modal overlay
+// with basic previous/next and timeline scrubber controls (which has instant text preview).
+// The textual popup overlay receives mouse clicks to pause/resume playback.
+// The main document text (in the background of the modal overlay) keeps track
+// of the current playback position, and the top-level spoken fragment is highlighted.
+// Note that long paragraphs/sections of text are automatically sentence-fragmented
+// in order to generate short speech utterances.
+// Also note that the engine parses DOM information in order to assign the correct language
+// to utterances, thereby providing support for multilingual documents.
+ttsPlay();
+
+// Stops playback whilst maintaining the read aloud popup overlay,
+// ready for playback to be resumed.
+ttsPause();
+
+// Resumes from a paused state, plays from the begining of the last-played utterance, and onwards.
+ttsResume();
+
+// Stops any ongoing playback and discards the popup modal TTS overlay.
+// Cleans-up allocated resources.
+ttsStops();
+
+// Navigate backward / forward inside the stream of utterances scheduled for the current TTS playback.
+// Equivalent to the command buttons left/right of the timeline scrubber located at the bottom of the read aloud overlay.
+ttsPrevious();
+ttsNext();
+
+// Sets up a callback for event notifications from the read aloud state machine.
+// Currently: TTS paused, stopped, and playing.
+ttsListen((ttsState: TTSStateEnum) => {
+  if (ttsState === TTSStateEnum.PAUSED) {
+    // ...
+  } else if (ttsState === TTSStateEnum.STOPPED) {
+    // ...
+  } else if (ttsState === TTSStateEnum.PLAYING) {
+    // ...
+  }
+});
+```
+
+At this stage there are missing features: voice selection (depending on languages), volume, speech rate and pitch.
+
+#### LCP
+
+```javascript
+import { setLcpNativePluginPath } from "@r2-lcp-js/parser/epub/lcp";
+
+// Registers the filesystem location of the native LCP library
+const lcpPluginPath = path.join(process.cwd(), "LCP", "lcp.node");
+setLcpNativePluginPath(lcpPluginPath);
+```
+
+```javascript
 import { IDeviceIDManager } from "@r2-lcp-js/lsd/deviceid-manager";
+import { launchStatusDocumentProcessing } from "@r2-lcp-js/lsd/status-document-processing";
+import { lsdLcpUpdateInject } from "@r2-navigator-js/electron/main/lsd-injectlcpl";
+
+// App-level implementation of the LSD (License Status Document)
+const deviceIDManager: IDeviceIDManager = {
+
+    async checkDeviceID(key: string): Promise<string | undefined> {
+        //...
+    },
+
+    async getDeviceID(): Promise<string> {
+        //...
+    },
+
+    async getDeviceNAME(): Promise<string> {
+        //...
+    },
+
+    async recordDeviceID(key: string): Promise<void> {
+        //...
+    },
+};
+
+// Assumes a `Publication` object already prepared in memory,
+// loaded from `publicationFilePath`.
+// This performs the LCP-compliant background operations to register the device,
+// and to check for an updated license (as passed in the callback parameter).
+// The lsdLcpUpdateInject() function can be used to immediately inject the updated
+// LCP license (META-INF/license.lcpl) inside the EPUB container on the filesystem.
+try {
+    await launchStatusDocumentProcessing(publication.LCP, deviceIDManager,
+        async (licenseUpdateJson: string | undefined) => {
+
+            if (licenseUpdateJson) {
+                let res: string;
+                try {
+                    res = await lsdLcpUpdateInject(
+                        licenseUpdateJson,
+                        publication as Publication,
+                        publicationFilePath);
+                } catch (err) {
+                    debug(err);
+                }
+            }
+        });
+} catch (err) {
+    debug(err);
+}
+```
+
+```javascript
+import { downloadEPUBFromLCPL } from "@r2-lcp-js/publication-download";
+
+// Downloads the EPUB publication referenced by given LCP license,
+// injects the license at META-INF/license.lcpl inside the EPUB container,
+// and returns the result as an array of two string values:
+// first is the full destination filepath (should be path.join(destinationDirectory, destinationFileName))
+// second is the URL where the EPUB was downloaded from ("publicatiion" link inside the LCP license)
+try {
+    let epub = await downloadEPUBFromLCPL(lcplFilePath, destinationDirectory, destinationFileName);
+} catch (err) {
+  debug(err);
+}
+```
+
+```javascript
+import { doTryLcpPass } from "@r2-navigator-js/electron/main/lcp";
+
+// This asks the LCP library to test an array of passphrases
+// (or the SHA256 digest of the passphrases).
+// The promise is rejected (try+catch) when no valid passphrase was found.
+// The function returns the first valid passphrase.
+try {
+    const lcpPass = "my LCP passphrase";
+    const validPass = await doTryLcpPass(
+        publicationsServer,
+        publicationFilePath,
+        [lcpPass],
+        isSha256Hex);
+
+    let passSha256Hex: string | undefined;
+    if (!isSha256Hex) {
+        const checkSum = crypto.createHash("sha256");
+        checkSum.update(lcpPass);
+        passSha256Hex = checkSum.digest("hex");
+    } else {
+        passSha256Hex = lcpPass;
+    }
+} catch (err) {
+    debug(err);
+}
+```
+
+```javascript
 import { doLsdRenew } from "@r2-navigator-js/electron/main/lsd";
 import { doLsdReturn } from "@r2-navigator-js/electron/main/lsd";
+
+// LSD "renew" (with a specific end date)
+try {
+    const lsdJson = await doLsdRenew(
+        publicationsServer,
+        deviceIDManager,
+        publicationFilePath,
+        endDateStr);
+} catch (err) {
+    debug(err);
+}
+
+// LSD "return"
+try {
+    const lsdJson = await doLsdReturn(
+        publicationsServer,
+        deviceIDManager,
+        publicationFilePath);
+} catch (err) {
+    debug(err);
+}
 ```

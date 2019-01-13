@@ -5,6 +5,7 @@ if (IS_DEV) {
     const cr = require("./common/console-redirect");
     cr.consoleRedirect("r2:navigator#electron/renderer/index", process.stdout, process.stderr, true);
 }
+const url_1 = require("url");
 const UrlUtils_1 = require("r2-utils-js/dist/es8-es2017/src/_utils/http/UrlUtils");
 const debounce_1 = require("debounce");
 const debug_ = require("debug");
@@ -14,9 +15,6 @@ const sessions_1 = require("../common/sessions");
 const url_params_1 = require("./common/url-params");
 const URI = require("urijs");
 const ENABLE_WEBVIEW_RESIZE = true;
-const CLASS_POS_RIGHT = "r2_posRight";
-const CLASS_SHIFT_LEFT = "r2_shiftedLeft";
-const CLASS_ANIMATED = "r2_animated";
 const ELEMENT_ID_SLIDING_VIEWPORT = "r2_navigator_sliding_viewport";
 const debug = debug_("r2:navigator#electron/renderer/index");
 function isRTL() {
@@ -139,19 +137,17 @@ let _publication;
 let _publicationJsonUrl;
 let _rootHtmlElement;
 function handleLink(href, previous, useGoto) {
-    let okay = href.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://");
-    if (!okay && _publicationJsonUrl) {
-        const prefix = _publicationJsonUrl.replace("manifest.json", "");
-        debug("handleLink: ", href, " -- ", prefix);
-        okay = decodeURIComponent(href).startsWith(decodeURIComponent(prefix));
-    }
-    if (okay) {
+    const special = href.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://");
+    if (special) {
         loadLink(href, previous, useGoto);
     }
     else {
-        debug("EXTERNAL LINK:");
-        debug(href);
-        electron_1.shell.openExternal(href);
+        const okay = loadLink(href, previous, useGoto);
+        if (!okay) {
+            debug("EXTERNAL LINK:");
+            debug(href);
+            electron_1.shell.openExternal(href);
+        }
     }
 }
 exports.handleLink = handleLink;
@@ -194,7 +190,11 @@ function handleLinkLocator(location) {
     }
     if (linkToLoad) {
         const useGoto = typeof linkToLoadGoto !== "undefined";
-        const hrefToLoad = _publicationJsonUrl + "/../" + linkToLoad.Href +
+        const uri = new url_1.URL(linkToLoad.Href, _publicationJsonUrl);
+        uri.hash = "";
+        uri.search = "";
+        const urlNoQueryParams = uri.toString();
+        const hrefToLoad = urlNoQueryParams +
             ((useGoto) ? ("?" + url_params_1.URL_PARAM_GOTO + "=" +
                 UrlUtils_1.encodeURIComponent_RFC3986(new Buffer(JSON.stringify(linkToLoadGoto, null, "")).toString("base64"))) :
                 "");
@@ -214,6 +214,7 @@ function installNavigatorDOM(publication, publicationJsonUrl, rootHtmlElementID,
             DEBUG_VISUALS: debugVisuals,
             publication: _publication,
             publicationURL: _publicationJsonUrl,
+            ttsClickEnabled: false,
         };
         window.READIUM2.debug = (debugVisualz) => {
             debug("debugVisuals SET: ", debugVisualz);
@@ -250,10 +251,6 @@ function installNavigatorDOM(publication, publicationJsonUrl, rootHtmlElementID,
     _webview1.setAttribute("id", "webview1");
     slidingViewport.appendChild(_webview1);
     _rootHtmlElement.appendChild(slidingViewport);
-    if (isRTL()) {
-        _webview1.classList.add(CLASS_POS_RIGHT);
-        _webview1.style.left = "50%";
-    }
     setTimeout(() => {
         handleLinkLocator(location);
     }, 100);
@@ -278,10 +275,51 @@ const getActiveWebView = () => {
 };
 function loadLink(hrefFull, previous, useGoto) {
     if (!_publication || !_publicationJsonUrl) {
-        return;
+        return false;
     }
     if (hrefFull.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
         hrefFull = sessions_1.convertCustomSchemeToHttpUrl(hrefFull);
+    }
+    const pubJsonUri = _publicationJsonUrl.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://") ?
+        sessions_1.convertCustomSchemeToHttpUrl(_publicationJsonUrl) : _publicationJsonUrl;
+    let linkPath;
+    const urlToLink = new url_1.URL(hrefFull);
+    urlToLink.hash = "";
+    urlToLink.search = "";
+    const urlPublication = new url_1.URL(pubJsonUri);
+    urlPublication.hash = "";
+    urlPublication.search = "";
+    let iBreak = -1;
+    for (let i = 0; i < urlPublication.pathname.length; i++) {
+        const c1 = urlPublication.pathname[i];
+        if (i < urlToLink.pathname.length) {
+            const c2 = urlToLink.pathname[i];
+            if (c1 !== c2) {
+                iBreak = i;
+                break;
+            }
+        }
+        else {
+            break;
+        }
+    }
+    if (iBreak > 0) {
+        linkPath = urlToLink.pathname.substr(iBreak);
+    }
+    if (!linkPath) {
+        return false;
+    }
+    let pubLink = _publication.Spine ? _publication.Spine.find((spineLink) => {
+        return spineLink.Href === linkPath;
+    }) : undefined;
+    if (!pubLink) {
+        pubLink = _publication.Resources.find((spineLink) => {
+            return spineLink.Href === linkPath;
+        });
+    }
+    if (!pubLink) {
+        debug("FATAL WEBVIEW READIUM2_LINK ??!! " + hrefFull + " ==> " + linkPath);
+        return false;
     }
     const linkUri = new URI(hrefFull);
     linkUri.search((data) => {
@@ -297,24 +335,6 @@ function loadLink(hrefFull, previous, useGoto) {
     });
     if (useGoto) {
         linkUri.hash("").normalizeHash();
-    }
-    const pubJsonUri = _publicationJsonUrl.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://") ?
-        sessions_1.convertCustomSchemeToHttpUrl(_publicationJsonUrl) : _publicationJsonUrl;
-    const pubUri = new URI(pubJsonUri);
-    const pathPrefix = decodeURIComponent(pubUri.path().replace("manifest.json", ""));
-    const normPath = decodeURIComponent(linkUri.normalizePath().path());
-    const linkPath = normPath.replace(pathPrefix, "");
-    let pubLink = _publication.Spine.find((spineLink) => {
-        return spineLink.Href === linkPath;
-    });
-    if (!pubLink) {
-        pubLink = _publication.Resources.find((spineLink) => {
-            return spineLink.Href === linkPath;
-        });
-    }
-    if (!pubLink) {
-        debug("FATAL WEBVIEW READIUM2_LINK ??!! " + hrefFull + " ==> " + linkPath);
-        return;
     }
     const rcssJson = __computeReadiumCssJsonMessage(pubLink);
     const rcssJsonstr = JSON.stringify(rcssJson, null, "");
@@ -335,43 +355,6 @@ function loadLink(hrefFull, previous, useGoto) {
         const hash = useGoto ? undefined : linkUri.fragment();
         debug("ALREADY LOADED: " + pubLink.Href);
         const webviewToReuse = _webview1;
-        if (webviewToReuse !== activeWebView) {
-            debug("INTO VIEW ...");
-            const slidingView = document.getElementById(ELEMENT_ID_SLIDING_VIEWPORT);
-            if (slidingView) {
-                let animate = true;
-                if (goto || hash) {
-                    debug("DISABLE ANIM");
-                    animate = false;
-                }
-                else if (previous) {
-                    if (!slidingView.classList.contains(CLASS_SHIFT_LEFT)) {
-                        debug("DISABLE ANIM");
-                        animate = false;
-                    }
-                }
-                if (animate) {
-                    if (!slidingView.classList.contains(CLASS_ANIMATED)) {
-                        slidingView.classList.add(CLASS_ANIMATED);
-                        slidingView.style.transition = "left 500ms ease-in-out";
-                    }
-                }
-                else {
-                    if (slidingView.classList.contains(CLASS_ANIMATED)) {
-                        slidingView.classList.remove(CLASS_ANIMATED);
-                        slidingView.style.transition = "none";
-                    }
-                }
-                if (slidingView.classList.contains(CLASS_SHIFT_LEFT)) {
-                    slidingView.classList.remove(CLASS_SHIFT_LEFT);
-                    slidingView.style.left = "0";
-                }
-                else {
-                    slidingView.classList.add(CLASS_SHIFT_LEFT);
-                    slidingView.style.left = "-100%";
-                }
-            }
-        }
         const payload = {
             goto,
             hash,
@@ -382,7 +365,7 @@ function loadLink(hrefFull, previous, useGoto) {
             debug(msgStr);
         }
         webviewToReuse.send(events_1.R2_EVENT_SCROLLTO, payload);
-        return;
+        return true;
     }
     const uriStr = linkUri.toString();
     if (IS_DEV) {
@@ -407,6 +390,7 @@ function loadLink(hrefFull, previous, useGoto) {
         debug(uriStr_);
     }
     activeWebView.setAttribute("src", uriStr_);
+    return true;
 }
 function createWebView(preloadScriptPath) {
     const wv = document.createElement("webview");
@@ -427,6 +411,9 @@ function createWebView(preloadScriptPath) {
     }, 500);
     wv.addEventListener("dom-ready", () => {
         wv.clearHistory();
+        if (window.READIUM2) {
+            ttsClickEnable(window.READIUM2.ttsClickEnabled);
+        }
     });
     wv.addEventListener("ipc-message", (event) => {
         const webview = event.currentTarget;
@@ -460,23 +447,43 @@ function createWebView(preloadScriptPath) {
                 return;
             }
             let nextOrPreviousSpineItem;
-            for (let i = 0; i < _publication.Spine.length; i++) {
-                if (_publication.Spine[i] === webview.READIUM2.link) {
-                    if (goPREVIOUS && (i - 1) >= 0) {
-                        nextOrPreviousSpineItem = _publication.Spine[i - 1];
+            if (_publication.Spine) {
+                for (let i = 0; i < _publication.Spine.length; i++) {
+                    if (_publication.Spine[i] === webview.READIUM2.link) {
+                        if (goPREVIOUS && (i - 1) >= 0) {
+                            nextOrPreviousSpineItem = _publication.Spine[i - 1];
+                        }
+                        else if (!goPREVIOUS && (i + 1) < _publication.Spine.length) {
+                            nextOrPreviousSpineItem = _publication.Spine[i + 1];
+                        }
+                        break;
                     }
-                    else if (!goPREVIOUS && (i + 1) < _publication.Spine.length) {
-                        nextOrPreviousSpineItem = _publication.Spine[i + 1];
-                    }
-                    break;
                 }
             }
             if (!nextOrPreviousSpineItem) {
                 return;
             }
             if (_publicationJsonUrl) {
-                const linkHref = _publicationJsonUrl + "/../" + nextOrPreviousSpineItem.Href;
-                handleLink(linkHref, goPREVIOUS, false);
+                const uri = new url_1.URL(nextOrPreviousSpineItem.Href, _publicationJsonUrl);
+                uri.hash = "";
+                uri.search = "";
+                const urlNoQueryParams = uri.toString();
+                handleLink(urlNoQueryParams, goPREVIOUS, false);
+            }
+        }
+        else if (event.channel === events_1.R2_EVENT_TTS_IS_PAUSED) {
+            if (_ttsListener) {
+                _ttsListener(TTSStateEnum.PAUSED);
+            }
+        }
+        else if (event.channel === events_1.R2_EVENT_TTS_IS_STOPPED) {
+            if (_ttsListener) {
+                _ttsListener(TTSStateEnum.STOPPED);
+            }
+        }
+        else if (event.channel === events_1.R2_EVENT_TTS_IS_PLAYING) {
+            if (_ttsListener) {
+                _ttsListener(TTSStateEnum.PLAYING);
             }
         }
         else {
@@ -512,4 +519,87 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_LINK, (_event, payload) => {
     debug(payload.url);
     handleLinkUrl(payload.url);
 });
+function ttsPlay() {
+    const activeWebView = getActiveWebView();
+    if (!activeWebView) {
+        return;
+    }
+    let startElementCSSSelector;
+    if (_lastSavedReadingLocation && activeWebView.READIUM2 && activeWebView.READIUM2.link) {
+        if (_lastSavedReadingLocation.locator.href === activeWebView.READIUM2.link.Href) {
+            startElementCSSSelector = _lastSavedReadingLocation.locator.locations.cssSelector;
+        }
+    }
+    const payload = {
+        rootElement: "html > body",
+        startElement: startElementCSSSelector,
+    };
+    activeWebView.send(events_1.R2_EVENT_TTS_DO_PLAY, payload);
+}
+exports.ttsPlay = ttsPlay;
+function ttsPause() {
+    const activeWebView = getActiveWebView();
+    if (!activeWebView) {
+        return;
+    }
+    activeWebView.send(events_1.R2_EVENT_TTS_DO_PAUSE);
+}
+exports.ttsPause = ttsPause;
+function ttsStop() {
+    const activeWebView = getActiveWebView();
+    if (!activeWebView) {
+        return;
+    }
+    activeWebView.send(events_1.R2_EVENT_TTS_DO_STOP);
+}
+exports.ttsStop = ttsStop;
+function ttsResume() {
+    const activeWebView = getActiveWebView();
+    if (!activeWebView) {
+        return;
+    }
+    activeWebView.send(events_1.R2_EVENT_TTS_DO_RESUME);
+}
+exports.ttsResume = ttsResume;
+function ttsPrevious() {
+    const activeWebView = getActiveWebView();
+    if (!activeWebView) {
+        return;
+    }
+    activeWebView.send(events_1.R2_EVENT_TTS_DO_PREVIOUS);
+}
+exports.ttsPrevious = ttsPrevious;
+function ttsNext() {
+    const activeWebView = getActiveWebView();
+    if (!activeWebView) {
+        return;
+    }
+    activeWebView.send(events_1.R2_EVENT_TTS_DO_NEXT);
+}
+exports.ttsNext = ttsNext;
+var TTSStateEnum;
+(function (TTSStateEnum) {
+    TTSStateEnum["PAUSED"] = "PAUSED";
+    TTSStateEnum["PLAYING"] = "PLAYING";
+    TTSStateEnum["STOPPED"] = "STOPPED";
+})(TTSStateEnum = exports.TTSStateEnum || (exports.TTSStateEnum = {}));
+let _ttsListener;
+function ttsListen(ttsListener) {
+    _ttsListener = ttsListener;
+}
+exports.ttsListen = ttsListen;
+function ttsClickEnable(doEnable) {
+    if (window.READIUM2) {
+        window.READIUM2.ttsClickEnabled = doEnable;
+    }
+    const activeWebView = getActiveWebView();
+    if (!activeWebView) {
+        return;
+    }
+    const payload = {
+        doEnable,
+    };
+    activeWebView.send(events_1.R2_EVENT_TTS_CLICK_ENABLE, payload);
+}
+exports.ttsClickEnable = ttsClickEnable;
 //# sourceMappingURL=index.js.map

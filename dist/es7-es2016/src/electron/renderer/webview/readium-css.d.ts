@@ -6,4 +6,4 @@ export declare function calculateColumnDimension(): number;
 export declare function isVerticalWritingMode(): boolean;
 export declare function isRTL(): boolean;
 export declare function computeVerticalRTL(): void;
-export declare const readiumCSS: (document: Document, messageJson: IEventPayload_R2_EVENT_READIUMCSS) => void;
+export declare const readiumCSS: (documant: Document, messageJson: IEventPayload_R2_EVENT_READIUMCSS) => void;

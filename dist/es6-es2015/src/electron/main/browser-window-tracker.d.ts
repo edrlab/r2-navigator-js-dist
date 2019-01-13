@@ -1,1 +1,1 @@
-export declare function trackBrowserWindow(win: Electron.BrowserWindow, serverURL?: string): void;
+export declare function trackBrowserWindow(win: Electron.BrowserWindow, _serverURL?: string): void;

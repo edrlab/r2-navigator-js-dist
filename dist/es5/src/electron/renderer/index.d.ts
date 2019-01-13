@@ -19,3 +19,16 @@ export declare function handleLinkUrl(href: string): void;
 export declare function handleLinkLocator(location: Locator | undefined): void;
 export declare function installNavigatorDOM(publication: Publication, publicationJsonUrl: string, rootHtmlElementID: string, preloadScriptPath: string, location: Locator | undefined): void;
 export declare function navLeftOrRight(left: boolean): void;
+export declare function ttsPlay(): void;
+export declare function ttsPause(): void;
+export declare function ttsStop(): void;
+export declare function ttsResume(): void;
+export declare function ttsPrevious(): void;
+export declare function ttsNext(): void;
+export declare enum TTSStateEnum {
+    PAUSED = "PAUSED",
+    PLAYING = "PLAYING",
+    STOPPED = "STOPPED"
+}
+export declare function ttsListen(ttsListener: (ttsState: TTSStateEnum) => void): void;
+export declare function ttsClickEnable(doEnable: boolean): void;
