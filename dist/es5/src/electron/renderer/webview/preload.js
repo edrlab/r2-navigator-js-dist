@@ -108,6 +108,9 @@ function computeVisibility_(element) {
     else if (!win.document || !win.document.documentElement || !win.document.body) {
         return false;
     }
+    if (element === win.document.body) {
+        return true;
+    }
     var rect = element.getBoundingClientRect();
     if (!readium_css_inject_1.isPaginated(win.document)) {
         if ((rect.top + rect.height) >= 0 && rect.top <= win.document.documentElement.clientHeight) {
@@ -461,10 +464,6 @@ var scrollToHashRaw = function () {
     }
     var isPaged = readium_css_inject_1.isPaginated(win.document);
     if (win.READIUM2.locationHashOverride) {
-        if (win.READIUM2.locationHashOverride === win.document.body) {
-            notifyReadingLocationDebounced();
-            return;
-        }
         scrollElementIntoView(win.READIUM2.locationHashOverride);
         notifyReadingLocationDebounced();
         return;
@@ -507,22 +506,24 @@ var scrollToHashRaw = function () {
                 }
                 win.READIUM2.locationHashOverride = undefined;
                 resetLocationHashOverrideInfo();
-                var y = (isPaged ?
-                    (readium_css_1.isVerticalWritingMode() ?
-                        win.document.documentElement.offsetWidth :
-                        win.document.documentElement.offsetHeight) :
-                    (readium_css_1.isVerticalWritingMode() ?
-                        win.document.documentElement.clientWidth :
-                        win.document.documentElement.clientHeight))
-                    - 1;
-                processXYRaw(0, y);
-                showHideContentMask(false);
-                if (!win.READIUM2.locationHashOverride) {
-                    notifyReadingLocationDebounced();
-                }
                 setTimeout(function () {
-                    _ignoreScrollEvent = false;
-                }, 10);
+                    var y = (isPaged ?
+                        (readium_css_1.isVerticalWritingMode() ?
+                            win.document.documentElement.offsetWidth :
+                            win.document.documentElement.offsetHeight) :
+                        (readium_css_1.isVerticalWritingMode() ?
+                            win.document.documentElement.clientWidth :
+                            win.document.documentElement.clientHeight))
+                        - 1;
+                    processXYRaw(0, y);
+                    showHideContentMask(false);
+                    if (!win.READIUM2.locationHashOverride) {
+                        notifyReadingLocationDebounced();
+                    }
+                    setTimeout(function () {
+                        _ignoreScrollEvent = false;
+                    }, 10);
+                }, 60);
                 return;
             }
             var gto = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_GOTO];
@@ -553,14 +554,19 @@ var scrollToHashRaw = function () {
                 }
             }
         }
-        win.READIUM2.locationHashOverride = win.document.body;
-        resetLocationHashOverrideInfo();
         _ignoreScrollEvent = true;
         win.document.body.scrollLeft = 0;
         win.document.body.scrollTop = 0;
         setTimeout(function () {
             _ignoreScrollEvent = false;
         }, 10);
+        win.READIUM2.locationHashOverride = win.document.body;
+        resetLocationHashOverrideInfo();
+        processXYRaw(0, 0);
+        if (!win.READIUM2.locationHashOverride) {
+            notifyReadingLocationDebounced();
+            return;
+        }
     }
     notifyReadingLocationDebounced();
 };
@@ -742,20 +748,6 @@ win.addEventListener("load", function () {
             if (_cancelInitialScrollCheck) {
                 return;
             }
-            if (!readium_css_inject_1.isPaginated(win.document)) {
-                return;
-            }
-            var visible = false;
-            if (win.READIUM2.locationHashOverride) {
-                visible = computeVisibility_(win.READIUM2.locationHashOverride);
-            }
-            else if (win.READIUM2.hashElement) {
-                visible = computeVisibility_(win.READIUM2.hashElement);
-            }
-            if (!visible) {
-                debug("!visible (delayed layout pass?) => forcing second scrollToHashRaw()...");
-                scrollToHashRaw();
-            }
         }, 500);
     }
     else {
@@ -763,12 +755,13 @@ win.addEventListener("load", function () {
     }
     var useResizeSensor = !win.READIUM2.isFixedLayout;
     if (useResizeSensor && win.document.body) {
-        window.requestAnimationFrame(function (_timestamp) {
+        setTimeout(function () {
             new ResizeSensor(win.document.body, function () {
+                debug("ResizeSensor");
                 win.document.body.tabbables = undefined;
                 scrollToHashDebounced();
             });
-        });
+        }, 1000);
     }
     win.document.body.addEventListener("focusin", function (ev) {
         if (_ignoreFocusInEvent) {
@@ -858,7 +851,7 @@ win.addEventListener("load", function () {
             var x = (readium_css_1.isRTL() ? win.document.documentElement.offsetWidth - 1 : 0);
             processXYDebounced(x, 0);
         });
-    }, 800);
+    }, 200);
     win.document.body.addEventListener("click", function (ev) {
         if (popup_dialog_1.isPopupDialogOpen(win.document)) {
             return;
@@ -897,6 +890,25 @@ win.addEventListener("load", function () {
         }
     });
 });
+function findFirstVisibleElement(rooElement) {
+    if (rooElement !== win.document.body) {
+        var visible = computeVisibility_(rooElement);
+        if (visible) {
+            return rooElement;
+        }
+    }
+    for (var i = 0; i < rooElement.children.length; i++) {
+        var child = rooElement.children[i];
+        if (child.nodeType !== Node.ELEMENT_NODE) {
+            continue;
+        }
+        var visibleElement = findFirstVisibleElement(child);
+        if (visibleElement) {
+            return visibleElement;
+        }
+    }
+    return undefined;
+}
 var processXYRaw = function (x, y) {
     if (popup_dialog_1.isPopupDialogOpen(win.document)) {
         return;
@@ -916,11 +928,37 @@ var processXYRaw = function (x, y) {
             }
         }
     }
+    if (!element || element === win.document.body) {
+        element = findFirstVisibleElement(win.document.body);
+        if (!element) {
+            debug("|||||||||||||| cannot find visible element inside BODY????");
+            element = win.document.body;
+        }
+    }
+    else if (readium_css_inject_1.isPaginated(win.document) && !computeVisibility_(element)) {
+        var next = element;
+        var found = void 0;
+        while (next) {
+            var firstInside = findFirstVisibleElement(next);
+            if (firstInside) {
+                found = firstInside;
+                break;
+            }
+            var sibling = next.nextElementSibling;
+            next = sibling ? sibling : undefined;
+        }
+        if (found) {
+            element = found;
+        }
+        else {
+            debug("|||||||||||||| cannot find visible element after current????");
+        }
+    }
+    if (element === win.document.body) {
+        debug("|||||||||||||| BODY selected????");
+    }
     if (element) {
         win.READIUM2.locationHashOverride = element;
-        if (readium_css_inject_1.isPaginated(win.document) && !computeVisibility_(element)) {
-            win.READIUM2.locationHashOverride = win.document.body;
-        }
         notifyReadingLocationDebounced();
         if (win.READIUM2.DEBUG_VISUALS) {
             var existings = win.document.querySelectorAll("*[" + styles_1.readPosCssStylesAttr2 + "]");
