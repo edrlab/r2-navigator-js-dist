@@ -21,6 +21,7 @@ export interface IReadiumCSS {
     sepia: boolean | undefined;
     a11yNormalize: boolean | undefined;
     noFootnotes: boolean | undefined;
+    reduceMotion: boolean | undefined;
 }
 export declare enum bodyHyphensEnum {
     auto = "auto",
@@ -73,6 +74,7 @@ export declare const readiumCSSDefaults: {
     paged: boolean;
     paraIndent: undefined;
     paraSpacing: undefined;
+    reduceMotion: boolean;
     sepia: boolean;
     textAlign: textAlignEnum;
     textColor: undefined;

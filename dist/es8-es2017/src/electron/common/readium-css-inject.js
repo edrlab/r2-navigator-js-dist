@@ -149,6 +149,12 @@ function readiumCSSSet(documant, messageJson, urlRootReadiumCSS, isVerticalWriti
     else {
         docElement.classList.remove(styles_1.ROOT_CLASS_NO_FOOTNOTES);
     }
+    if (setCSS.reduceMotion) {
+        docElement.classList.add(styles_1.ROOT_CLASS_REDUCE_MOTION);
+    }
+    else {
+        docElement.classList.remove(styles_1.ROOT_CLASS_REDUCE_MOTION);
+    }
     const needsAdvanced = true;
     docElement.style.setProperty("--USER__advancedSettings", needsAdvanced ? "readium-advanced-on" : "readium-advanced-off");
     if (typeof setCSS.darken === "undefined") {

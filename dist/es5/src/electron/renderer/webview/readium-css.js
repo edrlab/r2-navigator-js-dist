@@ -1,10 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var electron_1 = require("electron");
-var events_1 = require("../../common/events");
 var readium_css_inject_1 = require("../../common/readium-css-inject");
 var readium_css_settings_1 = require("../../common/readium-css-settings");
 var sessions_1 = require("../../common/sessions");
+var styles_1 = require("../../common/styles");
 var win = global.window;
 var origin = win.location.origin;
 if (origin.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
@@ -12,9 +11,28 @@ if (origin.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
     origin = origin.replace(/\/pub\/.*/, "");
 }
 var urlRootReadiumCSS = origin + "/" + readium_css_settings_1.READIUM_CSS_URL_PATH + "/";
-exports.calculateMaxScrollShift = function () {
+var calculateDocumentColumnizedWidthAdjustedForTwoPageSpread = function () {
     if (!win || !win.document || !win.document.body || !win.document.documentElement) {
         return 0;
+    }
+    var w = win.document.body.scrollWidth;
+    var noChange = !readium_css_inject_1.isPaginated(win.document) || !exports.isTwoPageSpread() ||
+        isVerticalWritingMode();
+    if (!noChange) {
+        var columnizedDocWidth = w;
+        var twoColWidth = win.document.documentElement.offsetWidth;
+        var nSpreads = columnizedDocWidth / twoColWidth;
+        var nWholeSpread = Math.floor(nSpreads);
+        var fractionalSpread = nSpreads - nWholeSpread;
+        if (fractionalSpread > 0 && fractionalSpread <= 0.5) {
+            w = twoColWidth * Math.ceil(nSpreads);
+        }
+    }
+    return w;
+};
+exports.calculateMaxScrollShift = function () {
+    if (!win || !win.document || !win.document.body || !win.document.documentElement) {
+        return { maxScrollShift: 0, maxScrollShiftAdjusted: 0 };
     }
     var isPaged = readium_css_inject_1.isPaginated(win.document);
     var maxScrollShift = isPaged ?
@@ -24,7 +42,14 @@ exports.calculateMaxScrollShift = function () {
         ((isVerticalWritingMode() ?
             (win.document.body.scrollWidth - win.document.documentElement.clientWidth) :
             (win.document.body.scrollHeight - win.document.documentElement.clientHeight)));
-    return maxScrollShift;
+    var maxScrollShiftAdjusted = isPaged ?
+        ((isVerticalWritingMode() ?
+            maxScrollShift :
+            (calculateDocumentColumnizedWidthAdjustedForTwoPageSpread() - win.document.documentElement.offsetWidth))) :
+        ((isVerticalWritingMode() ?
+            maxScrollShift :
+            maxScrollShift));
+    return { maxScrollShift: maxScrollShift, maxScrollShiftAdjusted: maxScrollShiftAdjusted };
 };
 exports.isTwoPageSpread = function () {
     if (!win || !win.document || !win.document.documentElement) {
@@ -128,12 +153,61 @@ function computeVerticalRTL() {
     _isRTL = rtl;
 }
 exports.computeVerticalRTL = computeVerticalRTL;
-electron_1.ipcRenderer.on(events_1.R2_EVENT_READIUMCSS, function (_event, payload) {
-    exports.readiumCSS(win.document, payload);
-});
+function checkHiddenFootNotes(documant) {
+    if (documant.documentElement.classList.contains(styles_1.ROOT_CLASS_NO_FOOTNOTES)) {
+        return;
+    }
+    if (!documant.querySelectorAll) {
+        return;
+    }
+    var aNodeList = documant.querySelectorAll("a[href]");
+    documant.querySelectorAll("aside").forEach(function (aside) {
+        var id = aside.getAttribute("id");
+        if (!id) {
+            return;
+        }
+        id = "#" + id;
+        var epubType = aside.getAttribute("epub:type");
+        if (!epubType) {
+            epubType = aside.getAttributeNS("http://www.idpf.org/2007/ops", "type");
+        }
+        if (!epubType) {
+            return;
+        }
+        epubType = epubType.trim().replace(/\s\s+/g, " ");
+        var isPotentiallyHiddenNote = epubType.indexOf("footnote") >= 0 ||
+            epubType.indexOf("endnote") >= 0 ||
+            epubType.indexOf("rearnote") >= 0 ||
+            epubType.indexOf("note") >= 0;
+        if (!isPotentiallyHiddenNote) {
+            return;
+        }
+        var found = false;
+        for (var i = 0; i < aNodeList.length; i++) {
+            var aNode = aNodeList[i];
+            var href = aNode.getAttribute("href");
+            if (!href) {
+                continue;
+            }
+            var iHash = href.indexOf("#");
+            if (iHash < 0) {
+                continue;
+            }
+            if (href.substr(iHash) === id) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            aside.classList.add(styles_1.FOOTNOTE_FORCE_SHOW);
+        }
+    });
+}
+exports.checkHiddenFootNotes = checkHiddenFootNotes;
 exports.readiumCSS = function (documant, messageJson) {
-    console.log("urlRootReadiumCSS: ", urlRootReadiumCSS);
-    console.log("messageJson.urlRoot: ", messageJson.urlRoot);
     readium_css_inject_1.readiumCSSSet(documant, messageJson, urlRootReadiumCSS, _isVerticalWritingMode, _isRTL);
+    if ((messageJson && messageJson.setCSS && !messageJson.setCSS.noFootnotes)) {
+        checkHiddenFootNotes(documant);
+    }
 };
 //# sourceMappingURL=readium-css.js.map

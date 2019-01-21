@@ -1,16 +1,18 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ROOT_CLASS_REDUCE_MOTION = "r2-reduce-motion";
 exports.ROOT_CLASS_NO_FOOTNOTES = "r2-no-popup-foonotes";
 exports.POPUP_DIALOG_CLASS = "r2-popup-dialog";
 exports.FOOTNOTES_CONTAINER_CLASS = "r2-footnote-container";
 exports.FOOTNOTES_CLOSE_BUTTON_CLASS = "r2-footnote-close";
+exports.FOOTNOTE_FORCE_SHOW = "r2-footnote-force-show";
 exports.footnotesCssStyles = `
 @namespace epub "http://www.idpf.org/2007/ops";
 
-:root:not(.${exports.ROOT_CLASS_NO_FOOTNOTES}) aside[epub|type~="footnote"],
-:root:not(.${exports.ROOT_CLASS_NO_FOOTNOTES}) aside[epub|type~="note"],
-:root:not(.${exports.ROOT_CLASS_NO_FOOTNOTES}) aside[epub|type~="endnote"],
-:root:not(.${exports.ROOT_CLASS_NO_FOOTNOTES}) aside[epub|type~="rearnote"] {
+:root:not(.${exports.ROOT_CLASS_NO_FOOTNOTES}) aside[epub|type~="footnote"]:not(.${exports.FOOTNOTE_FORCE_SHOW}),
+:root:not(.${exports.ROOT_CLASS_NO_FOOTNOTES}) aside[epub|type~="note"]:not(.${exports.FOOTNOTE_FORCE_SHOW}),
+:root:not(.${exports.ROOT_CLASS_NO_FOOTNOTES}) aside[epub|type~="endnote"]:not(.${exports.FOOTNOTE_FORCE_SHOW}),
+:root:not(.${exports.ROOT_CLASS_NO_FOOTNOTES}) aside[epub|type~="rearnote"]:not(.${exports.FOOTNOTE_FORCE_SHOW}) {
     display: none;
 }
 

@@ -1,10 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const electron_1 = require("electron");
-const events_1 = require("../../common/events");
 const readium_css_inject_1 = require("../../common/readium-css-inject");
 const readium_css_settings_1 = require("../../common/readium-css-settings");
 const sessions_1 = require("../../common/sessions");
+const styles_1 = require("../../common/styles");
 const win = global.window;
 let origin = win.location.origin;
 if (origin.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
@@ -12,9 +11,28 @@ if (origin.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
     origin = origin.replace(/\/pub\/.*/, "");
 }
 const urlRootReadiumCSS = origin + "/" + readium_css_settings_1.READIUM_CSS_URL_PATH + "/";
-exports.calculateMaxScrollShift = () => {
+const calculateDocumentColumnizedWidthAdjustedForTwoPageSpread = () => {
     if (!win || !win.document || !win.document.body || !win.document.documentElement) {
         return 0;
+    }
+    let w = win.document.body.scrollWidth;
+    const noChange = !readium_css_inject_1.isPaginated(win.document) || !exports.isTwoPageSpread() ||
+        isVerticalWritingMode();
+    if (!noChange) {
+        const columnizedDocWidth = w;
+        const twoColWidth = win.document.documentElement.offsetWidth;
+        const nSpreads = columnizedDocWidth / twoColWidth;
+        const nWholeSpread = Math.floor(nSpreads);
+        const fractionalSpread = nSpreads - nWholeSpread;
+        if (fractionalSpread > 0 && fractionalSpread <= 0.5) {
+            w = twoColWidth * Math.ceil(nSpreads);
+        }
+    }
+    return w;
+};
+exports.calculateMaxScrollShift = () => {
+    if (!win || !win.document || !win.document.body || !win.document.documentElement) {
+        return { maxScrollShift: 0, maxScrollShiftAdjusted: 0 };
     }
     const isPaged = readium_css_inject_1.isPaginated(win.document);
     const maxScrollShift = isPaged ?
@@ -24,7 +42,14 @@ exports.calculateMaxScrollShift = () => {
         ((isVerticalWritingMode() ?
             (win.document.body.scrollWidth - win.document.documentElement.clientWidth) :
             (win.document.body.scrollHeight - win.document.documentElement.clientHeight)));
-    return maxScrollShift;
+    const maxScrollShiftAdjusted = isPaged ?
+        ((isVerticalWritingMode() ?
+            maxScrollShift :
+            (calculateDocumentColumnizedWidthAdjustedForTwoPageSpread() - win.document.documentElement.offsetWidth))) :
+        ((isVerticalWritingMode() ?
+            maxScrollShift :
+            maxScrollShift));
+    return { maxScrollShift, maxScrollShiftAdjusted };
 };
 exports.isTwoPageSpread = () => {
     if (!win || !win.document || !win.document.documentElement) {
@@ -128,12 +153,61 @@ function computeVerticalRTL() {
     _isRTL = rtl;
 }
 exports.computeVerticalRTL = computeVerticalRTL;
-electron_1.ipcRenderer.on(events_1.R2_EVENT_READIUMCSS, (_event, payload) => {
-    exports.readiumCSS(win.document, payload);
-});
+function checkHiddenFootNotes(documant) {
+    if (documant.documentElement.classList.contains(styles_1.ROOT_CLASS_NO_FOOTNOTES)) {
+        return;
+    }
+    if (!documant.querySelectorAll) {
+        return;
+    }
+    const aNodeList = documant.querySelectorAll("a[href]");
+    documant.querySelectorAll("aside").forEach((aside) => {
+        let id = aside.getAttribute("id");
+        if (!id) {
+            return;
+        }
+        id = "#" + id;
+        let epubType = aside.getAttribute("epub:type");
+        if (!epubType) {
+            epubType = aside.getAttributeNS("http://www.idpf.org/2007/ops", "type");
+        }
+        if (!epubType) {
+            return;
+        }
+        epubType = epubType.trim().replace(/\s\s+/g, " ");
+        const isPotentiallyHiddenNote = epubType.indexOf("footnote") >= 0 ||
+            epubType.indexOf("endnote") >= 0 ||
+            epubType.indexOf("rearnote") >= 0 ||
+            epubType.indexOf("note") >= 0;
+        if (!isPotentiallyHiddenNote) {
+            return;
+        }
+        let found = false;
+        for (let i = 0; i < aNodeList.length; i++) {
+            const aNode = aNodeList[i];
+            const href = aNode.getAttribute("href");
+            if (!href) {
+                continue;
+            }
+            const iHash = href.indexOf("#");
+            if (iHash < 0) {
+                continue;
+            }
+            if (href.substr(iHash) === id) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            aside.classList.add(styles_1.FOOTNOTE_FORCE_SHOW);
+        }
+    });
+}
+exports.checkHiddenFootNotes = checkHiddenFootNotes;
 exports.readiumCSS = (documant, messageJson) => {
-    console.log("urlRootReadiumCSS: ", urlRootReadiumCSS);
-    console.log("messageJson.urlRoot: ", messageJson.urlRoot);
     readium_css_inject_1.readiumCSSSet(documant, messageJson, urlRootReadiumCSS, _isVerticalWritingMode, _isRTL);
+    if ((messageJson && messageJson.setCSS && !messageJson.setCSS.noFootnotes)) {
+        checkHiddenFootNotes(documant);
+    }
 };
 //# sourceMappingURL=readium-css.js.map

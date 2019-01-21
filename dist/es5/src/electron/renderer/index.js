@@ -76,11 +76,16 @@ var _saveReadingLocation = function (docHref, locator) {
         locator: {
             href: docHref,
             locations: {
-                cfi: locator.cfi ? locator.cfi : undefined,
-                cssSelector: locator.cssSelector ? locator.cssSelector : undefined,
-                position: (typeof locator.position !== "undefined") ? locator.position : undefined,
-                progression: (typeof locator.progression !== "undefined") ? locator.progression : undefined,
+                cfi: locator.locations.cfi ?
+                    locator.locations.cfi : undefined,
+                cssSelector: locator.locations.cssSelector ?
+                    locator.locations.cssSelector : undefined,
+                position: (typeof locator.locations.position !== "undefined") ?
+                    locator.locations.position : undefined,
+                progression: (typeof locator.locations.progression !== "undefined") ?
+                    locator.locations.progression : undefined,
             },
+            title: locator.title,
         },
         paginationInfo: locator.paginationInfo,
     };
@@ -93,9 +98,24 @@ function setReadingLocationSaver(func) {
 }
 exports.setReadingLocationSaver = setReadingLocationSaver;
 function readiumCssOnOff() {
+    var _savedReadingLocation = _lastSavedReadingLocation;
     if (_webview1) {
-        var payload1 = __computeReadiumCssJsonMessage(_webview1.READIUM2.link);
-        _webview1.send(events_1.R2_EVENT_READIUMCSS, payload1);
+        var payload1_1 = __computeReadiumCssJsonMessage(_webview1.READIUM2.link);
+        if (_webview1.style.transform !== "none") {
+            _webview1.send("R2_EVENT_HIDE");
+            setTimeout(function () {
+                shiftWebview(_webview1, 0, undefined);
+                _webview1.send(events_1.R2_EVENT_READIUMCSS, payload1_1);
+            }, 10);
+        }
+        else {
+            _webview1.send(events_1.R2_EVENT_READIUMCSS, payload1_1);
+        }
+    }
+    if (_savedReadingLocation) {
+        setTimeout(function () {
+            handleLinkLocator(_savedReadingLocation.locator);
+        }, 60);
     }
 }
 exports.readiumCssOnOff = readiumCssOnOff;
@@ -141,6 +161,7 @@ var _webview1;
 var _publication;
 var _publicationJsonUrl;
 var _rootHtmlElement;
+var _slidingViewport;
 function handleLink(href, previous, useGoto) {
     var special = href.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://");
     if (special) {
@@ -244,9 +265,9 @@ function installNavigatorDOM(publication, publicationJsonUrl, rootHtmlElementID,
         debug("!rootHtmlElement ???");
         return;
     }
-    var slidingViewport = document.createElement("div");
-    slidingViewport.setAttribute("id", ELEMENT_ID_SLIDING_VIEWPORT);
-    slidingViewport.setAttribute("style", "display: block; position: absolute; left: 0; width: 200%; " +
+    _slidingViewport = document.createElement("div");
+    _slidingViewport.setAttribute("id", ELEMENT_ID_SLIDING_VIEWPORT);
+    _slidingViewport.setAttribute("style", "display: block; position: absolute; left: 0; width: 200%; " +
         "top: 0; bottom: 0; margin: 0; padding: 0; box-sizing: border-box; background: white; overflow: hidden;");
     _webview1 = createWebView(preloadScriptPath);
     _webview1.READIUM2 = {
@@ -254,8 +275,8 @@ function installNavigatorDOM(publication, publicationJsonUrl, rootHtmlElementID,
         link: undefined,
     };
     _webview1.setAttribute("id", "webview1");
-    slidingViewport.appendChild(_webview1);
-    _rootHtmlElement.appendChild(slidingViewport);
+    _slidingViewport.appendChild(_webview1);
+    _rootHtmlElement.appendChild(_slidingViewport);
     setTimeout(function () {
         handleLinkLocator(location);
     }, 100);
@@ -359,33 +380,29 @@ function loadLink(hrefFull, previous, useGoto) {
         var goto = useGoto ? linkUri.search(true)[url_params_1.URL_PARAM_GOTO] : undefined;
         var hash = useGoto ? undefined : linkUri.fragment();
         debug("ALREADY LOADED: " + pubLink.Href);
-        var webviewToReuse = _webview1;
-        var payload = {
+        var webviewToReuse_1 = _webview1;
+        var payload_1 = {
             goto: goto,
             hash: hash,
             previous: previous ? true : false,
         };
         if (IS_DEV) {
-            var msgStr = JSON.stringify(payload);
+            var msgStr = JSON.stringify(payload_1);
             debug(msgStr);
         }
-        webviewToReuse.send(events_1.R2_EVENT_SCROLLTO, payload);
+        if (activeWebView.style.transform !== "none") {
+            webviewToReuse_1.send("R2_EVENT_HIDE");
+            setTimeout(function () {
+                shiftWebview(webviewToReuse_1, 0, undefined);
+                webviewToReuse_1.send(events_1.R2_EVENT_SCROLLTO, payload_1);
+            }, 10);
+        }
+        else {
+            webviewToReuse_1.send(events_1.R2_EVENT_SCROLLTO, payload_1);
+        }
         return true;
     }
     var uriStr = linkUri.toString();
-    if (IS_DEV) {
-        debug("####### >>> ---");
-        debug(activeWebView.READIUM2.id);
-        debug(pubLink.Href);
-        debug(uriStr);
-        debug(linkUri.hash());
-        debug(linkUri.fragment());
-        var gto = linkUri.search(true)[url_params_1.URL_PARAM_GOTO];
-        debug(gto ? (new Buffer(gto, "base64").toString("utf8")) : "");
-        debug(linkUri.search(true)[url_params_1.URL_PARAM_PREVIOUS]);
-        debug(linkUri.search(true)[url_params_1.URL_PARAM_CSS]);
-        debug("####### >>> ---");
-    }
     activeWebView.READIUM2.link = pubLink;
     var needConvert = _publicationJsonUrl.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://");
     var uriStr_ = uriStr.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://") ?
@@ -394,8 +411,28 @@ function loadLink(hrefFull, previous, useGoto) {
         debug("setAttribute SRC:");
         debug(uriStr_);
     }
-    activeWebView.setAttribute("src", uriStr_);
+    if (activeWebView.style.transform !== "none") {
+        activeWebView.send("R2_EVENT_HIDE");
+        setTimeout(function () {
+            shiftWebview(activeWebView, 0, undefined);
+            activeWebView.setAttribute("src", uriStr_);
+        }, 10);
+    }
+    else {
+        activeWebView.setAttribute("src", uriStr_);
+    }
     return true;
+}
+function shiftWebview(webview, offset, backgroundColor) {
+    if (!offset) {
+        webview.style.transform = "none";
+    }
+    else {
+        if (_slidingViewport && backgroundColor) {
+            _slidingViewport.style.backgroundColor = backgroundColor;
+        }
+        webview.style.transform = "translateX(" + offset + "px)";
+    }
 }
 function createWebView(preloadScriptPath) {
     var wv = document.createElement("webview");
@@ -426,14 +463,12 @@ function createWebView(preloadScriptPath) {
         if (webview !== activeWebView) {
             return;
         }
-        if (event.channel === events_1.R2_EVENT_LINK) {
-            debug("R2_EVENT_LINK (webview.addEventListener('ipc-message')");
+        if (event.channel === events_1.R2_EVENT_SHIFT_VIEW_X) {
+            shiftWebview(webview, event.args[0].offset, event.args[0].backgroundColor);
+        }
+        else if (event.channel === events_1.R2_EVENT_LINK) {
             var payload = event.args[0];
             handleLinkUrl(payload.url);
-        }
-        else if (event.channel === events_1.R2_EVENT_WEBVIEW_READY) {
-            var payload = event.args[0];
-            debug("WEBVIEW READY: " + payload.href);
         }
         else if (event.channel === events_1.R2_EVENT_READING_LOCATION) {
             var payload = event.args[0];

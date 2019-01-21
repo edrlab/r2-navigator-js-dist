@@ -1,4 +1,4 @@
-import { LocatorLocations } from "r2-shared-js/dist/es7-es2016/src/models/locator";
+import { Locator, LocatorLocations } from "r2-shared-js/dist/es7-es2016/src/models/locator";
 import { IReadiumCSS } from "./readium-css-settings";
 export declare const R2_EVENT_LOCATOR_VISIBLE = "R2_EVENT_LOCATOR_VISIBLE";
 export interface IEventPayload_R2_EVENT_LOCATOR_VISIBLE {
@@ -31,16 +31,17 @@ export interface IEventPayload_R2_EVENT_READING_LOCATION_PAGINATION_INFO {
     isTwoPageSpread: boolean | undefined;
     spreadIndex: number | undefined;
 }
-export interface IEventPayload_R2_EVENT_READING_LOCATION extends LocatorLocations {
+export interface IEventPayload_R2_EVENT_READING_LOCATION extends Locator {
     paginationInfo: IEventPayload_R2_EVENT_READING_LOCATION_PAGINATION_INFO | undefined;
 }
 export declare const R2_EVENT_LINK = "R2_EVENT_LINK";
 export interface IEventPayload_R2_EVENT_LINK {
     url: string;
 }
-export declare const R2_EVENT_WEBVIEW_READY = "R2_EVENT_WEBVIEW_READY";
-export interface IEventPayload_R2_EVENT_WEBVIEW_READY {
-    href: string;
+export declare const R2_EVENT_SHIFT_VIEW_X = "R2_EVENT_SHIFT_VIEW_X";
+export interface IEventPayload_R2_EVENT_SHIFT_VIEW_X {
+    offset: number;
+    backgroundColor: string | undefined;
 }
 export declare const R2_EVENT_TTS_CLICK_ENABLE = "R2_EVENT_TTS_CLICK_ENABLE";
 export interface IEventPayload_R2_EVENT_TTS_CLICK_ENABLE {

@@ -56,6 +56,7 @@ exports.readiumCSSDefaults = {
     paged: false,
     paraIndent: undefined,
     paraSpacing: undefined,
+    reduceMotion: false,
     sepia: false,
     textAlign: textAlignEnum.start,
     textColor: undefined,
