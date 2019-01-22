@@ -107,13 +107,6 @@ function computeVisibility_(element) {
             }
             return false;
         }
-        const visibility = elStyle.getPropertyValue("visibility");
-        if (visibility === "hidden") {
-            if (IS_DEV) {
-                console.log("element VISIBILITY HIDDEN");
-            }
-            return false;
-        }
         const opacity = elStyle.getPropertyValue("opacity");
         if (opacity === "0") {
             if (IS_DEV) {
@@ -532,10 +525,12 @@ const scrollToHashRaw = () => {
             }
             const gto = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_GOTO];
             let gotoCssSelector;
+            let gotoProgression;
             if (gto) {
                 const s = new Buffer(gto, "base64").toString("utf8");
                 const js = JSON.parse(s);
                 gotoCssSelector = js.cssSelector;
+                gotoProgression = js.progression;
             }
             if (gotoCssSelector) {
                 gotoCssSelector = gotoCssSelector.replace(/\+/g, " ");
@@ -557,6 +552,59 @@ const scrollToHashRaw = () => {
                     return;
                 }
             }
+            else if (gotoProgression) {
+                const { maxScrollShift } = readium_css_1.calculateMaxScrollShift();
+                if (isPaged) {
+                    const isTwoPage = readium_css_1.isTwoPageSpread();
+                    const nColumns = readium_css_1.calculateTotalColumns();
+                    const nUnits = isTwoPage ? Math.ceil(nColumns / 2) : nColumns;
+                    const unitIndex = Math.floor(gotoProgression * nUnits);
+                    const unit = readium_css_1.isVerticalWritingMode() ?
+                        win.document.documentElement.offsetHeight :
+                        win.document.documentElement.offsetWidth;
+                    const scrollOffsetPotentiallyExcessive = readium_css_1.isVerticalWritingMode() ?
+                        (unitIndex * unit) :
+                        ((readium_css_1.isRTL() ? -1 : 1) * unitIndex * unit);
+                    ensureTwoPageSpreadWithOddColumnsIsOffset(scrollOffsetPotentiallyExcessive, maxScrollShift);
+                    const scrollOffsetPaged = (scrollOffsetPotentiallyExcessive < 0 ? -1 : 1) *
+                        Math.min(Math.abs(scrollOffsetPotentiallyExcessive), maxScrollShift);
+                    _ignoreScrollEvent = true;
+                    if (readium_css_1.isVerticalWritingMode()) {
+                        win.document.body.scrollTop = scrollOffsetPaged;
+                    }
+                    else {
+                        win.document.body.scrollLeft = scrollOffsetPaged;
+                    }
+                    setTimeout(() => {
+                        _ignoreScrollEvent = false;
+                    }, 10);
+                    win.READIUM2.locationHashOverride = win.document.body;
+                    resetLocationHashOverrideInfo();
+                    processXYRaw(0, 0, false);
+                    if (!win.READIUM2.locationHashOverride) {
+                        notifyReadingLocationDebounced();
+                    }
+                    return;
+                }
+                const scrollOffset = gotoProgression * maxScrollShift;
+                _ignoreScrollEvent = true;
+                if (readium_css_1.isVerticalWritingMode()) {
+                    win.document.body.scrollLeft = scrollOffset;
+                }
+                else {
+                    win.document.body.scrollTop = scrollOffset;
+                }
+                setTimeout(() => {
+                    _ignoreScrollEvent = false;
+                }, 10);
+                win.READIUM2.locationHashOverride = win.document.body;
+                resetLocationHashOverrideInfo();
+                processXYRaw(0, 0, false);
+                if (!win.READIUM2.locationHashOverride) {
+                    notifyReadingLocationDebounced();
+                }
+                return;
+            }
         }
         _ignoreScrollEvent = true;
         win.document.body.scrollLeft = 0;
@@ -567,10 +615,6 @@ const scrollToHashRaw = () => {
         win.READIUM2.locationHashOverride = win.document.body;
         resetLocationHashOverrideInfo();
         processXYRaw(0, 0, false);
-        if (!win.READIUM2.locationHashOverride) {
-            notifyReadingLocationDebounced();
-            return;
-        }
     }
     notifyReadingLocationDebounced();
 };

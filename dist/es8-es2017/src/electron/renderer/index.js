@@ -100,7 +100,7 @@ function setReadingLocationSaver(func) {
 }
 exports.setReadingLocationSaver = setReadingLocationSaver;
 function readiumCssOnOff() {
-    const _savedReadingLocation = _lastSavedReadingLocation;
+    const savedReadingLocation = _lastSavedReadingLocation;
     if (_webview1) {
         const payload1 = __computeReadiumCssJsonMessage(_webview1.READIUM2.link);
         if (_webview1.style.transform !== "none") {
@@ -114,9 +114,9 @@ function readiumCssOnOff() {
             _webview1.send(events_1.R2_EVENT_READIUMCSS, payload1);
         }
     }
-    if (_savedReadingLocation) {
+    if (savedReadingLocation) {
         setTimeout(() => {
-            handleLinkLocator(_savedReadingLocation.locator);
+            handleLinkLocator(savedReadingLocation.locator);
         }, 60);
     }
 }
@@ -250,10 +250,8 @@ function installNavigatorDOM(publication, publicationJsonUrl, rootHtmlElementID,
                 window.localStorage.setItem(url_params_1.URL_PARAM_DEBUG_VISUALS, debugVisualz ? "true" : "false");
             }
             setTimeout(() => {
-                const loc = getCurrentReadingLocation();
-                debug("|||||||||||||| getCurrentReadingLocation: ", JSON.stringify(loc));
-                if (loc) {
-                    handleLinkLocator(loc.locator);
+                if (_lastSavedReadingLocation) {
+                    handleLinkLocator(_lastSavedReadingLocation.locator);
                 }
             }, 100);
         };
