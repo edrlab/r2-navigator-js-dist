@@ -95,12 +95,37 @@ function computeVisibility_(element) {
     else if (!win.document || !win.document.documentElement || !win.document.body) {
         return false;
     }
-    if (element === win.document.body) {
+    if (element === win.document.body || element === win.document.documentElement) {
         return true;
+    }
+    const elStyle = win.getComputedStyle(element);
+    if (elStyle) {
+        const display = elStyle.getPropertyValue("display");
+        if (display === "none") {
+            if (IS_DEV) {
+                console.log("element DISPLAY NONE");
+            }
+            return false;
+        }
+        const visibility = elStyle.getPropertyValue("visibility");
+        if (visibility === "hidden") {
+            if (IS_DEV) {
+                console.log("element VISIBILITY HIDDEN");
+            }
+            return false;
+        }
+        const opacity = elStyle.getPropertyValue("opacity");
+        if (opacity === "0") {
+            if (IS_DEV) {
+                console.log("element OPACITY ZERO");
+            }
+            return false;
+        }
     }
     const rect = element.getBoundingClientRect();
     if (!readium_css_inject_1.isPaginated(win.document)) {
-        if ((rect.top + rect.height) >= 0 && rect.top <= win.document.documentElement.clientHeight) {
+        if (rect.top >= 0 &&
+            rect.top <= win.document.documentElement.clientHeight) {
             return true;
         }
         return false;
@@ -494,15 +519,7 @@ const scrollToHashRaw = () => {
                 win.READIUM2.locationHashOverride = undefined;
                 resetLocationHashOverrideInfo();
                 setTimeout(() => {
-                    const y = (isPaged ?
-                        (readium_css_1.isVerticalWritingMode() ?
-                            win.document.documentElement.offsetWidth :
-                            win.document.documentElement.offsetHeight) :
-                        (readium_css_1.isVerticalWritingMode() ?
-                            win.document.documentElement.clientWidth :
-                            win.document.documentElement.clientHeight))
-                        - 1;
-                    processXYRaw(0, y);
+                    processXYRaw(0, 0, false);
                     showHideContentMask(false);
                     if (!win.READIUM2.locationHashOverride) {
                         notifyReadingLocationDebounced();
@@ -549,7 +566,7 @@ const scrollToHashRaw = () => {
         }, 10);
         win.READIUM2.locationHashOverride = win.document.body;
         resetLocationHashOverrideInfo();
-        processXYRaw(0, 0);
+        processXYRaw(0, 0, false);
         if (!win.READIUM2.locationHashOverride) {
             notifyReadingLocationDebounced();
             return;
@@ -738,7 +755,7 @@ win.addEventListener("load", () => {
         }, 500);
     }
     else {
-        processXYDebounced(0, 0);
+        processXYDebounced(0, 0, false);
     }
     const useResizeSensor = !win.READIUM2.isFixedLayout;
     if (useResizeSensor && win.document.body) {
@@ -836,7 +853,7 @@ win.addEventListener("load", () => {
                 return;
             }
             const x = (readium_css_1.isRTL() ? win.document.documentElement.offsetWidth - 1 : 0);
-            processXYDebounced(x, 0);
+            processXYDebounced(x, 0, false);
         });
     }, 200);
     win.document.body.addEventListener("click", (ev) => {
@@ -845,7 +862,7 @@ win.addEventListener("load", () => {
         }
         const x = ev.clientX;
         const y = ev.clientY;
-        processXYDebounced(x, y);
+        processXYDebounced(x, y, false);
     });
     win.document.body.addEventListener("click", (ev) => {
         if (popup_dialog_1.isPopupDialogOpen(win.document)) {
@@ -877,15 +894,33 @@ win.addEventListener("load", () => {
         }
     });
 });
-function findFirstVisibleElement(rooElement) {
-    if (rooElement !== win.document.body) {
-        const visible = computeVisibility_(rooElement);
-        if (visible) {
-            return rooElement;
+function checkBlacklisted(el) {
+    let blacklistedId;
+    const id = el.getAttribute("id");
+    if (id && _blacklistIdClassForCFI.indexOf(id) >= 0) {
+        console.log("checkBlacklisted ID: " + id);
+        blacklistedId = id;
+    }
+    let blacklistedClass;
+    for (const item of _blacklistIdClassForCFI) {
+        if (el.classList.contains(item)) {
+            console.log("checkBlacklisted CLASS: " + item);
+            blacklistedClass = item;
+            break;
         }
     }
-    for (let i = 0; i < rooElement.children.length; i++) {
-        const child = rooElement.children[i];
+    if (blacklistedId || blacklistedClass) {
+        return true;
+    }
+    return false;
+}
+function findFirstVisibleElement(rootElement) {
+    const blacklisted = checkBlacklisted(rootElement);
+    if (blacklisted) {
+        return undefined;
+    }
+    for (let i = 0; i < rootElement.children.length; i++) {
+        const child = rootElement.children[i];
         if (child.nodeType !== Node.ELEMENT_NODE) {
             continue;
         }
@@ -894,9 +929,16 @@ function findFirstVisibleElement(rooElement) {
             return visibleElement;
         }
     }
+    if (rootElement !== win.document.body &&
+        rootElement !== win.document.documentElement) {
+        const visible = computeVisibility_(rootElement);
+        if (visible) {
+            return rootElement;
+        }
+    }
     return undefined;
 }
-const processXYRaw = (x, y) => {
+const processXYRaw = (x, y, reverse) => {
     if (popup_dialog_1.isPopupDialogOpen(win.document)) {
         return;
     }
@@ -915,14 +957,15 @@ const processXYRaw = (x, y) => {
             }
         }
     }
-    if (!element || element === win.document.body) {
-        element = findFirstVisibleElement(win.document.body);
+    if (!element || element === win.document.body || element === win.document.documentElement) {
+        const root = win.document.body;
+        element = findFirstVisibleElement(root);
         if (!element) {
-            debug("|||||||||||||| cannot find visible element inside BODY????");
+            debug("|||||||||||||| cannot find visible element inside BODY / HTML????");
             element = win.document.body;
         }
     }
-    else if (readium_css_inject_1.isPaginated(win.document) && !computeVisibility_(element)) {
+    else if (!computeVisibility_(element)) {
         let next = element;
         let found;
         while (next) {
@@ -931,7 +974,17 @@ const processXYRaw = (x, y) => {
                 found = firstInside;
                 break;
             }
-            const sibling = next.nextElementSibling;
+            let sibling = reverse ? next.previousElementSibling : next.nextElementSibling;
+            let parent = next;
+            while (!sibling) {
+                parent = parent.parentNode;
+                if (!parent || parent.nodeType !== Node.ELEMENT_NODE) {
+                    break;
+                }
+                sibling = reverse ?
+                    parent.previousElementSibling :
+                    parent.nextElementSibling;
+            }
             next = sibling ? sibling : undefined;
         }
         if (found) {
@@ -941,8 +994,8 @@ const processXYRaw = (x, y) => {
             debug("|||||||||||||| cannot find visible element after current????");
         }
     }
-    if (element === win.document.body) {
-        debug("|||||||||||||| BODY selected????");
+    if (element === win.document.body || element === win.document.documentElement) {
+        debug("|||||||||||||| BODY/HTML selected????");
     }
     if (element) {
         win.READIUM2.locationHashOverride = element;
@@ -956,8 +1009,8 @@ const processXYRaw = (x, y) => {
         }
     }
 };
-const processXYDebounced = debounce_1.debounce((x, y) => {
-    processXYRaw(x, y);
+const processXYDebounced = debounce_1.debounce((x, y, reverse) => {
+    processXYRaw(x, y, reverse);
 }, 300);
 exports.computeProgressionData = () => {
     const isPaged = readium_css_inject_1.isPaginated(win.document);
@@ -1049,7 +1102,7 @@ exports.computeProgressionData = () => {
     };
 };
 const _blacklistIdClassForCssSelectors = [styles_1.TTS_ID_INJECTED_PARENT, styles_1.TTS_ID_SPEAKING_DOC_ELEMENT, styles_1.POPUP_DIALOG_CLASS, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN, styles_1.ROOT_CLASS_KEYBOARD_INTERACT, styles_1.ROOT_CLASS_INVISIBLE_MASK, readium_css_inject_1.CLASS_PAGINATED, styles_1.ROOT_CLASS_NO_FOOTNOTES];
-const _blacklistIdClassForCFI = [styles_1.POPUP_DIALOG_CLASS, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN];
+const _blacklistIdClassForCFI = [styles_1.POPUP_DIALOG_CLASS, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN, "resize-sensor"];
 exports.computeCFI = (node) => {
     if (node.nodeType !== Node.ELEMENT_NODE) {
         return undefined;
@@ -1057,21 +1110,8 @@ exports.computeCFI = (node) => {
     let cfi = "";
     let currentElement = node;
     while (currentElement.parentNode && currentElement.parentNode.nodeType === Node.ELEMENT_NODE) {
-        let blacklistedId;
-        const id = currentElement.getAttribute("id");
-        if (id && _blacklistIdClassForCFI.indexOf(id) >= 0) {
-            console.log("CFI BLACKLIST ID: " + id);
-            blacklistedId = id;
-        }
-        let blacklistedClass;
-        for (const item of _blacklistIdClassForCFI) {
-            if (currentElement.classList.contains(item)) {
-                console.log("CFI BLACKLIST CLASS: " + item);
-                blacklistedClass = item;
-                break;
-            }
-        }
-        if (!blacklistedId && !blacklistedClass) {
+        const blacklisted = checkBlacklisted(currentElement);
+        if (!blacklisted) {
             const currentElementParentChildren = currentElement.parentNode.children;
             let currentElementIndex = -1;
             for (let i = 0; i < currentElementParentChildren.length; i++) {
@@ -1136,7 +1176,6 @@ const notifyReadingLocationRaw = () => {
         });
         win.READIUM2.locationHashOverride.setAttribute(styles_1.readPosCssStylesAttr4, "notifyReadingLocationRaw");
     }
-    debug("|||||||||||||| notifyReadingLocation: ", JSON.stringify(payload));
 };
 const notifyReadingLocationDebounced = debounce_1.debounce(() => {
     notifyReadingLocationRaw();

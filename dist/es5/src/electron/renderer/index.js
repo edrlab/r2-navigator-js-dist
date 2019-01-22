@@ -89,6 +89,9 @@ var _saveReadingLocation = function (docHref, locator) {
         },
         paginationInfo: locator.paginationInfo,
     };
+    if (IS_DEV) {
+        debug("|||||||||||||| notifyReadingLocation: ", JSON.stringify(_lastSavedReadingLocation));
+    }
     if (_readingLocationSaver) {
         _readingLocationSaver(_lastSavedReadingLocation);
     }

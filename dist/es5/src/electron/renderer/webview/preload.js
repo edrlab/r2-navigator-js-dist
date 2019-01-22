@@ -108,12 +108,37 @@ function computeVisibility_(element) {
     else if (!win.document || !win.document.documentElement || !win.document.body) {
         return false;
     }
-    if (element === win.document.body) {
+    if (element === win.document.body || element === win.document.documentElement) {
         return true;
+    }
+    var elStyle = win.getComputedStyle(element);
+    if (elStyle) {
+        var display = elStyle.getPropertyValue("display");
+        if (display === "none") {
+            if (IS_DEV) {
+                console.log("element DISPLAY NONE");
+            }
+            return false;
+        }
+        var visibility = elStyle.getPropertyValue("visibility");
+        if (visibility === "hidden") {
+            if (IS_DEV) {
+                console.log("element VISIBILITY HIDDEN");
+            }
+            return false;
+        }
+        var opacity = elStyle.getPropertyValue("opacity");
+        if (opacity === "0") {
+            if (IS_DEV) {
+                console.log("element OPACITY ZERO");
+            }
+            return false;
+        }
     }
     var rect = element.getBoundingClientRect();
     if (!readium_css_inject_1.isPaginated(win.document)) {
-        if ((rect.top + rect.height) >= 0 && rect.top <= win.document.documentElement.clientHeight) {
+        if (rect.top >= 0 &&
+            rect.top <= win.document.documentElement.clientHeight) {
             return true;
         }
         return false;
@@ -507,15 +532,7 @@ var scrollToHashRaw = function () {
                 win.READIUM2.locationHashOverride = undefined;
                 resetLocationHashOverrideInfo();
                 setTimeout(function () {
-                    var y = (isPaged ?
-                        (readium_css_1.isVerticalWritingMode() ?
-                            win.document.documentElement.offsetWidth :
-                            win.document.documentElement.offsetHeight) :
-                        (readium_css_1.isVerticalWritingMode() ?
-                            win.document.documentElement.clientWidth :
-                            win.document.documentElement.clientHeight))
-                        - 1;
-                    processXYRaw(0, y);
+                    processXYRaw(0, 0, false);
                     showHideContentMask(false);
                     if (!win.READIUM2.locationHashOverride) {
                         notifyReadingLocationDebounced();
@@ -562,7 +579,7 @@ var scrollToHashRaw = function () {
         }, 10);
         win.READIUM2.locationHashOverride = win.document.body;
         resetLocationHashOverrideInfo();
-        processXYRaw(0, 0);
+        processXYRaw(0, 0, false);
         if (!win.READIUM2.locationHashOverride) {
             notifyReadingLocationDebounced();
             return;
@@ -751,7 +768,7 @@ win.addEventListener("load", function () {
         }, 500);
     }
     else {
-        processXYDebounced(0, 0);
+        processXYDebounced(0, 0, false);
     }
     var useResizeSensor = !win.READIUM2.isFixedLayout;
     if (useResizeSensor && win.document.body) {
@@ -849,7 +866,7 @@ win.addEventListener("load", function () {
                 return;
             }
             var x = (readium_css_1.isRTL() ? win.document.documentElement.offsetWidth - 1 : 0);
-            processXYDebounced(x, 0);
+            processXYDebounced(x, 0, false);
         });
     }, 200);
     win.document.body.addEventListener("click", function (ev) {
@@ -858,7 +875,7 @@ win.addEventListener("load", function () {
         }
         var x = ev.clientX;
         var y = ev.clientY;
-        processXYDebounced(x, y);
+        processXYDebounced(x, y, false);
     });
     win.document.body.addEventListener("click", function (ev) {
         if (popup_dialog_1.isPopupDialogOpen(win.document)) {
@@ -890,15 +907,44 @@ win.addEventListener("load", function () {
         }
     });
 });
-function findFirstVisibleElement(rooElement) {
-    if (rooElement !== win.document.body) {
-        var visible = computeVisibility_(rooElement);
-        if (visible) {
-            return rooElement;
+function checkBlacklisted(el) {
+    var e_1, _a;
+    var blacklistedId;
+    var id = el.getAttribute("id");
+    if (id && _blacklistIdClassForCFI.indexOf(id) >= 0) {
+        console.log("checkBlacklisted ID: " + id);
+        blacklistedId = id;
+    }
+    var blacklistedClass;
+    try {
+        for (var _blacklistIdClassForCFI_1 = tslib_1.__values(_blacklistIdClassForCFI), _blacklistIdClassForCFI_1_1 = _blacklistIdClassForCFI_1.next(); !_blacklistIdClassForCFI_1_1.done; _blacklistIdClassForCFI_1_1 = _blacklistIdClassForCFI_1.next()) {
+            var item = _blacklistIdClassForCFI_1_1.value;
+            if (el.classList.contains(item)) {
+                console.log("checkBlacklisted CLASS: " + item);
+                blacklistedClass = item;
+                break;
+            }
         }
     }
-    for (var i = 0; i < rooElement.children.length; i++) {
-        var child = rooElement.children[i];
+    catch (e_1_1) { e_1 = { error: e_1_1 }; }
+    finally {
+        try {
+            if (_blacklistIdClassForCFI_1_1 && !_blacklistIdClassForCFI_1_1.done && (_a = _blacklistIdClassForCFI_1.return)) _a.call(_blacklistIdClassForCFI_1);
+        }
+        finally { if (e_1) throw e_1.error; }
+    }
+    if (blacklistedId || blacklistedClass) {
+        return true;
+    }
+    return false;
+}
+function findFirstVisibleElement(rootElement) {
+    var blacklisted = checkBlacklisted(rootElement);
+    if (blacklisted) {
+        return undefined;
+    }
+    for (var i = 0; i < rootElement.children.length; i++) {
+        var child = rootElement.children[i];
         if (child.nodeType !== Node.ELEMENT_NODE) {
             continue;
         }
@@ -907,9 +953,16 @@ function findFirstVisibleElement(rooElement) {
             return visibleElement;
         }
     }
+    if (rootElement !== win.document.body &&
+        rootElement !== win.document.documentElement) {
+        var visible = computeVisibility_(rootElement);
+        if (visible) {
+            return rootElement;
+        }
+    }
     return undefined;
 }
-var processXYRaw = function (x, y) {
+var processXYRaw = function (x, y, reverse) {
     if (popup_dialog_1.isPopupDialogOpen(win.document)) {
         return;
     }
@@ -928,14 +981,15 @@ var processXYRaw = function (x, y) {
             }
         }
     }
-    if (!element || element === win.document.body) {
-        element = findFirstVisibleElement(win.document.body);
+    if (!element || element === win.document.body || element === win.document.documentElement) {
+        var root = win.document.body;
+        element = findFirstVisibleElement(root);
         if (!element) {
-            debug("|||||||||||||| cannot find visible element inside BODY????");
+            debug("|||||||||||||| cannot find visible element inside BODY / HTML????");
             element = win.document.body;
         }
     }
-    else if (readium_css_inject_1.isPaginated(win.document) && !computeVisibility_(element)) {
+    else if (!computeVisibility_(element)) {
         var next = element;
         var found = void 0;
         while (next) {
@@ -944,7 +998,17 @@ var processXYRaw = function (x, y) {
                 found = firstInside;
                 break;
             }
-            var sibling = next.nextElementSibling;
+            var sibling = reverse ? next.previousElementSibling : next.nextElementSibling;
+            var parent_1 = next;
+            while (!sibling) {
+                parent_1 = parent_1.parentNode;
+                if (!parent_1 || parent_1.nodeType !== Node.ELEMENT_NODE) {
+                    break;
+                }
+                sibling = reverse ?
+                    parent_1.previousElementSibling :
+                    parent_1.nextElementSibling;
+            }
             next = sibling ? sibling : undefined;
         }
         if (found) {
@@ -954,8 +1018,8 @@ var processXYRaw = function (x, y) {
             debug("|||||||||||||| cannot find visible element after current????");
         }
     }
-    if (element === win.document.body) {
-        debug("|||||||||||||| BODY selected????");
+    if (element === win.document.body || element === win.document.documentElement) {
+        debug("|||||||||||||| BODY/HTML selected????");
     }
     if (element) {
         win.READIUM2.locationHashOverride = element;
@@ -969,8 +1033,8 @@ var processXYRaw = function (x, y) {
         }
     }
 };
-var processXYDebounced = debounce_1.debounce(function (x, y) {
-    processXYRaw(x, y);
+var processXYDebounced = debounce_1.debounce(function (x, y, reverse) {
+    processXYRaw(x, y, reverse);
 }, 300);
 exports.computeProgressionData = function () {
     var isPaged = readium_css_inject_1.isPaginated(win.document);
@@ -1062,40 +1126,16 @@ exports.computeProgressionData = function () {
     };
 };
 var _blacklistIdClassForCssSelectors = [styles_1.TTS_ID_INJECTED_PARENT, styles_1.TTS_ID_SPEAKING_DOC_ELEMENT, styles_1.POPUP_DIALOG_CLASS, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN, styles_1.ROOT_CLASS_KEYBOARD_INTERACT, styles_1.ROOT_CLASS_INVISIBLE_MASK, readium_css_inject_1.CLASS_PAGINATED, styles_1.ROOT_CLASS_NO_FOOTNOTES];
-var _blacklistIdClassForCFI = [styles_1.POPUP_DIALOG_CLASS, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN];
+var _blacklistIdClassForCFI = [styles_1.POPUP_DIALOG_CLASS, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN, "resize-sensor"];
 exports.computeCFI = function (node) {
-    var e_1, _a;
     if (node.nodeType !== Node.ELEMENT_NODE) {
         return undefined;
     }
     var cfi = "";
     var currentElement = node;
     while (currentElement.parentNode && currentElement.parentNode.nodeType === Node.ELEMENT_NODE) {
-        var blacklistedId = void 0;
-        var id = currentElement.getAttribute("id");
-        if (id && _blacklistIdClassForCFI.indexOf(id) >= 0) {
-            console.log("CFI BLACKLIST ID: " + id);
-            blacklistedId = id;
-        }
-        var blacklistedClass = void 0;
-        try {
-            for (var _blacklistIdClassForCFI_1 = tslib_1.__values(_blacklistIdClassForCFI), _blacklistIdClassForCFI_1_1 = _blacklistIdClassForCFI_1.next(); !_blacklistIdClassForCFI_1_1.done; _blacklistIdClassForCFI_1_1 = _blacklistIdClassForCFI_1.next()) {
-                var item = _blacklistIdClassForCFI_1_1.value;
-                if (currentElement.classList.contains(item)) {
-                    console.log("CFI BLACKLIST CLASS: " + item);
-                    blacklistedClass = item;
-                    break;
-                }
-            }
-        }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (_blacklistIdClassForCFI_1_1 && !_blacklistIdClassForCFI_1_1.done && (_a = _blacklistIdClassForCFI_1.return)) _a.call(_blacklistIdClassForCFI_1);
-            }
-            finally { if (e_1) throw e_1.error; }
-        }
-        if (!blacklistedId && !blacklistedClass) {
+        var blacklisted = checkBlacklisted(currentElement);
+        if (!blacklisted) {
             var currentElementParentChildren = currentElement.parentNode.children;
             var currentElementIndex = -1;
             for (var i = 0; i < currentElementParentChildren.length; i++) {
@@ -1160,7 +1200,6 @@ var notifyReadingLocationRaw = function () {
         });
         win.READIUM2.locationHashOverride.setAttribute(styles_1.readPosCssStylesAttr4, "notifyReadingLocationRaw");
     }
-    debug("|||||||||||||| notifyReadingLocation: ", JSON.stringify(payload));
 };
 var notifyReadingLocationDebounced = debounce_1.debounce(function () {
     notifyReadingLocationRaw();
