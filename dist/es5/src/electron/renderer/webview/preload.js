@@ -872,14 +872,22 @@ win.addEventListener("load", function () {
             win.document.documentElement.classList.remove(styles_1.ROOT_CLASS_KEYBOARD_INTERACT);
         }
     }, true);
-    win.document.addEventListener("click", function (e) {
-        var href = e.target.href;
+    win.document.addEventListener("click", function (ev) {
+        var currentElement = ev.target;
+        var href;
+        while (currentElement && currentElement.nodeType === Node.ELEMENT_NODE) {
+            if (currentElement.tagName.toLowerCase() === "a") {
+                href = currentElement.href;
+                break;
+            }
+            currentElement = currentElement.parentNode;
+        }
         if (!href) {
             return;
         }
-        e.preventDefault();
-        e.stopPropagation();
-        var done = popupFootNotes_1.popupFootNote(e.target, focusScrollRaw, href);
+        ev.preventDefault();
+        ev.stopPropagation();
+        var done = popupFootNotes_1.popupFootNote(currentElement, focusScrollRaw, href);
         if (!done) {
             focusScrollDebounced.clear();
             processXYDebounced.clear();

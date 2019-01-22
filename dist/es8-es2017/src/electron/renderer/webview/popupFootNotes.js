@@ -29,19 +29,17 @@ function popupFootNote(element, focusScrollRaw, href) {
     }
     const ID_PREFIX = "r2-footnote-popup-dialog-for_";
     const id = ID_PREFIX + targetElement.id;
-    let outerHTML = targetElement.outerHTML;
-    if (!outerHTML) {
+    let htmltxt = targetElement.innerHTML;
+    if (!htmltxt) {
         return false;
     }
-    outerHTML = outerHTML.replace(/xmlns=["']http:\/\/www.w3.org\/1999\/xhtml["']/g, " ");
-    outerHTML = outerHTML.replace(/xmlns:epub=["']http:\/\/www.idpf.org\/2007\/ops["']/g, " ");
-    outerHTML = outerHTML.replace(/epub:type=["'][^"']+["']/g, " ");
-    outerHTML = outerHTML.replace(/<script>.+<\/script>/g, " ");
-    const ID_PREFIX_ = "r2-footnote-content-of_";
+    htmltxt = htmltxt.replace(/xmlns=["']http:\/\/www.w3.org\/1999\/xhtml["']/g, " ");
+    htmltxt = htmltxt.replace(/xmlns:epub=["']http:\/\/www.idpf.org\/2007\/ops["']/g, " ");
+    htmltxt = htmltxt.replace(/<script>.+<\/script>/g, " ");
+    const ID_PREFIX_ = "r2-footnote-for_";
     const id_ = ID_PREFIX_ + targetElement.id;
-    outerHTML = outerHTML.replace(/id=["'][^"']+["']/, `id="${id_}"`);
-    outerHTML = `<div class="${styles_1.FOOTNOTES_CONTAINER_CLASS} ${styles_1.CSS_CLASS_NO_FOCUS_OUTLINE}"
-        tabindex="0" autofocus="autofocus">${outerHTML}</div>`;
+    htmltxt = htmltxt.replace(/id=["']([^"']+)["']/g, `idvoid="$1"`);
+    htmltxt = `<div id="${id_}" class="${styles_1.FOOTNOTES_CONTAINER_CLASS} ${styles_1.CSS_CLASS_NO_FOCUS_OUTLINE}" tabindex="0" autofocus="autofocus">${htmltxt}</div>`;
     function onDialogClosed(el) {
         if (el) {
             focusScrollRaw(el, true);
@@ -50,7 +48,7 @@ function popupFootNote(element, focusScrollRaw, href) {
             pop.dialog.remove();
         }, 50);
     }
-    const pop = new popup_dialog_1.PopupDialog(documant, outerHTML, id, onDialogClosed);
+    const pop = new popup_dialog_1.PopupDialog(documant, htmltxt, id, onDialogClosed);
     pop.show(element);
     return true;
 }
