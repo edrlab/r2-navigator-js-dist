@@ -42,7 +42,7 @@ function doLsdRenew(publicationsServer, deviceIDManager, publicationFilePath, en
                 case 0:
                     publication = publicationsServer.cachedPublication(publicationFilePath);
                     if (!publication || !publication.LCP || !publication.LCP.LSDJson) {
-                        return [2, Promise.reject("Internal error!")];
+                        return [2, Promise.reject("no publication LCP LSD data?!")];
                     }
                     endDate = endDateStr ? moment(endDateStr).toDate() : undefined;
                     _a.label = 1;

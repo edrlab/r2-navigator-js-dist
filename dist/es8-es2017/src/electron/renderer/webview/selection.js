@@ -1,0 +1,336 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
+function dumpDebug(msg, startNode, startOffset, endNode, endOffset, getCssSelector) {
+    console.log("$$$$$$$$$$$$$$$$$ " + msg);
+    console.log("**** START");
+    console.log("Node type (1=element, 3=text): " + startNode.nodeType);
+    if (startNode.nodeType === Node.ELEMENT_NODE) {
+        console.log("CSS Selector: " + getCssSelector(startNode));
+        console.log("Element children count: " + startNode.childNodes.length);
+        if (startOffset >= 0 && startOffset < startNode.childNodes.length) {
+            console.log("Child node type (1=element, 3=text): " + startNode.childNodes[startOffset].nodeType);
+            if (startNode.childNodes[endOffset].nodeType === Node.ELEMENT_NODE) {
+                console.log("Child CSS Selector: " + getCssSelector(startNode.childNodes[endOffset]));
+            }
+        }
+        else {
+            console.log("startOffset >= 0 && startOffset < startNode.childNodes.length ... " +
+                startOffset + " // " + startNode.childNodes.length);
+        }
+    }
+    if (startNode.parentNode && startNode.parentNode.nodeType === Node.ELEMENT_NODE) {
+        console.log("- Parent CSS Selector: " + getCssSelector(startNode.parentNode));
+        console.log("- Parent element children count: " + startNode.parentNode.childNodes.length);
+    }
+    console.log("Offset: " + startOffset);
+    console.log("**** END");
+    console.log("Node type (1=element, 3=text): " + endNode.nodeType);
+    if (endNode.nodeType === Node.ELEMENT_NODE) {
+        console.log("CSS Selector: " + getCssSelector(endNode));
+        console.log("Element children count: " + endNode.childNodes.length);
+        if (endOffset >= 0 && endOffset < endNode.childNodes.length) {
+            console.log("Child node type (1=element, 3=text): " + endNode.childNodes[endOffset].nodeType);
+            if (endNode.childNodes[endOffset].nodeType === Node.ELEMENT_NODE) {
+                console.log("Child CSS Selector: " + getCssSelector(endNode.childNodes[endOffset]));
+            }
+        }
+        else {
+            console.log("endOffset >= 0 && endOffset < endNode.childNodes.length ... " +
+                endOffset + " // " + endNode.childNodes.length);
+        }
+    }
+    if (endNode.parentNode && endNode.parentNode.nodeType === Node.ELEMENT_NODE) {
+        console.log("- Parent CSS Selector: " + getCssSelector(endNode.parentNode));
+        console.log("- Parent element children count: " + endNode.parentNode.childNodes.length);
+    }
+    console.log("Offset: " + endOffset);
+    console.log("$$$$$$$$$$$$$$$$$");
+}
+function clearCurrentSelection(win) {
+    const selection = win.getSelection();
+    selection.removeAllRanges();
+}
+exports.clearCurrentSelection = clearCurrentSelection;
+function getCurrentSelectionInfo(win, getCssSelector, computeElementCFI) {
+    const selection = win.getSelection();
+    if (selection.isCollapsed) {
+        console.log("^^^ SELECTION COLLAPSED.");
+        return undefined;
+    }
+    const rawText = selection.toString();
+    const cleanText = rawText.trim().replace(/\n/g, " ").replace(/\s\s+/g, " ");
+    if (cleanText.length === 0) {
+        console.log("^^^ SELECTION TEXT EMPTY.");
+        return undefined;
+    }
+    const range = selection.rangeCount === 1 ? selection.getRangeAt(0) :
+        createOrderedRange(selection.anchorNode, selection.anchorOffset, selection.focusNode, selection.focusOffset);
+    if (!range || range.collapsed) {
+        console.log("$$$$$$$$$$$$$$$$$ CANNOT GET NON-COLLAPSED SELECTION RANGE?!");
+        return undefined;
+    }
+    const rangeInfo = convertRange(range, getCssSelector, computeElementCFI);
+    if (!rangeInfo) {
+        console.log("^^^ SELECTION RANGE INFO FAIL?!");
+        return undefined;
+    }
+    if (IS_DEV && win.READIUM2.DEBUG_VISUALS) {
+        const restoredRange = convertRangeInfo(win.document, rangeInfo);
+        if (restoredRange) {
+            if (restoredRange.startOffset === range.startOffset &&
+                restoredRange.endOffset === range.endOffset &&
+                restoredRange.startContainer === range.startContainer &&
+                restoredRange.endContainer === range.endContainer) {
+                console.log("SELECTION RANGE RESTORED OKAY (dev check).");
+            }
+            else {
+                console.log("SELECTION RANGE RESTORE FAIL (dev check).");
+                dumpDebug("SELECTION", selection.anchorNode, selection.anchorOffset, selection.focusNode, selection.focusOffset, getCssSelector);
+                dumpDebug("ORDERED RANGE FROM SELECTION", range.startContainer, range.startOffset, range.endContainer, range.endOffset, getCssSelector);
+                dumpDebug("RESTORED RANGE", restoredRange.startContainer, restoredRange.startOffset, restoredRange.endContainer, restoredRange.endOffset, getCssSelector);
+            }
+        }
+        else {
+            console.log("CANNOT RESTORE SELECTION RANGE ??!");
+        }
+    }
+    else {
+    }
+    return { rangeInfo, cleanText, rawText };
+}
+exports.getCurrentSelectionInfo = getCurrentSelectionInfo;
+function createOrderedRange(startNode, startOffset, endNode, endOffset) {
+    const range = new Range();
+    range.setStart(startNode, startOffset);
+    range.setEnd(endNode, endOffset);
+    if (!range.collapsed) {
+        return range;
+    }
+    console.log(">>> createOrderedRange COLLAPSED ... RANGE REVERSE?");
+    const rangeReverse = new Range();
+    rangeReverse.setStart(endNode, endOffset);
+    rangeReverse.setEnd(startNode, startOffset);
+    if (!rangeReverse.collapsed) {
+        console.log(">>> createOrderedRange RANGE REVERSE OK.");
+        return range;
+    }
+    console.log(">>> createOrderedRange RANGE REVERSE ALSO COLLAPSED?!");
+    return undefined;
+}
+exports.createOrderedRange = createOrderedRange;
+function convertRange(range, getCssSelector, computeElementCFI) {
+    const startIsElement = range.startContainer.nodeType === Node.ELEMENT_NODE;
+    const startContainerElement = startIsElement ?
+        range.startContainer :
+        ((range.startContainer.parentNode && range.startContainer.parentNode.nodeType === Node.ELEMENT_NODE) ?
+            range.startContainer.parentNode : undefined);
+    if (!startContainerElement) {
+        return undefined;
+    }
+    const startContainerChildTextNodeIndex = startIsElement ? -1 :
+        Array.from(startContainerElement.childNodes).indexOf(range.startContainer);
+    if (startContainerChildTextNodeIndex < -1) {
+        return undefined;
+    }
+    const startContainerElementCssSelector = getCssSelector(startContainerElement);
+    const endIsElement = range.endContainer.nodeType === Node.ELEMENT_NODE;
+    const endContainerElement = endIsElement ?
+        range.endContainer :
+        ((range.endContainer.parentNode && range.endContainer.parentNode.nodeType === Node.ELEMENT_NODE) ?
+            range.endContainer.parentNode : undefined);
+    if (!endContainerElement) {
+        return undefined;
+    }
+    const endContainerChildTextNodeIndex = endIsElement ? -1 :
+        Array.from(endContainerElement.childNodes).indexOf(range.endContainer);
+    if (endContainerChildTextNodeIndex < -1) {
+        return undefined;
+    }
+    const endContainerElementCssSelector = getCssSelector(endContainerElement);
+    const commonElementAncestor = getCommonAncestorElement(range.startContainer, range.endContainer);
+    if (!commonElementAncestor) {
+        console.log("^^^ NO RANGE COMMON ANCESTOR?!");
+        return undefined;
+    }
+    if (range.commonAncestorContainer) {
+        const rangeCommonAncestorElement = range.commonAncestorContainer.nodeType === Node.ELEMENT_NODE ?
+            range.commonAncestorContainer : range.commonAncestorContainer.parentNode;
+        if (rangeCommonAncestorElement && rangeCommonAncestorElement.nodeType === Node.ELEMENT_NODE) {
+            if (commonElementAncestor !== rangeCommonAncestorElement) {
+                console.log(">>>>>> COMMON ANCESTOR CONTAINER DIFF??!");
+                console.log(getCssSelector(commonElementAncestor));
+                console.log(getCssSelector(rangeCommonAncestorElement));
+            }
+        }
+    }
+    const rootElementCfi = computeElementCFI(commonElementAncestor);
+    const startElementCfi = computeElementCFI(startContainerElement);
+    const endElementCfi = computeElementCFI(endContainerElement);
+    let cfi;
+    if (rootElementCfi && startElementCfi && endElementCfi) {
+        let startElementOrTextCfi = startElementCfi;
+        if (!startIsElement) {
+            const startContainerChildTextNodeIndexForCfi = getChildTextNodeCfiIndex(startContainerElement, range.startContainer);
+            startElementOrTextCfi = startElementCfi + "/" +
+                startContainerChildTextNodeIndexForCfi + ":" + range.startOffset;
+        }
+        else {
+            if (range.startOffset >= 0 && range.startOffset < startContainerElement.childNodes.length) {
+                const childNode = startContainerElement.childNodes[range.startOffset];
+                if (childNode.nodeType === Node.ELEMENT_NODE) {
+                    startElementOrTextCfi = startElementCfi + "/" + ((range.startOffset + 1) * 2);
+                }
+                else {
+                    const cfiTextNodeIndex = getChildTextNodeCfiIndex(startContainerElement, childNode);
+                    startElementOrTextCfi = startElementCfi + "/" + cfiTextNodeIndex;
+                }
+            }
+            else {
+                const cfiIndexOfLastElement = ((startContainerElement.childElementCount) * 2);
+                const lastChildNode = startContainerElement.childNodes[startContainerElement.childNodes.length - 1];
+                if (lastChildNode.nodeType === Node.ELEMENT_NODE) {
+                    startElementOrTextCfi = startElementCfi + "/" + (cfiIndexOfLastElement + 1);
+                }
+                else {
+                    startElementOrTextCfi = startElementCfi + "/" + (cfiIndexOfLastElement + 2);
+                }
+            }
+        }
+        let endElementOrTextCfi = endElementCfi;
+        if (!endIsElement) {
+            const endContainerChildTextNodeIndexForCfi = getChildTextNodeCfiIndex(endContainerElement, range.endContainer);
+            endElementOrTextCfi = endElementCfi + "/" +
+                endContainerChildTextNodeIndexForCfi + ":" + range.endOffset;
+        }
+        else {
+            if (range.endOffset >= 0 && range.endOffset < endContainerElement.childNodes.length) {
+                const childNode = endContainerElement.childNodes[range.endOffset];
+                if (childNode.nodeType === Node.ELEMENT_NODE) {
+                    endElementOrTextCfi = endElementCfi + "/" + ((range.endOffset + 1) * 2);
+                }
+                else {
+                    const cfiTextNodeIndex = getChildTextNodeCfiIndex(endContainerElement, childNode);
+                    endElementOrTextCfi = endElementCfi + "/" + cfiTextNodeIndex;
+                }
+            }
+            else {
+                const cfiIndexOfLastElement = ((endContainerElement.childElementCount) * 2);
+                const lastChildNode = endContainerElement.childNodes[endContainerElement.childNodes.length - 1];
+                if (lastChildNode.nodeType === Node.ELEMENT_NODE) {
+                    endElementOrTextCfi = endElementCfi + "/" + (cfiIndexOfLastElement + 1);
+                }
+                else {
+                    endElementOrTextCfi = endElementCfi + "/" + (cfiIndexOfLastElement + 2);
+                }
+            }
+        }
+        cfi = rootElementCfi + "," +
+            startElementOrTextCfi.replace(rootElementCfi, "") + "," +
+            endElementOrTextCfi.replace(rootElementCfi, "");
+    }
+    return {
+        cfi,
+        endContainerChildTextNodeIndex,
+        endContainerElementCssSelector,
+        endOffset: range.endOffset,
+        startContainerChildTextNodeIndex,
+        startContainerElementCssSelector,
+        startOffset: range.startOffset,
+    };
+}
+exports.convertRange = convertRange;
+function convertRangeInfo(documant, rangeInfo) {
+    const startElement = documant.querySelector(rangeInfo.startContainerElementCssSelector);
+    if (!startElement) {
+        console.log("^^^ convertRangeInfo NO START ELEMENT CSS SELECTOR?!");
+        return undefined;
+    }
+    let startContainer = startElement;
+    if (rangeInfo.startContainerChildTextNodeIndex >= 0) {
+        if (rangeInfo.startContainerChildTextNodeIndex >= startElement.childNodes.length) {
+            console.log("^^^ convertRangeInfo rangeInfo.startContainerChildTextNodeIndex >= startElement.childNodes.length?!");
+            return undefined;
+        }
+        startContainer = startElement.childNodes[rangeInfo.startContainerChildTextNodeIndex];
+        if (startContainer.nodeType !== Node.TEXT_NODE) {
+            console.log("^^^ convertRangeInfo startContainer.nodeType !== Node.TEXT_NODE?!");
+            return undefined;
+        }
+    }
+    const endElement = documant.querySelector(rangeInfo.endContainerElementCssSelector);
+    if (!endElement) {
+        console.log("^^^ convertRangeInfo NO END ELEMENT CSS SELECTOR?!");
+        return undefined;
+    }
+    let endContainer = endElement;
+    if (rangeInfo.endContainerChildTextNodeIndex >= 0) {
+        if (rangeInfo.endContainerChildTextNodeIndex >= endElement.childNodes.length) {
+            console.log("^^^ convertRangeInfo rangeInfo.endContainerChildTextNodeIndex >= endElement.childNodes.length?!");
+            return undefined;
+        }
+        endContainer = endElement.childNodes[rangeInfo.endContainerChildTextNodeIndex];
+        if (endContainer.nodeType !== Node.TEXT_NODE) {
+            console.log("^^^ convertRangeInfo endContainer.nodeType !== Node.TEXT_NODE?!");
+            return undefined;
+        }
+    }
+    return createOrderedRange(startContainer, rangeInfo.startOffset, endContainer, rangeInfo.endOffset);
+}
+exports.convertRangeInfo = convertRangeInfo;
+function getCommonAncestorElement(node1, node2) {
+    if (node1.nodeType === Node.ELEMENT_NODE && node1 === node2) {
+        return node1;
+    }
+    if (node1.nodeType === Node.ELEMENT_NODE && node1.contains(node2)) {
+        return node1;
+    }
+    if (node2.nodeType === Node.ELEMENT_NODE && node2.contains(node1)) {
+        return node2;
+    }
+    const node1ElementAncestorChain = [];
+    let parent = node1.parentNode;
+    while (parent && parent.nodeType === Node.ELEMENT_NODE) {
+        node1ElementAncestorChain.push(parent);
+        parent = parent.parentNode;
+    }
+    const node2ElementAncestorChain = [];
+    parent = node2.parentNode;
+    while (parent && parent.nodeType === Node.ELEMENT_NODE) {
+        node2ElementAncestorChain.push(parent);
+        parent = parent.parentNode;
+    }
+    let commonAncestor = node1ElementAncestorChain.find((node1ElementAncestor) => {
+        return node2ElementAncestorChain.indexOf(node1ElementAncestor) >= 0;
+    });
+    if (!commonAncestor) {
+        commonAncestor = node2ElementAncestorChain.find((node2ElementAncestor) => {
+            return node1ElementAncestorChain.indexOf(node2ElementAncestor) >= 0;
+        });
+    }
+    return commonAncestor;
+}
+function isCfiTextNode(node) {
+    return node.nodeType !== Node.ELEMENT_NODE;
+}
+function getChildTextNodeCfiIndex(element, child) {
+    let found = -1;
+    let textNodeIndex = -1;
+    let previousWasElement = false;
+    for (let i = 0; i < element.childNodes.length; i++) {
+        const childNode = element.childNodes[i];
+        const isText = isCfiTextNode(childNode);
+        if (isText || previousWasElement) {
+            textNodeIndex += 2;
+        }
+        if (isText) {
+            if (childNode === child) {
+                found = textNodeIndex;
+                break;
+            }
+        }
+        previousWasElement = childNode.nodeType === Node.ELEMENT_NODE;
+    }
+    return found;
+}
+//# sourceMappingURL=selection.js.map

@@ -1,1 +1,1 @@
-export declare function popupFootNote(element: HTMLElement, focusScrollRaw: (el: HTMLOrSVGElement, doFocus: boolean) => void, href: string): boolean;
+export declare function popupFootNote(element: HTMLElement, focusScrollRaw: (el: HTMLOrSVGElement, doFocus: boolean) => void, href: string, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable: () => number, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable: (val: number) => void): boolean;

@@ -7,13 +7,14 @@ const styles_1 = require("../../common/styles");
 const dom_text_utils_1 = require("../common/dom-text-utils");
 const popup_dialog_1 = require("../common/popup-dialog");
 const win = global.window;
-const TTS_ID_DIALOG = "r2-tts-dialog";
 let _dialogState;
 function resetState() {
     _resumableState = undefined;
     if (_dialogState) {
         _dialogState.popDialog = undefined;
         _dialogState.focusScrollRaw = undefined;
+        _dialogState.ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable = undefined;
+        _dialogState.ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable = undefined;
         _dialogState.ttsRootElement = undefined;
         _dialogState.ttsQueue = undefined;
         _dialogState.ttsQueueLength = -1;
@@ -29,7 +30,7 @@ function resetState() {
     _dialogState = undefined;
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_TTS_IS_STOPPED);
 }
-function ttsPlay(focusScrollRaw, rootElem, startElem) {
+function ttsPlay(focusScrollRaw, rootElem, startElem, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
     ttsStop();
     let rootEl = rootElem;
     if (!rootEl) {
@@ -50,7 +51,7 @@ function ttsPlay(focusScrollRaw, rootElem, startElem) {
         ttsQueueIndex = 0;
     }
     setTimeout(() => {
-        startTTSSession(rootEl, ttsQueue, ttsQueueIndex, focusScrollRaw);
+        startTTSSession(rootEl, ttsQueue, ttsQueueIndex, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
     }, 100);
 }
 exports.ttsPlay = ttsPlay;
@@ -98,7 +99,7 @@ function ttsResume() {
     else if (_resumableState) {
         setTimeout(() => {
             if (_resumableState) {
-                startTTSSession(_resumableState.ttsRootElement, _resumableState.ttsQueue, _resumableState.ttsQueueIndex, _resumableState.focusScrollRaw);
+                startTTSSession(_resumableState.ttsRootElement, _resumableState.ttsQueue, _resumableState.ttsQueueIndex, _resumableState.focusScrollRaw, _resumableState.ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, _resumableState.ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
             }
         }, 100);
     }
@@ -177,19 +178,25 @@ function ttsPreviewAndEventuallyPlayQueueIndex(n) {
 }
 exports.ttsPreviewAndEventuallyPlayQueueIndex = ttsPreviewAndEventuallyPlayQueueIndex;
 function highlights(doHighlight) {
+    if (!_dialogState) {
+        return;
+    }
+    if (typeof _dialogState.FALSY_TO_DISABLE_HIGHLIGHTS === "undefined") {
+        return;
+    }
     if (doHighlight) {
-        if (_dialogState && _dialogState.ttsQueueItem) {
+        if (_dialogState.ttsQueueItem) {
             dom_text_utils_1.wrapHighlight(true, _dialogState.ttsQueueItem, styles_1.TTS_ID_INJECTED_PARENT, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN, undefined, -1, -1);
         }
-        if (_dialogState && _dialogState.ttsRootElement) {
+        if (_dialogState.ttsRootElement) {
             _dialogState.ttsRootElement.classList.add(styles_1.TTS_ID_SPEAKING_DOC_ELEMENT);
         }
     }
     else {
-        if (_dialogState && _dialogState.ttsQueueItem) {
+        if (_dialogState.ttsQueueItem) {
             dom_text_utils_1.wrapHighlight(false, _dialogState.ttsQueueItem, styles_1.TTS_ID_INJECTED_PARENT, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN, undefined, -1, -1);
         }
-        if (_dialogState && _dialogState.ttsRootElement) {
+        if (_dialogState.ttsRootElement) {
             _dialogState.ttsRootElement.classList.remove(styles_1.TTS_ID_SPEAKING_DOC_ELEMENT);
         }
     }
@@ -285,6 +292,8 @@ function ttsPlayQueueIndex(ttsQueueIndex) {
     if (!_dialogState ||
         !_dialogState.ttsRootElement ||
         !_dialogState.focusScrollRaw ||
+        !_dialogState.ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable ||
+        !_dialogState.ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable ||
         !_dialogState.ttsQueue ||
         !_dialogState.hasAttribute("open")) {
         ttsStop();
@@ -334,6 +343,8 @@ function ttsPlayQueueIndex(ttsQueueIndex) {
     };
     _doNotProcessNextQueueItemOnUtteranceEnd = false;
     _resumableState = {
+        ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable: _dialogState.ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable,
+        ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable: _dialogState.ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable,
         focusScrollRaw: _dialogState.focusScrollRaw,
         ttsQueue: _dialogState.ttsQueue,
         ttsQueueIndex: _dialogState.ttsQueueItem.iGlobal,
@@ -345,13 +356,14 @@ function ttsPlayQueueIndex(ttsQueueIndex) {
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_TTS_IS_PLAYING);
 }
 exports.ttsPlayQueueIndex = ttsPlayQueueIndex;
-function startTTSSession(ttsRootElement, ttsQueue, ttsQueueIndexStart, focusScrollRaw) {
+function startTTSSession(ttsRootElement, ttsQueue, ttsQueueIndexStart, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
     const ttsQueueItemStart = dom_text_utils_1.getTtsQueueItemRef(ttsQueue, ttsQueueIndexStart);
     if (!ttsQueueItemStart) {
         ttsStop();
         return;
     }
     const ttsQueueLength = dom_text_utils_1.getTtsQueueLength(ttsQueue);
+    const val = ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable();
     function onDialogClosed(el) {
         ttsPause();
         if (_dialogState && _dialogState.focusScrollRaw) {
@@ -361,6 +373,9 @@ function startTTSSession(ttsRootElement, ttsQueue, ttsQueueIndexStart, focusScro
             }
             if (toScrollTo) {
                 _dialogState.focusScrollRaw(toScrollTo, false);
+            }
+            else {
+                ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable(val);
             }
         }
         setTimeout(() => {
@@ -374,16 +389,20 @@ function startTTSSession(ttsRootElement, ttsQueue, ttsQueueIndexStart, focusScro
         xml:lang="en"
         tabindex="0" autofocus="autofocus">...</div>
     <div id="${styles_1.TTS_ID_INFO}"> </div>
-    <button id="${styles_1.TTS_ID_PREVIOUS}" class="${styles_1.TTS_NAV_BUTTON_CLASS}">&#x21E0;</button>
-    <button id="${styles_1.TTS_ID_NEXT}" class="${styles_1.TTS_NAV_BUTTON_CLASS}">&#x21E2;</button>
-    <input id="${styles_1.TTS_ID_SLIDER}" type="range" min="1" max="${ttsQueueLength}" value="1" />`;
-    const pop = new popup_dialog_1.PopupDialog(win.document, outerHTML, TTS_ID_DIALOG, onDialogClosed);
+    <button id="${styles_1.TTS_ID_PREVIOUS}" class="${styles_1.TTS_NAV_BUTTON_CLASS}"><span>&#9668;</span></button>
+    <button id="${styles_1.TTS_ID_NEXT}" class="${styles_1.TTS_NAV_BUTTON_CLASS}"><span>&#9658;</span></button>
+    <input id="${styles_1.TTS_ID_SLIDER}" type="range" min="0" max="${ttsQueueLength - 1}" value="0" />`;
+    const pop = new popup_dialog_1.PopupDialog(win.document, outerHTML, onDialogClosed);
     pop.show(ttsQueueItemStart.item.parentElement);
-    _dialogState = win.document.getElementById(TTS_ID_DIALOG);
+    _dialogState = pop.dialog;
     if (!_dialogState) {
         return;
     }
     _dialogState.focusScrollRaw = focusScrollRaw;
+    _dialogState.ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable =
+        ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable;
+    _dialogState.ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable =
+        ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable;
     _dialogState.ttsRootElement = ttsRootElement;
     _dialogState.domSlider = win.document.getElementById(styles_1.TTS_ID_SLIDER);
     _dialogState.domPrevious = win.document.getElementById(styles_1.TTS_ID_PREVIOUS);

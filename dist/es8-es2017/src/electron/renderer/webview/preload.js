@@ -17,22 +17,27 @@ const cssselector2_1 = require("../common/cssselector2");
 const easings_1 = require("../common/easings");
 const popup_dialog_1 = require("../common/popup-dialog");
 const querystring_1 = require("../common/querystring");
+const rect_utils_1 = require("../common/rect-utils");
 const url_params_1 = require("../common/url-params");
 const epubReadingSystem_1 = require("./epubReadingSystem");
+const highlight_1 = require("./highlight");
 const popupFootNotes_1 = require("./popupFootNotes");
 const readaloud_1 = require("./readaloud");
 const readium_css_1 = require("./readium-css");
+const selection_1 = require("./selection");
 const ResizeSensor = require("css-element-queries/src/ResizeSensor");
 const debug = debug_("r2:navigator#electron/renderer/webview/preload");
 const win = global.window;
 win.READIUM2 = {
     DEBUG_VISUALS: false,
     fxlViewportHeight: 0,
+    fxlViewportScale: 1,
     fxlViewportWidth: 0,
     hashElement: null,
     isFixedLayout: false,
     locationHashOverride: undefined,
     locationHashOverrideInfo: {
+        docInfo: undefined,
         href: "",
         locations: {
             cfi: undefined,
@@ -41,6 +46,8 @@ win.READIUM2 = {
             progression: undefined,
         },
         paginationInfo: undefined,
+        selectionInfo: undefined,
+        title: undefined,
     },
     ttsClickEnabled: false,
     urlQueryParams: undefined,
@@ -76,8 +83,8 @@ if (win.READIUM2.urlQueryParams) {
 }
 if (IS_DEV) {
     electron_1.ipcRenderer.on(events_1.R2_EVENT_DEBUG_VISUALS, (_event, payload) => {
-        win.READIUM2.DEBUG_VISUALS = payload === "true";
-        if (!win.READIUM2.DEBUG_VISUALS) {
+        win.READIUM2.DEBUG_VISUALS = payload.debugVisuals;
+        if (!payload.debugVisuals) {
             const existings = win.document.querySelectorAll(`*[${styles_1.readPosCssStylesAttr1}], *[${styles_1.readPosCssStylesAttr2}], *[${styles_1.readPosCssStylesAttr3}], *[${styles_1.readPosCssStylesAttr4}]`);
             existings.forEach((existing) => {
                 existing.removeAttribute(`${styles_1.readPosCssStylesAttr1}`);
@@ -85,6 +92,30 @@ if (IS_DEV) {
                 existing.removeAttribute(`${styles_1.readPosCssStylesAttr3}`);
                 existing.removeAttribute(`${styles_1.readPosCssStylesAttr4}`);
             });
+        }
+        if (payload.cssClass) {
+            if (_blacklistIdClassForCssSelectors.indexOf(payload.cssClass) < 0) {
+                _blacklistIdClassForCssSelectors.push(payload.cssClass);
+            }
+            if (payload.debugVisuals && payload.cssStyles && payload.cssStyles.length) {
+                const idSuffix = `debug_for_class_${payload.cssClass}`;
+                readium_css_inject_1.appendCSSInline(win.document, idSuffix, payload.cssStyles);
+                if (payload.cssSelector) {
+                    const toHighlights = win.document.querySelectorAll(payload.cssSelector);
+                    toHighlights.forEach((toHighlight) => {
+                        const clazz = `${payload.cssClass}`;
+                        if (!toHighlight.classList.contains(clazz)) {
+                            toHighlight.classList.add(clazz);
+                        }
+                    });
+                }
+            }
+            else {
+                const existings = win.document.querySelectorAll(`.${payload.cssClass}`);
+                existings.forEach((existing) => {
+                    existing.classList.remove(`${payload.cssClass}`);
+                });
+            }
         }
     });
 }
@@ -115,8 +146,8 @@ function computeVisibility_(element) {
             return false;
         }
     }
-    const rect = element.getBoundingClientRect();
     if (!readium_css_inject_1.isPaginated(win.document)) {
+        const rect = element.getBoundingClientRect();
         if (rect.top >= 0 &&
             rect.top <= win.document.documentElement.clientHeight) {
             return true;
@@ -130,7 +161,7 @@ function computeVisibility_(element) {
     const extraShift = win.document.body.scrollLeftExtra;
     let currentOffset = win.document.body.scrollLeft;
     if (extraShift) {
-        currentOffset += (((win.document.body.scrollLeft < 0) ? -1 : 1) * extraShift);
+        currentOffset += (((currentOffset < 0) ? -1 : 1) * extraShift);
     }
     if (scrollLeftPotentiallyExcessive >= (currentOffset - 10) &&
         scrollLeftPotentiallyExcessive <= (currentOffset + 10)) {
@@ -169,6 +200,7 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_LOCATOR_VISIBLE, (_event, payload) =
 });
 electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, (_event, payload) => {
     showHideContentMask(false);
+    selection_1.clearCurrentSelection(win);
     popup_dialog_1.closePopupDialogs(win.document);
     _cancelInitialScrollCheck = true;
     if (!win.READIUM2.urlQueryParams) {
@@ -218,6 +250,7 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, (_event, payload) => {
 });
 function resetLocationHashOverrideInfo() {
     win.READIUM2.locationHashOverrideInfo = {
+        docInfo: undefined,
         href: "",
         locations: {
             cfi: undefined,
@@ -226,6 +259,7 @@ function resetLocationHashOverrideInfo() {
             progression: undefined,
         },
         paginationInfo: undefined,
+        selectionInfo: undefined,
         title: undefined,
     };
 }
@@ -245,13 +279,33 @@ function elementCapturesKeyboardArrowKeys(target) {
     }
     return false;
 }
+function ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable() {
+    const val = win.document.body.scrollLeftExtra;
+    if (val === 0) {
+        return 0;
+    }
+    win.document.body.scrollLeftExtra = 0;
+    electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_SHIFT_VIEW_X, { offset: 0, backgroundColor: undefined });
+    return val;
+}
+function ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable(scrollLeftExtra) {
+    win.document.body.scrollLeftExtra = scrollLeftExtra;
+    const scrollLeftExtraBackgroundColor = win.document.body.scrollLeftExtraBackgroundColor;
+    electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_SHIFT_VIEW_X, {
+        backgroundColor: scrollLeftExtraBackgroundColor ? scrollLeftExtraBackgroundColor : undefined,
+        offset: (readium_css_1.isRTL() ? 1 : -1) * scrollLeftExtra,
+    });
+}
 function ensureTwoPageSpreadWithOddColumnsIsOffset(scrollOffset, maxScrollShift) {
     if (!win || !win.document || !win.document.body || !win.document.documentElement) {
         return;
     }
-    const noChange = !readium_css_inject_1.isPaginated(win.document) || !readium_css_1.isTwoPageSpread() ||
+    const noChange = popup_dialog_1.isPopupDialogOpen(win.document) ||
+        !readium_css_inject_1.isPaginated(win.document) ||
+        !readium_css_1.isTwoPageSpread() ||
         readium_css_1.isVerticalWritingMode() ||
-        maxScrollShift <= 0 || Math.abs(scrollOffset) <= maxScrollShift;
+        maxScrollShift <= 0 ||
+        Math.abs(scrollOffset) <= maxScrollShift;
     if (noChange) {
         win.document.body.scrollLeftExtra = 0;
         electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_SHIFT_VIEW_X, { offset: 0, backgroundColor: undefined });
@@ -271,6 +325,7 @@ function ensureTwoPageSpreadWithOddColumnsIsOffset(scrollOffset, maxScrollShift)
         }
     }
     win.document.body.scrollLeftExtra = extraOffset;
+    win.document.body.scrollLeftExtraBackgroundColor = backgroundColor;
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_SHIFT_VIEW_X, {
         backgroundColor: backgroundColor ? backgroundColor : undefined,
         offset: (readium_css_1.isRTL() ? 1 : -1) * extraOffset,
@@ -297,6 +352,7 @@ function onEventPageTurn(payload) {
     if (leftRightKeyWasUsedInsideKeyboardCapture) {
         return;
     }
+    selection_1.clearCurrentSelection(win);
     popup_dialog_1.closePopupDialogs(win.document);
     if (win.READIUM2.isFixedLayout || !win.document.body) {
         electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, payload);
@@ -369,7 +425,7 @@ function onEventPageTurn(payload) {
                 const scrollOffset_ = readium_css_1.isVerticalWritingMode() ?
                     (win.document.body.scrollTop - unit) :
                     (win.document.body.scrollLeft - (readium_css_1.isRTL() ? -1 : 1) * unit);
-                const nWholes = Math.ceil(scrollOffset_ / unit);
+                const nWholes = readium_css_1.isRTL() ? Math.floor(scrollOffset_ / unit) : Math.ceil(scrollOffset_ / unit);
                 const scrollOffset = nWholes * unit;
                 ensureTwoPageSpreadWithOddColumnsIsOffset(scrollOffset, 0);
                 const targetObj = win.document.body;
@@ -444,7 +500,7 @@ function getScrollOffsetIntoView(element) {
     const columnDimension = readium_css_1.calculateColumnDimension();
     const isTwoPage = readium_css_1.isTwoPageSpread();
     const fullOffset = (readium_css_1.isRTL() ?
-        ((columnDimension * (isTwoPage ? 2 : 1)) - rect.left) :
+        ((columnDimension * (isTwoPage ? 2 : 1)) - (rect.left + rect.width)) :
         rect.left) +
         ((readium_css_1.isRTL() ? -1 : 1) * win.document.body.scrollLeft);
     const columnIndex = Math.floor(fullOffset / columnDimension);
@@ -467,6 +523,7 @@ const scrollToHashRaw = () => {
     if (!win.document || !win.document.body || !win.document.documentElement) {
         return;
     }
+    highlight_1.recreateAllHighlights(win);
     const isPaged = readium_css_inject_1.isPaginated(win.document);
     if (win.READIUM2.locationHashOverride) {
         scrollElementIntoView(win.READIUM2.locationHashOverride);
@@ -705,6 +762,7 @@ function handleTab(target, tabKeyDownEvent) {
 electron_1.ipcRenderer.on(events_1.R2_EVENT_READIUMCSS, (_event, payload) => {
     showHideContentMask(false);
     readium_css_1.readiumCSS(win.document, payload);
+    highlight_1.recreateAllHighlights(win);
 });
 let _docTitle;
 win.addEventListener("DOMContentLoaded", () => {
@@ -762,16 +820,11 @@ win.addEventListener("DOMContentLoaded", () => {
     if (wh) {
         win.READIUM2.fxlViewportWidth = wh.width;
         win.READIUM2.fxlViewportHeight = wh.height;
+        win.READIUM2.fxlViewportScale = wh.scale;
     }
     const alreadedInjected = win.document.documentElement.hasAttribute("data-readiumcss-injected");
     if (alreadedInjected) {
         debug(">>>>> ReadiumCSS already injected by streamer");
-    }
-    if (!alreadedInjected) {
-        readium_css_inject_1.injectDefaultCSS(win.document);
-        if (IS_DEV) {
-            readium_css_inject_1.injectReadPosCSS(win.document);
-        }
     }
     readium_css_1.computeVerticalRTL();
     if (readiumcssJson) {
@@ -779,6 +832,12 @@ win.addEventListener("DOMContentLoaded", () => {
             !alreadedInjected) {
             debug(">>>>>> ReadiumCSS inject again");
             readium_css_1.readiumCSS(win.document, readiumcssJson);
+        }
+    }
+    if (!alreadedInjected) {
+        readium_css_inject_1.injectDefaultCSS(win.document);
+        if (IS_DEV) {
+            readium_css_inject_1.injectReadPosCSS(win.document);
         }
     }
     if (alreadedInjected) {
@@ -874,7 +933,7 @@ win.addEventListener("load", () => {
         }
         ev.preventDefault();
         ev.stopPropagation();
-        const done = popupFootNotes_1.popupFootNote(currentElement, focusScrollRaw, href);
+        const done = popupFootNotes_1.popupFootNote(currentElement, focusScrollRaw, href, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
         if (!done) {
             focusScrollDebounced.clear();
             processXYDebounced.clear();
@@ -892,6 +951,7 @@ win.addEventListener("load", () => {
         if (wh) {
             win.READIUM2.fxlViewportWidth = wh.width;
             win.READIUM2.fxlViewportHeight = wh.height;
+            win.READIUM2.fxlViewportScale = wh.scale;
         }
         scrollToHashRaw();
     });
@@ -908,42 +968,40 @@ win.addEventListener("load", () => {
             processXYDebounced(x, 0, false);
         });
     }, 200);
-    win.document.body.addEventListener("click", (ev) => {
+    function handleMouseEvent(ev) {
         if (popup_dialog_1.isPopupDialogOpen(win.document)) {
             return;
         }
         const x = ev.clientX;
         const y = ev.clientY;
         processXYDebounced(x, y, false);
-    });
-    win.document.body.addEventListener("click", (ev) => {
-        if (popup_dialog_1.isPopupDialogOpen(win.document)) {
-            return;
-        }
-        const x = ev.clientX;
-        const y = ev.clientY;
-        let element;
-        const range = win.document.caretRangeFromPoint(x, y);
-        if (range) {
-            const node = range.startContainer;
-            if (node) {
-                if (node.nodeType === Node.ELEMENT_NODE) {
-                    element = node;
-                }
-                else if (node.nodeType === Node.TEXT_NODE) {
-                    if (node.parentNode && node.parentNode.nodeType === Node.ELEMENT_NODE) {
-                        element = node.parentNode;
+        if (win.READIUM2.ttsClickEnabled) {
+            let element;
+            const range = win.document.caretRangeFromPoint(x, y);
+            if (range) {
+                const node = range.startContainer;
+                if (node) {
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        element = node;
+                    }
+                    else if (node.nodeType === Node.TEXT_NODE) {
+                        if (node.parentNode && node.parentNode.nodeType === Node.ELEMENT_NODE) {
+                            element = node.parentNode;
+                        }
                     }
                 }
             }
-        }
-        if (win.READIUM2.ttsClickEnabled && element) {
-            if (ev.altKey) {
-                readaloud_1.ttsPlay(focusScrollRaw, element, undefined);
-                return;
+            if (element) {
+                if (ev.altKey) {
+                    readaloud_1.ttsPlay(focusScrollRaw, element, undefined, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+                    return;
+                }
+                readaloud_1.ttsPlay(focusScrollRaw, element.ownerDocument.body, element, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
             }
-            readaloud_1.ttsPlay(focusScrollRaw, element.ownerDocument.body, element);
         }
+    }
+    win.document.documentElement.addEventListener("mouseup", (ev) => {
+        handleMouseEvent(ev);
     });
 });
 function checkBlacklisted(el) {
@@ -1090,7 +1148,7 @@ exports.computeProgressionData = () => {
         }
         const adjustedTotalColumns = (extraShift ? (totalColumns + 1) : totalColumns) - (isTwoPage ? 2 : 1);
         currentColumn = adjustedTotalColumns * progressionRatio;
-        currentColumn = Math.floor(currentColumn);
+        currentColumn = Math.round(currentColumn);
     }
     else {
         if (maxScrollShift > 0) {
@@ -1104,7 +1162,6 @@ exports.computeProgressionData = () => {
     }
     if (win.READIUM2.locationHashOverride) {
         const element = win.READIUM2.locationHashOverride;
-        const rect = element.getBoundingClientRect();
         let offset = 0;
         if (isPaged) {
             const visible = computeVisibility_(element);
@@ -1112,14 +1169,71 @@ exports.computeProgressionData = () => {
                 const curCol = extraShift ? (currentColumn - 1) : currentColumn;
                 const columnDimension = readium_css_1.calculateColumnDimension();
                 if (readium_css_1.isVerticalWritingMode()) {
+                    const rect = element.getBoundingClientRect();
                     offset = (curCol * win.document.body.scrollWidth) + rect.left +
                         (rect.top >= columnDimension ? win.document.body.scrollWidth : 0);
                 }
                 else {
-                    offset = (curCol * win.document.body.scrollHeight) + rect.top +
-                        (((readium_css_1.isRTL() ?
-                            (win.document.documentElement.clientWidth - (rect.left + rect.width)) :
-                            rect.left) >= columnDimension) ? win.document.body.scrollHeight : 0);
+                    const boundingRect = element.getBoundingClientRect();
+                    const clientRects = rect_utils_1.getClientRectsNoOverlap_(element.getClientRects());
+                    let rectangle;
+                    for (const rect of clientRects) {
+                        if (!rectangle) {
+                            rectangle = rect;
+                            continue;
+                        }
+                        if (readium_css_1.isRTL()) {
+                            if ((rect.left + rect.width) > (columnDimension * (isTwoPage ? 2 : 1))) {
+                                continue;
+                            }
+                            if (isTwoPage) {
+                                if ((boundingRect.left + boundingRect.width) >= columnDimension &&
+                                    (rect.left + rect.width) < columnDimension) {
+                                    continue;
+                                }
+                            }
+                            if ((boundingRect.left + boundingRect.width) >= 0 &&
+                                (rect.left + rect.width) < 0) {
+                                continue;
+                            }
+                        }
+                        else {
+                            if (rect.left < 0) {
+                                continue;
+                            }
+                            if (boundingRect.left < columnDimension &&
+                                rect.left >= columnDimension) {
+                                continue;
+                            }
+                            if (isTwoPage) {
+                                const boundary = 2 * columnDimension;
+                                if (boundingRect.left < boundary &&
+                                    rect.left >= boundary) {
+                                    continue;
+                                }
+                            }
+                        }
+                        if (rect.top < rectangle.top) {
+                            rectangle = rect;
+                            continue;
+                        }
+                    }
+                    if (!rectangle) {
+                        rectangle = element.getBoundingClientRect();
+                    }
+                    offset = (curCol * win.document.body.scrollHeight) + rectangle.top;
+                    if (isTwoPage) {
+                        if (readium_css_1.isRTL()) {
+                            if (rectangle.left < columnDimension) {
+                                offset += win.document.body.scrollHeight;
+                            }
+                        }
+                        else {
+                            if (rectangle.left >= columnDimension) {
+                                offset += win.document.body.scrollHeight;
+                            }
+                        }
+                    }
                 }
                 const totalDocumentDimension = ((readium_css_1.isVerticalWritingMode() ? win.document.body.scrollWidth :
                     win.document.body.scrollHeight) * totalColumns);
@@ -1129,6 +1243,7 @@ exports.computeProgressionData = () => {
             }
         }
         else {
+            const rect = element.getBoundingClientRect();
             if (readium_css_1.isVerticalWritingMode()) {
                 offset = ((readium_css_1.isRTL() ? -1 : 1) * win.document.body.scrollLeft) + rect.left + (readium_css_1.isRTL() ? rect.width : 0);
             }
@@ -1153,8 +1268,8 @@ exports.computeProgressionData = () => {
         percentRatio: progressionRatio,
     };
 };
-const _blacklistIdClassForCssSelectors = [styles_1.TTS_ID_INJECTED_PARENT, styles_1.TTS_ID_SPEAKING_DOC_ELEMENT, styles_1.POPUP_DIALOG_CLASS, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN, styles_1.ROOT_CLASS_KEYBOARD_INTERACT, styles_1.ROOT_CLASS_INVISIBLE_MASK, readium_css_inject_1.CLASS_PAGINATED, styles_1.ROOT_CLASS_NO_FOOTNOTES];
-const _blacklistIdClassForCFI = [styles_1.POPUP_DIALOG_CLASS, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN, "resize-sensor"];
+const _blacklistIdClassForCssSelectors = [styles_1.POPUP_DIALOG_CLASS, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN, highlight_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA, styles_1.TTS_ID_INJECTED_PARENT, styles_1.TTS_ID_SPEAKING_DOC_ELEMENT, styles_1.ROOT_CLASS_KEYBOARD_INTERACT, styles_1.ROOT_CLASS_INVISIBLE_MASK, readium_css_inject_1.CLASS_PAGINATED, styles_1.ROOT_CLASS_NO_FOOTNOTES];
+const _blacklistIdClassForCFI = [styles_1.POPUP_DIALOG_CLASS, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN, highlight_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA, "resize-sensor"];
 exports.computeCFI = (node) => {
     if (node.nodeType !== Node.ELEMENT_NODE) {
         return undefined;
@@ -1183,11 +1298,7 @@ exports.computeCFI = (node) => {
     }
     return "/" + cfi;
 };
-const notifyReadingLocationRaw = () => {
-    if (!win.READIUM2.locationHashOverride) {
-        return;
-    }
-    let progressionData;
+function getCssSelector(element) {
     const options = {
         className: (str) => {
             return _blacklistIdClassForCssSelectors.indexOf(str) < 0;
@@ -1196,7 +1307,14 @@ const notifyReadingLocationRaw = () => {
             return _blacklistIdClassForCssSelectors.indexOf(str) < 0;
         },
     };
-    const cssSelector = cssselector2_1.uniqueCssSelector(win.READIUM2.locationHashOverride, win.document, options);
+    return cssselector2_1.uniqueCssSelector(element, win.document, options);
+}
+const notifyReadingLocationRaw = () => {
+    if (!win.READIUM2.locationHashOverride) {
+        return;
+    }
+    let progressionData;
+    const cssSelector = getCssSelector(win.READIUM2.locationHashOverride);
     const cfi = exports.computeCFI(win.READIUM2.locationHashOverride);
     let progression = 0;
     if (win.READIUM2.isFixedLayout) {
@@ -1208,7 +1326,18 @@ const notifyReadingLocationRaw = () => {
     }
     const pinfo = (progressionData && progressionData.paginationInfo) ?
         progressionData.paginationInfo : undefined;
+    const selInfo = selection_1.getCurrentSelectionInfo(win, getCssSelector, exports.computeCFI);
+    const text = selInfo ? {
+        after: undefined,
+        before: undefined,
+        highlight: selInfo.cleanText,
+    } : undefined;
     win.READIUM2.locationHashOverrideInfo = {
+        docInfo: {
+            isFixedLayout: win.READIUM2.isFixedLayout,
+            isRightToLeft: readium_css_1.isRTL(),
+            isVerticalWritingMode: readium_css_1.isVerticalWritingMode(),
+        },
         href: "",
         locations: {
             cfi,
@@ -1217,6 +1346,8 @@ const notifyReadingLocationRaw = () => {
             progression,
         },
         paginationInfo: pinfo,
+        selectionInfo: selInfo,
+        text,
         title: _docTitle,
     };
     const payload = win.READIUM2.locationHashOverrideInfo;
@@ -1235,7 +1366,7 @@ const notifyReadingLocationDebounced = debounce_1.debounce(() => {
 electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_PLAY, (_event, payload) => {
     const rootElement = win.document.querySelector(payload.rootElement);
     const startElement = payload.startElement ? win.document.querySelector(payload.startElement) : null;
-    readaloud_1.ttsPlay(focusScrollRaw, rootElement ? rootElement : undefined, startElement ? startElement : undefined);
+    readaloud_1.ttsPlay(focusScrollRaw, rootElement ? rootElement : undefined, startElement ? startElement : undefined, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
 });
 electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_STOP, (_event) => {
     readaloud_1.ttsStop();

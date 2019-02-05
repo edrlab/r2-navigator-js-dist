@@ -80,7 +80,7 @@ function onKeyDown(ev) {
     }
 }
 class PopupDialog {
-    constructor(documant, outerHTML, id, onDialogClosed) {
+    constructor(documant, outerHTML, onDialogClosed) {
         this.documant = documant;
         this.onDialogClosed = onDialogClosed;
         closePopupDialogs(documant);
@@ -90,7 +90,7 @@ class PopupDialog {
         this.dialog = documant.createElement("dialog");
         this.dialog.popDialog = this;
         this.dialog.setAttribute("class", styles_1.POPUP_DIALOG_CLASS);
-        this.dialog.setAttribute("id", id);
+        this.dialog.setAttribute("id", styles_1.POPUP_DIALOG_CLASS);
         this.dialog.setAttribute("dir", "ltr");
         try {
             this.dialog.insertAdjacentHTML("beforeend", outerHTML);

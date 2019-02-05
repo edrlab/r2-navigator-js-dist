@@ -7,6 +7,7 @@ export declare function readiumCSSSet(documant: Document, messageJson: IEventPay
 export interface IwidthHeight {
     width: number;
     height: number;
+    scale: number;
 }
 export declare function configureFixedLayout(documant: Document, isFixedLayout: boolean, fxlViewportWidth: number, fxlViewportHeight: number, innerWidth: number, innerHeight: number): IwidthHeight | undefined;
 export declare function ensureHead(documant: Document): void;

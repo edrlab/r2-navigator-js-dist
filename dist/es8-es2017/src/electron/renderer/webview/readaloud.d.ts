@@ -1,4 +1,4 @@
-export declare function ttsPlay(focusScrollRaw: (el: HTMLOrSVGElement, doFocus: boolean) => void, rootElem: Element | undefined, startElem: Element | undefined): void;
+export declare function ttsPlay(focusScrollRaw: (el: HTMLOrSVGElement, doFocus: boolean) => void, rootElem: Element | undefined, startElem: Element | undefined, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable: () => number, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable: (val: number) => void): void;
 export declare function ttsStop(): void;
 export declare function ttsPause(): void;
 export declare function ttsResume(): void;

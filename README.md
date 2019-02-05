@@ -416,8 +416,8 @@ import {
 // many calls (and consequently putting unnecessary strain on the store/messaging system required to
 // handle the renderer/main process communication).
 // A typical example of when this function is called is when the user scrolls the viewport using the mouse
-// (debouncing is every 500ms on the trailing edge,
-// so there is always a 500ms delay before the first notification).
+// (debouncing is every 250ms on the trailing edge,
+// so there is always a 250ms delay before the first notification).
 const saveReadingLocation = (location: LocatorExtended) => {
   // Use an application store to make `location` persistent
   // ...
@@ -427,6 +427,127 @@ setReadingLocationSaver(saveReadingLocation);
 // This returns the last reading location as a `LocatorExtended` object (can be undefined).
 // This is equal to the last object received in the `setReadingLocationSaver()` callback (see above)
 const loc = getCurrentReadingLocation();
+```
+
+```javascript
+// Typically, the `LocatorExtended` data structure will be used to store "bookmarks",
+// to render a user interface that provides information about the document (e.g. page "numbers"),
+// or to display an interactive "timeline" / linear scrub bar
+// to rapidely navigate the publication spine / reading order.
+
+// Here is a typical usage example for LocatorExtended.locator.href:
+// (null/undefined sanity checks removed, for brevity)
+
+let _publication: Publication; // set somewhere else
+const locatorExtended = getCurrentReadingLocation();
+
+// That's the HTML <title /> (inside the <head />)
+console.log(locatorExtended.locator.title);
+
+let foundLink = _publication.Spine.find((link, i) => {
+    return link.Href === locatorExtended.locator.href;
+});
+if (!foundLink) {
+    // a publication document is not necessarily the spine / reading order
+    foundLink = _publication.Resources.find((link) => {
+        return link.Href === locatorExtended.locator.href;
+    });
+}
+// then, use `foundLink` as needed ...
+```
+
+```javascript
+// `LocatorExtended.locations.cssSelector` is a CSS Selector that points to an HTML element,
+// (i.e. the reading location / bookmarked reference)
+// and it can be used as-is to restore this using the `handleLinkLocator()` function (see below).
+
+// `LocatorExtended.locations.cfi` is provided as "read-only" information,
+// in the sense that it is not used when ingested back into the navigator via `handleLinkLocator()`.
+// In other words, setting the CFI field to undefined or another string has no effects when passing the parameter.
+
+// `LocatorExtended.locations.position` is not currently supported / implemented,
+// and as with the CFI field, it can be ignored when feeding back into the navigator API.
+
+// `LocatorExtended.locations.progression` is a percentage (floating point number [0, 1])
+// representing the reading location inside a single document,
+// so for fixed layout this has no effect. However, reflowable documents are either scrolled or paginated,
+// so the progression percentage represents how much vertical scrolling / horizontal panning there is.
+// This progression field can be used to ask the navigator to set a specific reading placement
+// using `handleLinkLocator()` (see further below).
+// Typically, for paginated reflowable documents,
+// the calculation of a desired progression could be mapped to "page" information (columns). See below.
+```
+
+```javascript
+// When a reflowable document is currently presented in a paginated view,
+// `LocatorExtended.paginationInfo` reports the current `totalColumns` (number of single "pages"),
+// `currentColumn` (a zero-based index between [0, totalColumns-1]),
+// and if `isTwoPageSpread` is true, then `spreadIndex` reports the zero-based index
+// of the currently-visible two-page spread.
+```
+
+```javascript
+// `LocatorExtended.docInfo` reports `isFixedLayout`, `isRightToLeft` and `isVerticalWritingMode`
+// which are self-explanatory.
+```
+
+```javascript
+// `LocatorExtended.docInfo` reports `isFixedLayout`, `isRightToLeft` and `isVerticalWritingMode`
+// which are self-explanatory.
+```
+
+```javascript
+// Note that `LocatorExtended.selectionInfo` is currently a prototype concept, not a stable API.
+// However, this already provides an accurate representation of user selection / character ranges,
+// which will ; in a future release of r2-navigator-js ; be connected to a highlights / annotations
+// subsystem (i.e. minimal, but stable / robust functionality).
+```
+
+```javascript
+// For convenience, here is the fully-expanded `LocatorExtended` data structure:
+interface LocatorExtended {
+    locator { //Locator
+        href: string;
+        title?: string;
+        text?: { //LocatorLocations
+            before?: string;
+            highlight?: string;
+            after?: string;
+        };
+        locations { //LocatorLocations
+            cfi?: string;
+            cssSelector?: string;
+            position?: number;
+            progression?: number;
+        };
+    };
+    paginationInfo { //IPaginationInfo
+        totalColumns: number | undefined;
+        currentColumn: number | undefined;
+        isTwoPageSpread: boolean | undefined;
+        spreadIndex: number | undefined;
+    };
+    docInfo { //IDocInfo
+        isFixedLayout: boolean;
+        isRightToLeft: boolean;
+        isVerticalWritingMode: boolean;
+    };
+    selectionInfo { //ISelectionInfo
+        rangeInfo { //IRangeInfo
+            startContainerElementCssSelector: string;
+            startContainerChildTextNodeIndex: number;
+            startOffset: number;
+
+            endContainerElementCssSelector: string;
+            endContainerChildTextNodeIndex: number;
+            endOffset: number;
+
+            cfi: string | undefined;
+        };
+        cleanText: string;
+        rawText: string;
+    };
+}
 ```
 
 ```javascript
@@ -445,16 +566,21 @@ handleLinkUrl(href);
 
 // A typical use-case is the publication's Table Of Contents.
 // Each spine/readingOrder item is a `Link` object with a relative href (see `r2-shared-js` models).
-// The final absolute URL can be computed simply by concatenating the publication's manifest.json URL:
+// The final absolute URL may be computed simply by concatenating the publication's manifest.json URL:
+// (although it is recommended to use a URL/URI library in order to handle query parameters, etc.)
 const href = publicationURL + "/../" + link.Href;
 // For example:
 // publicationURL === "https://127.0.0.1:3000/PUB_ID/manifest.json"
 // link.Href === "contents/chapter1.html"
 
 // This can be used to restore a bookmark previously saved via `getCurrentReadingLocation()` (see above).
-// Note that in this version of the navigator, only CSS Selectors are supported
-// (not CFI, position or progression, even though they are initially provided by the navigator)
 handleLinkLocator(locator);
+
+// `locator.href` is obviously required.
+// `locator.locations.cssSelector` can be used as-is (as provided by a prior call to `getCurrentReadingLocation()`)
+// in order to restore a saved reading location.
+// Alternatively, `locator.locations.progression` (percentage) can be used to pan/shift to a desired reading location,
+// based on pagination / scroll information (see description of `LocatorExtended.paginationInfo`, above).
 ```
 
 ```javascript
@@ -606,22 +732,77 @@ const deviceIDManager: IDeviceIDManager = {
 // and to check for an updated license (as passed in the callback parameter).
 // The lsdLcpUpdateInject() function can be used to immediately inject the updated
 // LCP license (META-INF/license.lcpl) inside the EPUB container on the filesystem.
+// Note that although the `launchStatusDocumentProcessing()` initializes `publication.LCP.LSDJson`,
+// after `lsdLcpUpdateInject()` is invoked a fresh new `publication.LCP` object is created
+// (which mirrors `META-INF/container.xml`), so `launchStatusDocumentProcessing()` must be called again (loop)
+// to ensure the latest LSD is indeed loaded and verified. Another alterative is to preserve the previous LSD,
+// which in all likelyhood is exactly the same (i.e. hasn't changed since the LCP license injection).
+// See immediately below for the alternative "preservation" method.
+// See further below for the more contrived (but strictly-speaking more correct) "loop" method.
 try {
     await launchStatusDocumentProcessing(publication.LCP, deviceIDManager,
         async (licenseUpdateJson: string | undefined) => {
 
             if (licenseUpdateJson) {
+                const LSDJson = publication.LCP.LSDJson; // LSD preservation, see comment above.
+
                 let res: string;
                 try {
                     res = await lsdLcpUpdateInject(
                         licenseUpdateJson,
                         publication as Publication,
                         publicationFilePath);
+
+                    publication.LCP.LSDJson = LSDJson; // LSD preservation, see comment above.
                 } catch (err) {
                     debug(err);
                 }
             }
         });
+} catch (err) {
+    debug(err);
+}
+
+// Example of looping the `launchStatusDocumentProcessing()` calls in order to reset `publication.LCP.LSDJson`
+// after `lsdLcpUpdateInject()` injects a fresh `publication.LCP` based on the downloaded `META-INF/container.xml`.
+async function tryLSD(deviceIDManager: IDeviceIDManager, publication: Publication, publicationFilePath: string): Promise<boolean> {
+
+    return new Promise(async (resolve, reject) => {
+        try {
+            await launchStatusDocumentProcessing(publication.LCP as LCP, deviceIDManager,
+                async (licenseUpdateJson: string | undefined) => {
+
+                    if (licenseUpdateJson) {
+                        let res: string;
+                        try {
+                            res = await lsdLcpUpdateInject(
+                                licenseUpdateJson,
+                                publication as Publication,
+                                publicationFilePath);
+
+                            try {
+                                await tryLSD(publication, publicationFilePath); // loop to re-init LSD
+                                resolve(true);
+                            } catch (err) {
+                                debug(err);
+                                reject(err);
+                            }
+                        } catch (err) {
+                            debug(err);
+                            reject(err);
+                        }
+                    } else {
+                        resolve(true);
+                    }
+                });
+        } catch (err) {
+            debug(err);
+            reject(err);
+        }
+    });
+}
+try {
+    await tryLSD(publication, publicationFilePath);
 } catch (err) {
     debug(err);
 }
@@ -694,4 +875,14 @@ try {
 } catch (err) {
     debug(err);
 }
+
+// Both LSD "renew" and "return" interactions can return errors (i.e. Promise.reject => try/catch with async/await)
+// when the server responds with HTTP statusCode < 200 || >= 300.
+// The `err` object in the above code snippet can be a number (HTTP status code) when no response body is available.
+// Otherwise, it can be an object with the `httpStatusCode` property (number) and httpResponseBody (string)
+// when the response body cannot be parsed to JSON.
+// Otherwise, it can be an object with the `httpStatusCode` property (number) and other arbitrary JSON properties,
+// depending on the server response. Typically, compliant LCP/LSD servers are expected to return Problem Details JSON (RFC7807),
+// which provides `title` `type` and `details` JSON properties.
+// See https://readium.org/technical/readium-lsd-specification/#31-handling-errors
 ```

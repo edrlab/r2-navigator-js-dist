@@ -1,14 +1,19 @@
 import { Locator } from "r2-shared-js/dist/es7-es2016/src/models/locator";
 import { Publication } from "r2-shared-js/dist/es7-es2016/src/models/publication";
 import { Link } from "r2-shared-js/dist/es7-es2016/src/models/publication-link";
-import { IEventPayload_R2_EVENT_READING_LOCATION_PAGINATION_INFO, IEventPayload_R2_EVENT_READIUMCSS } from "../common/events";
+import { IDocInfo } from "../common/document";
+import { IEventPayload_R2_EVENT_READIUMCSS } from "../common/events";
+import { IPaginationInfo } from "../common/pagination";
+import { ISelectionInfo } from "../common/selection";
 import { INameVersion } from "./webview/epubReadingSystem";
 export declare function setEpubReadingSystemInfo(nv: INameVersion): void;
 export declare function __computeReadiumCssJsonMessage(link: Link | undefined): IEventPayload_R2_EVENT_READIUMCSS;
 export declare function setReadiumCssJsonGetter(func: () => IEventPayload_R2_EVENT_READIUMCSS): void;
 export interface LocatorExtended {
     locator: Locator;
-    paginationInfo: IEventPayload_R2_EVENT_READING_LOCATION_PAGINATION_INFO | undefined;
+    paginationInfo: IPaginationInfo | undefined;
+    selectionInfo: ISelectionInfo | undefined;
+    docInfo: IDocInfo | undefined;
 }
 export declare function getCurrentReadingLocation(): LocatorExtended | undefined;
 export declare function setReadingLocationSaver(func: (locator: LocatorExtended) => void): void;

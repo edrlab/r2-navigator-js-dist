@@ -22,14 +22,16 @@ exports.footnotesCssStyles = `
 }
 */
 
-dialog.${exports.POPUP_DIALOG_CLASS}::backdrop {
-    background-color: rgba(0, 0, 0, 0.3);
+:root[style] dialog#${exports.POPUP_DIALOG_CLASS}::backdrop,
+:root dialog#${exports.POPUP_DIALOG_CLASS}::backdrop {
+    background: rgba(0, 0, 0, 0.3) !important;
 }
-:root[style*="readium-night-on"] dialog.${exports.POPUP_DIALOG_CLASS}::backdrop {
-    background-color: rgba(0, 0, 0, 0.65) !important;
+:root[style*="readium-night-on"] dialog#${exports.POPUP_DIALOG_CLASS}::backdrop {
+    background: rgba(0, 0, 0, 0.65) !important;
 }
 
-dialog.${exports.POPUP_DIALOG_CLASS} {
+:root[style] dialog#${exports.POPUP_DIALOG_CLASS},
+:root dialog#${exports.POPUP_DIALOG_CLASS} {
     z-index: 3;
 
     position: fixed;
@@ -46,8 +48,8 @@ dialog.${exports.POPUP_DIALOG_CLASS} {
     border-radius: 0.3em;
     border-width: 1px;
 
-    background-color: white;
-    border-color: black;
+    background: white !important;
+    border-color: black !important;
 
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 
@@ -58,12 +60,18 @@ dialog.${exports.POPUP_DIALOG_CLASS} {
     grid-template-columns: 1.5em auto 1.5em;
     grid-template-rows: auto 1.5em;
 }
-:root[style*="readium-night-on"] dialog.${exports.POPUP_DIALOG_CLASS} {
-    background-color: #333333 !important;
+:root[style*="readium-night-on"] dialog#${exports.POPUP_DIALOG_CLASS} {
+    background: #333333 !important;
     border-color: white !important;
 }
-
-.${exports.FOOTNOTES_CONTAINER_CLASS} {
+:root[style*="readium-sepia-on"] dialog#${exports.POPUP_DIALOG_CLASS} {
+    background: var(--RS__backgroundColor) !important;
+}
+:root[style*="--USER__backgroundColor"] dialog#${exports.POPUP_DIALOG_CLASS} {
+    background: var(--USER__backgroundColor) !important;
+}
+:root[style] .${exports.FOOTNOTES_CONTAINER_CLASS},
+:root .${exports.FOOTNOTES_CONTAINER_CLASS} {
     overflow: auto;
 
     grid-column-start: 1;
@@ -75,16 +83,18 @@ dialog.${exports.POPUP_DIALOG_CLASS} {
     margin: 0.2em;
 }
 
-.${exports.FOOTNOTES_CONTAINER_CLASS} > div > * {
+:root[style] .${exports.FOOTNOTES_CONTAINER_CLASS} > div > *,
+:root .${exports.FOOTNOTES_CONTAINER_CLASS} > div > * {
     margin: 0 !important;
     padding: 0 !important;
 }
 
 /*
-.${exports.FOOTNOTES_CLOSE_BUTTON_CLASS} {
+:root[style] .${exports.FOOTNOTES_CLOSE_BUTTON_CLASS},
+:root .${exports.FOOTNOTES_CLOSE_BUTTON_CLASS} {
     border: 1px solid black;
-    background-color: white;
-    color: black;
+    background: white !important;
+    color: black !important;
 
     border-radius: 0.8em;
     position: absolute;
@@ -98,7 +108,7 @@ dialog.${exports.POPUP_DIALOG_CLASS} {
 }
 :root[style*="readium-night-on"] .${exports.FOOTNOTES_CLOSE_BUTTON_CLASS} {
     border: 1px solid white !important;
-    background-color: black !important;
+    background: black !important;
     color: white !important;
 }
 */
@@ -116,8 +126,10 @@ exports.TTS_CLASS_INJECTED_SUBSPAN = "r2-tts-speaking-word";
 exports.TTS_ID_INJECTED_PARENT = "r2-tts-speaking-txt-parent";
 exports.ttsCssStyles = `
 
-#${exports.TTS_ID_CONTAINER} {
+:root[style] div#${exports.TTS_ID_CONTAINER},
+:root div#${exports.TTS_ID_CONTAINER} {
     overflow: auto;
+    overflow-x: hidden;
 
     grid-column-start: 1;
     grid-column-end: 4;
@@ -134,17 +146,30 @@ exports.ttsCssStyles = `
     word-break: keep-all !important;
     word-wrap: break-word !important;
 
-    /*
     font-size: 120% !important;
-    line-height: 1.3em !important;
-    */
 
-    color: #888888 !important;
+    line-height: initial !important;
+
+    color: #999999 !important;
 }
-:root[style*="readium-night-on"] #${exports.TTS_ID_CONTAINER} {
+:root[style*="--USER__lineHeight"] div#${exports.TTS_ID_CONTAINER} {
+    line-height: calc(var(--USER__lineHeight) * 1.2) !important;
+}
+:root[style*="readium-night-on"] div#${exports.TTS_ID_CONTAINER} {
     color: #bbbbbb !important;
 }
-#${exports.TTS_ID_INFO} {
+:root[style*="readium-sepia-on"] div#${exports.TTS_ID_CONTAINER}{
+    background: var(--RS__backgroundColor) !important;
+    color: var(--RS__textColor) !important;
+}
+:root[style*="--USER__backgroundColor"] div#${exports.TTS_ID_CONTAINER} {
+    background: var(--USER__backgroundColor) !important;
+}
+:root[style*="--USER__textColor"] div#${exports.TTS_ID_CONTAINER} {
+    color: var(--USER__textColor) !important;
+}
+:root[style] #${exports.TTS_ID_INFO},
+:root #${exports.TTS_ID_INFO} {
     display: none;
 
     padding: 0;
@@ -159,21 +184,64 @@ exports.ttsCssStyles = `
     font-size: 90% !important;
 }
 
-#${exports.TTS_ID_SLIDER} {
+:root[style] #${exports.TTS_ID_SLIDER},
+:root #${exports.TTS_ID_SLIDER} {
     padding: 0;
     margin: 0;
+    margin-left: 6px;
+    margin-right: 6px;
 
     grid-column-start: 2;
     grid-column-end: 3;
     grid-row-start: 2;
     grid-row-end: 3;
-}
 
-.${exports.TTS_NAV_BUTTON_CLASS} {
-    border-radius: 0.3em;
-    border: 1px solid #EEEEEE;
-    background-color: white;
-    color: black;
+    cursor: pointer;
+    -webkit-appearance: none;
+
+    background: transparent !important;
+}
+:root #${exports.TTS_ID_SLIDER}::-webkit-slider-runnable-track {
+    cursor: pointer;
+
+    width: 100%;
+    height: 0.5em;
+
+    background: #999999;
+
+    padding: 0;
+    margin: 0;
+}
+:root[style*="readium-night-on"] #${exports.TTS_ID_SLIDER}::-webkit-slider-runnable-track {
+    background: #545454;
+}
+:root #${exports.TTS_ID_SLIDER}::-webkit-slider-thumb {
+    -webkit-appearance: none;
+
+    cursor: pointer;
+
+    width: 0.8em;
+    height: 1.5em;
+
+    padding: 0;
+    margin: 0;
+    margin-top: -0.5em;
+
+    border: none;
+    border-radius: 0.2em;
+
+    background: #333333;
+}
+:root[style*="readium-night-on"] #${exports.TTS_ID_SLIDER}::-webkit-slider-thumb {
+    background: white;
+}
+:root[style] button.${exports.TTS_NAV_BUTTON_CLASS} > span,
+:root button.${exports.TTS_NAV_BUTTON_CLASS} > span {
+    vertical-align: baseline;
+}
+:root[style] button.${exports.TTS_NAV_BUTTON_CLASS},
+:root button.${exports.TTS_NAV_BUTTON_CLASS} {
+    border: none;
 
     font-size: 100% !important;
     font-family: Arial !important;
@@ -182,13 +250,23 @@ exports.ttsCssStyles = `
     padding: 0;
     margin-top: 0.2em;
     margin-bottom: 0.2em;
+
+    background: transparent !important;
+    color: black !important;
 }
-:root[style*="readium-night-on"] .${exports.TTS_NAV_BUTTON_CLASS} {
-    border: 1px solid white !important;
-    background-color: black !important;
+:root[style*="readium-night-on"] button.${exports.TTS_NAV_BUTTON_CLASS} {
     color: white !important;
 }
-#${exports.TTS_ID_PREVIOUS} {
+/*
+:root[style*="readium-sepia-on"] button.${exports.TTS_NAV_BUTTON_CLASS} {
+    background: var(--RS__backgroundColor) !important;
+}
+:root[style*="--USER__backgroundColor"] button.${exports.TTS_NAV_BUTTON_CLASS} {
+    background: var(--USER__backgroundColor) !important;
+}
+*/
+:root[style] #${exports.TTS_ID_PREVIOUS},
+:root #${exports.TTS_ID_PREVIOUS} {
     margin-left: 0.2em;
 
     grid-column-start: 1;
@@ -196,7 +274,8 @@ exports.ttsCssStyles = `
     grid-row-start: 2;
     grid-row-end: 3;
 }
-#${exports.TTS_ID_NEXT} {
+:root[style] #${exports.TTS_ID_NEXT},
+:root #${exports.TTS_ID_NEXT} {
     margin-right: 0.2em;
 
     grid-column-start: 3;
@@ -205,7 +284,8 @@ exports.ttsCssStyles = `
     grid-row-end: 3;
 }
 
-.${exports.TTS_ID_SPEAKING_DOC_ELEMENT} {
+:root[style] .${exports.TTS_ID_SPEAKING_DOC_ELEMENT},
+:root .${exports.TTS_ID_SPEAKING_DOC_ELEMENT} {
     /*
     outline-color: silver;
     outline-style: solid;
@@ -213,9 +293,10 @@ exports.ttsCssStyles = `
     outline-offset: 1px;
     */
 }
-.${exports.TTS_CLASS_INJECTED_SPAN} {
+:root[style] .${exports.TTS_CLASS_INJECTED_SPAN},
+:root .${exports.TTS_CLASS_INJECTED_SPAN} {
     color: black !important;
-    background-color: #FFFFCC !important;
+    background: #FFFFCC !important;
 
     /* text-decoration: underline; */
 
@@ -225,16 +306,17 @@ exports.ttsCssStyles = `
 /*
 :root[style*="readium-night-on"] .${exports.TTS_CLASS_INJECTED_SPAN} {
     color: white !important;
-    background-color: #333300 !important;
+    background: #333300 !important;
 }
-.${exports.TTS_CLASS_INJECTED_SUBSPAN} {
+:root[style] .${exports.TTS_CLASS_INJECTED_SUBSPAN},
+:root .${exports.TTS_CLASS_INJECTED_SUBSPAN} {
     text-decoration: underline;
     padding: 0;
     margin: 0;
 }
-
 */
-.${exports.TTS_ID_INJECTED_PARENT} {
+:root[style] .${exports.TTS_ID_INJECTED_PARENT},
+:root .${exports.TTS_ID_INJECTED_PARENT} {
     /*
     outline-color: black;
     outline-style: solid;
@@ -248,20 +330,29 @@ exports.ttsCssStyles = `
     */
 }
 
-#${exports.TTS_ID_ACTIVE_WORD}  {
-    color: black;
+:root[style] span#${exports.TTS_ID_ACTIVE_WORD},
+:root span#${exports.TTS_ID_ACTIVE_WORD} {
+    color: black !important;
     text-decoration: underline;
+    text-underline-position: under;
 
     padding: 0;
     margin: 0;
 }
-:root[style*="readium-night-on"] #${exports.TTS_ID_ACTIVE_WORD} {
+:root[style*="readium-night-on"] span#${exports.TTS_ID_ACTIVE_WORD} {
     color: white !important;
+}
+:root[style*="readium-sepia-on"] span#${exports.TTS_ID_ACTIVE_WORD} {
+    color: black !important;
+}
+:root[style*="--USER__textColor"] span#${exports.TTS_ID_ACTIVE_WORD} {
+    color: var(--USER__textColor) !important;
 }
 `;
 exports.ROOT_CLASS_INVISIBLE_MASK = "r2-visibility-mask";
 exports.visibilityMaskCssStyles = `
-*.${exports.ROOT_CLASS_INVISIBLE_MASK} {
+:root[style] *.${exports.ROOT_CLASS_INVISIBLE_MASK},
+:root *.${exports.ROOT_CLASS_INVISIBLE_MASK} {
     visibility: hidden !important;
 }
 `;
@@ -275,12 +366,15 @@ exports.focusCssStyles = `
         outline: inherit;
     }
 }
-*:focus {
+:root[style] *:focus,
+:root *:focus {
     outline: none;
 }
+:root[style].${exports.ROOT_CLASS_KEYBOARD_INTERACT} *.${exports.CSS_CLASS_NO_FOCUS_OUTLINE}:focus,
 :root.${exports.ROOT_CLASS_KEYBOARD_INTERACT} *.${exports.CSS_CLASS_NO_FOCUS_OUTLINE}:focus {
     outline: none !important;
 }
+:root[style].${exports.ROOT_CLASS_KEYBOARD_INTERACT} *:focus,
 :root.${exports.ROOT_CLASS_KEYBOARD_INTERACT} *:focus {
     outline-color: blue !important;
     outline-style: solid !important;
@@ -288,6 +382,7 @@ exports.focusCssStyles = `
     outline-offset: 2px !important;
 }
 /*
+:root[style]:not(.${exports.ROOT_CLASS_KEYBOARD_INTERACT}) *:focus,
 :root:not(.${exports.ROOT_CLASS_KEYBOARD_INTERACT}) *:focus {
     animation-name: readium2ElectronAnimation_FOCUS;
     animation-duration: 3s;
@@ -305,7 +400,8 @@ exports.targetCssStyles = `
         outline: inherit;
     }
 }
-*:target {
+:root[style] *:target,
+:root *:target {
     outline-color: green !important;
     outline-style: solid !important;
     outline-width: 2px !important;
@@ -317,30 +413,22 @@ exports.targetCssStyles = `
     animation-fill-mode: forwards;
     animation-timing-function: linear;
 }
-*.r2-no-target-outline:target {
+:root[style] *.r2-no-target-outline:target,
+:root *.r2-no-target-outline:target {
     outline: inherit !important;
 }
 `;
 exports.selectionCssStyles = `
-::selection {
-background-color: rgb(155, 179, 240) !important;
+:root[style] ::selection,
+:root ::selection {
+background: rgb(155, 179, 240) !important;
 color: black !important;
 }
 
 :root[style*="readium-night-on"] ::selection {
-background-color: rgb(100, 122, 177) !important;
+background: rgb(100, 122, 177) !important;
 color: white !important;
 }
-/*
-.readium2-hash {
-    color: black !important;
-    background-color: rgb(185, 207, 255) !important;
-}
-:root[style*="readium-night-on"] .readium2-hash {
-    color: white !important;
-    background-color: rgb(67, 64, 125) !important;
-}
-*/
 `;
 exports.scrollBarCssStyles = `
 ::-webkit-scrollbar-button {
@@ -353,7 +441,7 @@ background: transparent !important;
 }
 
 /*::-webkit-scrollbar-track-piece {
-background-color: red;
+background: red;
 } */
 
 ::-webkit-scrollbar {
@@ -411,9 +499,10 @@ exports.readPosCssStylesAttr4 = "data-readium2-read-pos4";
 exports.readPosCssStyles = `
 :root[style*="readium-sepia-on"] *[${exports.readPosCssStylesAttr1}],
 :root[style*="readium-night-on"] *[${exports.readPosCssStylesAttr1}],
-*[${exports.readPosCssStylesAttr1}] {
+:root[style] *[${exports.readPosCssStylesAttr1}],
+:root *[${exports.readPosCssStylesAttr1}] {
     color: black !important;
-    background-color: magenta !important;
+    background: magenta !important;
 
     outline-color: magenta !important;
     outline-style: solid !important;
@@ -422,9 +511,10 @@ exports.readPosCssStyles = `
 }
 :root[style*="readium-sepia-on"] *[${exports.readPosCssStylesAttr2}],
 :root[style*="readium-night-on"] *[${exports.readPosCssStylesAttr2}],
-*[${exports.readPosCssStylesAttr2}] {
+:root[style] *[${exports.readPosCssStylesAttr2}],
+:root *[${exports.readPosCssStylesAttr2}] {
     color: black !important;
-    background-color: yellow !important;
+    background: yellow !important;
 
     outline-color: yellow !important;
     outline-style: solid !important;
@@ -433,9 +523,10 @@ exports.readPosCssStyles = `
 }
 :root[style*="readium-sepia-on"] *[${exports.readPosCssStylesAttr3}],
 :root[style*="readium-night-on"] *[${exports.readPosCssStylesAttr3}],
-*[${exports.readPosCssStylesAttr3}] {
+:root[style] *[${exports.readPosCssStylesAttr3}],
+:root *[${exports.readPosCssStylesAttr3}] {
     color: black !important;
-    background-color: green !important;
+    background: green !important;
 
     outline-color: green !important;
     outline-style: solid !important;
@@ -444,9 +535,10 @@ exports.readPosCssStyles = `
 }
 :root[style*="readium-sepia-on"] *[${exports.readPosCssStylesAttr4}],
 :root[style*="readium-night-on"] *[${exports.readPosCssStylesAttr4}],
-*[${exports.readPosCssStylesAttr4}] {
+:root[style] *[${exports.readPosCssStylesAttr4}],
+:root *[${exports.readPosCssStylesAttr4}] {
     color: black !important;
-    background-color: silver !important;
+    background: silver !important;
 
     outline-color: silver !important;
     outline-style: solid !important;

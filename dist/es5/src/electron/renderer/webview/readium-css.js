@@ -24,7 +24,7 @@ var calculateDocumentColumnizedWidthAdjustedForTwoPageSpread = function () {
         var nSpreads = columnizedDocWidth / twoColWidth;
         var nWholeSpread = Math.floor(nSpreads);
         var fractionalSpread = nSpreads - nWholeSpread;
-        if (fractionalSpread > 0 && fractionalSpread <= 0.5) {
+        if (fractionalSpread > 0 && (Math.round(fractionalSpread * 10) / 10) <= 0.5) {
             w = twoColWidth * Math.ceil(nSpreads);
         }
     }

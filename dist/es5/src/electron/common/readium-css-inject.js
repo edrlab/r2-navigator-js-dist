@@ -306,29 +306,29 @@ function readiumCSSSet(documant, messageJson, urlRootReadiumCSS, isVerticalWriti
         else {
             docElement.style.removeProperty("--USER__letterSpacing");
         }
-        if (!isVerticalWritingMode) {
-            if (setCSS.colCount) {
-                docElement.style.setProperty("--USER__colCount", setCSS.colCount);
-            }
-            else {
-                docElement.style.removeProperty("--USER__colCount");
-            }
-            if (setCSS.paraIndent) {
-                docElement.style.setProperty("--USER__paraIndent", setCSS.paraIndent);
-            }
-            else {
-                docElement.style.removeProperty("--USER__paraIndent");
-            }
-            if (setCSS.textAlign) {
-                docElement.style.setProperty("--USER__textAlign", setCSS.textAlign);
-            }
-            else {
-                docElement.style.removeProperty("--USER__textAlign");
-            }
+    }
+    if (!isVerticalWritingMode) {
+        if (setCSS.colCount) {
+            docElement.style.setProperty("--USER__colCount", setCSS.colCount);
         }
-        else if (!isRTL) {
-            docElement.style.removeProperty("--USER__ligatures");
+        else {
+            docElement.style.removeProperty("--USER__colCount");
         }
+        if (setCSS.paraIndent) {
+            docElement.style.setProperty("--USER__paraIndent", setCSS.paraIndent);
+        }
+        else {
+            docElement.style.removeProperty("--USER__paraIndent");
+        }
+        if (setCSS.textAlign) {
+            docElement.style.setProperty("--USER__textAlign", setCSS.textAlign);
+        }
+        else {
+            docElement.style.removeProperty("--USER__textAlign");
+        }
+    }
+    else if (!isRTL) {
+        docElement.style.removeProperty("--USER__ligatures");
     }
     if (setCSS.pageMargins) {
         docElement.style.setProperty("--USER__pageMargins", setCSS.pageMargins);
@@ -426,9 +426,17 @@ function configureFixedLayout(documant, isFixedLayout, fxlViewportWidth, fxlView
             }
             wh = {
                 height: height,
+                scale: 1,
                 width: width,
             };
         }
+    }
+    else {
+        wh = {
+            height: height,
+            scale: 1,
+            width: width,
+        };
     }
     if (innerWidth && innerHeight && width && height && isFixedLayout
         && documant && documant.documentElement && documant.body) {
@@ -455,6 +463,10 @@ function configureFixedLayout(documant, isFixedLayout, fxlViewportWidth, fxlView
         if (isDEBUG_VISUALS(documant)) {
             debug("FXL trans X: " + tx);
             debug("FXL trans Y: " + ty);
+            debug("FXL scale XY: " + ratio);
+        }
+        if (wh) {
+            wh.scale = ratio;
         }
         documant.documentElement.style.transformOrigin = "0 0";
         documant.documentElement.style.transform = "translateX(" + tx + "px) translateY(" + ty + "px) scale(" + ratio + ")";
@@ -869,14 +881,14 @@ function transformHTML(htmlStr, readiumcssJson, mediaType) {
     if (!documant.documentElement.classList) {
         definePropertyGetterSetter_ElementClassList(documant.documentElement);
     }
-    injectDefaultCSS(documant);
-    if (IS_DEV) {
-        injectReadPosCSS(documant);
-    }
     var rtl = isDocRTL(documant);
     var vertical = isDocVertical(documant);
     if (readiumcssJson) {
         readiumCSSSet(documant, readiumcssJson, undefined, vertical, rtl);
+    }
+    injectDefaultCSS(documant);
+    if (IS_DEV) {
+        injectReadPosCSS(documant);
     }
     var serialized = new xmldom.XMLSerializer().serializeToString(documant);
     var prefix = htmlStr.substr(0, iHtmlStart);

@@ -72,6 +72,7 @@ exports.getCurrentReadingLocation = getCurrentReadingLocation;
 let _readingLocationSaver;
 const _saveReadingLocation = (docHref, locator) => {
     _lastSavedReadingLocation = {
+        docInfo: locator.docInfo,
         locator: {
             href: docHref,
             locations: {
@@ -84,12 +85,15 @@ const _saveReadingLocation = (docHref, locator) => {
                 progression: (typeof locator.locations.progression !== "undefined") ?
                     locator.locations.progression : undefined,
             },
+            text: locator.text,
             title: locator.title,
         },
         paginationInfo: locator.paginationInfo,
+        selectionInfo: locator.selectionInfo,
     };
     if (IS_DEV) {
-        debug("|||||||||||||| notifyReadingLocation: ", JSON.stringify(_lastSavedReadingLocation));
+        debug(">->->");
+        debug(_lastSavedReadingLocation);
     }
     if (_readingLocationSaver) {
         _readingLocationSaver(_lastSavedReadingLocation);
@@ -132,7 +136,6 @@ async function isLocatorVisible(locator) {
             return;
         }
         if (_webview1.READIUM2.link.Href !== locator.href) {
-            debug(`isLocatorVisible FALSE: ${_webview1.READIUM2.link.Href} !== ${locator.href}`);
             resolve(false);
             return;
         }
@@ -144,7 +147,6 @@ async function isLocatorVisible(locator) {
                     return;
                 }
                 const payload_ = event.args[0];
-                debug(`isLocatorVisible: ${payload_.visible}`);
                 _webview1.removeEventListener("ipc-message", cb);
                 resolve(payload_.visible);
             }
@@ -230,24 +232,25 @@ function installNavigatorDOM(publication, publicationJsonUrl, rootHtmlElementID,
     _publication = publication;
     _publicationJsonUrl = publicationJsonUrl;
     if (IS_DEV) {
-        debug("|||||||||||||| installNavigatorDOM: ", JSON.stringify(location));
-        const debugVisuals = (window.localStorage &&
+        debug("||||||++||||| installNavigatorDOM: ", JSON.stringify(location));
+        const debugVisualz = (window.localStorage &&
             window.localStorage.getItem(url_params_1.URL_PARAM_DEBUG_VISUALS) === "true") ? true : false;
-        debug("debugVisuals GET: ", debugVisuals);
+        debug("debugVisuals GET: ", debugVisualz);
         window.READIUM2 = {
-            DEBUG_VISUALS: debugVisuals,
+            DEBUG_VISUALS: debugVisualz,
             publication: _publication,
             publicationURL: _publicationJsonUrl,
             ttsClickEnabled: false,
         };
-        window.READIUM2.debug = (debugVisualz) => {
-            debug("debugVisuals SET: ", debugVisualz);
-            window.READIUM2.DEBUG_VISUALS = debugVisualz;
+        window.READIUM2.debug = (debugVisuals) => {
+            debug("debugVisuals SET: ", debugVisuals);
+            window.READIUM2.DEBUG_VISUALS = debugVisuals;
             if (_webview1) {
-                _webview1.send(events_1.R2_EVENT_DEBUG_VISUALS, debugVisualz ? "true" : "false");
+                const payload = { debugVisuals };
+                _webview1.send(events_1.R2_EVENT_DEBUG_VISUALS, payload);
             }
             if (window.localStorage) {
-                window.localStorage.setItem(url_params_1.URL_PARAM_DEBUG_VISUALS, debugVisualz ? "true" : "false");
+                window.localStorage.setItem(url_params_1.URL_PARAM_DEBUG_VISUALS, debugVisuals ? "true" : "false");
             }
             setTimeout(() => {
                 if (_lastSavedReadingLocation) {
@@ -255,6 +258,17 @@ function installNavigatorDOM(publication, publicationJsonUrl, rootHtmlElementID,
                 }
             }, 100);
         };
+        window.READIUM2.debugItems =
+            (cssSelector, cssClass, cssStyles) => {
+                if (cssStyles) {
+                    debug("debugVisuals ITEMS: ", `${cssSelector} --- ${cssClass} --- ${cssStyles}`);
+                }
+                if (_webview1) {
+                    const d = window.READIUM2.DEBUG_VISUALS;
+                    const payload = { debugVisuals: d, cssSelector, cssClass, cssStyles };
+                    _webview1.send(events_1.R2_EVENT_DEBUG_VISUALS, payload);
+                }
+            };
     }
     _rootHtmlElement = document.getElementById(rootHtmlElementID);
     if (!_rootHtmlElement) {
@@ -521,6 +535,8 @@ function createWebView(preloadScriptPath) {
             if (_ttsListener) {
                 _ttsListener(TTSStateEnum.PLAYING);
             }
+        }
+        else if (event.channel === events_1.R2_EVENT_LOCATOR_VISIBLE) {
         }
         else {
             debug("webview1 ipc-message");
