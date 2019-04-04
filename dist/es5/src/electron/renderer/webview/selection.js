@@ -49,11 +49,17 @@ function dumpDebug(msg, startNode, startOffset, endNode, endOffset, getCssSelect
 }
 function clearCurrentSelection(win) {
     var selection = win.getSelection();
+    if (!selection) {
+        return;
+    }
     selection.removeAllRanges();
 }
 exports.clearCurrentSelection = clearCurrentSelection;
 function getCurrentSelectionInfo(win, getCssSelector, computeElementCFI) {
     var selection = win.getSelection();
+    if (!selection) {
+        return undefined;
+    }
     if (selection.isCollapsed) {
         console.log("^^^ SELECTION COLLAPSED.");
         return undefined;
@@ -62,6 +68,9 @@ function getCurrentSelectionInfo(win, getCssSelector, computeElementCFI) {
     var cleanText = rawText.trim().replace(/\n/g, " ").replace(/\s\s+/g, " ");
     if (cleanText.length === 0) {
         console.log("^^^ SELECTION TEXT EMPTY.");
+        return undefined;
+    }
+    if (!selection.anchorNode || !selection.focusNode) {
         return undefined;
     }
     var range = selection.rangeCount === 1 ? selection.getRangeAt(0) :

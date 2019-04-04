@@ -245,10 +245,10 @@ function notEmpty(value) {
 }
 function combinations(stack, path) {
     var e_3, _a, _b, _c, node, e_3_1;
-    if (path === void 0) { path = []; }
     return tslib_1.__generator(this, function (_d) {
         switch (_d.label) {
             case 0:
+                if (path === void 0) { path = []; }
                 if (!(stack.length > 0)) return [3, 9];
                 _d.label = 1;
             case 1:
