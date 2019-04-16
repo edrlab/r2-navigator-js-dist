@@ -11,11 +11,18 @@ if (origin.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
     origin = origin.replace(/\/pub\/.*/, "");
 }
 const urlRootReadiumCSS = origin + "/" + readium_css_settings_1.READIUM_CSS_URL_PATH + "/";
+exports.getScrollingElement = (documant) => {
+    if (documant.scrollingElement) {
+        return documant.scrollingElement;
+    }
+    return documant.body;
+};
 const calculateDocumentColumnizedWidthAdjustedForTwoPageSpread = () => {
     if (!win || !win.document || !win.document.body || !win.document.documentElement) {
         return 0;
     }
-    let w = win.document.body.scrollWidth;
+    const scrollElement = exports.getScrollingElement(win.document);
+    let w = scrollElement.scrollWidth;
     const noChange = !readium_css_inject_1.isPaginated(win.document) || !exports.isTwoPageSpread() ||
         isVerticalWritingMode();
     if (!noChange) {
@@ -35,13 +42,14 @@ exports.calculateMaxScrollShift = () => {
         return { maxScrollShift: 0, maxScrollShiftAdjusted: 0 };
     }
     const isPaged = readium_css_inject_1.isPaginated(win.document);
+    const scrollElement = exports.getScrollingElement(win.document);
     const maxScrollShift = isPaged ?
         ((isVerticalWritingMode() ?
-            (win.document.body.scrollHeight - win.document.documentElement.offsetHeight) :
-            (win.document.body.scrollWidth - win.document.documentElement.offsetWidth))) :
+            (scrollElement.scrollHeight - win.document.documentElement.offsetHeight) :
+            (scrollElement.scrollWidth - win.document.documentElement.offsetWidth))) :
         ((isVerticalWritingMode() ?
-            (win.document.body.scrollWidth - win.document.documentElement.clientWidth) :
-            (win.document.body.scrollHeight - win.document.documentElement.clientHeight)));
+            (scrollElement.scrollWidth - win.document.documentElement.clientWidth) :
+            (scrollElement.scrollHeight - win.document.documentElement.clientHeight)));
     const maxScrollShiftAdjusted = isPaged ?
         ((isVerticalWritingMode() ?
             maxScrollShift :
@@ -66,12 +74,13 @@ exports.calculateTotalColumns = () => {
     if (!win || !win.document || !win.document.body || !readium_css_inject_1.isPaginated(win.document)) {
         return 0;
     }
+    const scrollElement = exports.getScrollingElement(win.document);
     let totalColumns = 0;
     if (isVerticalWritingMode()) {
-        totalColumns = Math.ceil(win.document.body.offsetWidth / win.document.body.scrollWidth);
+        totalColumns = Math.ceil(win.document.body.offsetWidth / scrollElement.scrollWidth);
     }
     else {
-        totalColumns = Math.ceil(win.document.body.offsetHeight / win.document.body.scrollHeight);
+        totalColumns = Math.ceil(win.document.body.offsetHeight / scrollElement.scrollHeight);
     }
     return totalColumns;
 };

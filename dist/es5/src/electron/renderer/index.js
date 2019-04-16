@@ -418,6 +418,8 @@ function loadLink(hrefFull, previous, useGoto) {
         return true;
     }
     var uriStr = linkUri.toString();
+    var webviewAlreadyHasContent = (typeof activeWebView.READIUM2.link !== "undefined")
+        && activeWebView.READIUM2.link !== null;
     activeWebView.READIUM2.link = pubLink;
     var needConvert = _publicationJsonUrl.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://");
     var uriStr_ = uriStr.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://") ?
@@ -427,7 +429,9 @@ function loadLink(hrefFull, previous, useGoto) {
         debug(uriStr_);
     }
     if (activeWebView.style.transform !== "none") {
-        activeWebView.send("R2_EVENT_HIDE");
+        if (webviewAlreadyHasContent) {
+            activeWebView.send("R2_EVENT_HIDE");
+        }
         setTimeout(function () {
             shiftWebview(activeWebView, 0, undefined);
             activeWebView.setAttribute("src", uriStr_);

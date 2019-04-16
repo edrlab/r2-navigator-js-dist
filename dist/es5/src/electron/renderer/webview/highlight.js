@@ -3,8 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = require("tslib");
 var debounce_1 = require("debounce");
 var readium_css_inject_1 = require("../../common/readium-css-inject");
-var selection_1 = require("./selection");
 var rect_utils_1 = require("../common/rect-utils");
+var readium_css_1 = require("./readium-css");
+var selection_1 = require("./selection");
 exports.ID_HIGHLIGHTS_CONTAINER = "R2_ID_HIGHLIGHTS_CONTAINER";
 exports.CLASS_HIGHLIGHT_CONTAINER = "R2_CLASS_HIGHLIGHT_CONTAINER";
 exports.CLASS_HIGHLIGHT_AREA = "R2_CLASS_HIGHLIGHT_AREA";
@@ -62,6 +63,7 @@ function setHighlightAreaStyle(_win, highlightAreas, highlight) {
 function processMouseEvent(win, ev) {
     var e_2, _a, e_3, _b, e_4, _c, e_5, _d, e_6, _e;
     var documant = win.document;
+    var scrollElement = readium_css_1.getScrollingElement(documant);
     var x = ev.clientX;
     var y = ev.clientY;
     if (!_highlightsContainer) {
@@ -69,8 +71,8 @@ function processMouseEvent(win, ev) {
     }
     var paginated = readium_css_inject_1.isPaginated(documant);
     var bodyRect = documant.body.getBoundingClientRect();
-    var xOffset = paginated ? (-documant.body.scrollLeft) : bodyRect.left;
-    var yOffset = paginated ? (-documant.body.scrollTop) : bodyRect.top;
+    var xOffset = paginated ? (-scrollElement.scrollLeft) : bodyRect.left;
+    var yOffset = paginated ? (-scrollElement.scrollTop) : bodyRect.top;
     var foundHighlight;
     var foundElement;
     for (var i = _highlights.length - 1; i >= 0; i--) {
@@ -88,8 +90,8 @@ function processMouseEvent(win, ev) {
             for (var highlightFragments_1 = tslib_1.__values(highlightFragments), highlightFragments_1_1 = highlightFragments_1.next(); !highlightFragments_1_1.done; highlightFragments_1_1 = highlightFragments_1.next()) {
                 var highlightFragment = highlightFragments_1_1.value;
                 var withRect = highlightFragment;
-                var left = withRect.rect.left + (paginated ? withRect.xOffset : xOffset);
-                var top_1 = withRect.rect.top + (paginated ? withRect.yOffset : yOffset);
+                var left = withRect.rect.left + xOffset;
+                var top_1 = withRect.rect.top + yOffset;
                 if (x >= left &&
                     x < (left + withRect.rect.width) &&
                     y >= top_1 &&
@@ -284,6 +286,7 @@ exports.createHighlight = createHighlight;
 function createHighlightDom(win, highlight) {
     var e_8, _a;
     var documant = win.document;
+    var scrollElement = readium_css_1.getScrollingElement(documant);
     var range = selection_1.convertRangeInfo(documant, highlight.selectionInfo.rangeInfo);
     if (!range) {
         return undefined;
@@ -299,8 +302,8 @@ function createHighlightDom(win, highlight) {
     }
     documant.body.style.position = "relative";
     var bodyRect = documant.body.getBoundingClientRect();
-    var xOffset = paginated ? (-documant.body.scrollLeft) : bodyRect.left;
-    var yOffset = paginated ? (-documant.body.scrollTop) : bodyRect.top;
+    var xOffset = paginated ? (-scrollElement.scrollLeft) : bodyRect.left;
+    var yOffset = paginated ? (-scrollElement.scrollTop) : bodyRect.top;
     var scale = 1 / ((win.READIUM2 && win.READIUM2.isFixedLayout) ? win.READIUM2.fxlViewportScale : 1);
     var clientRects = win.READIUM2.DEBUG_VISUALS ? range.getClientRects() : rect_utils_1.getClientRectsNoOverlap(range);
     try {
@@ -321,8 +324,6 @@ function createHighlightDom(win, highlight) {
             highlightArea.style.setProperty("pointer-events", "none");
             highlightArea.style.position = paginated ? "fixed" : "absolute";
             highlightArea.scale = scale;
-            highlightArea.xOffset = xOffset;
-            highlightArea.yOffset = yOffset;
             highlightArea.rect = {
                 height: clientRect.height,
                 left: clientRect.left - xOffset,
@@ -352,8 +353,6 @@ function createHighlightDom(win, highlight) {
     highlightBounding.style.setProperty("pointer-events", "none");
     highlightBounding.style.position = paginated ? "fixed" : "absolute";
     highlightBounding.scale = scale;
-    highlightBounding.xOffset = xOffset;
-    highlightBounding.yOffset = yOffset;
     highlightBounding.rect = {
         height: rangeBoundingClientRect.height,
         left: rangeBoundingClientRect.left - xOffset,
