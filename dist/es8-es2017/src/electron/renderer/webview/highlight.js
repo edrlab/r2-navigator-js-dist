@@ -1,6 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const crypto = require("crypto");
 const debounce_1 = require("debounce");
+const electron_1 = require("electron");
+const events_1 = require("../../common/events");
 const readium_css_inject_1 = require("../../common/readium-css-inject");
 const rect_utils_1 = require("../common/rect-utils");
 const readium_css_1 = require("./readium-css");
@@ -9,8 +12,8 @@ exports.ID_HIGHLIGHTS_CONTAINER = "R2_ID_HIGHLIGHTS_CONTAINER";
 exports.CLASS_HIGHLIGHT_CONTAINER = "R2_CLASS_HIGHLIGHT_CONTAINER";
 exports.CLASS_HIGHLIGHT_AREA = "R2_CLASS_HIGHLIGHT_AREA";
 exports.CLASS_HIGHLIGHT_BOUNDING_AREA = "R2_CLASS_HIGHLIGHT_BOUNDING_AREA";
-const DEFAULT_BACKGROUND_COLOR_OPACITY = 0.1;
-const ALT_BACKGROUND_COLOR_OPACITY = 0.4;
+const DEFAULT_BACKGROUND_COLOR_OPACITY = 0.3;
+const ALT_BACKGROUND_COLOR_OPACITY = 0.45;
 const DEFAULT_BACKGROUND_COLOR = {
     blue: 100,
     green: 50,
@@ -125,12 +128,16 @@ function processMouseEvent(win, ev) {
                 }
             }
         }
-        else if (ev.type === "click") {
-            console.log("HIGHLIGHT CLICK: " + foundHighlight.id);
-            console.log(JSON.stringify(foundHighlight, null, "  "));
+        else if (ev.type === "mouseup" || ev.type === "click") {
+            const payload = {
+                highlight: foundHighlight,
+            };
+            electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_HIGHLIGHT_CLICK, payload);
         }
     }
 }
+let lastMouseDownX = -1;
+let lastMouseDownY = -1;
 let bodyEventListenersSet = false;
 let _highlightsContainer;
 function ensureHighlightsContainer(win) {
@@ -138,8 +145,15 @@ function ensureHighlightsContainer(win) {
     if (!_highlightsContainer) {
         if (!bodyEventListenersSet) {
             bodyEventListenersSet = true;
-            documant.body.addEventListener("click", (ev) => {
-                processMouseEvent(win, ev);
+            documant.body.addEventListener("mousedown", (ev) => {
+                lastMouseDownX = ev.clientX;
+                lastMouseDownY = ev.clientY;
+            }, false);
+            documant.body.addEventListener("mouseup", (ev) => {
+                if ((Math.abs(lastMouseDownX - ev.clientX) < 3) &&
+                    (Math.abs(lastMouseDownY - ev.clientY) < 3)) {
+                    processMouseEvent(win, ev);
+                }
             }, false);
             documant.body.addEventListener("mousemove", (ev) => {
                 processMouseEvent(win, ev);
@@ -195,8 +209,11 @@ function recreateAllHighlights(win) {
 }
 exports.recreateAllHighlights = recreateAllHighlights;
 function createHighlight(win, selectionInfo, color, pointerInteraction) {
-    const unique = new Buffer(`${selectionInfo.rangeInfo.cfi}${selectionInfo.rangeInfo.startContainerElementCssSelector}${selectionInfo.rangeInfo.startContainerChildTextNodeIndex}${selectionInfo.rangeInfo.startOffset}${selectionInfo.rangeInfo.endContainerElementCssSelector}${selectionInfo.rangeInfo.endContainerChildTextNodeIndex}${selectionInfo.rangeInfo.endOffset}`).toString("base64");
-    const id = "R2_HIGHLIGHT_" + unique.replace(/\+/, "_").replace(/=/, "-").replace(/\//, ".");
+    const uniqueStr = `${selectionInfo.rangeInfo.cfi}${selectionInfo.rangeInfo.startContainerElementCssSelector}${selectionInfo.rangeInfo.startContainerChildTextNodeIndex}${selectionInfo.rangeInfo.startOffset}${selectionInfo.rangeInfo.endContainerElementCssSelector}${selectionInfo.rangeInfo.endContainerChildTextNodeIndex}${selectionInfo.rangeInfo.endOffset}`;
+    const checkSum = crypto.createHash("sha256");
+    checkSum.update(uniqueStr);
+    const sha256Hex = checkSum.digest("hex");
+    const id = "R2_HIGHLIGHT_" + sha256Hex;
     destroyHighlight(win.document, id);
     const highlight = {
         color: color ? color : DEFAULT_BACKGROUND_COLOR,
@@ -206,7 +223,7 @@ function createHighlight(win, selectionInfo, color, pointerInteraction) {
     };
     _highlights.push(highlight);
     createHighlightDom(win, highlight);
-    return id;
+    return highlight;
 }
 exports.createHighlight = createHighlight;
 function createHighlightDom(win, highlight) {

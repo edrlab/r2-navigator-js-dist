@@ -80,7 +80,12 @@ function readiumCSSSet(documant, messageJson, urlRootReadiumCSS, isVerticalWriti
         return;
     }
     const docElement = documant.documentElement;
-    if (!messageJson.setCSS) {
+    if (messageJson.isFixedLayout) {
+        docElement.style.overflow = "hidden";
+        return;
+    }
+    const setCSS = messageJson.setCSS;
+    if (!setCSS) {
         docElement.classList.remove(styles_1.ROOT_CLASS_NO_FOOTNOTES);
         docElement.removeAttribute("data-readiumcss");
         removeAllCSS(documant);
@@ -137,7 +142,6 @@ function readiumCSSSet(documant, messageJson, urlRootReadiumCSS, isVerticalWriti
         }
         appendCSS(documant, "after", urlRoot);
     }
-    const setCSS = messageJson.setCSS;
     if (isDEBUG_VISUALS(documant)) {
         debug("---- setCSS -----");
         debug(setCSS);
@@ -426,6 +430,8 @@ function configureFixedLayout(documant, isFixedLayout, fxlViewportWidth, fxlView
             wh = {
                 height,
                 scale: 1,
+                tx: 0,
+                ty: 0,
                 width,
             };
         }
@@ -434,16 +440,14 @@ function configureFixedLayout(documant, isFixedLayout, fxlViewportWidth, fxlView
         wh = {
             height,
             scale: 1,
+            tx: 0,
+            ty: 0,
             width,
         };
     }
     if (innerWidth && innerHeight && width && height && isFixedLayout
         && documant && documant.documentElement && documant.body) {
         documant.documentElement.style.overflow = "hidden";
-        documant.body.style.width = width + "px";
-        documant.body.style.height = height + "px";
-        documant.body.style.overflow = "hidden";
-        documant.body.style.margin = "0";
         if (isDEBUG_VISUALS(documant)) {
             debug("FXL width: " + width);
             debug("FXL height: " + height);
@@ -466,9 +470,11 @@ function configureFixedLayout(documant, isFixedLayout, fxlViewportWidth, fxlView
         }
         if (wh) {
             wh.scale = ratio;
+            wh.tx = tx;
+            wh.ty = ty;
         }
         documant.documentElement.style.transformOrigin = "0 0";
-        documant.documentElement.style.transform = `translateX(${tx}px) translateY(${ty}px) scale(${ratio})`;
+        documant.documentElement.style.transform = `translate(${tx}px, ${ty}px) scale(${ratio})`;
     }
     return wh;
 }

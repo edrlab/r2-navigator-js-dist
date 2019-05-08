@@ -1,5 +1,6 @@
 import { Locator, LocatorLocations } from "r2-shared-js/dist/es6-es2015/src/models/locator";
 import { IDocInfo } from "./document";
+import { IHighlight, IHighlightDefinition } from "./highlight";
 import { IPaginationInfo } from "./pagination";
 import { IReadiumCSS } from "./readium-css-settings";
 import { ISelectionInfo } from "./selection";
@@ -12,6 +13,8 @@ export declare const R2_EVENT_READIUMCSS = "R2_EVENT_READIUMCSS";
 export interface IEventPayload_R2_EVENT_READIUMCSS {
     setCSS: IReadiumCSS | undefined;
     isFixedLayout?: boolean;
+    fixedLayoutWebViewWidth?: number;
+    fixedLayoutWebViewHeight?: number;
     urlRoot?: string;
 }
 export declare const R2_EVENT_DEBUG_VISUALS = "R2_EVENT_DEBUG_VISUALS";
@@ -38,6 +41,7 @@ export interface IEventPayload_R2_EVENT_READING_LOCATION extends Locator {
     paginationInfo: IPaginationInfo | undefined;
     selectionInfo: ISelectionInfo | undefined;
     docInfo: IDocInfo | undefined;
+    selectionIsNew: boolean | undefined;
 }
 export declare const R2_EVENT_LINK = "R2_EVENT_LINK";
 export interface IEventPayload_R2_EVENT_LINK {
@@ -65,3 +69,21 @@ export declare const R2_EVENT_TTS_IS_PAUSED = "R2_EVENT_TTS_IS_PAUSED";
 export declare const R2_EVENT_TTS_IS_PLAYING = "R2_EVENT_TTS_IS_PLAYING";
 export declare const R2_EVENT_TTS_DO_NEXT = "R2_EVENT_TTS_DO_NEXT";
 export declare const R2_EVENT_TTS_DO_PREVIOUS = "R2_EVENT_TTS_DO_PREVIOUS";
+export declare const R2_EVENT_HIGHLIGHT_CREATE = "R2_EVENT_HIGHLIGHT_CREATE";
+export interface IEventPayload_R2_EVENT_HIGHLIGHT_CREATE {
+    highlightDefinitions: IHighlightDefinition[] | undefined;
+    highlights: Array<IHighlight | null> | undefined;
+}
+export declare const R2_EVENT_HIGHLIGHT_REMOVE = "R2_EVENT_HIGHLIGHT_REMOVE";
+export interface IEventPayload_R2_EVENT_HIGHLIGHT_REMOVE {
+    highlightIDs: string[];
+}
+export declare const R2_EVENT_HIGHLIGHT_REMOVE_ALL = "R2_EVENT_HIGHLIGHT_REMOVE_ALL";
+export declare const R2_EVENT_HIGHLIGHT_CLICK = "R2_EVENT_HIGHLIGHT_CLICK";
+export interface IEventPayload_R2_EVENT_HIGHLIGHT_CLICK {
+    highlight: IHighlight;
+}
+export declare const R2_EVENT_WEBVIEW_KEYDOWN = "R2_EVENT_WEBVIEW_KEYDOWN";
+export interface IEventPayload_R2_EVENT_WEBVIEW_KEYDOWN {
+    keyCode: number;
+}

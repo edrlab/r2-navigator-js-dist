@@ -8,6 +8,8 @@ export interface IwidthHeight {
     width: number;
     height: number;
     scale: number;
+    tx: number;
+    ty: number;
 }
 export declare function configureFixedLayout(documant: Document, isFixedLayout: boolean, fxlViewportWidth: number, fxlViewportHeight: number, innerWidth: number, innerHeight: number): IwidthHeight | undefined;
 export declare function ensureHead(documant: Document): void;

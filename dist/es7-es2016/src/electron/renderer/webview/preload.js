@@ -11,6 +11,7 @@ const electron_1 = require("electron");
 const tabbable = require("tabbable");
 const events_1 = require("../../common/events");
 const readium_css_inject_1 = require("../../common/readium-css-inject");
+const selection_1 = require("../../common/selection");
 const styles_1 = require("../../common/styles");
 const animateProperty_1 = require("../common/animateProperty");
 const cssselector2_1 = require("../common/cssselector2");
@@ -24,7 +25,7 @@ const highlight_1 = require("./highlight");
 const popupFootNotes_1 = require("./popupFootNotes");
 const readaloud_1 = require("./readaloud");
 const readium_css_1 = require("./readium-css");
-const selection_1 = require("./selection");
+const selection_2 = require("./selection");
 const ResizeSensor = require("css-element-queries/src/ResizeSensor");
 const debug = debug_("r2:navigator#electron/renderer/webview/preload");
 const win = global.window;
@@ -47,10 +48,11 @@ win.READIUM2 = {
         },
         paginationInfo: undefined,
         selectionInfo: undefined,
+        selectionIsNew: undefined,
         title: undefined,
     },
     ttsClickEnabled: false,
-    urlQueryParams: undefined,
+    urlQueryParams: win.location.search ? querystring_1.getURLQueryParams(win.location.search) : undefined,
 };
 win.alert = (...args) => {
     console.log.apply(win, args);
@@ -63,7 +65,12 @@ win.prompt = (...args) => {
     console.log.apply(win, args);
     return "";
 };
-win.READIUM2.urlQueryParams = win.location.search ? querystring_1.getURLQueryParams(win.location.search) : undefined;
+window.document.addEventListener("keydown", (ev) => {
+    const payload = {
+        keyCode: ev.keyCode,
+    };
+    electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_WEBVIEW_KEYDOWN, payload);
+});
 if (win.READIUM2.urlQueryParams) {
     let readiumEpubReadingSystemJson;
     const base64EpubReadingSystem = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_EPUBREADINGSYSTEM];
@@ -201,7 +208,7 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_LOCATOR_VISIBLE, (_event, payload) =
 });
 electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, (_event, payload) => {
     showHideContentMask(false);
-    selection_1.clearCurrentSelection(win);
+    selection_2.clearCurrentSelection(win);
     popup_dialog_1.closePopupDialogs(win.document);
     _cancelInitialScrollCheck = true;
     if (!win.READIUM2.urlQueryParams) {
@@ -261,6 +268,7 @@ function resetLocationHashOverrideInfo() {
         },
         paginationInfo: undefined,
         selectionInfo: undefined,
+        selectionIsNew: undefined,
         title: undefined,
     };
 }
@@ -356,7 +364,7 @@ function onEventPageTurn(payload) {
     if (leftRightKeyWasUsedInsideKeyboardCapture) {
         return;
     }
-    selection_1.clearCurrentSelection(win);
+    selection_2.clearCurrentSelection(win);
     popup_dialog_1.closePopupDialogs(win.document);
     if (win.READIUM2.isFixedLayout || !win.document.body) {
         electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, payload);
@@ -825,7 +833,9 @@ win.addEventListener("DOMContentLoaded", () => {
     if (!didHide) {
         showHideContentMask(false);
     }
-    const wh = readium_css_inject_1.configureFixedLayout(win.document, win.READIUM2.isFixedLayout, win.READIUM2.fxlViewportWidth, win.READIUM2.fxlViewportHeight, win.innerWidth, win.innerHeight);
+    const w = (readiumcssJson && readiumcssJson.fixedLayoutWebViewWidth) || win.innerWidth;
+    const h = (readiumcssJson && readiumcssJson.fixedLayoutWebViewHeight) || win.innerHeight;
+    const wh = readium_css_inject_1.configureFixedLayout(win.document, win.READIUM2.isFixedLayout, win.READIUM2.fxlViewportWidth, win.READIUM2.fxlViewportHeight, w, h);
     if (wh) {
         win.READIUM2.fxlViewportWidth = wh.width;
         win.READIUM2.fxlViewportHeight = wh.height;
@@ -843,18 +853,31 @@ win.addEventListener("DOMContentLoaded", () => {
             readium_css_1.readiumCSS(win.document, readiumcssJson);
         }
     }
-    if (!alreadedInjected) {
-        readium_css_inject_1.injectDefaultCSS(win.document);
-        if (IS_DEV) {
-            readium_css_inject_1.injectReadPosCSS(win.document);
+    if (!win.READIUM2.isFixedLayout) {
+        if (!alreadedInjected) {
+            readium_css_inject_1.injectDefaultCSS(win.document);
+            if (IS_DEV) {
+                readium_css_inject_1.injectReadPosCSS(win.document);
+            }
+        }
+        if (alreadedInjected) {
+            readium_css_1.checkHiddenFootNotes(win.document);
         }
     }
-    if (alreadedInjected) {
-        readium_css_1.checkHiddenFootNotes(win.document);
-    }
+    setTimeout(() => {
+        loaded(true);
+    }, 500);
 });
 let _cancelInitialScrollCheck = false;
-win.addEventListener("load", () => {
+let _loaded = false;
+function loaded(forced) {
+    if (forced) {
+        debug("LOAD EVENT WAS FORCED!");
+    }
+    if (_loaded) {
+        return;
+    }
+    _loaded = true;
     if (!win.READIUM2.isFixedLayout) {
         setTimeout(() => {
             scrollToHashRaw();
@@ -867,7 +890,8 @@ win.addEventListener("load", () => {
         }, 500);
     }
     else {
-        processXYDebounced(0, 0, false);
+        win.READIUM2.locationHashOverride = win.document.body;
+        notifyReadingLocationDebounced();
     }
     const useResizeSensor = !win.READIUM2.isFixedLayout;
     if (useResizeSensor && win.document.body) {
@@ -1012,6 +1036,9 @@ win.addEventListener("load", () => {
     win.document.documentElement.addEventListener("mouseup", (ev) => {
         handleMouseEvent(ev);
     });
+}
+win.addEventListener("load", () => {
+    loaded(false);
 });
 function checkBlacklisted(el) {
     let blacklistedId;
@@ -1336,12 +1363,19 @@ const notifyReadingLocationRaw = () => {
     }
     const pinfo = (progressionData && progressionData.paginationInfo) ?
         progressionData.paginationInfo : undefined;
-    const selInfo = selection_1.getCurrentSelectionInfo(win, getCssSelector, exports.computeCFI);
+    const selInfo = selection_2.getCurrentSelectionInfo(win, getCssSelector, exports.computeCFI);
     const text = selInfo ? {
         after: undefined,
         before: undefined,
         highlight: selInfo.cleanText,
     } : undefined;
+    let selectionIsNew;
+    if (selInfo) {
+        selectionIsNew =
+            !win.READIUM2.locationHashOverrideInfo ||
+                !win.READIUM2.locationHashOverrideInfo.selectionInfo ||
+                !selection_1.sameSelections(win.READIUM2.locationHashOverrideInfo.selectionInfo, selInfo);
+    }
     win.READIUM2.locationHashOverrideInfo = {
         docInfo: {
             isFixedLayout: win.READIUM2.isFixedLayout,
@@ -1357,6 +1391,7 @@ const notifyReadingLocationRaw = () => {
         },
         paginationInfo: pinfo,
         selectionInfo: selInfo,
+        selectionIsNew,
         text,
         title: _docTitle,
     };
@@ -1395,5 +1430,43 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_PREVIOUS, (_event) => {
 });
 electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_CLICK_ENABLE, (_event, payload) => {
     win.READIUM2.ttsClickEnabled = payload.doEnable;
+});
+electron_1.ipcRenderer.on(events_1.R2_EVENT_HIGHLIGHT_CREATE, (_event, payloadPing) => {
+    if (payloadPing.highlightDefinitions &&
+        payloadPing.highlightDefinitions.length === 1 &&
+        payloadPing.highlightDefinitions[0].selectionInfo) {
+        const selection = win.getSelection();
+        if (selection) {
+            selection.collapseToStart();
+        }
+    }
+    const highlightDefinitions = !payloadPing.highlightDefinitions ?
+        [{ color: undefined, selectionInfo: undefined }] :
+        payloadPing.highlightDefinitions;
+    const highlights = [];
+    highlightDefinitions.forEach((highlightDefinition) => {
+        const selInfo = highlightDefinition.selectionInfo ? highlightDefinition.selectionInfo :
+            selection_2.getCurrentSelectionInfo(win, getCssSelector, exports.computeCFI);
+        if (selInfo) {
+            const highlight = highlight_1.createHighlight(win, selInfo, highlightDefinition.color, true);
+            highlights.push(highlight);
+        }
+        else {
+            highlights.push(null);
+        }
+    });
+    const payloadPong = {
+        highlightDefinitions: payloadPing.highlightDefinitions,
+        highlights: highlights.length ? highlights : undefined,
+    };
+    electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_HIGHLIGHT_CREATE, payloadPong);
+});
+electron_1.ipcRenderer.on(events_1.R2_EVENT_HIGHLIGHT_REMOVE, (_event, payload) => {
+    payload.highlightIDs.forEach((highlightID) => {
+        highlight_1.destroyHighlight(win.document, highlightID);
+    });
+});
+electron_1.ipcRenderer.on(events_1.R2_EVENT_HIGHLIGHT_REMOVE_ALL, (_event) => {
+    highlight_1.destroyAllhighlights(win.document);
 });
 //# sourceMappingURL=preload.js.map
