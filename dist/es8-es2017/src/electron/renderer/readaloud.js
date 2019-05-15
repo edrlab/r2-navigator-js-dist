@@ -108,4 +108,4 @@ function ttsClickEnable(doEnable) {
     activeWebView.send(events_1.R2_EVENT_TTS_CLICK_ENABLE, payload);
 }
 exports.ttsClickEnable = ttsClickEnable;
-//# sourceMappingURL=tts.js.map
+//# sourceMappingURL=readaloud.js.map

@@ -8,8 +8,8 @@ var sessions_1 = require("../common/sessions");
 var url_params_1 = require("./common/url-params");
 var highlight_1 = require("./highlight");
 var location_1 = require("./location");
+var readaloud_1 = require("./readaloud");
 var readium_css_1 = require("./readium-css");
-var tts_1 = require("./tts");
 var ENABLE_WEBVIEW_RESIZE = false;
 var ELEMENT_ID_SLIDING_VIEWPORT = "r2_navigator_sliding_viewport";
 var debug = debug_("r2:navigator#electron/renderer/index");
@@ -129,7 +129,7 @@ function createWebView(preloadScriptPath) {
     wv.addEventListener("dom-ready", function () {
         wv.clearHistory();
         if (window.READIUM2) {
-            tts_1.ttsClickEnable(window.READIUM2.ttsClickEnabled);
+            readaloud_1.ttsClickEnable(window.READIUM2.ttsClickEnabled);
         }
     });
     wv.addEventListener("ipc-message", function (event) {
@@ -148,7 +148,7 @@ function createWebView(preloadScriptPath) {
             }
         }
         else if (!highlight_1.highlightsHandleIpcMessage(event.channel, event.args, webview) &&
-            !tts_1.ttsHandleIpcMessage(event.channel, event.args, webview) &&
+            !readaloud_1.ttsHandleIpcMessage(event.channel, event.args, webview) &&
             !location_1.locationHandleIpcMessage(event.channel, event.args, webview)) {
             debug("webview1 ipc-message");
             debug(event.channel);

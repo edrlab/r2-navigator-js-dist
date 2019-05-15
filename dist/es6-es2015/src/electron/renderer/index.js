@@ -10,6 +10,6 @@ tslib_1.__exportStar(require("./dom"), exports);
 tslib_1.__exportStar(require("./readium-css"), exports);
 tslib_1.__exportStar(require("./epubReadingSystem"), exports);
 tslib_1.__exportStar(require("./location"), exports);
-tslib_1.__exportStar(require("./tts"), exports);
+tslib_1.__exportStar(require("./readaloud"), exports);
 tslib_1.__exportStar(require("./highlight"), exports);
 //# sourceMappingURL=index.js.map
