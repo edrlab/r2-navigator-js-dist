@@ -21,6 +21,7 @@ var popup_dialog_1 = require("../common/popup-dialog");
 var querystring_1 = require("../common/querystring");
 var rect_utils_1 = require("../common/rect-utils");
 var url_params_1 = require("../common/url-params");
+var webview_resize_1 = require("../common/webview-resize");
 var epubReadingSystem_1 = require("./epubReadingSystem");
 var highlight_1 = require("./highlight");
 var popupFootNotes_1 = require("./popupFootNotes");
@@ -262,10 +263,12 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, function (_event, payload)
     resetLocationHashOverrideInfo();
     if (delayScrollIntoView) {
         setTimeout(function () {
+            debug("++++ scrollToHashRaw FROM DELAYED SCROLL_TO");
             scrollToHashRaw();
         }, 100);
     }
     else {
+        debug("++++ scrollToHashRaw FROM SCROLL_TO");
         scrollToHashRaw();
     }
 });
@@ -552,6 +555,7 @@ var scrollToHashRaw = function () {
     if (!win.document || !win.document.body || !win.document.documentElement) {
         return;
     }
+    debug("++++ scrollToHashRaw");
     highlight_1.recreateAllHighlights(win);
     var isPaged = readium_css_inject_1.isPaginated(win.document);
     if (win.READIUM2.locationHashOverride) {
@@ -706,8 +710,9 @@ var scrollToHashRaw = function () {
     notifyReadingLocationDebounced();
 };
 var scrollToHashDebounced = debounce_1.debounce(function () {
+    debug("++++ scrollToHashRaw FROM DEBOUNCED");
     scrollToHashRaw();
-}, 300);
+}, 100);
 var _ignoreScrollEvent = false;
 electron_1.ipcRenderer.on("R2_EVENT_HIDE", function (_event) {
     showHideContentMask(true);
@@ -796,6 +801,7 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_READIUMCSS, function (_event, payloa
 });
 var _docTitle;
 win.addEventListener("DOMContentLoaded", function () {
+    debug("############# DOMContentLoaded");
     var titleElement = win.document.documentElement.querySelector("head > title");
     if (titleElement && titleElement.textContent) {
         _docTitle = titleElement.textContent;
@@ -884,17 +890,19 @@ win.addEventListener("DOMContentLoaded", function () {
 var _cancelInitialScrollCheck = false;
 var _loaded = false;
 function loaded(forced) {
-    if (forced) {
-        debug("LOAD EVENT WAS FORCED!");
-    }
     if (_loaded) {
         return;
     }
     _loaded = true;
+    if (forced) {
+        debug(">>> LOAD EVENT WAS FORCED!");
+    }
+    else {
+        debug(">>> LOAD EVENT was not forced.");
+    }
     if (!win.READIUM2.isFixedLayout) {
-        setTimeout(function () {
-            scrollToHashRaw();
-        }, 100);
+        debug("++++ scrollToHashDebounced FROM LOAD");
+        scrollToHashDebounced();
         _cancelInitialScrollCheck = false;
         setTimeout(function () {
             if (_cancelInitialScrollCheck) {
@@ -909,11 +917,24 @@ function loaded(forced) {
     var useResizeSensor = !win.READIUM2.isFixedLayout;
     if (useResizeSensor && win.document.body) {
         setTimeout(function () {
+            var _firstResizeSensor = true;
             new ResizeSensor(win.document.body, function () {
+                if (_firstResizeSensor) {
+                    _firstResizeSensor = false;
+                    debug("ResizeSensor SKIP FIRST");
+                    return;
+                }
                 debug("ResizeSensor");
                 win.document.body.tabbables = undefined;
+                debug("++++ scrollToHashDebounced FROM RESIZE SENSOR");
                 scrollToHashDebounced();
             });
+            setTimeout(function () {
+                if (_firstResizeSensor) {
+                    _firstResizeSensor = false;
+                    debug("ResizeSensor CANCEL SKIP FIRST");
+                }
+            }, 700);
         }, 1000);
     }
     win.document.body.addEventListener("focusin", function (ev) {
@@ -992,14 +1013,32 @@ function loaded(forced) {
         }
         return false;
     }, true);
-    win.addEventListener("resize", function () {
+    var onResizeRaw = function () {
         var wh = readium_css_inject_1.configureFixedLayout(win.document, win.READIUM2.isFixedLayout, win.READIUM2.fxlViewportWidth, win.READIUM2.fxlViewportHeight, win.innerWidth, win.innerHeight);
         if (wh) {
             win.READIUM2.fxlViewportWidth = wh.width;
             win.READIUM2.fxlViewportHeight = wh.height;
             win.READIUM2.fxlViewportScale = wh.scale;
         }
-        scrollToHashRaw();
+        debug("++++ scrollToHashDebounced FROM RESIZE");
+        scrollToHashDebounced();
+    };
+    var onResizeDebounced = debounce_1.debounce(function () {
+        onResizeRaw();
+    }, 200);
+    var _firstWindowResize = true;
+    win.addEventListener("resize", function () {
+        if (_firstWindowResize) {
+            debug("Window resize, SKIP FIRST");
+            _firstWindowResize = false;
+            return;
+        }
+        if (webview_resize_1.ENABLE_WEBVIEW_RESIZE) {
+            onResizeRaw();
+        }
+        else {
+            onResizeDebounced();
+        }
     });
     setTimeout(function () {
         win.addEventListener("scroll", function (_ev) {
@@ -1051,6 +1090,7 @@ function loaded(forced) {
     });
 }
 win.addEventListener("load", function () {
+    debug("############# load");
     loaded(false);
 });
 function checkBlacklisted(el) {

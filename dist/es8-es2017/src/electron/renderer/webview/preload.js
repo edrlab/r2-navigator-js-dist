@@ -20,6 +20,7 @@ const popup_dialog_1 = require("../common/popup-dialog");
 const querystring_1 = require("../common/querystring");
 const rect_utils_1 = require("../common/rect-utils");
 const url_params_1 = require("../common/url-params");
+const webview_resize_1 = require("../common/webview-resize");
 const epubReadingSystem_1 = require("./epubReadingSystem");
 const highlight_1 = require("./highlight");
 const popupFootNotes_1 = require("./popupFootNotes");
@@ -249,10 +250,12 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, (_event, payload) => {
     resetLocationHashOverrideInfo();
     if (delayScrollIntoView) {
         setTimeout(() => {
+            debug("++++ scrollToHashRaw FROM DELAYED SCROLL_TO");
             scrollToHashRaw();
         }, 100);
     }
     else {
+        debug("++++ scrollToHashRaw FROM SCROLL_TO");
         scrollToHashRaw();
     }
 });
@@ -539,6 +542,7 @@ const scrollToHashRaw = () => {
     if (!win.document || !win.document.body || !win.document.documentElement) {
         return;
     }
+    debug("++++ scrollToHashRaw");
     highlight_1.recreateAllHighlights(win);
     const isPaged = readium_css_inject_1.isPaginated(win.document);
     if (win.READIUM2.locationHashOverride) {
@@ -693,8 +697,9 @@ const scrollToHashRaw = () => {
     notifyReadingLocationDebounced();
 };
 const scrollToHashDebounced = debounce_1.debounce(() => {
+    debug("++++ scrollToHashRaw FROM DEBOUNCED");
     scrollToHashRaw();
-}, 300);
+}, 100);
 let _ignoreScrollEvent = false;
 electron_1.ipcRenderer.on("R2_EVENT_HIDE", (_event) => {
     showHideContentMask(true);
@@ -783,6 +788,7 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_READIUMCSS, (_event, payload) => {
 });
 let _docTitle;
 win.addEventListener("DOMContentLoaded", () => {
+    debug("############# DOMContentLoaded");
     const titleElement = win.document.documentElement.querySelector("head > title");
     if (titleElement && titleElement.textContent) {
         _docTitle = titleElement.textContent;
@@ -871,17 +877,19 @@ win.addEventListener("DOMContentLoaded", () => {
 let _cancelInitialScrollCheck = false;
 let _loaded = false;
 function loaded(forced) {
-    if (forced) {
-        debug("LOAD EVENT WAS FORCED!");
-    }
     if (_loaded) {
         return;
     }
     _loaded = true;
+    if (forced) {
+        debug(">>> LOAD EVENT WAS FORCED!");
+    }
+    else {
+        debug(">>> LOAD EVENT was not forced.");
+    }
     if (!win.READIUM2.isFixedLayout) {
-        setTimeout(() => {
-            scrollToHashRaw();
-        }, 100);
+        debug("++++ scrollToHashDebounced FROM LOAD");
+        scrollToHashDebounced();
         _cancelInitialScrollCheck = false;
         setTimeout(() => {
             if (_cancelInitialScrollCheck) {
@@ -896,11 +904,24 @@ function loaded(forced) {
     const useResizeSensor = !win.READIUM2.isFixedLayout;
     if (useResizeSensor && win.document.body) {
         setTimeout(() => {
+            let _firstResizeSensor = true;
             new ResizeSensor(win.document.body, () => {
+                if (_firstResizeSensor) {
+                    _firstResizeSensor = false;
+                    debug("ResizeSensor SKIP FIRST");
+                    return;
+                }
                 debug("ResizeSensor");
                 win.document.body.tabbables = undefined;
+                debug("++++ scrollToHashDebounced FROM RESIZE SENSOR");
                 scrollToHashDebounced();
             });
+            setTimeout(() => {
+                if (_firstResizeSensor) {
+                    _firstResizeSensor = false;
+                    debug("ResizeSensor CANCEL SKIP FIRST");
+                }
+            }, 700);
         }, 1000);
     }
     win.document.body.addEventListener("focusin", (ev) => {
@@ -979,14 +1000,32 @@ function loaded(forced) {
         }
         return false;
     }, true);
-    win.addEventListener("resize", () => {
+    const onResizeRaw = () => {
         const wh = readium_css_inject_1.configureFixedLayout(win.document, win.READIUM2.isFixedLayout, win.READIUM2.fxlViewportWidth, win.READIUM2.fxlViewportHeight, win.innerWidth, win.innerHeight);
         if (wh) {
             win.READIUM2.fxlViewportWidth = wh.width;
             win.READIUM2.fxlViewportHeight = wh.height;
             win.READIUM2.fxlViewportScale = wh.scale;
         }
-        scrollToHashRaw();
+        debug("++++ scrollToHashDebounced FROM RESIZE");
+        scrollToHashDebounced();
+    };
+    const onResizeDebounced = debounce_1.debounce(() => {
+        onResizeRaw();
+    }, 200);
+    let _firstWindowResize = true;
+    win.addEventListener("resize", () => {
+        if (_firstWindowResize) {
+            debug("Window resize, SKIP FIRST");
+            _firstWindowResize = false;
+            return;
+        }
+        if (webview_resize_1.ENABLE_WEBVIEW_RESIZE) {
+            onResizeRaw();
+        }
+        else {
+            onResizeDebounced();
+        }
     });
     setTimeout(() => {
         win.addEventListener("scroll", (_ev) => {
@@ -1038,6 +1077,7 @@ function loaded(forced) {
     });
 }
 win.addEventListener("load", () => {
+    debug("############# load");
     loaded(false);
 });
 function checkBlacklisted(el) {

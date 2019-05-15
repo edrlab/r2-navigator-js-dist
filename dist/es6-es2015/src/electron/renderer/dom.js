@@ -6,11 +6,11 @@ const debug_ = require("debug");
 const events_1 = require("../common/events");
 const sessions_1 = require("../common/sessions");
 const url_params_1 = require("./common/url-params");
+const webview_resize_1 = require("./common/webview-resize");
 const highlight_1 = require("./highlight");
 const location_1 = require("./location");
 const readaloud_1 = require("./readaloud");
 const readium_css_1 = require("./readium-css");
-const ENABLE_WEBVIEW_RESIZE = false;
 const ELEMENT_ID_SLIDING_VIEWPORT = "r2_navigator_sliding_viewport";
 const debug = debug_("r2:navigator#electron/renderer/index");
 function readiumCssOnOff() {
@@ -120,7 +120,7 @@ function createWebView(preloadScriptPath) {
     wv.setAttribute("style", "display: flex; margin: 0; padding: 0; box-sizing: border-box; " +
         "position: absolute; left: 0; width: 50%; bottom: 0; top: 0;");
     wv.setAttribute("preload", preloadScriptPath);
-    if (ENABLE_WEBVIEW_RESIZE) {
+    if (webview_resize_1.ENABLE_WEBVIEW_RESIZE) {
         wv.setAttribute("disableguestresize", "");
     }
     setTimeout(() => {
@@ -156,7 +156,7 @@ function createWebView(preloadScriptPath) {
     });
     return wv;
 }
-if (ENABLE_WEBVIEW_RESIZE) {
+if (webview_resize_1.ENABLE_WEBVIEW_RESIZE) {
     const adjustResize = (webview) => {
         const width = webview.clientWidth;
         const height = webview.clientHeight;
