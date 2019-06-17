@@ -155,7 +155,7 @@ var _cssPathStep = function (node, optimized, isTargetNode) {
             }
         });
         try {
-            for (var siblingClassNamesArray_1 = tslib_1.__values(siblingClassNamesArray), siblingClassNamesArray_1_1 = siblingClassNamesArray_1.next(); !siblingClassNamesArray_1_1.done; siblingClassNamesArray_1_1 = siblingClassNamesArray_1.next()) {
+            for (var siblingClassNamesArray_1 = (e_2 = void 0, tslib_1.__values(siblingClassNamesArray)), siblingClassNamesArray_1_1 = siblingClassNamesArray_1.next(); !siblingClassNamesArray_1_1.done; siblingClassNamesArray_1_1 = siblingClassNamesArray_1.next()) {
                 var siblingClass = siblingClassNamesArray_1_1.value;
                 var ind = ownClassNames.indexOf(siblingClass);
                 if (ind < 0) {

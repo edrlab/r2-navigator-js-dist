@@ -12,6 +12,7 @@ exports.ID_HIGHLIGHTS_CONTAINER = "R2_ID_HIGHLIGHTS_CONTAINER";
 exports.CLASS_HIGHLIGHT_CONTAINER = "R2_CLASS_HIGHLIGHT_CONTAINER";
 exports.CLASS_HIGHLIGHT_AREA = "R2_CLASS_HIGHLIGHT_AREA";
 exports.CLASS_HIGHLIGHT_BOUNDING_AREA = "R2_CLASS_HIGHLIGHT_BOUNDING_AREA";
+const USE_SVG = false;
 const DEFAULT_BACKGROUND_COLOR_OPACITY = 0.3;
 const ALT_BACKGROUND_COLOR_OPACITY = 0.45;
 const DEFAULT_BACKGROUND_COLOR = {
@@ -20,6 +21,7 @@ const DEFAULT_BACKGROUND_COLOR = {
     red: 230,
 };
 const _highlights = [];
+const SVG_XML_NAMESPACE = "http://www.w3.org/2000/svg";
 function resetHighlightBoundingStyle(_win, highlightBounding) {
     highlightBounding.style.outline = "none";
     highlightBounding.style.setProperty("background-color", "transparent", "important");
@@ -32,23 +34,44 @@ function setHighlightBoundingStyle(_win, highlightBounding, highlight) {
     highlightBounding.style.outlineWidth = "1px";
     highlightBounding.style.outlineOffset = "0px";
 }
-function resetHighlightAreaStyle(_win, highlightArea) {
-    const id = (highlightArea.parentNode && highlightArea.parentNode.nodeType === Node.ELEMENT_NODE && highlightArea.parentNode.getAttribute) ?
-        highlightArea.parentNode.getAttribute("id") : undefined;
+function resetHighlightAreaStyle(win, highlightArea) {
+    const useSVG = !win.READIUM2.DEBUG_VISUALS && USE_SVG;
+    const isSVG = useSVG && highlightArea.namespaceURI === SVG_XML_NAMESPACE;
+    const id = isSVG ?
+        ((highlightArea.parentNode && highlightArea.parentNode.parentNode && highlightArea.parentNode.parentNode.nodeType === Node.ELEMENT_NODE && highlightArea.parentNode.parentNode.getAttribute) ? highlightArea.parentNode.parentNode.getAttribute("id") : undefined) :
+        ((highlightArea.parentNode && highlightArea.parentNode.nodeType === Node.ELEMENT_NODE && highlightArea.parentNode.getAttribute) ? highlightArea.parentNode.getAttribute("id") : undefined);
     if (id) {
         const highlight = _highlights.find((h) => {
             return h.id === id;
         });
         if (highlight) {
             const opacity = DEFAULT_BACKGROUND_COLOR_OPACITY;
-            highlightArea.style.setProperty("background-color", `rgba(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}, ${opacity})`, "important");
+            if (isSVG) {
+                highlightArea.style.setProperty("fill", `rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue})`, "important");
+                highlightArea.style.setProperty("fill-opacity", `${opacity}`, "important");
+                highlightArea.style.setProperty("stroke", `rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue})`, "important");
+                highlightArea.style.setProperty("stroke-opacity", `${opacity}`, "important");
+            }
+            else {
+                highlightArea.style.setProperty("background-color", `rgba(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}, ${opacity})`, "important");
+            }
         }
     }
 }
-function setHighlightAreaStyle(_win, highlightAreas, highlight) {
+function setHighlightAreaStyle(win, highlightAreas, highlight) {
+    const useSVG = !win.READIUM2.DEBUG_VISUALS && USE_SVG;
     for (const highlightArea of highlightAreas) {
+        const isSVG = useSVG && highlightArea.namespaceURI === SVG_XML_NAMESPACE;
         const opacity = ALT_BACKGROUND_COLOR_OPACITY;
-        highlightArea.style.setProperty("background-color", `rgba(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}, ${opacity})`, "important");
+        if (isSVG) {
+            highlightArea.style.setProperty("fill", `rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue})`, "important");
+            highlightArea.style.setProperty("fill-opacity", `${opacity}`, "important");
+            highlightArea.style.setProperty("stroke", `rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue})`, "important");
+            highlightArea.style.setProperty("stroke-opacity", `${opacity}`, "important");
+        }
+        else {
+            highlightArea.style.setProperty("background-color", `rgba(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}, ${opacity})`, "important");
+        }
     }
 }
 function processMouseEvent(win, ev) {
@@ -247,34 +270,143 @@ function createHighlightDom(win, highlight) {
     const xOffset = paginated ? (-scrollElement.scrollLeft) : bodyRect.left;
     const yOffset = paginated ? (-scrollElement.scrollTop) : bodyRect.top;
     const scale = 1 / ((win.READIUM2 && win.READIUM2.isFixedLayout) ? win.READIUM2.fxlViewportScale : 1);
-    const clientRects = win.READIUM2.DEBUG_VISUALS ? range.getClientRects() : rect_utils_1.getClientRectsNoOverlap(range);
+    const useSVG = !win.READIUM2.DEBUG_VISUALS && USE_SVG;
+    const drawUnderline = true;
+    const drawStrikeThrough = false;
+    const doNotMergeHorizontallyAlignedRects = drawUnderline || drawStrikeThrough;
+    const clientRects = win.READIUM2.DEBUG_VISUALS ? range.getClientRects() : rect_utils_1.getClientRectsNoOverlap(range, doNotMergeHorizontallyAlignedRects);
+    let highlightAreaSVGDocFrag;
+    const roundedCorner = 3;
+    const underlineThickness = 2;
+    const strikeThroughLineThickness = 3;
     for (const clientRect of clientRects) {
-        const highlightArea = documant.createElement("div");
-        highlightArea.setAttribute("class", exports.CLASS_HIGHLIGHT_AREA);
-        let extra = "";
-        if (win.READIUM2.DEBUG_VISUALS) {
-            const rgb = Math.round(0xffffff * Math.random());
-            const r = rgb >> 16;
-            const g = rgb >> 8 & 255;
-            const b = rgb & 255;
-            extra = `outline-color: rgb(${r}, ${g}, ${b}); outline-style: solid; outline-width: 1px; outline-offset: -1px;`;
-        }
         const opacity = DEFAULT_BACKGROUND_COLOR_OPACITY;
-        highlightArea.setAttribute("style", `background-color: rgba(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}, ${opacity}) !important; ${extra}`);
-        highlightArea.style.setProperty("pointer-events", "none");
-        highlightArea.style.position = paginated ? "fixed" : "absolute";
-        highlightArea.scale = scale;
-        highlightArea.rect = {
-            height: clientRect.height,
-            left: clientRect.left - xOffset,
-            top: clientRect.top - yOffset,
-            width: clientRect.width,
-        };
-        highlightArea.style.width = `${highlightArea.rect.width * scale}px`;
-        highlightArea.style.height = `${highlightArea.rect.height * scale}px`;
-        highlightArea.style.left = `${highlightArea.rect.left * scale}px`;
-        highlightArea.style.top = `${highlightArea.rect.top * scale}px`;
-        highlightParent.append(highlightArea);
+        if (useSVG) {
+            const borderThickness = 0;
+            if (!highlightAreaSVGDocFrag) {
+                highlightAreaSVGDocFrag = documant.createDocumentFragment();
+            }
+            const highlightAreaSVGRect = documant.createElementNS(SVG_XML_NAMESPACE, "rect");
+            highlightAreaSVGRect.setAttribute("class", exports.CLASS_HIGHLIGHT_AREA);
+            highlightAreaSVGRect.setAttribute("style", `fill: rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}) !important; fill-opacity: ${opacity} !important; stroke-width: 0;`);
+            highlightAreaSVGRect.scale = scale;
+            highlightAreaSVGRect.rect = {
+                height: clientRect.height,
+                left: clientRect.left - xOffset,
+                top: clientRect.top - yOffset,
+                width: clientRect.width,
+            };
+            highlightAreaSVGRect.setAttribute("rx", `${roundedCorner * scale}`);
+            highlightAreaSVGRect.setAttribute("ry", `${roundedCorner * scale}`);
+            highlightAreaSVGRect.setAttribute("x", `${(highlightAreaSVGRect.rect.left - borderThickness) * scale}`);
+            highlightAreaSVGRect.setAttribute("y", `${(highlightAreaSVGRect.rect.top - borderThickness) * scale}`);
+            highlightAreaSVGRect.setAttribute("height", `${(highlightAreaSVGRect.rect.height + (borderThickness * 2)) * scale}`);
+            highlightAreaSVGRect.setAttribute("width", `${(highlightAreaSVGRect.rect.width + (borderThickness * 2)) * scale}`);
+            highlightAreaSVGDocFrag.appendChild(highlightAreaSVGRect);
+            if (drawUnderline) {
+                const highlightAreaSVGLine = documant.createElementNS(SVG_XML_NAMESPACE, "line");
+                highlightAreaSVGLine.setAttribute("class", exports.CLASS_HIGHLIGHT_AREA);
+                highlightAreaSVGLine.setAttribute("style", `stroke-linecap: round; stroke-width: ${underlineThickness * scale}; stroke: rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}) !important; stroke-opacity: ${opacity} !important`);
+                highlightAreaSVGLine.scale = scale;
+                highlightAreaSVGLine.rect = {
+                    height: clientRect.height,
+                    left: clientRect.left - xOffset,
+                    top: clientRect.top - yOffset,
+                    width: clientRect.width,
+                };
+                const lineOffset = (highlightAreaSVGLine.rect.width > roundedCorner) ? roundedCorner : 0;
+                highlightAreaSVGLine.setAttribute("x1", `${(highlightAreaSVGLine.rect.left + lineOffset) * scale}`);
+                highlightAreaSVGLine.setAttribute("x2", `${(highlightAreaSVGLine.rect.left + highlightAreaSVGLine.rect.width - lineOffset) * scale}`);
+                const y = (highlightAreaSVGLine.rect.top + highlightAreaSVGLine.rect.height - (underlineThickness / 2)) * scale;
+                highlightAreaSVGLine.setAttribute("y1", `${y}`);
+                highlightAreaSVGLine.setAttribute("y2", `${y}`);
+                highlightAreaSVGLine.setAttribute("height", `${highlightAreaSVGLine.rect.height * scale}`);
+                highlightAreaSVGLine.setAttribute("width", `${highlightAreaSVGLine.rect.width * scale}`);
+                highlightAreaSVGDocFrag.appendChild(highlightAreaSVGLine);
+            }
+            if (drawStrikeThrough) {
+                const highlightAreaSVGLine = documant.createElementNS(SVG_XML_NAMESPACE, "line");
+                highlightAreaSVGLine.setAttribute("class", exports.CLASS_HIGHLIGHT_AREA);
+                highlightAreaSVGLine.setAttribute("style", `stroke-linecap: butt; stroke-width: ${strikeThroughLineThickness * scale}; stroke: rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}) !important; stroke-opacity: ${opacity} !important`);
+                highlightAreaSVGLine.scale = scale;
+                highlightAreaSVGLine.rect = {
+                    height: clientRect.height,
+                    left: clientRect.left - xOffset,
+                    top: clientRect.top - yOffset,
+                    width: clientRect.width,
+                };
+                highlightAreaSVGLine.setAttribute("x1", `${highlightAreaSVGLine.rect.left * scale}`);
+                highlightAreaSVGLine.setAttribute("x2", `${(highlightAreaSVGLine.rect.left + highlightAreaSVGLine.rect.width) * scale}`);
+                const lineOffset = highlightAreaSVGLine.rect.height / 2;
+                const y = (highlightAreaSVGLine.rect.top + lineOffset) * scale;
+                highlightAreaSVGLine.setAttribute("y1", `${y}`);
+                highlightAreaSVGLine.setAttribute("y2", `${y}`);
+                highlightAreaSVGLine.setAttribute("height", `${highlightAreaSVGLine.rect.height * scale}`);
+                highlightAreaSVGLine.setAttribute("width", `${highlightAreaSVGLine.rect.width * scale}`);
+                highlightAreaSVGDocFrag.appendChild(highlightAreaSVGLine);
+            }
+        }
+        else {
+            const highlightArea = documant.createElement("div");
+            highlightArea.setAttribute("class", exports.CLASS_HIGHLIGHT_AREA);
+            let extra = "";
+            if (win.READIUM2.DEBUG_VISUALS) {
+                const rgb = Math.round(0xffffff * Math.random());
+                const r = rgb >> 16;
+                const g = rgb >> 8 & 255;
+                const b = rgb & 255;
+                extra = `outline-color: rgb(${r}, ${g}, ${b}); outline-style: solid; outline-width: 1px; outline-offset: -1px;`;
+            }
+            else {
+                if (drawUnderline) {
+                    extra += `border-bottom: ${underlineThickness * scale}px solid rgba(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}, ${opacity}) !important`;
+                }
+            }
+            highlightArea.setAttribute("style", `border-radius: ${roundedCorner}px !important; background-color: rgba(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}, ${opacity}) !important; ${extra}`);
+            highlightArea.style.setProperty("pointer-events", "none");
+            highlightArea.style.position = paginated ? "fixed" : "absolute";
+            highlightArea.scale = scale;
+            highlightArea.rect = {
+                height: clientRect.height,
+                left: clientRect.left - xOffset,
+                top: clientRect.top - yOffset,
+                width: clientRect.width,
+            };
+            highlightArea.style.width = `${highlightArea.rect.width * scale}px`;
+            highlightArea.style.height = `${highlightArea.rect.height * scale}px`;
+            highlightArea.style.left = `${highlightArea.rect.left * scale}px`;
+            highlightArea.style.top = `${highlightArea.rect.top * scale}px`;
+            highlightParent.append(highlightArea);
+            if (!win.READIUM2.DEBUG_VISUALS && drawStrikeThrough) {
+                const highlightAreaLine = documant.createElement("div");
+                highlightAreaLine.setAttribute("class", exports.CLASS_HIGHLIGHT_AREA);
+                highlightAreaLine.setAttribute("style", `background-color: rgba(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}, ${opacity}) !important;`);
+                highlightAreaLine.style.setProperty("pointer-events", "none");
+                highlightAreaLine.style.position = paginated ? "fixed" : "absolute";
+                highlightAreaLine.scale = scale;
+                highlightAreaLine.rect = {
+                    height: clientRect.height,
+                    left: clientRect.left - xOffset,
+                    top: clientRect.top - yOffset,
+                    width: clientRect.width,
+                };
+                highlightAreaLine.style.width = `${highlightAreaLine.rect.width * scale}px`;
+                highlightAreaLine.style.height = `${strikeThroughLineThickness * scale}px`;
+                highlightAreaLine.style.left = `${highlightAreaLine.rect.left * scale}px`;
+                highlightAreaLine.style.top = `${(highlightAreaLine.rect.top + (highlightAreaLine.rect.height / 2) - (strikeThroughLineThickness / 2)) * scale}px`;
+                highlightParent.append(highlightAreaLine);
+            }
+        }
+    }
+    if (useSVG && highlightAreaSVGDocFrag) {
+        const highlightAreaSVG = documant.createElementNS(SVG_XML_NAMESPACE, "svg");
+        highlightAreaSVG.setAttribute("pointer-events", "none");
+        highlightAreaSVG.style.position = paginated ? "fixed" : "absolute";
+        highlightAreaSVG.style.overflow = "visible";
+        highlightAreaSVG.style.left = "0";
+        highlightAreaSVG.style.top = "0";
+        highlightAreaSVG.append(highlightAreaSVGDocFrag);
+        highlightParent.append(highlightAreaSVG);
     }
     const rangeBoundingClientRect = range.getBoundingClientRect();
     const highlightBounding = documant.createElement("div");

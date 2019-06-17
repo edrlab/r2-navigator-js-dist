@@ -1277,7 +1277,7 @@ exports.computeProgressionData = function () {
                 }
                 else {
                     var boundingRect = element.getBoundingClientRect();
-                    var clientRects = rect_utils_1.getClientRectsNoOverlap_(element.getClientRects());
+                    var clientRects = rect_utils_1.getClientRectsNoOverlap_(element.getClientRects(), false);
                     var rectangle = void 0;
                     try {
                         for (var clientRects_1 = tslib_1.__values(clientRects), clientRects_1_1 = clientRects_1.next(); !clientRects_1_1.done; clientRects_1_1 = clientRects_1.next()) {
@@ -1512,7 +1512,7 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_HIGHLIGHT_CREATE, function (_event, 
         payloadPing.highlightDefinitions[0].selectionInfo) {
         var selection = win.getSelection();
         if (selection) {
-            selection.collapseToStart();
+            selection.removeAllRanges();
         }
     }
     var highlightDefinitions = !payloadPing.highlightDefinitions ?

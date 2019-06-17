@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
-function getClientRectsNoOverlap(range) {
+function getClientRectsNoOverlap(range, doNotMergeHorizontallyAlignedRects) {
     const rangeClientRects = range.getClientRects();
-    return getClientRectsNoOverlap_(rangeClientRects);
+    return getClientRectsNoOverlap_(rangeClientRects, doNotMergeHorizontallyAlignedRects);
 }
 exports.getClientRectsNoOverlap = getClientRectsNoOverlap;
-function getClientRectsNoOverlap_(clientRects) {
+function getClientRectsNoOverlap_(clientRects, doNotMergeHorizontallyAlignedRects) {
     const tolerance = 1;
     const originalRects = [];
     for (const rangeClientRect of clientRects) {
@@ -19,7 +19,7 @@ function getClientRectsNoOverlap_(clientRects) {
             width: rangeClientRect.width,
         });
     }
-    const mergedRects = mergeTouchingRects(originalRects, tolerance);
+    const mergedRects = mergeTouchingRects(originalRects, tolerance, doNotMergeHorizontallyAlignedRects);
     const noContainedRects = removeContainedRects(mergedRects, tolerance);
     const newRects = replaceOverlapingRects(noContainedRects);
     const minArea = 2 * 2;
@@ -174,7 +174,7 @@ function rectsTouchOrOverlap(rect1, rect2, tolerance) {
         (rect2.top < rect1.bottom || (tolerance >= 0 && almostEqual(rect2.top, rect1.bottom, tolerance))));
 }
 exports.rectsTouchOrOverlap = rectsTouchOrOverlap;
-function mergeTouchingRects(rects, tolerance) {
+function mergeTouchingRects(rects, tolerance, doNotMergeHorizontallyAlignedRects) {
     for (let i = 0; i < rects.length; i++) {
         for (let j = i + 1; j < rects.length; j++) {
             const rect1 = rects[i];
@@ -185,22 +185,23 @@ function mergeTouchingRects(rects, tolerance) {
                 }
                 continue;
             }
-            const rectsLineUpHorizontally = almostEqual(rect1.top, rect2.top, tolerance) &&
+            const rectsLineUpVertically = almostEqual(rect1.top, rect2.top, tolerance) &&
                 almostEqual(rect1.bottom, rect2.bottom, tolerance);
-            const rectsLineUpVertically = almostEqual(rect1.left, rect2.left, tolerance) &&
+            const rectsLineUpHorizontally = almostEqual(rect1.left, rect2.left, tolerance) &&
                 almostEqual(rect1.right, rect2.right, tolerance);
-            const canMerge = rectsTouchOrOverlap(rect1, rect2, tolerance) &&
-                (rectsLineUpHorizontally || rectsLineUpVertically);
+            const horizontalAllowed = !doNotMergeHorizontallyAlignedRects;
+            const aligned = (rectsLineUpHorizontally && horizontalAllowed) || (rectsLineUpVertically && !rectsLineUpHorizontally);
+            const canMerge = aligned && rectsTouchOrOverlap(rect1, rect2, tolerance);
             if (canMerge) {
                 if (IS_DEV) {
-                    console.log("CLIENT RECT: merging two into one");
+                    console.log(`CLIENT RECT: merging two into one, VERTICAL: ${rectsLineUpVertically} HORIZONTAL: ${rectsLineUpHorizontally} (${doNotMergeHorizontallyAlignedRects})`);
                 }
                 const newRects = rects.filter((rect) => {
                     return rect !== rect1 && rect !== rect2;
                 });
                 const replacementClientRect = getBoundingRect(rect1, rect2);
                 newRects.push(replacementClientRect);
-                return mergeTouchingRects(newRects, tolerance);
+                return mergeTouchingRects(newRects, tolerance, doNotMergeHorizontallyAlignedRects);
             }
         }
     }

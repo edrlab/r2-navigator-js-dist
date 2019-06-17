@@ -128,7 +128,7 @@ function getTtsQueueItemRef(items, index) {
             if (it.combinedTextSentences) {
                 var j = -1;
                 try {
-                    for (var _c = tslib_1.__values(it.combinedTextSentences), _d = _c.next(); !_d.done; _d = _c.next()) {
+                    for (var _c = (e_5 = void 0, tslib_1.__values(it.combinedTextSentences)), _d = _c.next(); !_d.done; _d = _c.next()) {
                         var _sent = _d.value;
                         j++;
                         i++;

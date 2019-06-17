@@ -1252,7 +1252,7 @@ exports.computeProgressionData = () => {
                 }
                 else {
                     const boundingRect = element.getBoundingClientRect();
-                    const clientRects = rect_utils_1.getClientRectsNoOverlap_(element.getClientRects());
+                    const clientRects = rect_utils_1.getClientRectsNoOverlap_(element.getClientRects(), false);
                     let rectangle;
                     for (const rect of clientRects) {
                         if (!rectangle) {
@@ -1477,7 +1477,7 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_HIGHLIGHT_CREATE, (_event, payloadPi
         payloadPing.highlightDefinitions[0].selectionInfo) {
         const selection = win.getSelection();
         if (selection) {
-            selection.collapseToStart();
+            selection.removeAllRanges();
         }
     }
     const highlightDefinitions = !payloadPing.highlightDefinitions ?

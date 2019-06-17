@@ -82,7 +82,7 @@ function bottomUpSearch(input, limit, fallback) {
             }
         }
         try {
-            for (var level_1 = tslib_1.__values(level), level_1_1 = level_1.next(); !level_1_1.done; level_1_1 = level_1.next()) {
+            for (var level_1 = (e_1 = void 0, tslib_1.__values(level)), level_1_1 = level_1.next(); !level_1_1.done; level_1_1 = level_1.next()) {
                 var node = level_1_1.value;
                 node.level = i;
             }
@@ -244,26 +244,27 @@ function notEmpty(value) {
     return value !== null && value !== undefined;
 }
 function combinations(stack, path) {
-    var e_3, _a, _b, _c, node, e_3_1;
+    var _a, _b, node, e_3_1;
+    var e_3, _c;
+    if (path === void 0) { path = []; }
     return tslib_1.__generator(this, function (_d) {
         switch (_d.label) {
             case 0:
-                if (path === void 0) { path = []; }
                 if (!(stack.length > 0)) return [3, 9];
                 _d.label = 1;
             case 1:
                 _d.trys.push([1, 6, 7, 8]);
-                _b = tslib_1.__values(stack[0]), _c = _b.next();
+                _a = tslib_1.__values(stack[0]), _b = _a.next();
                 _d.label = 2;
             case 2:
-                if (!!_c.done) return [3, 5];
-                node = _c.value;
+                if (!!_b.done) return [3, 5];
+                node = _b.value;
                 return [5, tslib_1.__values(combinations(stack.slice(1, stack.length), path.concat(node)))];
             case 3:
                 _d.sent();
                 _d.label = 4;
             case 4:
-                _c = _b.next();
+                _b = _a.next();
                 return [3, 2];
             case 5: return [3, 8];
             case 6:
@@ -272,7 +273,7 @@ function combinations(stack, path) {
                 return [3, 8];
             case 7:
                 try {
-                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                    if (_b && !_b.done && (_c = _a.return)) _c.call(_a);
                 }
                 finally { if (e_3) throw e_3.error; }
                 return [7];
