@@ -214,6 +214,7 @@ function loadLink(hrefFull, previous, useGoto) {
     if (!linkPath) {
         return false;
     }
+    linkPath = decodeURIComponent(linkPath);
     let pubLink = publication.Spine ? publication.Spine.find((spineLink) => {
         return spineLink.Href === linkPath;
     }) : undefined;

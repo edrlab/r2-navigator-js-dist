@@ -214,6 +214,7 @@ function loadLink(hrefFull, previous, useGoto) {
     if (!linkPath) {
         return false;
     }
+    linkPath = decodeURIComponent(linkPath);
     var pubLink = publication.Spine ? publication.Spine.find(function (spineLink) {
         return spineLink.Href === linkPath;
     }) : undefined;

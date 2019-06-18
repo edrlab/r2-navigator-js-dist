@@ -73,11 +73,32 @@ function getCurrentSelectionInfo(win, getCssSelector, computeElementCFI) {
     if (!selection.anchorNode || !selection.focusNode) {
         return undefined;
     }
-    var range = selection.rangeCount === 1 ? selection.getRangeAt(0) :
+    var r = selection.rangeCount === 1 ? selection.getRangeAt(0) :
         createOrderedRange(selection.anchorNode, selection.anchorOffset, selection.focusNode, selection.focusOffset);
-    if (!range || range.collapsed) {
+    if (!r || r.collapsed) {
         console.log("$$$$$$$$$$$$$$$$$ CANNOT GET NON-COLLAPSED SELECTION RANGE?!");
         return undefined;
+    }
+    var range = normalizeRange(r);
+    if (IS_DEV) {
+        if (range.startContainer !== r.startContainer) {
+            console.log(">>>>>>>>>>>>>>>>>>>>>>> SELECTION RANGE NORMALIZE diff: startContainer");
+            console.log(range.startContainer);
+            console.log(r.startContainer);
+        }
+        if (range.startOffset !== r.startOffset) {
+            console.log(">>>>>>>>>>>>>>>>>>>>>>> SELECTION RANGE NORMALIZE diff: startOffset");
+            console.log(range.startOffset + " !== " + r.startOffset);
+        }
+        if (range.endContainer !== r.endContainer) {
+            console.log(">>>>>>>>>>>>>>>>>>>>>>> SELECTION RANGE NORMALIZE diff: endContainer");
+            console.log(range.endContainer);
+            console.log(r.endContainer);
+        }
+        if (range.endOffset !== r.endOffset) {
+            console.log(">>>>>>>>>>>>>>>>>>>>>>> SELECTION RANGE NORMALIZE diff: endOffset");
+            console.log(range.endOffset + " !== " + r.endOffset);
+        }
     }
     var rangeInfo = convertRange(range, getCssSelector, computeElementCFI);
     if (!rangeInfo) {
@@ -114,6 +135,7 @@ function createOrderedRange(startNode, startOffset, endNode, endOffset) {
     range.setStart(startNode, startOffset);
     range.setEnd(endNode, endOffset);
     if (!range.collapsed) {
+        console.log(">>> createOrderedRange RANGE OK");
         return range;
     }
     console.log(">>> createOrderedRange COLLAPSED ... RANGE REVERSE?");
@@ -341,5 +363,103 @@ function getChildTextNodeCfiIndex(element, child) {
         previousWasElement = childNode.nodeType === Node.ELEMENT_NODE;
     }
     return found;
+}
+function normalizeRange(r) {
+    var range = r.cloneRange();
+    var sc = range.startContainer;
+    var so = range.startOffset;
+    var ec = range.endContainer;
+    var eo = range.endOffset;
+    if (sc.childNodes.length && so > 0) {
+        sc = lastLeaf(sc.childNodes[so - 1]);
+        so = sc.length || 0;
+    }
+    if (eo < ec.childNodes.length) {
+        ec = firstLeaf(ec.childNodes[eo]);
+        eo = 0;
+    }
+    var start = firstLeaf(sc);
+    var end = lastLeaf(ec);
+    function isLeafNodeInRange(node) {
+        if (node.childNodes.length) {
+            return false;
+        }
+        var length = node.length || 0;
+        if (node === sc && so === length) {
+            return false;
+        }
+        if (node === ec && eo === 0) {
+            return false;
+        }
+        return true;
+    }
+    while (start && !isLeafNodeInRange(start) && start !== end) {
+        start = documentForward(start);
+    }
+    if (start === sc) {
+        range.setStart(sc, so);
+    }
+    else if (start !== null) {
+        if (start.nodeType === 3) {
+            range.setStart(start, 0);
+        }
+        else {
+            range.setStartBefore(start);
+        }
+    }
+    while (end && !isLeafNodeInRange(end) && end !== start) {
+        end = documentReverse(end);
+    }
+    if (end === ec) {
+        range.setEnd(ec, eo);
+    }
+    else if (end !== null) {
+        if (end.nodeType === 3) {
+            range.setEnd(end, end.length);
+        }
+        else {
+            range.setEndAfter(end);
+        }
+    }
+    return range;
+}
+exports.normalizeRange = normalizeRange;
+function documentForward(node) {
+    if (node.firstChild) {
+        return node.firstChild;
+    }
+    var n = node;
+    while (!n.nextSibling) {
+        n = n.parentNode;
+        if (!n) {
+            return null;
+        }
+    }
+    return n.nextSibling;
+}
+function documentReverse(node) {
+    if (node.lastChild) {
+        return node.lastChild;
+    }
+    var n = node;
+    while (!n.previousSibling) {
+        n = n.parentNode;
+        if (!n) {
+            return null;
+        }
+    }
+    return n.previousSibling;
+}
+function firstLeaf(node) {
+    while (node.firstChild) {
+        node = node.firstChild;
+    }
+    return node;
+}
+function lastLeaf(node) {
+    while (node.lastChild) {
+        node = node.lastChild;
+    }
+    return node;
 }
 //# sourceMappingURL=selection.js.map

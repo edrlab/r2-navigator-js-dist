@@ -5,3 +5,4 @@ export declare function getCurrentSelectionInfo(win: IReadiumElectronWebviewWind
 export declare function createOrderedRange(startNode: Node, startOffset: number, endNode: Node, endOffset: number): Range | undefined;
 export declare function convertRange(range: Range, getCssSelector: (element: Element) => string, computeElementCFI: (node: Node) => string | undefined): IRangeInfo | undefined;
 export declare function convertRangeInfo(documant: Document, rangeInfo: IRangeInfo): Range | undefined;
+export declare function normalizeRange(r: Range): Range;
