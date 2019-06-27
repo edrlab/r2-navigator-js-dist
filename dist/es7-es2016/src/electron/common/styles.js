@@ -117,6 +117,8 @@ exports.TTS_ID_PREVIOUS = "r2-tts-previous";
 exports.TTS_ID_NEXT = "r2-tts-next";
 exports.TTS_ID_SLIDER = "r2-tts-slider";
 exports.TTS_ID_ACTIVE_WORD = "r2-tts-active-word";
+exports.TTS_ID_ACTIVE_UTTERANCE = "r2-tts-active-utterance";
+exports.TTS_CLASS_UTTERANCE = "r2-tts-utterance";
 exports.TTS_ID_CONTAINER = "r2-tts-txt";
 exports.TTS_ID_INFO = "r2-tts-info";
 exports.TTS_NAV_BUTTON_CLASS = "r2-tts-button";
@@ -124,7 +126,32 @@ exports.TTS_ID_SPEAKING_DOC_ELEMENT = "r2-tts-speaking-el";
 exports.TTS_CLASS_INJECTED_SPAN = "r2-tts-speaking-txt";
 exports.TTS_CLASS_INJECTED_SUBSPAN = "r2-tts-speaking-word";
 exports.TTS_ID_INJECTED_PARENT = "r2-tts-speaking-txt-parent";
+exports.TTS_POPUP_DIALOG_CLASS = "r2-tts-popup-dialog";
 exports.ttsCssStyles = `
+
+:root[style] dialog#${exports.POPUP_DIALOG_CLASS}.${exports.TTS_POPUP_DIALOG_CLASS},
+:root dialog#${exports.POPUP_DIALOG_CLASS}.${exports.TTS_POPUP_DIALOG_CLASS} {
+    width: auto;
+    max-width: 100%;
+
+    height: auto;
+    max-height: 100%;
+
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+
+    margin: 0;
+    padding: 0;
+
+    box-shadow: none;
+
+    border-radius: 0;
+    border-style: solid;
+    border-width: 2px;
+    border-color: black !important;
+}
 
 :root[style] div#${exports.TTS_ID_CONTAINER},
 :root div#${exports.TTS_ID_CONTAINER} {
@@ -136,7 +163,7 @@ exports.ttsCssStyles = `
     grid-row-start: 1;
     grid-row-end: 2;
 
-    padding: 0.3em;
+    padding: 1em;
     margin: 0;
     margin-left: 0.2em;
     margin-top: 0.2em;
@@ -190,6 +217,8 @@ exports.ttsCssStyles = `
     margin: 0;
     margin-left: 6px;
     margin-right: 6px;
+    margin-top: 6px;
+    margin-bottom: 6px;
 
     grid-column-start: 2;
     grid-column-end: 3;
@@ -330,23 +359,55 @@ exports.ttsCssStyles = `
     */
 }
 
+.${exports.TTS_CLASS_UTTERANCE} {
+    margin-bottom: 1em;
+    padding: 0;
+    display: block;
+}
+
+:root[style] div#${exports.TTS_ID_ACTIVE_UTTERANCE},
+:root div#${exports.TTS_ID_ACTIVE_UTTERANCE} {
+    /* background-color: yellow !important; */
+
+    color: black !important;
+}
+:root[style*="readium-night-on"] div#${exports.TTS_ID_ACTIVE_UTTERANCE} {
+    color: white !important;
+}
+:root[style*="readium-sepia-on"] div#${exports.TTS_ID_ACTIVE_UTTERANCE} {
+    color: black !important;
+}
+:root[style*="--USER__textColor"] div#${exports.TTS_ID_ACTIVE_UTTERANCE} {
+    color: var(--USER__textColor) !important;
+}
+
 :root[style] span#${exports.TTS_ID_ACTIVE_WORD},
 :root span#${exports.TTS_ID_ACTIVE_WORD} {
     color: black !important;
+
+    /*
     text-decoration: underline;
     text-underline-position: under;
+    */
+    outline-color: black;
+    outline-offset: 2px;
+    outline-style: solid;
+    outline-width: 1px;
 
     padding: 0;
     margin: 0;
 }
 :root[style*="readium-night-on"] span#${exports.TTS_ID_ACTIVE_WORD} {
     color: white !important;
+    outline-color: white;
 }
 :root[style*="readium-sepia-on"] span#${exports.TTS_ID_ACTIVE_WORD} {
     color: black !important;
+    outline-color: black;
 }
 :root[style*="--USER__textColor"] span#${exports.TTS_ID_ACTIVE_WORD} {
     color: var(--USER__textColor) !important;
+    outline-color: var(--USER__textColor);
 }
 `;
 exports.ROOT_CLASS_INVISIBLE_MASK = "r2-visibility-mask";

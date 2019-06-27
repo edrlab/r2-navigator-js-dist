@@ -80,7 +80,7 @@ function onKeyDown(ev) {
     }
 }
 var PopupDialog = (function () {
-    function PopupDialog(documant, outerHTML, onDialogClosed) {
+    function PopupDialog(documant, outerHTML, onDialogClosed, optionalCssClass) {
         this.documant = documant;
         this.onDialogClosed = onDialogClosed;
         closePopupDialogs(documant);
@@ -89,7 +89,8 @@ var PopupDialog = (function () {
         this._onKeyDown = onKeyDown.bind(this);
         this.dialog = documant.createElement("dialog");
         this.dialog.popDialog = this;
-        this.dialog.setAttribute("class", styles_1.POPUP_DIALOG_CLASS);
+        this.dialog.setAttribute("class", styles_1.POPUP_DIALOG_CLASS
+            + (optionalCssClass ? " " + optionalCssClass : ""));
         this.dialog.setAttribute("id", styles_1.POPUP_DIALOG_CLASS);
         this.dialog.setAttribute("dir", "ltr");
         try {
