@@ -170,7 +170,7 @@ function handleLinkLocator(location) {
         var urlNoQueryParams = uri.toString();
         var hrefToLoad = urlNoQueryParams +
             ((useGoto) ? ("?" + url_params_1.URL_PARAM_GOTO + "=" +
-                UrlUtils_1.encodeURIComponent_RFC3986(new Buffer(JSON.stringify(linkToLoadGoto, null, "")).toString("base64"))) :
+                UrlUtils_1.encodeURIComponent_RFC3986(Buffer.from(JSON.stringify(linkToLoadGoto, null, "")).toString("base64"))) :
                 "");
         handleLink(hrefToLoad, undefined, useGoto);
     }
@@ -244,10 +244,10 @@ function loadLink(hrefFull, previous, useGoto) {
     }
     var rcssJson = readium_css_1.__computeReadiumCssJsonMessage(pubLink);
     var rcssJsonstr = JSON.stringify(rcssJson, null, "");
-    var rcssJsonstrBase64 = new Buffer(rcssJsonstr).toString("base64");
+    var rcssJsonstrBase64 = Buffer.from(rcssJsonstr).toString("base64");
     var rersJson = epubReadingSystem_1.getEpubReadingSystemInfo();
     var rersJsonstr = JSON.stringify(rersJson, null, "");
-    var rersJsonstrBase64 = new Buffer(rersJsonstr).toString("base64");
+    var rersJsonstrBase64 = Buffer.from(rersJsonstr).toString("base64");
     linkUri.search(function (data) {
         data[url_params_1.URL_PARAM_CSS] = rcssJsonstrBase64;
         data[url_params_1.URL_PARAM_EPUBREADINGSYSTEM] = rersJsonstrBase64;

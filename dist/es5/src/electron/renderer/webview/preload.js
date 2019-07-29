@@ -90,7 +90,7 @@ if (win.READIUM2.urlQueryParams) {
     var base64EpubReadingSystem = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_EPUBREADINGSYSTEM];
     if (base64EpubReadingSystem) {
         try {
-            var str = new Buffer(base64EpubReadingSystem, "base64").toString("utf8");
+            var str = Buffer.from(base64EpubReadingSystem, "base64").toString("utf8");
             readiumEpubReadingSystemJson = JSON.parse(str);
         }
         catch (err) {
@@ -618,7 +618,7 @@ var scrollToHashRaw = function () {
             var gotoCssSelector = void 0;
             var gotoProgression = void 0;
             if (gto) {
-                var s = new Buffer(gto, "base64").toString("utf8");
+                var s = Buffer.from(gto, "base64").toString("utf8");
                 var js = JSON.parse(s);
                 gotoCssSelector = js.cssSelector;
                 gotoProgression = js.progression;
@@ -823,7 +823,7 @@ win.addEventListener("DOMContentLoaded", function () {
         if (base64ReadiumCSS) {
             var str = void 0;
             try {
-                str = new Buffer(base64ReadiumCSS, "base64").toString("utf8");
+                str = Buffer.from(base64ReadiumCSS, "base64").toString("utf8");
                 readiumcssJson = JSON.parse(str);
             }
             catch (err) {
