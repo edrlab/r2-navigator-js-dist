@@ -108,6 +108,11 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
     }, 100);
 }
 exports.installNavigatorDOM = installNavigatorDOM;
+var _keyDownEventHandler;
+function setKeyDownEventHandler(func) {
+    _keyDownEventHandler = func;
+}
+exports.setKeyDownEventHandler = setKeyDownEventHandler;
 function createWebView(preloadScriptPath) {
     var wv = document.createElement("webview");
     wv.setAttribute("webpreferences", "nodeIntegration=0, nodeIntegrationInWorker=0, sandbox=0, javascript=1, " +
@@ -140,11 +145,8 @@ function createWebView(preloadScriptPath) {
         }
         if (event.channel === events_1.R2_EVENT_WEBVIEW_KEYDOWN) {
             var payload = event.args[0];
-            if (payload.keyCode === 37) {
-                location_1.navLeftOrRight(true);
-            }
-            else if (payload.keyCode === 39) {
-                location_1.navLeftOrRight(false);
+            if (_keyDownEventHandler) {
+                _keyDownEventHandler(payload);
             }
         }
         else if (!highlight_1.highlightsHandleIpcMessage(event.channel, event.args, webview) &&

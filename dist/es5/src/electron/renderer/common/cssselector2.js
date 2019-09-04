@@ -26,7 +26,7 @@ function uniqueCssSelector(input, doc, options) {
         tagName: function (_name) { return true; },
         threshold: 1000,
     };
-    config = tslib_1.__assign({}, defaults, options);
+    config = tslib_1.__assign(tslib_1.__assign({}, defaults), options);
     rootDocument = findRootDocument(config.root, defaults);
     var path = bottomUpSearch(input, Limit.All, function () {
         return bottomUpSearch(input, Limit.Two, function () {

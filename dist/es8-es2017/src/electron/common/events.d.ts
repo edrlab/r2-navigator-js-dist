@@ -85,5 +85,10 @@ export interface IEventPayload_R2_EVENT_HIGHLIGHT_CLICK {
 }
 export declare const R2_EVENT_WEBVIEW_KEYDOWN = "R2_EVENT_WEBVIEW_KEYDOWN";
 export interface IEventPayload_R2_EVENT_WEBVIEW_KEYDOWN {
-    keyCode: number;
+    key: string;
+    code: string;
+    altKey: boolean;
+    ctrlKey: boolean;
+    metaKey: boolean;
+    shiftKey: boolean;
 }

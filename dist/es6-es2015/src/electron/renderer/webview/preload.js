@@ -68,7 +68,12 @@ win.prompt = (...args) => {
 };
 window.document.addEventListener("keydown", (ev) => {
     const payload = {
-        keyCode: ev.keyCode,
+        altKey: ev.altKey,
+        code: ev.code,
+        ctrlKey: ev.ctrlKey,
+        key: ev.key,
+        metaKey: ev.metaKey,
+        shiftKey: ev.shiftKey,
     };
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_WEBVIEW_KEYDOWN, payload);
 });
@@ -961,7 +966,7 @@ function loaded(forced) {
         if (win.document && win.document.documentElement) {
             win.document.documentElement.classList.add(styles_1.ROOT_CLASS_KEYBOARD_INTERACT);
         }
-        if (ev.keyCode === 37 || ev.keyCode === 39) {
+        if (ev.code === "ArrowLeft" || ev.code === "ArrowRight") {
             if (ev.target && elementCapturesKeyboardArrowKeys(ev.target)) {
                 ev.target.r2_leftrightKeyboardTimeStamp = new Date();
             }

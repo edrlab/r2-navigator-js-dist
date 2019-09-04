@@ -15,7 +15,7 @@ function secureSessions(server) {
         var serverUrl = server.serverUrl();
         if ((serverUrl && details.url.startsWith(serverUrl)) ||
             details.url.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
-            callback({ responseHeaders: tslib_1.__assign({}, details.responseHeaders, { "Content-Security-Policy": ["default-src 'self' 'unsafe-inline' 'unsafe-eval' data: http: https: " + sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + ": " + serverUrl] }) });
+            callback({ responseHeaders: tslib_1.__assign(tslib_1.__assign({}, details.responseHeaders), { "Content-Security-Policy": ["default-src 'self' 'unsafe-inline' 'unsafe-eval' data: http: https: " + sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + ": " + serverUrl] }) });
         }
         else {
             callback({});

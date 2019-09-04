@@ -33,6 +33,8 @@ export interface IReadiumElectronBrowserWindowState {
     ttsClickEnabled: boolean;
     getActiveWebView: () => IReadiumElectronWebview | undefined;
 }
-export interface IReadiumElectronBrowserWindow extends Window {
+export interface IWithReadiumElectronBrowserWindowState {
     READIUM2: IReadiumElectronBrowserWindowState;
 }
+export declare type TWindow = typeof window;
+export declare type IReadiumElectronBrowserWindow = TWindow & IWithReadiumElectronBrowserWindowState;

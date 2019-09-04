@@ -25,7 +25,7 @@ function uniqueCssSelector(input, doc, options) {
         tagName: (_name) => true,
         threshold: 1000,
     };
-    config = Object.assign({}, defaults, options);
+    config = Object.assign(Object.assign({}, defaults), options);
     rootDocument = findRootDocument(config.root, defaults);
     let path = bottomUpSearch(input, Limit.All, () => bottomUpSearch(input, Limit.Two, () => bottomUpSearch(input, Limit.One)));
     if (path) {

@@ -5,7 +5,7 @@ import { ISelectionInfo } from "../common/selection";
 import { IReadiumElectronWebview } from "./webview/state";
 export declare function locationHandleIpcMessage(eventChannel: string, eventArgs: any[], eventCurrentTarget: IReadiumElectronWebview): boolean;
 export declare function shiftWebview(webview: IReadiumElectronWebview, offset: number, backgroundColor: string | undefined): void;
-export declare function navLeftOrRight(left: boolean): void;
+export declare function navLeftOrRight(left: boolean, spineNav?: boolean): void;
 export declare function handleLink(href: string, previous: boolean | undefined, useGoto: boolean): void;
 export declare function handleLinkUrl(href: string): void;
 export declare function handleLinkLocator(location: Locator | undefined): void;

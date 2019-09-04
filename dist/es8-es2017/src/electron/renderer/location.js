@@ -90,20 +90,55 @@ function shiftWebview(webview, offset, backgroundColor) {
     }
 }
 exports.shiftWebview = shiftWebview;
-function navLeftOrRight(left) {
+function navLeftOrRight(left, spineNav) {
     const publication = window.READIUM2.publication;
-    if (!publication) {
+    const publicationURL = window.READIUM2.publicationURL;
+    if (!publication || !publicationURL) {
         return;
     }
     const rtl = readium_css_1.isRTL();
-    const goPREVIOUS = left ? !rtl : rtl;
-    const payload = {
-        direction: rtl ? "RTL" : "LTR",
-        go: goPREVIOUS ? "PREVIOUS" : "NEXT",
-    };
-    const activeWebView = window.READIUM2.getActiveWebView();
-    if (activeWebView) {
-        activeWebView.send(events_1.R2_EVENT_PAGE_TURN, payload);
+    if (spineNav) {
+        if (!publication.Spine) {
+            return;
+        }
+        if (!_lastSavedReadingLocation) {
+            return;
+        }
+        const loc = _lastSavedReadingLocation;
+        const rtl_ = loc.docInfo && loc.docInfo.isRightToLeft;
+        if (rtl_ !== rtl) {
+            debug(`RTL differ?! METADATA ${rtl} vs. DOCUMENT ${rtl_}`);
+        }
+        const offset = (left ? -1 : 1) * (rtl ? -1 : 1);
+        const currentSpineIndex = publication.Spine.findIndex((link) => {
+            return link.Href === loc.locator.href;
+        });
+        if (currentSpineIndex >= 0) {
+            const spineIndex = currentSpineIndex + offset;
+            if (spineIndex >= 0 && spineIndex <= (publication.Spine.length - 1)) {
+                const nextOrPreviousSpineItem = publication.Spine[spineIndex];
+                const uri = new url_1.URL(nextOrPreviousSpineItem.Href, publicationURL);
+                uri.hash = "";
+                uri.search = "";
+                const urlNoQueryParams = uri.toString();
+                handleLink(urlNoQueryParams, false, false);
+                return;
+            }
+            else {
+                electron_1.shell.beep();
+            }
+        }
+    }
+    else {
+        const goPREVIOUS = left ? !rtl : rtl;
+        const payload = {
+            direction: rtl ? "RTL" : "LTR",
+            go: goPREVIOUS ? "PREVIOUS" : "NEXT",
+        };
+        const activeWebView = window.READIUM2.getActiveWebView();
+        if (activeWebView) {
+            activeWebView.send(events_1.R2_EVENT_PAGE_TURN, payload);
+        }
     }
 }
 exports.navLeftOrRight = navLeftOrRight;

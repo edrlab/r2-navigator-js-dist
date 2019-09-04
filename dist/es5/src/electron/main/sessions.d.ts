@@ -1,3 +1,4 @@
+/// <reference types="electron" />
 import { Server } from "r2-streamer-js/dist/es5/src/http/server";
 export declare function secureSessions(server: Server): void;
 export declare function initSessions(): void;

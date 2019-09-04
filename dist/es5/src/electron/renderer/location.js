@@ -91,20 +91,55 @@ function shiftWebview(webview, offset, backgroundColor) {
     }
 }
 exports.shiftWebview = shiftWebview;
-function navLeftOrRight(left) {
+function navLeftOrRight(left, spineNav) {
     var publication = window.READIUM2.publication;
-    if (!publication) {
+    var publicationURL = window.READIUM2.publicationURL;
+    if (!publication || !publicationURL) {
         return;
     }
     var rtl = readium_css_1.isRTL();
-    var goPREVIOUS = left ? !rtl : rtl;
-    var payload = {
-        direction: rtl ? "RTL" : "LTR",
-        go: goPREVIOUS ? "PREVIOUS" : "NEXT",
-    };
-    var activeWebView = window.READIUM2.getActiveWebView();
-    if (activeWebView) {
-        activeWebView.send(events_1.R2_EVENT_PAGE_TURN, payload);
+    if (spineNav) {
+        if (!publication.Spine) {
+            return;
+        }
+        if (!_lastSavedReadingLocation) {
+            return;
+        }
+        var loc_1 = _lastSavedReadingLocation;
+        var rtl_ = loc_1.docInfo && loc_1.docInfo.isRightToLeft;
+        if (rtl_ !== rtl) {
+            debug("RTL differ?! METADATA " + rtl + " vs. DOCUMENT " + rtl_);
+        }
+        var offset = (left ? -1 : 1) * (rtl ? -1 : 1);
+        var currentSpineIndex = publication.Spine.findIndex(function (link) {
+            return link.Href === loc_1.locator.href;
+        });
+        if (currentSpineIndex >= 0) {
+            var spineIndex = currentSpineIndex + offset;
+            if (spineIndex >= 0 && spineIndex <= (publication.Spine.length - 1)) {
+                var nextOrPreviousSpineItem = publication.Spine[spineIndex];
+                var uri = new url_1.URL(nextOrPreviousSpineItem.Href, publicationURL);
+                uri.hash = "";
+                uri.search = "";
+                var urlNoQueryParams = uri.toString();
+                handleLink(urlNoQueryParams, false, false);
+                return;
+            }
+            else {
+                electron_1.shell.beep();
+            }
+        }
+    }
+    else {
+        var goPREVIOUS = left ? !rtl : rtl;
+        var payload = {
+            direction: rtl ? "RTL" : "LTR",
+            go: goPREVIOUS ? "PREVIOUS" : "NEXT",
+        };
+        var activeWebView = window.READIUM2.getActiveWebView();
+        if (activeWebView) {
+            activeWebView.send(events_1.R2_EVENT_PAGE_TURN, payload);
+        }
     }
 }
 exports.navLeftOrRight = navLeftOrRight;
