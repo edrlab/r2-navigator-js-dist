@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = require("tslib");
-var renew_1 = require("r2-lcp-js/dist/es5/src/lsd/renew");
-var return_1 = require("r2-lcp-js/dist/es5/src/lsd/return");
 var debug_ = require("debug");
 var moment = require("moment");
+var renew_1 = require("r2-lcp-js/dist/es5/src/lsd/renew");
+var return_1 = require("r2-lcp-js/dist/es5/src/lsd/return");
 var debug = debug_("r2:navigator#electron/main/lsd");
 function doLsdReturn(publicationsServer, deviceIDManager, publicationFilePath) {
     return tslib_1.__awaiter(this, void 0, void 0, function () {

@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const express = require("express");
 const transformer_1 = require("r2-shared-js/dist/es7-es2016/src/transform/transformer");
 const transformer_html_1 = require("r2-shared-js/dist/es7-es2016/src/transform/transformer-html");
-const express = require("express");
 const readium_css_inject_1 = require("../common/readium-css-inject");
 const readium_css_settings_1 = require("../common/readium-css-settings");
 function isFixedLayout(publication, link) {

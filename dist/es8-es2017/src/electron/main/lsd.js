@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const renew_1 = require("r2-lcp-js/dist/es8-es2017/src/lsd/renew");
-const return_1 = require("r2-lcp-js/dist/es8-es2017/src/lsd/return");
 const debug_ = require("debug");
 const moment = require("moment");
+const renew_1 = require("r2-lcp-js/dist/es8-es2017/src/lsd/renew");
+const return_1 = require("r2-lcp-js/dist/es8-es2017/src/lsd/return");
 const debug = debug_("r2:navigator#electron/main/lsd");
 async function doLsdReturn(publicationsServer, deviceIDManager, publicationFilePath) {
     const publication = publicationsServer.cachedPublication(publicationFilePath);

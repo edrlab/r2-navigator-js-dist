@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = require("tslib");
-var url_1 = require("url");
-var UrlUtils_1 = require("r2-utils-js/dist/es5/src/_utils/http/UrlUtils");
 var debug_ = require("debug");
 var electron_1 = require("electron");
+var url_1 = require("url");
+var UrlUtils_1 = require("r2-utils-js/dist/es5/src/_utils/http/UrlUtils");
 var events_1 = require("../common/events");
 var sessions_1 = require("../common/sessions");
 var url_params_1 = require("./common/url-params");

@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const debug_ = require("debug");
 const fs = require("fs");
+const ta_json_x_1 = require("ta-json-x");
 const lcp_1 = require("r2-lcp-js/dist/es8-es2017/src/parser/epub/lcp");
 const zipInjector_1 = require("r2-utils-js/dist/es8-es2017/src/_utils/zip/zipInjector");
-const debug_ = require("debug");
-const ta_json_x_1 = require("ta-json-x");
 const debug = debug_("r2:navigator#electron/main/lsd-injectlcpl");
 async function lsdLcpUpdateInject(lcplStr, publication, publicationPath) {
     const lcplJson = global.JSON.parse(lcplStr);

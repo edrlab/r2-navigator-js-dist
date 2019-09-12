@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const util = require("util");
 const debugBrowser = require("debug");
 const debugNode = require("debug/src/node");
+const util = require("util");
 function consoleRedirect(debugNamespace, stdout, stderr, printInOriginalConsole) {
     const _consoleFunctionNames = ["error", "info", "log", "warn"];
     if (console.debug && (typeof console.debug === "function")) {

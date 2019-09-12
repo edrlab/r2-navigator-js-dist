@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const url_1 = require("url");
-const UrlUtils_1 = require("r2-utils-js/dist/es8-es2017/src/_utils/http/UrlUtils");
 const debug_ = require("debug");
 const electron_1 = require("electron");
+const url_1 = require("url");
+const UrlUtils_1 = require("r2-utils-js/dist/es8-es2017/src/_utils/http/UrlUtils");
 const events_1 = require("../common/events");
 const sessions_1 = require("../common/sessions");
 const url_params_1 = require("./common/url-params");

@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = require("tslib");
+var debug_ = require("debug");
 var fs = require("fs");
+var ta_json_x_1 = require("ta-json-x");
 var lcp_1 = require("r2-lcp-js/dist/es5/src/parser/epub/lcp");
 var zipInjector_1 = require("r2-utils-js/dist/es5/src/_utils/zip/zipInjector");
-var debug_ = require("debug");
-var ta_json_x_1 = require("ta-json-x");
 var debug = debug_("r2:navigator#electron/main/lsd-injectlcpl");
 function lsdLcpUpdateInject(lcplStr, publication, publicationPath) {
     return tslib_1.__awaiter(this, void 0, void 0, function () {
