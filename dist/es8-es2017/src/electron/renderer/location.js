@@ -145,14 +145,21 @@ exports.navLeftOrRight = navLeftOrRight;
 function handleLink(href, previous, useGoto) {
     const special = href.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://");
     if (special) {
-        loadLink(href, previous, useGoto);
+        const okay = loadLink(href, previous, useGoto);
+        if (!okay) {
+            debug(`Readium link fail?! ${href}`);
+        }
     }
     else {
         const okay = loadLink(href, previous, useGoto);
         if (!okay) {
-            debug("EXTERNAL LINK:");
-            debug(href);
-            electron_1.shell.openExternal(href);
+            if (/^http[s]?:\/\/127\.0\.0\.1/.test(href)) {
+                debug(`Internal link, fails to match publication document: ${href}`);
+            }
+            else {
+                debug(`External link: ${href}`);
+                electron_1.shell.openExternal(href);
+            }
         }
     }
 }
