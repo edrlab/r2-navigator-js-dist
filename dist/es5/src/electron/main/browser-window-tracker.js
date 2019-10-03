@@ -28,6 +28,7 @@ electron_1.app.on("web-contents-created", function (_evt, wc) {
         webPreferences.nodeIntegration = false;
         webPreferences.nodeIntegrationInWorker = false;
         webPreferences.allowRunningInsecureContent = false;
+        webPreferences.enableRemoteModule = false;
     });
     if (!wc.hostWebContents) {
         return;

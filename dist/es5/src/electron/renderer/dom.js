@@ -37,86 +37,10 @@ function readiumCssOnOff() {
 }
 exports.readiumCssOnOff = readiumCssOnOff;
 var _webview1;
-function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, preloadScriptPath, location) {
-    var domRootElement = document.getElementById(rootHtmlElementID);
-    if (!domRootElement) {
-        debug("!rootHtmlElementID ???");
-        return;
-    }
-    var domSlidingViewport = document.createElement("div");
-    domSlidingViewport.setAttribute("id", ELEMENT_ID_SLIDING_VIEWPORT);
-    domSlidingViewport.setAttribute("style", "display: block; position: absolute; left: 0; width: 200%; " +
-        "top: 0; bottom: 0; margin: 0; padding: 0; box-sizing: border-box; background: white; overflow: hidden;");
-    window.READIUM2 = {
-        DEBUG_VISUALS: false,
-        domRootElement: domRootElement,
-        domSlidingViewport: domSlidingViewport,
-        getActiveWebView: function () {
-            return _webview1;
-        },
-        publication: publication,
-        publicationURL: publicationURL,
-        ttsClickEnabled: false,
-    };
-    if (IS_DEV) {
-        debug("||||||++||||| installNavigatorDOM: ", JSON.stringify(location));
-        var debugVisualz = (window.localStorage &&
-            window.localStorage.getItem(url_params_1.URL_PARAM_DEBUG_VISUALS) === "true") ? true : false;
-        debug("debugVisuals GET: ", debugVisualz);
-        window.READIUM2.DEBUG_VISUALS = debugVisualz;
-        window.READIUM2.debug = function (debugVisuals) {
-            debug("debugVisuals SET: ", debugVisuals);
-            window.READIUM2.DEBUG_VISUALS = debugVisuals;
-            var activeWebView = window.READIUM2.getActiveWebView();
-            if (activeWebView) {
-                var payload = { debugVisuals: debugVisuals };
-                activeWebView.send(events_1.R2_EVENT_DEBUG_VISUALS, payload);
-            }
-            if (window.localStorage) {
-                window.localStorage.setItem(url_params_1.URL_PARAM_DEBUG_VISUALS, debugVisuals ? "true" : "false");
-            }
-            setTimeout(function () {
-                var loc = location_1.getCurrentReadingLocation();
-                if (loc) {
-                    location_1.handleLinkLocator(loc.locator);
-                }
-            }, 100);
-        };
-        window.READIUM2.debugItems =
-            function (cssSelector, cssClass, cssStyles) {
-                if (cssStyles) {
-                    debug("debugVisuals ITEMS: ", cssSelector + " --- " + cssClass + " --- " + cssStyles);
-                }
-                var activeWebView = window.READIUM2.getActiveWebView();
-                if (activeWebView) {
-                    var d = window.READIUM2.DEBUG_VISUALS;
-                    var payload = { debugVisuals: d, cssSelector: cssSelector, cssClass: cssClass, cssStyles: cssStyles };
-                    activeWebView.send(events_1.R2_EVENT_DEBUG_VISUALS, payload);
-                }
-            };
-    }
-    _webview1 = createWebView(preloadScriptPath);
-    _webview1.READIUM2 = {
-        id: 1,
-        link: undefined,
-    };
-    _webview1.setAttribute("id", "webview1");
-    domSlidingViewport.appendChild(_webview1);
-    domRootElement.appendChild(domSlidingViewport);
-    setTimeout(function () {
-        location_1.handleLinkLocator(location);
-    }, 100);
-}
-exports.installNavigatorDOM = installNavigatorDOM;
-var _keyDownEventHandler;
-function setKeyDownEventHandler(func) {
-    _keyDownEventHandler = func;
-}
-exports.setKeyDownEventHandler = setKeyDownEventHandler;
-function createWebView(preloadScriptPath) {
+function createWebViewInternal(preloadScriptPath) {
     var wv = document.createElement("webview");
     wv.setAttribute("webpreferences", "nodeIntegration=0, nodeIntegrationInWorker=0, sandbox=0, javascript=1, " +
-        "contextIsolation=0, webSecurity=1, allowRunningInsecureContent=0");
+        "contextIsolation=0, webSecurity=1, allowRunningInsecureContent=0, enableRemoteModule=0");
     wv.setAttribute("partition", sessions_1.R2_SESSION_WEBVIEW);
     var publicationURL_ = window.READIUM2.publicationURL;
     if (publicationURL_) {
@@ -182,4 +106,95 @@ if (webview_resize_1.ENABLE_WEBVIEW_RESIZE) {
         onResizeDebounced_1();
     });
 }
+function createWebView() {
+    var preloadScriptPath = window.READIUM2.preloadScriptPath;
+    _webview1 = createWebViewInternal(preloadScriptPath);
+    _webview1.READIUM2 = {
+        id: 1,
+        link: undefined,
+    };
+    _webview1.setAttribute("id", "webview1");
+    var domSlidingViewport = window.READIUM2.domSlidingViewport;
+    domSlidingViewport.appendChild(_webview1);
+}
+function destroyWebView() {
+    var domSlidingViewport = window.READIUM2.domSlidingViewport;
+    domSlidingViewport.removeChild(_webview1);
+    _webview1.READIUM2 = undefined;
+    _webview1 = undefined;
+}
+function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, preloadScriptPath, location, enableScreenReaderAccessibilityWebViewHardRefresh) {
+    var domRootElement = document.getElementById(rootHtmlElementID);
+    if (!domRootElement) {
+        debug("!rootHtmlElementID ???");
+        return;
+    }
+    var domSlidingViewport = document.createElement("div");
+    domSlidingViewport.setAttribute("id", ELEMENT_ID_SLIDING_VIEWPORT);
+    domSlidingViewport.setAttribute("style", "display: block; position: absolute; left: 0; width: 200%; " +
+        "top: 0; bottom: 0; margin: 0; padding: 0; box-sizing: border-box; background: white; overflow: hidden;");
+    window.READIUM2 = {
+        DEBUG_VISUALS: false,
+        createActiveWebView: createWebView,
+        destroyActiveWebView: destroyWebView,
+        domRootElement: domRootElement,
+        domSlidingViewport: domSlidingViewport,
+        enableScreenReaderAccessibilityWebViewHardRefresh: enableScreenReaderAccessibilityWebViewHardRefresh ? true : false,
+        getActiveWebView: function () {
+            return _webview1;
+        },
+        preloadScriptPath: preloadScriptPath,
+        publication: publication,
+        publicationURL: publicationURL,
+        ttsClickEnabled: false,
+    };
+    if (IS_DEV) {
+        debug("||||||++||||| installNavigatorDOM: ", JSON.stringify(location));
+        var debugVisualz = (window.localStorage &&
+            window.localStorage.getItem(url_params_1.URL_PARAM_DEBUG_VISUALS) === "true") ? true : false;
+        debug("debugVisuals GET: ", debugVisualz);
+        window.READIUM2.DEBUG_VISUALS = debugVisualz;
+        window.READIUM2.debug = function (debugVisuals) {
+            debug("debugVisuals SET: ", debugVisuals);
+            window.READIUM2.DEBUG_VISUALS = debugVisuals;
+            var activeWebView = window.READIUM2.getActiveWebView();
+            if (activeWebView) {
+                var payload = { debugVisuals: debugVisuals };
+                activeWebView.send(events_1.R2_EVENT_DEBUG_VISUALS, payload);
+            }
+            if (window.localStorage) {
+                window.localStorage.setItem(url_params_1.URL_PARAM_DEBUG_VISUALS, debugVisuals ? "true" : "false");
+            }
+            setTimeout(function () {
+                var loc = location_1.getCurrentReadingLocation();
+                if (loc) {
+                    location_1.handleLinkLocator(loc.locator);
+                }
+            }, 100);
+        };
+        window.READIUM2.debugItems =
+            function (cssSelector, cssClass, cssStyles) {
+                if (cssStyles) {
+                    debug("debugVisuals ITEMS: ", cssSelector + " --- " + cssClass + " --- " + cssStyles);
+                }
+                var activeWebView = window.READIUM2.getActiveWebView();
+                if (activeWebView) {
+                    var d = window.READIUM2.DEBUG_VISUALS;
+                    var payload = { debugVisuals: d, cssSelector: cssSelector, cssClass: cssClass, cssStyles: cssStyles };
+                    activeWebView.send(events_1.R2_EVENT_DEBUG_VISUALS, payload);
+                }
+            };
+    }
+    domRootElement.appendChild(domSlidingViewport);
+    createWebView();
+    setTimeout(function () {
+        location_1.handleLinkLocator(location);
+    }, 100);
+}
+exports.installNavigatorDOM = installNavigatorDOM;
+var _keyDownEventHandler;
+function setKeyDownEventHandler(func) {
+    _keyDownEventHandler = func;
+}
+exports.setKeyDownEventHandler = setKeyDownEventHandler;
 //# sourceMappingURL=dom.js.map

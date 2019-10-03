@@ -31,10 +31,15 @@ export interface IReadiumElectronBrowserWindowState {
     domSlidingViewport: HTMLElement;
     DEBUG_VISUALS: boolean;
     ttsClickEnabled: boolean;
+    preloadScriptPath: string;
     getActiveWebView: () => IReadiumElectronWebview | undefined;
+    destroyActiveWebView: () => void;
+    createActiveWebView: () => void;
+    enableScreenReaderAccessibilityWebViewHardRefresh: boolean;
 }
 export interface IWithReadiumElectronBrowserWindowState {
     READIUM2: IReadiumElectronBrowserWindowState;
 }
 export declare type TWindow = typeof window;
 export declare type IReadiumElectronBrowserWindow = TWindow & IWithReadiumElectronBrowserWindowState;
+export declare function isScreenReaderMounted(): boolean;
