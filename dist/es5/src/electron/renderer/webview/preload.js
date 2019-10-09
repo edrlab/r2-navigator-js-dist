@@ -1003,6 +1003,9 @@ function loaded(forced) {
         if (!href) {
             return;
         }
+        if (/^javascript:/.test(href)) {
+            return;
+        }
         ev.preventDefault();
         ev.stopPropagation();
         var done = popupFootNotes_1.popupFootNote(currentElement, focusScrollRaw, href, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
