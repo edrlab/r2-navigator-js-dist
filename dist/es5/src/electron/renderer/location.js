@@ -145,6 +145,7 @@ function navLeftOrRight(left, spineNav) {
 }
 exports.navLeftOrRight = navLeftOrRight;
 function handleLink(href, previous, useGoto) {
+    var _this = this;
     var special = href.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://");
     if (special) {
         var okay = loadLink(href, previous, useGoto);
@@ -160,7 +161,24 @@ function handleLink(href, previous, useGoto) {
             }
             else {
                 debug("External link: " + href);
-                electron_1.shell.openExternal(href);
+                (function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                    var err_1;
+                    return tslib_1.__generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                _a.trys.push([0, 2, , 3]);
+                                return [4, electron_1.shell.openExternal(href)];
+                            case 1:
+                                _a.sent();
+                                return [3, 3];
+                            case 2:
+                                err_1 = _a.sent();
+                                debug(err_1);
+                                return [3, 3];
+                            case 3: return [2];
+                        }
+                    });
+                }); })();
             }
         }
     }

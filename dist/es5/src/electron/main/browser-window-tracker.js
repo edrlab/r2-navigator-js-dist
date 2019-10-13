@@ -42,8 +42,6 @@ electron_1.app.on("web-contents-created", function (_evt, wc) {
             wc.on("will-navigate", function (event, url) {
                 debug("webview.getWebContents().on('will-navigate'");
                 debug(url);
-                var wcUrl = event.sender.getURL();
-                debug(wcUrl);
                 event.preventDefault();
                 var payload = {
                     url: url,

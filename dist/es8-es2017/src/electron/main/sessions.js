@@ -5,7 +5,7 @@ const electron_1 = require("electron");
 const sessions_1 = require("../common/sessions");
 const debug = debug_("r2:navigator#electron/main/sessions");
 function secureSessions(server) {
-    const filter = { urls: ["*", "*://*/*"] };
+    const filter = { urls: ["*://*/*"] };
     const onHeadersReceivedCB = (details, callback) => {
         if (!details.url) {
             callback({});
@@ -14,7 +14,9 @@ function secureSessions(server) {
         const serverUrl = server.serverUrl();
         if ((serverUrl && details.url.startsWith(serverUrl)) ||
             details.url.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
-            callback({ responseHeaders: Object.assign(Object.assign({}, details.responseHeaders), { "Content-Security-Policy": [`default-src 'self' 'unsafe-inline' 'unsafe-eval' data: http: https: ${sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL}: ${serverUrl}`] }) });
+            callback({
+                responseHeaders: Object.assign(Object.assign({}, details.responseHeaders), { "Content-Security-Policy": [`default-src 'self' 'unsafe-inline' 'unsafe-eval' data: http: https: ${sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL}: ${serverUrl}`] }),
+            });
         }
         else {
             callback({});
@@ -85,7 +87,22 @@ const httpProtocolHandler = (request, callback) => {
     });
 };
 function initSessions() {
-    electron_1.protocol.registerStandardSchemes([sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL], { secure: true });
+    if (electron_1.protocol.registerStandardSchemes) {
+        electron_1.protocol.registerStandardSchemes([sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL], { secure: true });
+    }
+    else {
+        electron_1.protocol.registerSchemesAsPrivileged([{
+                privileges: {
+                    allowServiceWorkers: false,
+                    bypassCSP: false,
+                    corsEnabled: true,
+                    secure: true,
+                    standard: true,
+                    supportFetchAPI: true,
+                },
+                scheme: sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL,
+            }]);
+    }
     electron_1.app.on("ready", () => {
         debug("app ready");
         clearSessions(undefined, undefined);

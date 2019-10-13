@@ -159,7 +159,14 @@ function handleLink(href, previous, useGoto) {
             }
             else {
                 debug(`External link: ${href}`);
-                electron_1.shell.openExternal(href);
+                (async () => {
+                    try {
+                        await electron_1.shell.openExternal(href);
+                    }
+                    catch (err) {
+                        debug(err);
+                    }
+                })();
             }
         }
     }
