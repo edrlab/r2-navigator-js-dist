@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const tslib_1 = require("tslib");
 const events_1 = require("../common/events");
 const location_1 = require("./location");
 function ttsHandleIpcMessage(eventChannel, _eventArgs, _eventCurrentTarget) {
@@ -51,7 +52,9 @@ function ttsPlay() {
         rootElement: "html > body",
         startElement: startElementCSSSelector,
     };
-    activeWebView.send(events_1.R2_EVENT_TTS_DO_PLAY, payload);
+    setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+        yield activeWebView.send(events_1.R2_EVENT_TTS_DO_PLAY, payload);
+    }), 0);
 }
 exports.ttsPlay = ttsPlay;
 function ttsPause() {
@@ -59,7 +62,9 @@ function ttsPause() {
     if (!activeWebView) {
         return;
     }
-    activeWebView.send(events_1.R2_EVENT_TTS_DO_PAUSE);
+    setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+        yield activeWebView.send(events_1.R2_EVENT_TTS_DO_PAUSE);
+    }), 0);
 }
 exports.ttsPause = ttsPause;
 function ttsStop() {
@@ -67,7 +72,9 @@ function ttsStop() {
     if (!activeWebView) {
         return;
     }
-    activeWebView.send(events_1.R2_EVENT_TTS_DO_STOP);
+    setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+        yield activeWebView.send(events_1.R2_EVENT_TTS_DO_STOP);
+    }), 0);
 }
 exports.ttsStop = ttsStop;
 function ttsResume() {
@@ -75,7 +82,9 @@ function ttsResume() {
     if (!activeWebView) {
         return;
     }
-    activeWebView.send(events_1.R2_EVENT_TTS_DO_RESUME);
+    setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+        yield activeWebView.send(events_1.R2_EVENT_TTS_DO_RESUME);
+    }), 0);
 }
 exports.ttsResume = ttsResume;
 function ttsPrevious() {
@@ -83,7 +92,9 @@ function ttsPrevious() {
     if (!activeWebView) {
         return;
     }
-    activeWebView.send(events_1.R2_EVENT_TTS_DO_PREVIOUS);
+    setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+        yield activeWebView.send(events_1.R2_EVENT_TTS_DO_PREVIOUS);
+    }), 0);
 }
 exports.ttsPrevious = ttsPrevious;
 function ttsNext() {
@@ -91,7 +102,9 @@ function ttsNext() {
     if (!activeWebView) {
         return;
     }
-    activeWebView.send(events_1.R2_EVENT_TTS_DO_NEXT);
+    setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+        yield activeWebView.send(events_1.R2_EVENT_TTS_DO_NEXT);
+    }), 0);
 }
 exports.ttsNext = ttsNext;
 function ttsClickEnable(doEnable) {
@@ -105,7 +118,9 @@ function ttsClickEnable(doEnable) {
     const payload = {
         doEnable,
     };
-    activeWebView.send(events_1.R2_EVENT_TTS_CLICK_ENABLE, payload);
+    setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+        yield activeWebView.send(events_1.R2_EVENT_TTS_CLICK_ENABLE, payload);
+    }), 0);
 }
 exports.ttsClickEnable = ttsClickEnable;
 //# sourceMappingURL=readaloud.js.map

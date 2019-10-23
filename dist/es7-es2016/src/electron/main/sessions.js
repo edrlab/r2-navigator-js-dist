@@ -1,9 +1,30 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const tslib_1 = require("tslib");
 const debug_ = require("debug");
 const electron_1 = require("electron");
 const sessions_1 = require("../common/sessions");
 const debug = debug_("r2:navigator#electron/main/sessions");
+function promiseAllSettled(promises) {
+    return tslib_1.__awaiter(this, void 0, void 0, function* () {
+        const promises_ = promises.map((promise) => tslib_1.__awaiter(this, void 0, void 0, function* () {
+            return promise
+                .then((value) => {
+                return {
+                    status: "fulfilled",
+                    value,
+                };
+            })
+                .catch((reason) => {
+                return {
+                    reason,
+                    status: "rejected",
+                };
+            });
+        }));
+        return Promise.all(promises_);
+    });
+}
 function secureSessions(server) {
     const filter = { urls: ["*://*/*"] };
     const onHeadersReceivedCB = (details, callback) => {
@@ -103,9 +124,14 @@ function initSessions() {
                 scheme: sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL,
             }]);
     }
-    electron_1.app.on("ready", () => {
+    electron_1.app.on("ready", () => tslib_1.__awaiter(this, void 0, void 0, function* () {
         debug("app ready");
-        clearSessions(undefined, undefined);
+        try {
+            yield clearSessions();
+        }
+        catch (err) {
+            debug(err);
+        }
         if (electron_1.session.defaultSession) {
             electron_1.session.defaultSession.protocol.registerHttpProtocol(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL, httpProtocolHandler, (error) => {
                 if (error) {
@@ -133,60 +159,50 @@ function initSessions() {
                 callback(true);
             });
         }
-    });
+    }));
     function willQuitCallback(evt) {
-        debug("app will quit");
-        electron_1.app.removeListener("will-quit", willQuitCallback);
-        let done = false;
-        setTimeout(() => {
-            if (done) {
-                return;
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            debug("app will quit");
+            evt.preventDefault();
+            electron_1.app.removeListener("will-quit", willQuitCallback);
+            try {
+                yield clearSessions();
             }
-            done = true;
-            debug("Cache and StorageData clearance waited enough => force quitting...");
+            catch (err) {
+                debug(err);
+            }
+            debug("Cache and StorageData cleared, now quitting...");
             electron_1.app.quit();
-        }, 6000);
-        let sessionCleared = 0;
-        const callback = () => {
-            sessionCleared++;
-            if (sessionCleared >= 2) {
-                if (done) {
-                    return;
-                }
-                done = true;
-                debug("Cache and StorageData cleared, now quitting...");
-                electron_1.app.quit();
-            }
-        };
-        clearSessions(callback, callback);
-        evt.preventDefault();
+        });
     }
     electron_1.app.on("will-quit", willQuitCallback);
 }
 exports.initSessions = initSessions;
-function clearSession(sess, str, callbackCache, callbackStorageData) {
-    sess.clearCache(() => {
-        debug("SESSION CACHE CLEARED - " + str);
-        if (callbackCache) {
-            callbackCache();
+function clearSession(sess, str) {
+    return tslib_1.__awaiter(this, void 0, void 0, function* () {
+        const prom1 = sess.clearCache();
+        const prom2 = sess.clearStorageData({
+            origin: "*",
+            quotas: [
+                "temporary",
+                "persistent",
+                "syncable",
+            ],
+            storages: [
+                "appcache",
+                "serviceworkers",
+            ],
+        });
+        try {
+            const results = yield promiseAllSettled([prom1, prom2]);
+            for (const result of results) {
+                debug(`SESSION CACHE + STORAGE DATA CLEARED - ${str} => ${result.status}`);
+            }
         }
-    });
-    sess.clearStorageData({
-        origin: "*",
-        quotas: [
-            "temporary",
-            "persistent",
-            "syncable",
-        ],
-        storages: [
-            "appcache",
-            "serviceworkers",
-        ],
-    }, () => {
-        debug("SESSION STORAGE DATA CLEARED - " + str);
-        if (callbackStorageData) {
-            callbackStorageData();
+        catch (err) {
+            debug(err);
         }
+        return Promise.resolve();
     });
 }
 exports.clearSession = clearSession;
@@ -194,58 +210,45 @@ function getWebViewSession() {
     return electron_1.session.fromPartition(sessions_1.R2_SESSION_WEBVIEW, { cache: true });
 }
 exports.getWebViewSession = getWebViewSession;
-function clearWebviewSession(callbackCache, callbackStorageData) {
-    const sess = getWebViewSession();
-    if (sess) {
-        clearSession(sess, "[" + sessions_1.R2_SESSION_WEBVIEW + "]", callbackCache, callbackStorageData);
-    }
-    else {
-        if (callbackCache) {
-            callbackCache();
+function clearWebviewSession() {
+    return tslib_1.__awaiter(this, void 0, void 0, function* () {
+        const sess = getWebViewSession();
+        if (sess) {
+            try {
+                yield clearSession(sess, "[" + sessions_1.R2_SESSION_WEBVIEW + "]");
+            }
+            catch (err) {
+                debug(err);
+            }
         }
-        if (callbackStorageData) {
-            callbackStorageData();
-        }
-    }
+        return Promise.resolve();
+    });
 }
 exports.clearWebviewSession = clearWebviewSession;
-function clearDefaultSession(callbackCache, callbackStorageData) {
-    if (electron_1.session.defaultSession) {
-        clearSession(electron_1.session.defaultSession, "[default]", callbackCache, callbackStorageData);
-    }
-    else {
-        if (callbackCache) {
-            callbackCache();
+function clearDefaultSession() {
+    return tslib_1.__awaiter(this, void 0, void 0, function* () {
+        if (electron_1.session.defaultSession) {
+            try {
+                yield clearSession(electron_1.session.defaultSession, "[default]");
+            }
+            catch (err) {
+                debug(err);
+            }
         }
-        if (callbackStorageData) {
-            callbackStorageData();
-        }
-    }
+        return Promise.resolve();
+    });
 }
 exports.clearDefaultSession = clearDefaultSession;
-function clearSessions(callbackCache, callbackStorageData) {
-    let done = false;
-    setTimeout(() => {
-        if (done) {
-            return;
+function clearSessions() {
+    return tslib_1.__awaiter(this, void 0, void 0, function* () {
+        try {
+            yield promiseAllSettled([clearDefaultSession(), clearWebviewSession()]);
         }
-        done = true;
-        debug("Cache and StorageData clearance waited enough (default session) => force webview session...");
-        clearWebviewSession(callbackCache, callbackStorageData);
-    }, 6000);
-    let sessionCleared = 0;
-    const callback = () => {
-        sessionCleared++;
-        if (sessionCleared >= 2) {
-            if (done) {
-                return;
-            }
-            done = true;
-            debug("Cache and StorageData cleared (default session), now webview session...");
-            clearWebviewSession(callbackCache, callbackStorageData);
+        catch (err) {
+            debug(err);
         }
-    };
-    clearDefaultSession(callback, callback);
+        return Promise.resolve();
+    });
 }
 exports.clearSessions = clearSessions;
 //# sourceMappingURL=sessions.js.map

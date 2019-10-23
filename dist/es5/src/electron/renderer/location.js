@@ -93,6 +93,7 @@ function shiftWebview(webview, offset, backgroundColor) {
 }
 exports.shiftWebview = shiftWebview;
 function navLeftOrRight(left, spineNav) {
+    var _this = this;
     var publication = window.READIUM2.publication;
     var publicationURL = window.READIUM2.publicationURL;
     if (!publication || !publicationURL) {
@@ -133,13 +134,22 @@ function navLeftOrRight(left, spineNav) {
     }
     else {
         var goPREVIOUS = left ? !rtl : rtl;
-        var payload = {
+        var payload_1 = {
             direction: rtl ? "RTL" : "LTR",
             go: goPREVIOUS ? "PREVIOUS" : "NEXT",
         };
-        var activeWebView = window.READIUM2.getActiveWebView();
-        if (activeWebView) {
-            activeWebView.send(events_1.R2_EVENT_PAGE_TURN, payload);
+        var activeWebView_1 = window.READIUM2.getActiveWebView();
+        if (activeWebView_1) {
+            setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                return tslib_1.__generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0: return [4, activeWebView_1.send(events_1.R2_EVENT_PAGE_TURN, payload_1)];
+                        case 1:
+                            _a.sent();
+                            return [2];
+                    }
+                });
+            }); }, 0);
         }
     }
 }
@@ -238,6 +248,7 @@ function handleLinkLocator(location) {
 }
 exports.handleLinkLocator = handleLinkLocator;
 function loadLink(hrefFull, previous, useGoto) {
+    var _this = this;
     var publication = window.READIUM2.publication;
     var publicationURL = window.READIUM2.publicationURL;
     if (!publication || !publicationURL) {
@@ -323,25 +334,51 @@ function loadLink(hrefFull, previous, useGoto) {
         var goto = useGoto ? linkUri.search(true)[url_params_1.URL_PARAM_GOTO] : undefined;
         var hash = useGoto ? undefined : linkUri.fragment();
         debug("WEBVIEW ALREADY LOADED: " + pubLink.Href);
-        var payload_1 = {
+        var payload_2 = {
             goto: goto,
             hash: hash,
             previous: previous ? true : false,
         };
         if (IS_DEV) {
-            var msgStr = JSON.stringify(payload_1);
+            var msgStr = JSON.stringify(payload_2);
             debug(msgStr);
         }
         if (activeWebView) {
             if (activeWebView.style.transform !== "none") {
-                activeWebView.send("R2_EVENT_HIDE");
-                setTimeout(function () {
-                    shiftWebview(activeWebView, 0, undefined);
-                    activeWebView.send(events_1.R2_EVENT_SCROLLTO, payload_1);
-                }, 10);
+                setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                    return tslib_1.__generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0: return [4, activeWebView.send("R2_EVENT_HIDE")];
+                            case 1:
+                                _a.sent();
+                                return [2];
+                        }
+                    });
+                }); }, 0);
+                setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                    return tslib_1.__generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                shiftWebview(activeWebView, 0, undefined);
+                                return [4, activeWebView.send(events_1.R2_EVENT_SCROLLTO, payload_2)];
+                            case 1:
+                                _a.sent();
+                                return [2];
+                        }
+                    });
+                }); }, 10);
             }
             else {
-                activeWebView.send(events_1.R2_EVENT_SCROLLTO, payload_1);
+                setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                    return tslib_1.__generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0: return [4, activeWebView.send(events_1.R2_EVENT_SCROLLTO, payload_2)];
+                            case 1:
+                                _a.sent();
+                                return [2];
+                        }
+                    });
+                }); }, 0);
             }
         }
         return true;
@@ -373,7 +410,16 @@ function loadLink(hrefFull, previous, useGoto) {
             activeWebView.READIUM2.link = pubLink;
             if (activeWebView.style.transform !== "none") {
                 if (webviewAlreadyHasContent) {
-                    activeWebView.send("R2_EVENT_HIDE");
+                    setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                        return tslib_1.__generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4, activeWebView.send("R2_EVENT_HIDE")];
+                                case 1:
+                                    _a.sent();
+                                    return [2];
+                            }
+                        });
+                    }); }, 0);
                 }
                 setTimeout(function () {
                     shiftWebview(activeWebView, 0, undefined);
@@ -429,6 +475,7 @@ function setReadingLocationSaver(func) {
 exports.setReadingLocationSaver = setReadingLocationSaver;
 function isLocatorVisible(locator) {
     return tslib_1.__awaiter(this, void 0, void 0, function () {
+        var _this = this;
         return tslib_1.__generator(this, function (_a) {
             return [2, new Promise(function (resolve, reject) {
                     var activeWebView = window.READIUM2.getActiveWebView();
@@ -458,7 +505,16 @@ function isLocatorVisible(locator) {
                     };
                     activeWebView.addEventListener("ipc-message", cb);
                     var payloadPing = { location: locator.locations, visible: false };
-                    activeWebView.send(events_1.R2_EVENT_LOCATOR_VISIBLE, payloadPing);
+                    setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                        return tslib_1.__generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4, activeWebView.send(events_1.R2_EVENT_LOCATOR_VISIBLE, payloadPing)];
+                                case 1:
+                                    _a.sent();
+                                    return [2];
+                            }
+                        });
+                    }); }, 0);
                 })];
         });
     });

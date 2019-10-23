@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
 var IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 var debounce_1 = require("debounce");
 var debug_ = require("debug");
@@ -14,19 +15,46 @@ var readium_css_1 = require("./readium-css");
 var ELEMENT_ID_SLIDING_VIEWPORT = "r2_navigator_sliding_viewport";
 var debug = debug_("r2:navigator#electron/renderer/index");
 function readiumCssOnOff() {
+    var _this = this;
     var loc = location_1.getCurrentReadingLocation();
     var activeWebView = window.READIUM2.getActiveWebView();
     if (activeWebView) {
         var payload1_1 = readium_css_1.__computeReadiumCssJsonMessage(activeWebView.READIUM2.link);
         if (activeWebView.style.transform !== "none") {
-            activeWebView.send("R2_EVENT_HIDE");
-            setTimeout(function () {
-                location_1.shiftWebview(activeWebView, 0, undefined);
-                activeWebView.send(events_1.R2_EVENT_READIUMCSS, payload1_1);
-            }, 10);
+            setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                return tslib_1.__generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0: return [4, activeWebView.send("R2_EVENT_HIDE")];
+                        case 1:
+                            _a.sent();
+                            return [2];
+                    }
+                });
+            }); }, 0);
+            setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                return tslib_1.__generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            location_1.shiftWebview(activeWebView, 0, undefined);
+                            return [4, activeWebView.send(events_1.R2_EVENT_READIUMCSS, payload1_1)];
+                        case 1:
+                            _a.sent();
+                            return [2];
+                    }
+                });
+            }); }, 10);
         }
         else {
-            activeWebView.send(events_1.R2_EVENT_READIUMCSS, payload1_1);
+            setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                return tslib_1.__generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0: return [4, activeWebView.send(events_1.R2_EVENT_READIUMCSS, payload1_1)];
+                        case 1:
+                            _a.sent();
+                            return [2];
+                    }
+                });
+            }); }, 0);
         }
     }
     if (loc) {
@@ -124,6 +152,7 @@ function destroyWebView() {
     _webview1 = undefined;
 }
 function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, preloadScriptPath, location, enableScreenReaderAccessibilityWebViewHardRefresh) {
+    var _this = this;
     var domRootElement = document.getElementById(rootHtmlElementID);
     if (!domRootElement) {
         debug("!rootHtmlElementID ???");
@@ -159,8 +188,17 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
             window.READIUM2.DEBUG_VISUALS = debugVisuals;
             var activeWebView = window.READIUM2.getActiveWebView();
             if (activeWebView) {
-                var payload = { debugVisuals: debugVisuals };
-                activeWebView.send(events_1.R2_EVENT_DEBUG_VISUALS, payload);
+                var payload_1 = { debugVisuals: debugVisuals };
+                setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                    return tslib_1.__generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0: return [4, activeWebView.send(events_1.R2_EVENT_DEBUG_VISUALS, payload_1)];
+                            case 1:
+                                _a.sent();
+                                return [2];
+                        }
+                    });
+                }); }, 0);
             }
             if (window.localStorage) {
                 window.localStorage.setItem(url_params_1.URL_PARAM_DEBUG_VISUALS, debugVisuals ? "true" : "false");
@@ -180,8 +218,17 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
                 var activeWebView = window.READIUM2.getActiveWebView();
                 if (activeWebView) {
                     var d = window.READIUM2.DEBUG_VISUALS;
-                    var payload = { debugVisuals: d, cssSelector: cssSelector, cssClass: cssClass, cssStyles: cssStyles };
-                    activeWebView.send(events_1.R2_EVENT_DEBUG_VISUALS, payload);
+                    var payload_2 = { debugVisuals: d, cssSelector: cssSelector, cssClass: cssClass, cssStyles: cssStyles };
+                    setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                        return tslib_1.__generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4, activeWebView.send(events_1.R2_EVENT_DEBUG_VISUALS, payload_2)];
+                                case 1:
+                                    _a.sent();
+                                    return [2];
+                            }
+                        });
+                    }); }, 0);
                 }
             };
     }

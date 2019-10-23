@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const tslib_1 = require("tslib");
 const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 const debounce_1 = require("debounce");
 const debug_ = require("debug");
@@ -19,14 +20,18 @@ function readiumCssOnOff() {
     if (activeWebView) {
         const payload1 = readium_css_1.__computeReadiumCssJsonMessage(activeWebView.READIUM2.link);
         if (activeWebView.style.transform !== "none") {
-            activeWebView.send("R2_EVENT_HIDE");
-            setTimeout(() => {
+            setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+                yield activeWebView.send("R2_EVENT_HIDE");
+            }), 0);
+            setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
                 location_1.shiftWebview(activeWebView, 0, undefined);
-                activeWebView.send(events_1.R2_EVENT_READIUMCSS, payload1);
-            }, 10);
+                yield activeWebView.send(events_1.R2_EVENT_READIUMCSS, payload1);
+            }), 10);
         }
         else {
-            activeWebView.send(events_1.R2_EVENT_READIUMCSS, payload1);
+            setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+                yield activeWebView.send(events_1.R2_EVENT_READIUMCSS, payload1);
+            }), 0);
         }
     }
     if (loc) {
@@ -160,7 +165,9 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
             const activeWebView = window.READIUM2.getActiveWebView();
             if (activeWebView) {
                 const payload = { debugVisuals };
-                activeWebView.send(events_1.R2_EVENT_DEBUG_VISUALS, payload);
+                setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+                    yield activeWebView.send(events_1.R2_EVENT_DEBUG_VISUALS, payload);
+                }), 0);
             }
             if (window.localStorage) {
                 window.localStorage.setItem(url_params_1.URL_PARAM_DEBUG_VISUALS, debugVisuals ? "true" : "false");
@@ -181,7 +188,9 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
                 if (activeWebView) {
                     const d = window.READIUM2.DEBUG_VISUALS;
                     const payload = { debugVisuals: d, cssSelector, cssClass, cssStyles };
-                    activeWebView.send(events_1.R2_EVENT_DEBUG_VISUALS, payload);
+                    setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+                        yield activeWebView.send(events_1.R2_EVENT_DEBUG_VISUALS, payload);
+                    }), 0);
                 }
             };
     }

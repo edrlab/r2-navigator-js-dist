@@ -25,24 +25,45 @@ function highlightsClickListen(highlightsClickListener) {
 }
 exports.highlightsClickListen = highlightsClickListen;
 function highlightsRemoveAll(href) {
+    var _this = this;
     var activeWebView = window.READIUM2.getActiveWebView();
     if (activeWebView && activeWebView.READIUM2.link && activeWebView.READIUM2.link.Href === href) {
-        activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_REMOVE_ALL);
+        setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+            return tslib_1.__generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4, activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_REMOVE_ALL)];
+                    case 1:
+                        _a.sent();
+                        return [2];
+                }
+            });
+        }); }, 0);
     }
 }
 exports.highlightsRemoveAll = highlightsRemoveAll;
 function highlightsRemove(href, highlightIDs) {
+    var _this = this;
     var activeWebView = window.READIUM2.getActiveWebView();
     if (activeWebView && activeWebView.READIUM2.link && activeWebView.READIUM2.link.Href === href) {
-        var payload = {
+        var payload_1 = {
             highlightIDs: highlightIDs,
         };
-        activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_REMOVE, payload);
+        setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+            return tslib_1.__generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4, activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_REMOVE, payload_1)];
+                    case 1:
+                        _a.sent();
+                        return [2];
+                }
+            });
+        }); }, 0);
     }
 }
 exports.highlightsRemove = highlightsRemove;
 function highlightsCreate(href, highlightDefinitions) {
     return tslib_1.__awaiter(this, void 0, void 0, function () {
+        var _this = this;
         return tslib_1.__generator(this, function (_a) {
             return [2, new Promise(function (resolve, reject) {
                     var activeWebView = window.READIUM2.getActiveWebView();
@@ -80,7 +101,16 @@ function highlightsCreate(href, highlightDefinitions) {
                         highlightDefinitions: highlightDefinitions,
                         highlights: undefined,
                     };
-                    activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_CREATE, payloadPing);
+                    setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                        return tslib_1.__generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4, activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_CREATE, payloadPing)];
+                                case 1:
+                                    _a.sent();
+                                    return [2];
+                            }
+                        });
+                    }); }, 0);
                 })];
         });
     });

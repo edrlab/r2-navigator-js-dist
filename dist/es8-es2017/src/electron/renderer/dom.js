@@ -19,14 +19,18 @@ function readiumCssOnOff() {
     if (activeWebView) {
         const payload1 = readium_css_1.__computeReadiumCssJsonMessage(activeWebView.READIUM2.link);
         if (activeWebView.style.transform !== "none") {
-            activeWebView.send("R2_EVENT_HIDE");
-            setTimeout(() => {
+            setTimeout(async () => {
+                await activeWebView.send("R2_EVENT_HIDE");
+            }, 0);
+            setTimeout(async () => {
                 location_1.shiftWebview(activeWebView, 0, undefined);
-                activeWebView.send(events_1.R2_EVENT_READIUMCSS, payload1);
+                await activeWebView.send(events_1.R2_EVENT_READIUMCSS, payload1);
             }, 10);
         }
         else {
-            activeWebView.send(events_1.R2_EVENT_READIUMCSS, payload1);
+            setTimeout(async () => {
+                await activeWebView.send(events_1.R2_EVENT_READIUMCSS, payload1);
+            }, 0);
         }
     }
     if (loc) {
@@ -160,7 +164,9 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
             const activeWebView = window.READIUM2.getActiveWebView();
             if (activeWebView) {
                 const payload = { debugVisuals };
-                activeWebView.send(events_1.R2_EVENT_DEBUG_VISUALS, payload);
+                setTimeout(async () => {
+                    await activeWebView.send(events_1.R2_EVENT_DEBUG_VISUALS, payload);
+                }, 0);
             }
             if (window.localStorage) {
                 window.localStorage.setItem(url_params_1.URL_PARAM_DEBUG_VISUALS, debugVisuals ? "true" : "false");
@@ -181,7 +187,9 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
                 if (activeWebView) {
                     const d = window.READIUM2.DEBUG_VISUALS;
                     const payload = { debugVisuals: d, cssSelector, cssClass, cssStyles };
-                    activeWebView.send(events_1.R2_EVENT_DEBUG_VISUALS, payload);
+                    setTimeout(async () => {
+                        await activeWebView.send(events_1.R2_EVENT_DEBUG_VISUALS, payload);
+                    }, 0);
                 }
             };
     }

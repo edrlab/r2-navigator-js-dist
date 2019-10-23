@@ -139,7 +139,9 @@ function navLeftOrRight(left, spineNav) {
         };
         const activeWebView = window.READIUM2.getActiveWebView();
         if (activeWebView) {
-            activeWebView.send(events_1.R2_EVENT_PAGE_TURN, payload);
+            setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+                yield activeWebView.send(events_1.R2_EVENT_PAGE_TURN, payload);
+            }), 0);
         }
     }
 }
@@ -323,14 +325,18 @@ function loadLink(hrefFull, previous, useGoto) {
         }
         if (activeWebView) {
             if (activeWebView.style.transform !== "none") {
-                activeWebView.send("R2_EVENT_HIDE");
-                setTimeout(() => {
+                setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+                    yield activeWebView.send("R2_EVENT_HIDE");
+                }), 0);
+                setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
                     shiftWebview(activeWebView, 0, undefined);
-                    activeWebView.send(events_1.R2_EVENT_SCROLLTO, payload);
-                }, 10);
+                    yield activeWebView.send(events_1.R2_EVENT_SCROLLTO, payload);
+                }), 10);
             }
             else {
-                activeWebView.send(events_1.R2_EVENT_SCROLLTO, payload);
+                setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+                    yield activeWebView.send(events_1.R2_EVENT_SCROLLTO, payload);
+                }), 0);
             }
         }
         return true;
@@ -362,7 +368,9 @@ function loadLink(hrefFull, previous, useGoto) {
             activeWebView.READIUM2.link = pubLink;
             if (activeWebView.style.transform !== "none") {
                 if (webviewAlreadyHasContent) {
-                    activeWebView.send("R2_EVENT_HIDE");
+                    setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+                        yield activeWebView.send("R2_EVENT_HIDE");
+                    }), 0);
                 }
                 setTimeout(() => {
                     shiftWebview(activeWebView, 0, undefined);
@@ -446,7 +454,9 @@ function isLocatorVisible(locator) {
             };
             activeWebView.addEventListener("ipc-message", cb);
             const payloadPing = { location: locator.locations, visible: false };
-            activeWebView.send(events_1.R2_EVENT_LOCATOR_VISIBLE, payloadPing);
+            setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+                yield activeWebView.send(events_1.R2_EVENT_LOCATOR_VISIBLE, payloadPing);
+            }), 0);
         });
     });
 }

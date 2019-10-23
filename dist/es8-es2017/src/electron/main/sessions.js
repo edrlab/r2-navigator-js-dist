@@ -4,6 +4,24 @@ const debug_ = require("debug");
 const electron_1 = require("electron");
 const sessions_1 = require("../common/sessions");
 const debug = debug_("r2:navigator#electron/main/sessions");
+async function promiseAllSettled(promises) {
+    const promises_ = promises.map(async (promise) => {
+        return promise
+            .then((value) => {
+            return {
+                status: "fulfilled",
+                value,
+            };
+        })
+            .catch((reason) => {
+            return {
+                reason,
+                status: "rejected",
+            };
+        });
+    });
+    return Promise.all(promises_);
+}
 function secureSessions(server) {
     const filter = { urls: ["*://*/*"] };
     const onHeadersReceivedCB = (details, callback) => {
@@ -103,9 +121,14 @@ function initSessions() {
                 scheme: sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL,
             }]);
     }
-    electron_1.app.on("ready", () => {
+    electron_1.app.on("ready", async () => {
         debug("app ready");
-        clearSessions(undefined, undefined);
+        try {
+            await clearSessions();
+        }
+        catch (err) {
+            debug(err);
+        }
         if (electron_1.session.defaultSession) {
             electron_1.session.defaultSession.protocol.registerHttpProtocol(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL, httpProtocolHandler, (error) => {
                 if (error) {
@@ -134,44 +157,25 @@ function initSessions() {
             });
         }
     });
-    function willQuitCallback(evt) {
+    async function willQuitCallback(evt) {
         debug("app will quit");
-        electron_1.app.removeListener("will-quit", willQuitCallback);
-        let done = false;
-        setTimeout(() => {
-            if (done) {
-                return;
-            }
-            done = true;
-            debug("Cache and StorageData clearance waited enough => force quitting...");
-            electron_1.app.quit();
-        }, 6000);
-        let sessionCleared = 0;
-        const callback = () => {
-            sessionCleared++;
-            if (sessionCleared >= 2) {
-                if (done) {
-                    return;
-                }
-                done = true;
-                debug("Cache and StorageData cleared, now quitting...");
-                electron_1.app.quit();
-            }
-        };
-        clearSessions(callback, callback);
         evt.preventDefault();
+        electron_1.app.removeListener("will-quit", willQuitCallback);
+        try {
+            await clearSessions();
+        }
+        catch (err) {
+            debug(err);
+        }
+        debug("Cache and StorageData cleared, now quitting...");
+        electron_1.app.quit();
     }
     electron_1.app.on("will-quit", willQuitCallback);
 }
 exports.initSessions = initSessions;
-function clearSession(sess, str, callbackCache, callbackStorageData) {
-    sess.clearCache(() => {
-        debug("SESSION CACHE CLEARED - " + str);
-        if (callbackCache) {
-            callbackCache();
-        }
-    });
-    sess.clearStorageData({
+async function clearSession(sess, str) {
+    const prom1 = sess.clearCache();
+    const prom2 = sess.clearStorageData({
         origin: "*",
         quotas: [
             "temporary",
@@ -182,70 +186,56 @@ function clearSession(sess, str, callbackCache, callbackStorageData) {
             "appcache",
             "serviceworkers",
         ],
-    }, () => {
-        debug("SESSION STORAGE DATA CLEARED - " + str);
-        if (callbackStorageData) {
-            callbackStorageData();
-        }
     });
+    try {
+        const results = await promiseAllSettled([prom1, prom2]);
+        for (const result of results) {
+            debug(`SESSION CACHE + STORAGE DATA CLEARED - ${str} => ${result.status}`);
+        }
+    }
+    catch (err) {
+        debug(err);
+    }
+    return Promise.resolve();
 }
 exports.clearSession = clearSession;
 function getWebViewSession() {
     return electron_1.session.fromPartition(sessions_1.R2_SESSION_WEBVIEW, { cache: true });
 }
 exports.getWebViewSession = getWebViewSession;
-function clearWebviewSession(callbackCache, callbackStorageData) {
+async function clearWebviewSession() {
     const sess = getWebViewSession();
     if (sess) {
-        clearSession(sess, "[" + sessions_1.R2_SESSION_WEBVIEW + "]", callbackCache, callbackStorageData);
-    }
-    else {
-        if (callbackCache) {
-            callbackCache();
+        try {
+            await clearSession(sess, "[" + sessions_1.R2_SESSION_WEBVIEW + "]");
         }
-        if (callbackStorageData) {
-            callbackStorageData();
+        catch (err) {
+            debug(err);
         }
     }
+    return Promise.resolve();
 }
 exports.clearWebviewSession = clearWebviewSession;
-function clearDefaultSession(callbackCache, callbackStorageData) {
+async function clearDefaultSession() {
     if (electron_1.session.defaultSession) {
-        clearSession(electron_1.session.defaultSession, "[default]", callbackCache, callbackStorageData);
-    }
-    else {
-        if (callbackCache) {
-            callbackCache();
+        try {
+            await clearSession(electron_1.session.defaultSession, "[default]");
         }
-        if (callbackStorageData) {
-            callbackStorageData();
+        catch (err) {
+            debug(err);
         }
     }
+    return Promise.resolve();
 }
 exports.clearDefaultSession = clearDefaultSession;
-function clearSessions(callbackCache, callbackStorageData) {
-    let done = false;
-    setTimeout(() => {
-        if (done) {
-            return;
-        }
-        done = true;
-        debug("Cache and StorageData clearance waited enough (default session) => force webview session...");
-        clearWebviewSession(callbackCache, callbackStorageData);
-    }, 6000);
-    let sessionCleared = 0;
-    const callback = () => {
-        sessionCleared++;
-        if (sessionCleared >= 2) {
-            if (done) {
-                return;
-            }
-            done = true;
-            debug("Cache and StorageData cleared (default session), now webview session...");
-            clearWebviewSession(callbackCache, callbackStorageData);
-        }
-    };
-    clearDefaultSession(callback, callback);
+async function clearSessions() {
+    try {
+        await promiseAllSettled([clearDefaultSession(), clearWebviewSession()]);
+    }
+    catch (err) {
+        debug(err);
+    }
+    return Promise.resolve();
 }
 exports.clearSessions = clearSessions;
 //# sourceMappingURL=sessions.js.map

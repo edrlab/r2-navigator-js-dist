@@ -27,7 +27,9 @@ exports.highlightsClickListen = highlightsClickListen;
 function highlightsRemoveAll(href) {
     const activeWebView = window.READIUM2.getActiveWebView();
     if (activeWebView && activeWebView.READIUM2.link && activeWebView.READIUM2.link.Href === href) {
-        activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_REMOVE_ALL);
+        setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+            yield activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_REMOVE_ALL);
+        }), 0);
     }
 }
 exports.highlightsRemoveAll = highlightsRemoveAll;
@@ -37,7 +39,9 @@ function highlightsRemove(href, highlightIDs) {
         const payload = {
             highlightIDs,
         };
-        activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_REMOVE, payload);
+        setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+            yield activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_REMOVE, payload);
+        }), 0);
     }
 }
 exports.highlightsRemove = highlightsRemove;
@@ -79,7 +83,9 @@ function highlightsCreate(href, highlightDefinitions) {
                 highlightDefinitions,
                 highlights: undefined,
             };
-            activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_CREATE, payloadPing);
+            setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+                yield activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_CREATE, payloadPing);
+            }), 0);
         });
     });
 }
