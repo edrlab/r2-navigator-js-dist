@@ -28,7 +28,6 @@ var popupFootNotes_1 = require("./popupFootNotes");
 var readaloud_1 = require("./readaloud");
 var readium_css_1 = require("./readium-css");
 var selection_2 = require("./selection");
-var ResizeSensor = require("css-element-queries/src/ResizeSensor");
 var debug = debug_("r2:navigator#electron/renderer/webview/preload");
 var win = global.window;
 win.READIUM2 = {
@@ -919,25 +918,24 @@ function loaded(forced) {
         win.READIUM2.locationHashOverride = win.document.body;
         notifyReadingLocationDebounced();
     }
-    var useResizeSensor = !win.READIUM2.isFixedLayout;
-    if (useResizeSensor && win.document.body) {
+    var useResizeObserver = !win.READIUM2.isFixedLayout;
+    if (useResizeObserver && win.document.body) {
         setTimeout(function () {
-            var _firstResizeSensor = true;
-            new ResizeSensor(win.document.body, function () {
-                if (_firstResizeSensor) {
-                    _firstResizeSensor = false;
-                    debug("ResizeSensor SKIP FIRST");
+            var _firstResizeObserver = true;
+            var resizeObserver = new window.ResizeObserver(function (_entries) {
+                if (_firstResizeObserver) {
+                    _firstResizeObserver = false;
+                    debug("ResizeObserver SKIP FIRST");
                     return;
                 }
-                debug("ResizeSensor");
                 win.document.body.tabbables = undefined;
-                debug("++++ scrollToHashDebounced FROM RESIZE SENSOR");
                 scrollToHashDebounced();
             });
+            resizeObserver.observe(win.document.body);
             setTimeout(function () {
-                if (_firstResizeSensor) {
-                    _firstResizeSensor = false;
-                    debug("ResizeSensor CANCEL SKIP FIRST");
+                if (_firstResizeObserver) {
+                    _firstResizeObserver = false;
+                    debug("ResizeObserver CANCEL SKIP FIRST");
                 }
             }, 700);
         }, 1000);
