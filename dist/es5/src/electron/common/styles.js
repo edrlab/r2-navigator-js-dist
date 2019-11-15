@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ROOT_CLASS_REDUCE_MOTION = "r2-reduce-motion";
 exports.ROOT_CLASS_NO_FOOTNOTES = "r2-no-popup-foonotes";
+exports.ROOT_CLASS_MATHJAX = "r2-mathjax";
 exports.POPUP_DIALOG_CLASS = "r2-popup-dialog";
 exports.FOOTNOTES_CONTAINER_CLASS = "r2-footnote-container";
 exports.FOOTNOTES_CLOSE_BUTTON_CLASS = "r2-footnote-close";

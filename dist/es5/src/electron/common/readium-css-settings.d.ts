@@ -21,6 +21,7 @@ export interface IReadiumCSS {
     sepia: boolean | undefined;
     a11yNormalize: boolean | undefined;
     noFootnotes: boolean | undefined;
+    mathJax: boolean | undefined;
     reduceMotion: boolean | undefined;
 }
 export declare enum bodyHyphensEnum {
@@ -70,6 +71,7 @@ export declare const readiumCSSDefaults: {
     lineHeight: undefined;
     night: boolean;
     noFootnotes: boolean;
+    mathJax: boolean;
     pageMargins: undefined;
     paged: boolean;
     paraIndent: undefined;

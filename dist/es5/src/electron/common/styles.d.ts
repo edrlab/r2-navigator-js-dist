@@ -1,5 +1,6 @@
 export declare const ROOT_CLASS_REDUCE_MOTION = "r2-reduce-motion";
 export declare const ROOT_CLASS_NO_FOOTNOTES = "r2-no-popup-foonotes";
+export declare const ROOT_CLASS_MATHJAX = "r2-mathjax";
 export declare const POPUP_DIALOG_CLASS = "r2-popup-dialog";
 export declare const FOOTNOTES_CONTAINER_CLASS = "r2-footnote-container";
 export declare const FOOTNOTES_CLOSE_BUTTON_CLASS = "r2-footnote-close";

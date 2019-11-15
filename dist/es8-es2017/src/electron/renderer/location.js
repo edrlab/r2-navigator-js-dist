@@ -227,6 +227,24 @@ function handleLinkLocator(location) {
     }
 }
 exports.handleLinkLocator = handleLinkLocator;
+let _reloadCounter = 0;
+function reloadContent() {
+    const activeWebView = window.READIUM2.getActiveWebView();
+    if (!activeWebView) {
+        return;
+    }
+    setTimeout(() => {
+        activeWebView.READIUM2.forceRefresh = true;
+        if (activeWebView.READIUM2.link) {
+            const uri = new url_1.URL(activeWebView.READIUM2.link.Href, window.READIUM2.publicationURL);
+            uri.hash = "";
+            uri.search = "";
+            const urlNoQueryParams = uri.toString();
+            handleLinkUrl(urlNoQueryParams);
+        }
+    }, 0);
+}
+exports.reloadContent = reloadContent;
 function loadLink(hrefFull, previous, useGoto) {
     const publication = window.READIUM2.publication;
     const publicationURL = window.READIUM2.publicationURL;
@@ -305,10 +323,14 @@ function loadLink(hrefFull, previous, useGoto) {
         data[url_params_1.URL_PARAM_DEBUG_VISUALS] = (IS_DEV && window.READIUM2.DEBUG_VISUALS) ?
             "true" : "false";
     });
-    const webviewNeedsHardRefresh = window.READIUM2.enableScreenReaderAccessibilityWebViewHardRefresh
-        && state_1.isScreenReaderMounted();
     const activeWebView = window.READIUM2.getActiveWebView();
-    if (!webviewNeedsHardRefresh &&
+    const webviewNeedsForcedRefresh = activeWebView && activeWebView.READIUM2.forceRefresh;
+    if (activeWebView) {
+        activeWebView.READIUM2.forceRefresh = undefined;
+    }
+    const webviewNeedsHardRefresh = (window.READIUM2.enableScreenReaderAccessibilityWebViewHardRefresh
+        && state_1.isScreenReaderMounted());
+    if (!webviewNeedsHardRefresh && !webviewNeedsForcedRefresh &&
         activeWebView && activeWebView.READIUM2.link === pubLink) {
         const goto = useGoto ? linkUri.search(true)[url_params_1.URL_PARAM_GOTO] : undefined;
         const hash = useGoto ? undefined : linkUri.fragment();
@@ -341,6 +363,11 @@ function loadLink(hrefFull, previous, useGoto) {
         return true;
     }
     if (activeWebView) {
+        if (webviewNeedsForcedRefresh) {
+            linkUri.search((data) => {
+                data[url_params_1.URL_PARAM_REFRESH] = `${++_reloadCounter}`;
+            });
+        }
         const uriStr = linkUri.toString();
         const needConvert = publicationURL.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://");
         const uriStr_ = uriStr.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://") ?

@@ -120,7 +120,7 @@ if (IS_DEV) {
         }
         if (payload.cssClass) {
             if (_blacklistIdClassForCssSelectors.indexOf(payload.cssClass) < 0) {
-                _blacklistIdClassForCssSelectors.push(payload.cssClass);
+                _blacklistIdClassForCssSelectors.push(payload.cssClass.toLowerCase());
             }
             if (payload.debugVisuals && payload.cssStyles && payload.cssStyles.length) {
                 var idSuffix = "debug_for_class_" + payload.cssClass;
@@ -1100,21 +1100,18 @@ win.addEventListener("load", function () {
     loaded(false);
 });
 function checkBlacklisted(el) {
-    var e_1, _a;
-    var blacklistedId;
+    var e_1, _a, e_2, _b, e_3, _c, e_4, _d;
     var id = el.getAttribute("id");
     if (id && _blacklistIdClassForCFI.indexOf(id) >= 0) {
         console.log("checkBlacklisted ID: " + id);
-        blacklistedId = id;
+        return true;
     }
-    var blacklistedClass;
     try {
         for (var _blacklistIdClassForCFI_1 = tslib_1.__values(_blacklistIdClassForCFI), _blacklistIdClassForCFI_1_1 = _blacklistIdClassForCFI_1.next(); !_blacklistIdClassForCFI_1_1.done; _blacklistIdClassForCFI_1_1 = _blacklistIdClassForCFI_1.next()) {
             var item = _blacklistIdClassForCFI_1_1.value;
             if (el.classList.contains(item)) {
                 console.log("checkBlacklisted CLASS: " + item);
-                blacklistedClass = item;
-                break;
+                return true;
             }
         }
     }
@@ -1125,8 +1122,64 @@ function checkBlacklisted(el) {
         }
         finally { if (e_1) throw e_1.error; }
     }
-    if (blacklistedId || blacklistedClass) {
-        return true;
+    var mathJax = win.document.documentElement.classList.contains(styles_1.ROOT_CLASS_MATHJAX);
+    if (mathJax) {
+        var low = el.tagName.toLowerCase();
+        try {
+            for (var _blacklistIdClassForCFIMathJax_1 = tslib_1.__values(_blacklistIdClassForCFIMathJax), _blacklistIdClassForCFIMathJax_1_1 = _blacklistIdClassForCFIMathJax_1.next(); !_blacklistIdClassForCFIMathJax_1_1.done; _blacklistIdClassForCFIMathJax_1_1 = _blacklistIdClassForCFIMathJax_1.next()) {
+                var item = _blacklistIdClassForCFIMathJax_1_1.value;
+                if (low.startsWith(item)) {
+                    console.log("checkBlacklisted MathJax ELEMENT NAME: " + el.tagName);
+                    return true;
+                }
+            }
+        }
+        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        finally {
+            try {
+                if (_blacklistIdClassForCFIMathJax_1_1 && !_blacklistIdClassForCFIMathJax_1_1.done && (_b = _blacklistIdClassForCFIMathJax_1.return)) _b.call(_blacklistIdClassForCFIMathJax_1);
+            }
+            finally { if (e_2) throw e_2.error; }
+        }
+        if (id) {
+            var lowId = id.toLowerCase();
+            try {
+                for (var _blacklistIdClassForCFIMathJax_2 = tslib_1.__values(_blacklistIdClassForCFIMathJax), _blacklistIdClassForCFIMathJax_2_1 = _blacklistIdClassForCFIMathJax_2.next(); !_blacklistIdClassForCFIMathJax_2_1.done; _blacklistIdClassForCFIMathJax_2_1 = _blacklistIdClassForCFIMathJax_2.next()) {
+                    var item = _blacklistIdClassForCFIMathJax_2_1.value;
+                    if (lowId.startsWith(item)) {
+                        console.log("checkBlacklisted MathJax ID: " + id);
+                        return true;
+                    }
+                }
+            }
+            catch (e_3_1) { e_3 = { error: e_3_1 }; }
+            finally {
+                try {
+                    if (_blacklistIdClassForCFIMathJax_2_1 && !_blacklistIdClassForCFIMathJax_2_1.done && (_c = _blacklistIdClassForCFIMathJax_2.return)) _c.call(_blacklistIdClassForCFIMathJax_2);
+                }
+                finally { if (e_3) throw e_3.error; }
+            }
+        }
+        for (var i = 0; i < el.classList.length; i++) {
+            var cl = el.classList[i];
+            var lowCl = cl.toLowerCase();
+            try {
+                for (var _blacklistIdClassForCFIMathJax_3 = (e_4 = void 0, tslib_1.__values(_blacklistIdClassForCFIMathJax)), _blacklistIdClassForCFIMathJax_3_1 = _blacklistIdClassForCFIMathJax_3.next(); !_blacklistIdClassForCFIMathJax_3_1.done; _blacklistIdClassForCFIMathJax_3_1 = _blacklistIdClassForCFIMathJax_3.next()) {
+                    var item = _blacklistIdClassForCFIMathJax_3_1.value;
+                    if (lowCl.startsWith(item)) {
+                        console.log("checkBlacklisted MathJax CLASS: " + cl);
+                        return true;
+                    }
+                }
+            }
+            catch (e_4_1) { e_4 = { error: e_4_1 }; }
+            finally {
+                try {
+                    if (_blacklistIdClassForCFIMathJax_3_1 && !_blacklistIdClassForCFIMathJax_3_1.done && (_d = _blacklistIdClassForCFIMathJax_3.return)) _d.call(_blacklistIdClassForCFIMathJax_3);
+                }
+                finally { if (e_4) throw e_4.error; }
+            }
+        }
     }
     return false;
 }
@@ -1229,7 +1282,7 @@ var processXYDebounced = debounce_1.debounce(function (x, y, reverse) {
     processXYRaw(x, y, reverse);
 }, 300);
 exports.computeProgressionData = function () {
-    var e_2, _a;
+    var e_5, _a;
     var isPaged = readium_css_inject_1.isPaginated(win.document);
     var isTwoPage = readium_css_1.isTwoPageSpread();
     var _b = readium_css_1.calculateMaxScrollShift(), maxScrollShift = _b.maxScrollShift, maxScrollShiftAdjusted = _b.maxScrollShiftAdjusted;
@@ -1329,12 +1382,12 @@ exports.computeProgressionData = function () {
                             }
                         }
                     }
-                    catch (e_2_1) { e_2 = { error: e_2_1 }; }
+                    catch (e_5_1) { e_5 = { error: e_5_1 }; }
                     finally {
                         try {
                             if (clientRects_1_1 && !clientRects_1_1.done && (_a = clientRects_1.return)) _a.call(clientRects_1);
                         }
-                        finally { if (e_2) throw e_2.error; }
+                        finally { if (e_5) throw e_5.error; }
                     }
                     if (!rectangle) {
                         rectangle = element.getBoundingClientRect();
@@ -1387,7 +1440,9 @@ exports.computeProgressionData = function () {
     };
 };
 var _blacklistIdClassForCssSelectors = [styles_1.POPUP_DIALOG_CLASS, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN, highlight_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA, styles_1.TTS_ID_INJECTED_PARENT, styles_1.TTS_ID_SPEAKING_DOC_ELEMENT, styles_1.ROOT_CLASS_KEYBOARD_INTERACT, styles_1.ROOT_CLASS_INVISIBLE_MASK, readium_css_inject_1.CLASS_PAGINATED, styles_1.ROOT_CLASS_NO_FOOTNOTES];
-var _blacklistIdClassForCFI = [styles_1.POPUP_DIALOG_CLASS, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN, highlight_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA, "resize-sensor"];
+var _blacklistIdClassForCssSelectorsMathJax = ["mathjax", "ctxt", "mjx"];
+var _blacklistIdClassForCFI = [styles_1.POPUP_DIALOG_CLASS, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN, highlight_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA];
+var _blacklistIdClassForCFIMathJax = ["mathjax", "ctxt", "mjx"];
 exports.computeCFI = function (node) {
     if (node.nodeType !== Node.ELEMENT_NODE) {
         return undefined;
@@ -1412,20 +1467,98 @@ exports.computeCFI = function (node) {
                     (cfi.length ? ("/" + cfi) : "");
             }
         }
+        else {
+            cfi = "";
+        }
         currentElement = currentElement.parentNode;
     }
     return "/" + cfi;
 };
+var _getCssSelectorOptions = {
+    className: function (str) {
+        var e_6, _a;
+        if (_blacklistIdClassForCssSelectors.indexOf(str) >= 0) {
+            return false;
+        }
+        var mathJax = win.document.documentElement.classList.contains(styles_1.ROOT_CLASS_MATHJAX);
+        if (mathJax) {
+            var low = str.toLowerCase();
+            try {
+                for (var _blacklistIdClassForCssSelectorsMathJax_1 = tslib_1.__values(_blacklistIdClassForCssSelectorsMathJax), _blacklistIdClassForCssSelectorsMathJax_1_1 = _blacklistIdClassForCssSelectorsMathJax_1.next(); !_blacklistIdClassForCssSelectorsMathJax_1_1.done; _blacklistIdClassForCssSelectorsMathJax_1_1 = _blacklistIdClassForCssSelectorsMathJax_1.next()) {
+                    var item = _blacklistIdClassForCssSelectorsMathJax_1_1.value;
+                    if (low.startsWith(item)) {
+                        return false;
+                    }
+                }
+            }
+            catch (e_6_1) { e_6 = { error: e_6_1 }; }
+            finally {
+                try {
+                    if (_blacklistIdClassForCssSelectorsMathJax_1_1 && !_blacklistIdClassForCssSelectorsMathJax_1_1.done && (_a = _blacklistIdClassForCssSelectorsMathJax_1.return)) _a.call(_blacklistIdClassForCssSelectorsMathJax_1);
+                }
+                finally { if (e_6) throw e_6.error; }
+            }
+        }
+        return true;
+    },
+    idName: function (str) {
+        var e_7, _a;
+        if (_blacklistIdClassForCssSelectors.indexOf(str) >= 0) {
+            return false;
+        }
+        var mathJax = win.document.documentElement.classList.contains(styles_1.ROOT_CLASS_MATHJAX);
+        if (mathJax) {
+            var low = str.toLowerCase();
+            try {
+                for (var _blacklistIdClassForCssSelectorsMathJax_2 = tslib_1.__values(_blacklistIdClassForCssSelectorsMathJax), _blacklistIdClassForCssSelectorsMathJax_2_1 = _blacklistIdClassForCssSelectorsMathJax_2.next(); !_blacklistIdClassForCssSelectorsMathJax_2_1.done; _blacklistIdClassForCssSelectorsMathJax_2_1 = _blacklistIdClassForCssSelectorsMathJax_2.next()) {
+                    var item = _blacklistIdClassForCssSelectorsMathJax_2_1.value;
+                    if (low.startsWith(item)) {
+                        return false;
+                    }
+                }
+            }
+            catch (e_7_1) { e_7 = { error: e_7_1 }; }
+            finally {
+                try {
+                    if (_blacklistIdClassForCssSelectorsMathJax_2_1 && !_blacklistIdClassForCssSelectorsMathJax_2_1.done && (_a = _blacklistIdClassForCssSelectorsMathJax_2.return)) _a.call(_blacklistIdClassForCssSelectorsMathJax_2);
+                }
+                finally { if (e_7) throw e_7.error; }
+            }
+        }
+        return true;
+    },
+    tagName: function (str) {
+        var e_8, _a;
+        var mathJax = win.document.documentElement.classList.contains(styles_1.ROOT_CLASS_MATHJAX);
+        if (mathJax) {
+            try {
+                for (var _blacklistIdClassForCssSelectorsMathJax_3 = tslib_1.__values(_blacklistIdClassForCssSelectorsMathJax), _blacklistIdClassForCssSelectorsMathJax_3_1 = _blacklistIdClassForCssSelectorsMathJax_3.next(); !_blacklistIdClassForCssSelectorsMathJax_3_1.done; _blacklistIdClassForCssSelectorsMathJax_3_1 = _blacklistIdClassForCssSelectorsMathJax_3.next()) {
+                    var item = _blacklistIdClassForCssSelectorsMathJax_3_1.value;
+                    if (str.startsWith(item)) {
+                        return false;
+                    }
+                }
+            }
+            catch (e_8_1) { e_8 = { error: e_8_1 }; }
+            finally {
+                try {
+                    if (_blacklistIdClassForCssSelectorsMathJax_3_1 && !_blacklistIdClassForCssSelectorsMathJax_3_1.done && (_a = _blacklistIdClassForCssSelectorsMathJax_3.return)) _a.call(_blacklistIdClassForCssSelectorsMathJax_3);
+                }
+                finally { if (e_8) throw e_8.error; }
+            }
+        }
+        return true;
+    },
+};
 function getCssSelector(element) {
-    var options = {
-        className: function (str) {
-            return _blacklistIdClassForCssSelectors.indexOf(str) < 0;
-        },
-        idName: function (str) {
-            return _blacklistIdClassForCssSelectors.indexOf(str) < 0;
-        },
-    };
-    return cssselector2_1.uniqueCssSelector(element, win.document, options);
+    try {
+        return cssselector2_1.uniqueCssSelector(element, win.document, _getCssSelectorOptions);
+    }
+    catch (err) {
+        debug("uniqueCssSelector:");
+        debug(err);
+        return "";
+    }
 }
 var notifyReadingLocationRaw = function () {
     if (!win.READIUM2.locationHashOverride) {

@@ -154,6 +154,12 @@ function readiumCSSSet(documant, messageJson, urlRootReadiumCSS, isVerticalWriti
     else {
         docElement.classList.remove(styles_1.ROOT_CLASS_NO_FOOTNOTES);
     }
+    if (setCSS.mathJax) {
+        docElement.classList.add(styles_1.ROOT_CLASS_MATHJAX);
+    }
+    else {
+        docElement.classList.remove(styles_1.ROOT_CLASS_MATHJAX);
+    }
     if (setCSS.reduceMotion) {
         docElement.classList.add(styles_1.ROOT_CLASS_REDUCE_MOTION);
     }

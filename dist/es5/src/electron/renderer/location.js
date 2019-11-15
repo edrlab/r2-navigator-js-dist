@@ -247,6 +247,24 @@ function handleLinkLocator(location) {
     }
 }
 exports.handleLinkLocator = handleLinkLocator;
+var _reloadCounter = 0;
+function reloadContent() {
+    var activeWebView = window.READIUM2.getActiveWebView();
+    if (!activeWebView) {
+        return;
+    }
+    setTimeout(function () {
+        activeWebView.READIUM2.forceRefresh = true;
+        if (activeWebView.READIUM2.link) {
+            var uri = new url_1.URL(activeWebView.READIUM2.link.Href, window.READIUM2.publicationURL);
+            uri.hash = "";
+            uri.search = "";
+            var urlNoQueryParams = uri.toString();
+            handleLinkUrl(urlNoQueryParams);
+        }
+    }, 0);
+}
+exports.reloadContent = reloadContent;
 function loadLink(hrefFull, previous, useGoto) {
     var _this = this;
     var publication = window.READIUM2.publication;
@@ -326,10 +344,14 @@ function loadLink(hrefFull, previous, useGoto) {
         data[url_params_1.URL_PARAM_DEBUG_VISUALS] = (IS_DEV && window.READIUM2.DEBUG_VISUALS) ?
             "true" : "false";
     });
-    var webviewNeedsHardRefresh = window.READIUM2.enableScreenReaderAccessibilityWebViewHardRefresh
-        && state_1.isScreenReaderMounted();
     var activeWebView = window.READIUM2.getActiveWebView();
-    if (!webviewNeedsHardRefresh &&
+    var webviewNeedsForcedRefresh = activeWebView && activeWebView.READIUM2.forceRefresh;
+    if (activeWebView) {
+        activeWebView.READIUM2.forceRefresh = undefined;
+    }
+    var webviewNeedsHardRefresh = (window.READIUM2.enableScreenReaderAccessibilityWebViewHardRefresh
+        && state_1.isScreenReaderMounted());
+    if (!webviewNeedsHardRefresh && !webviewNeedsForcedRefresh &&
         activeWebView && activeWebView.READIUM2.link === pubLink) {
         var goto = useGoto ? linkUri.search(true)[url_params_1.URL_PARAM_GOTO] : undefined;
         var hash = useGoto ? undefined : linkUri.fragment();
@@ -384,6 +406,11 @@ function loadLink(hrefFull, previous, useGoto) {
         return true;
     }
     if (activeWebView) {
+        if (webviewNeedsForcedRefresh) {
+            linkUri.search(function (data) {
+                data[url_params_1.URL_PARAM_REFRESH] = "" + ++_reloadCounter;
+            });
+        }
         var uriStr = linkUri.toString();
         var needConvert = publicationURL.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://");
         var uriStr_1 = uriStr.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://") ?

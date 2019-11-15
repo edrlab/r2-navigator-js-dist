@@ -107,7 +107,7 @@ if (IS_DEV) {
         }
         if (payload.cssClass) {
             if (_blacklistIdClassForCssSelectors.indexOf(payload.cssClass) < 0) {
-                _blacklistIdClassForCssSelectors.push(payload.cssClass);
+                _blacklistIdClassForCssSelectors.push(payload.cssClass.toLowerCase());
             }
             if (payload.debugVisuals && payload.cssStyles && payload.cssStyles.length) {
                 const idSuffix = `debug_for_class_${payload.cssClass}`;
@@ -1087,22 +1087,45 @@ win.addEventListener("load", () => {
     loaded(false);
 });
 function checkBlacklisted(el) {
-    let blacklistedId;
     const id = el.getAttribute("id");
     if (id && _blacklistIdClassForCFI.indexOf(id) >= 0) {
         console.log("checkBlacklisted ID: " + id);
-        blacklistedId = id;
+        return true;
     }
-    let blacklistedClass;
     for (const item of _blacklistIdClassForCFI) {
         if (el.classList.contains(item)) {
             console.log("checkBlacklisted CLASS: " + item);
-            blacklistedClass = item;
-            break;
+            return true;
         }
     }
-    if (blacklistedId || blacklistedClass) {
-        return true;
+    const mathJax = win.document.documentElement.classList.contains(styles_1.ROOT_CLASS_MATHJAX);
+    if (mathJax) {
+        const low = el.tagName.toLowerCase();
+        for (const item of _blacklistIdClassForCFIMathJax) {
+            if (low.startsWith(item)) {
+                console.log("checkBlacklisted MathJax ELEMENT NAME: " + el.tagName);
+                return true;
+            }
+        }
+        if (id) {
+            const lowId = id.toLowerCase();
+            for (const item of _blacklistIdClassForCFIMathJax) {
+                if (lowId.startsWith(item)) {
+                    console.log("checkBlacklisted MathJax ID: " + id);
+                    return true;
+                }
+            }
+        }
+        for (let i = 0; i < el.classList.length; i++) {
+            const cl = el.classList[i];
+            const lowCl = cl.toLowerCase();
+            for (const item of _blacklistIdClassForCFIMathJax) {
+                if (lowCl.startsWith(item)) {
+                    console.log("checkBlacklisted MathJax CLASS: " + cl);
+                    return true;
+                }
+            }
+        }
     }
     return false;
 }
@@ -1352,7 +1375,9 @@ exports.computeProgressionData = () => {
     };
 };
 const _blacklistIdClassForCssSelectors = [styles_1.POPUP_DIALOG_CLASS, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN, highlight_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA, styles_1.TTS_ID_INJECTED_PARENT, styles_1.TTS_ID_SPEAKING_DOC_ELEMENT, styles_1.ROOT_CLASS_KEYBOARD_INTERACT, styles_1.ROOT_CLASS_INVISIBLE_MASK, readium_css_inject_1.CLASS_PAGINATED, styles_1.ROOT_CLASS_NO_FOOTNOTES];
-const _blacklistIdClassForCFI = [styles_1.POPUP_DIALOG_CLASS, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN, highlight_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA, "resize-sensor"];
+const _blacklistIdClassForCssSelectorsMathJax = ["mathjax", "ctxt", "mjx"];
+const _blacklistIdClassForCFI = [styles_1.POPUP_DIALOG_CLASS, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN, highlight_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA];
+const _blacklistIdClassForCFIMathJax = ["mathjax", "ctxt", "mjx"];
 exports.computeCFI = (node) => {
     if (node.nodeType !== Node.ELEMENT_NODE) {
         return undefined;
@@ -1377,20 +1402,65 @@ exports.computeCFI = (node) => {
                     (cfi.length ? ("/" + cfi) : "");
             }
         }
+        else {
+            cfi = "";
+        }
         currentElement = currentElement.parentNode;
     }
     return "/" + cfi;
 };
+const _getCssSelectorOptions = {
+    className: (str) => {
+        if (_blacklistIdClassForCssSelectors.indexOf(str) >= 0) {
+            return false;
+        }
+        const mathJax = win.document.documentElement.classList.contains(styles_1.ROOT_CLASS_MATHJAX);
+        if (mathJax) {
+            const low = str.toLowerCase();
+            for (const item of _blacklistIdClassForCssSelectorsMathJax) {
+                if (low.startsWith(item)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    },
+    idName: (str) => {
+        if (_blacklistIdClassForCssSelectors.indexOf(str) >= 0) {
+            return false;
+        }
+        const mathJax = win.document.documentElement.classList.contains(styles_1.ROOT_CLASS_MATHJAX);
+        if (mathJax) {
+            const low = str.toLowerCase();
+            for (const item of _blacklistIdClassForCssSelectorsMathJax) {
+                if (low.startsWith(item)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    },
+    tagName: (str) => {
+        const mathJax = win.document.documentElement.classList.contains(styles_1.ROOT_CLASS_MATHJAX);
+        if (mathJax) {
+            for (const item of _blacklistIdClassForCssSelectorsMathJax) {
+                if (str.startsWith(item)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    },
+};
 function getCssSelector(element) {
-    const options = {
-        className: (str) => {
-            return _blacklistIdClassForCssSelectors.indexOf(str) < 0;
-        },
-        idName: (str) => {
-            return _blacklistIdClassForCssSelectors.indexOf(str) < 0;
-        },
-    };
-    return cssselector2_1.uniqueCssSelector(element, win.document, options);
+    try {
+        return cssselector2_1.uniqueCssSelector(element, win.document, _getCssSelectorOptions);
+    }
+    catch (err) {
+        debug("uniqueCssSelector:");
+        debug(err);
+        return "";
+    }
 }
 const notifyReadingLocationRaw = () => {
     if (!win.READIUM2.locationHashOverride) {
