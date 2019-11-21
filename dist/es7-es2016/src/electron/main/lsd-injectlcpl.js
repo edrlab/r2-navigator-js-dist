@@ -3,8 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
 const debug_ = require("debug");
 const fs = require("fs");
-const ta_json_x_1 = require("ta-json-x");
 const lcp_1 = require("r2-lcp-js/dist/es7-es2016/src/parser/epub/lcp");
+const serializable_1 = require("r2-lcp-js/dist/es7-es2016/src/serializable");
 const zipInjector_1 = require("r2-utils-js/dist/es7-es2016/src/_utils/zip/zipInjector");
 const debug = debug_("r2:navigator#electron/main/lsd-injectlcpl");
 function lsdLcpUpdateInject(lcplStr, publication, publicationPath) {
@@ -14,7 +14,7 @@ function lsdLcpUpdateInject(lcplStr, publication, publicationPath) {
         const zipEntryPath = "META-INF/license.lcpl";
         let lcpl;
         try {
-            lcpl = ta_json_x_1.JSON.deserialize(lcplJson, lcp_1.LCP);
+            lcpl = serializable_1.TaJsonDeserialize(lcplJson, lcp_1.LCP);
         }
         catch (erorz) {
             return Promise.reject(erorz);
