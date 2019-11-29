@@ -92,3 +92,8 @@ export interface IEventPayload_R2_EVENT_WEBVIEW_KEYDOWN {
     metaKey: boolean;
     shiftKey: boolean;
 }
+export declare const R2_EVENT_CLIPBOARD_COPY = "R2_EVENT_CLIPBOARD_COPY";
+export interface IEventPayload_R2_EVENT_CLIPBOARD_COPY {
+    txt: string;
+    locator: IEventPayload_R2_EVENT_READING_LOCATION | undefined;
+}

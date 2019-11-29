@@ -101,6 +101,13 @@ function createWebViewInternal(preloadScriptPath) {
                 _keyDownEventHandler(payload);
             }
         }
+        else if (event.channel === events_1.R2_EVENT_CLIPBOARD_COPY) {
+            var clipboardInterceptor = window.READIUM2.clipboardInterceptor;
+            if (clipboardInterceptor) {
+                var payload = event.args[0];
+                clipboardInterceptor(payload);
+            }
+        }
         else if (!highlight_1.highlightsHandleIpcMessage(event.channel, event.args, webview) &&
             !readaloud_1.ttsHandleIpcMessage(event.channel, event.args, webview) &&
             !location_1.locationHandleIpcMessage(event.channel, event.args, webview)) {
@@ -151,7 +158,7 @@ function destroyWebView() {
     _webview1.READIUM2 = undefined;
     _webview1 = undefined;
 }
-function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, preloadScriptPath, location, enableScreenReaderAccessibilityWebViewHardRefresh) {
+function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, preloadScriptPath, location, enableScreenReaderAccessibilityWebViewHardRefresh, clipboardInterceptor) {
     var _this = this;
     var domRootElement = document.getElementById(rootHtmlElementID);
     if (!domRootElement) {
@@ -164,6 +171,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
         "top: 0; bottom: 0; margin: 0; padding: 0; box-sizing: border-box; background: white; overflow: hidden;");
     window.READIUM2 = {
         DEBUG_VISUALS: false,
+        clipboardInterceptor: clipboardInterceptor,
         createActiveWebView: createWebView,
         destroyActiveWebView: destroyWebView,
         domRootElement: domRootElement,

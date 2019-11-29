@@ -4,3 +4,4 @@ export declare const URL_PARAM_CSS = "r2_CSS";
 export declare const URL_PARAM_EPUBREADINGSYSTEM = "r2_ERS";
 export declare const URL_PARAM_DEBUG_VISUALS = "r2_DEBUG";
 export declare const URL_PARAM_REFRESH = "r2_REFRESH";
+export declare const URL_PARAM_CLIPBOARD_INTERCEPT = "r2_CLIPBOARD_INTERCEPT";

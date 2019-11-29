@@ -323,6 +323,8 @@ function loadLink(hrefFull, previous, useGoto) {
         data[url_params_1.URL_PARAM_EPUBREADINGSYSTEM] = rersJsonstrBase64;
         data[url_params_1.URL_PARAM_DEBUG_VISUALS] = (IS_DEV && window.READIUM2.DEBUG_VISUALS) ?
             "true" : "false";
+        data[url_params_1.URL_PARAM_CLIPBOARD_INTERCEPT] = window.READIUM2.clipboardInterceptor ?
+            "true" : "false";
     });
     const activeWebView = window.READIUM2.getActiveWebView();
     const webviewNeedsForcedRefresh = activeWebView && activeWebView.READIUM2.forceRefresh;

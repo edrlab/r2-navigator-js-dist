@@ -1,6 +1,6 @@
 import { Publication } from "r2-shared-js/dist/es7-es2016/src/models/publication";
 import { Link } from "r2-shared-js/dist/es7-es2016/src/models/publication-link";
-import { IEventPayload_R2_EVENT_READING_LOCATION } from "../../common/events";
+import { IEventPayload_R2_EVENT_CLIPBOARD_COPY, IEventPayload_R2_EVENT_READING_LOCATION } from "../../common/events";
 import { IStringMap } from "../common/querystring";
 export interface IReadiumElectronWebviewWindowState {
     urlQueryParams: IStringMap | undefined;
@@ -13,6 +13,7 @@ export interface IReadiumElectronWebviewWindowState {
     fxlViewportScale: number;
     DEBUG_VISUALS: boolean;
     ttsClickEnabled: boolean;
+    isClipboardIntercept: boolean;
 }
 export interface IReadiumElectronWebviewWindow extends Window {
     READIUM2: IReadiumElectronWebviewWindowState;
@@ -32,6 +33,7 @@ export interface IReadiumElectronBrowserWindowState {
     domSlidingViewport: HTMLElement;
     DEBUG_VISUALS: boolean;
     ttsClickEnabled: boolean;
+    clipboardInterceptor: ((data: IEventPayload_R2_EVENT_CLIPBOARD_COPY) => void) | undefined;
     preloadScriptPath: string;
     getActiveWebView: () => IReadiumElectronWebview | undefined;
     destroyActiveWebView: () => void;

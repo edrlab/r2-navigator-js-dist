@@ -36,6 +36,7 @@ win.READIUM2 = {
     fxlViewportScale: 1,
     fxlViewportWidth: 0,
     hashElement: null,
+    isClipboardIntercept: false,
     isFixedLayout: false,
     locationHashOverride: undefined,
     locationHashOverrideInfo: {
@@ -105,6 +106,7 @@ if (win.READIUM2.urlQueryParams) {
         epubReadingSystem_1.setWindowNavigatorEpubReadingSystem(win, readiumEpubReadingSystemJson);
     }
     win.READIUM2.DEBUG_VISUALS = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_DEBUG_VISUALS] === "true";
+    win.READIUM2.isClipboardIntercept = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_CLIPBOARD_INTERCEPT] === "true";
 }
 if (IS_DEV) {
     electron_1.ipcRenderer.on(events_1.R2_EVENT_DEBUG_VISUALS, function (_event, payload) {
@@ -1093,6 +1095,24 @@ function loaded(forced) {
     }
     win.document.documentElement.addEventListener("mouseup", function (ev) {
         handleMouseEvent(ev);
+    });
+    win.document.body.addEventListener("copy", function (evt) {
+        if (win.READIUM2.isClipboardIntercept) {
+            var selection = win.document.getSelection();
+            if (selection) {
+                var str_1 = selection.toString();
+                if (str_1) {
+                    evt.preventDefault();
+                    setTimeout(function () {
+                        var payload = {
+                            locator: win.READIUM2.locationHashOverrideInfo,
+                            txt: str_1,
+                        };
+                        electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_CLIPBOARD_COPY, payload);
+                    }, 500);
+                }
+            }
+        }
     });
 }
 win.addEventListener("load", function () {
