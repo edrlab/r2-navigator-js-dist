@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
 const events_1 = require("../common/events");
+const win = window;
 function highlightsHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
     if (eventChannel === events_1.R2_EVENT_HIGHLIGHT_CLICK) {
         const activeWebView = eventCurrentTarget;
@@ -25,7 +26,7 @@ function highlightsClickListen(highlightsClickListener) {
 }
 exports.highlightsClickListen = highlightsClickListen;
 function highlightsRemoveAll(href) {
-    const activeWebView = window.READIUM2.getActiveWebView();
+    const activeWebView = win.READIUM2.getActiveWebView();
     if (activeWebView && activeWebView.READIUM2.link && activeWebView.READIUM2.link.Href === href) {
         setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
             yield activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_REMOVE_ALL);
@@ -34,7 +35,7 @@ function highlightsRemoveAll(href) {
 }
 exports.highlightsRemoveAll = highlightsRemoveAll;
 function highlightsRemove(href, highlightIDs) {
-    const activeWebView = window.READIUM2.getActiveWebView();
+    const activeWebView = win.READIUM2.getActiveWebView();
     if (activeWebView && activeWebView.READIUM2.link && activeWebView.READIUM2.link.Href === href) {
         const payload = {
             highlightIDs,
@@ -48,7 +49,7 @@ exports.highlightsRemove = highlightsRemove;
 function highlightsCreate(href, highlightDefinitions) {
     return tslib_1.__awaiter(this, void 0, void 0, function* () {
         return new Promise((resolve, reject) => {
-            const activeWebView = window.READIUM2.getActiveWebView();
+            const activeWebView = win.READIUM2.getActiveWebView();
             if (!activeWebView) {
                 reject("No navigator webview?!");
                 return;

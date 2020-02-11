@@ -36,14 +36,22 @@ function setupReadiumCSS(server, folderPath, readiumCssGetter) {
     };
     server.expressUse("/" + readium_css_settings_1.READIUM_CSS_URL_PATH, express.static(folderPath, staticOptions));
     if (readiumCssGetter) {
-        const transformer = (publication, link, str) => {
+        const transformer = (publication, link, str, sessionInfo) => {
             let mediaType = "application/xhtml+xml";
             if (link && link.TypeLink) {
                 mediaType = link.TypeLink;
             }
-            const readiumcssJson = isFixedLayout(publication, link) ?
-                { setCSS: undefined, isFixedLayout: true } :
-                readiumCssGetter(publication, link);
+            let readiumcssJson = readiumCssGetter(publication, link, sessionInfo);
+            if (isFixedLayout(publication, link)) {
+                const readiumcssJson_ = { setCSS: undefined, isFixedLayout: true };
+                if (readiumcssJson.setCSS) {
+                    if (readiumcssJson.setCSS.mathJax) {
+                    }
+                    if (readiumcssJson.setCSS.reduceMotion) {
+                    }
+                }
+                readiumcssJson = readiumcssJson_;
+            }
             if (readiumcssJson) {
                 readiumcssJson.urlRoot = server.serverUrl();
                 return readium_css_inject_1.transformHTML(str, readiumcssJson, mediaType);

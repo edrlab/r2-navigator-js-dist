@@ -4,7 +4,7 @@ const electron_1 = require("electron");
 let _isScreenReaderMounted;
 function isScreenReaderMounted() {
     if (typeof _isScreenReaderMounted === "undefined") {
-        _isScreenReaderMounted = electron_1.remote.app.isAccessibilitySupportEnabled();
+        _isScreenReaderMounted = electron_1.remote.app.accessibilitySupportEnabled;
     }
     return _isScreenReaderMounted;
 }

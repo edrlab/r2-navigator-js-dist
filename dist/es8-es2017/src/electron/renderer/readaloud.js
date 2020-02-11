@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const events_1 = require("../common/events");
 const location_1 = require("./location");
+const win = window;
 function ttsHandleIpcMessage(eventChannel, _eventArgs, _eventCurrentTarget) {
     if (eventChannel === events_1.R2_EVENT_TTS_IS_PAUSED) {
         if (_ttsListener) {
@@ -36,7 +37,7 @@ function ttsListen(ttsListener) {
 }
 exports.ttsListen = ttsListen;
 function ttsPlay() {
-    const activeWebView = window.READIUM2.getActiveWebView();
+    const activeWebView = win.READIUM2.getActiveWebView();
     if (!activeWebView) {
         return;
     }
@@ -57,7 +58,7 @@ function ttsPlay() {
 }
 exports.ttsPlay = ttsPlay;
 function ttsPause() {
-    const activeWebView = window.READIUM2.getActiveWebView();
+    const activeWebView = win.READIUM2.getActiveWebView();
     if (!activeWebView) {
         return;
     }
@@ -67,7 +68,7 @@ function ttsPause() {
 }
 exports.ttsPause = ttsPause;
 function ttsStop() {
-    const activeWebView = window.READIUM2.getActiveWebView();
+    const activeWebView = win.READIUM2.getActiveWebView();
     if (!activeWebView) {
         return;
     }
@@ -77,7 +78,7 @@ function ttsStop() {
 }
 exports.ttsStop = ttsStop;
 function ttsResume() {
-    const activeWebView = window.READIUM2.getActiveWebView();
+    const activeWebView = win.READIUM2.getActiveWebView();
     if (!activeWebView) {
         return;
     }
@@ -87,7 +88,7 @@ function ttsResume() {
 }
 exports.ttsResume = ttsResume;
 function ttsPrevious() {
-    const activeWebView = window.READIUM2.getActiveWebView();
+    const activeWebView = win.READIUM2.getActiveWebView();
     if (!activeWebView) {
         return;
     }
@@ -97,7 +98,7 @@ function ttsPrevious() {
 }
 exports.ttsPrevious = ttsPrevious;
 function ttsNext() {
-    const activeWebView = window.READIUM2.getActiveWebView();
+    const activeWebView = win.READIUM2.getActiveWebView();
     if (!activeWebView) {
         return;
     }
@@ -107,10 +108,10 @@ function ttsNext() {
 }
 exports.ttsNext = ttsNext;
 function ttsClickEnable(doEnable) {
-    if (window.READIUM2) {
-        window.READIUM2.ttsClickEnabled = doEnable;
+    if (win.READIUM2) {
+        win.READIUM2.ttsClickEnabled = doEnable;
     }
-    const activeWebView = window.READIUM2.getActiveWebView();
+    const activeWebView = win.READIUM2.getActiveWebView();
     if (!activeWebView) {
         return;
     }

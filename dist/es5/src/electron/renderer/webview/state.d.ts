@@ -7,6 +7,7 @@ export interface IReadiumElectronWebviewWindowState {
     hashElement: Element | null;
     locationHashOverride: Element | undefined;
     locationHashOverrideInfo: IEventPayload_R2_EVENT_READING_LOCATION | undefined;
+    isAudio: boolean;
     isFixedLayout: boolean;
     fxlViewportWidth: number;
     fxlViewportHeight: number;
@@ -29,6 +30,7 @@ export interface IReadiumElectronWebview extends Electron.WebviewTag {
 export interface IReadiumElectronBrowserWindowState {
     publication: Publication;
     publicationURL: string;
+    sessionInfo: string | undefined;
     domRootElement: HTMLElement;
     domSlidingViewport: HTMLElement;
     DEBUG_VISUALS: boolean;

@@ -1,4 +1,5 @@
 import { Locator } from "r2-shared-js/dist/es8-es2017/src/models/locator";
+import { IAudioPlaybackInfo } from "../common/audiobook";
 import { IDocInfo } from "../common/document";
 import { IPaginationInfo } from "../common/pagination";
 import { ISelectionInfo } from "../common/selection";
@@ -11,6 +12,7 @@ export declare function handleLinkUrl(href: string): void;
 export declare function handleLinkLocator(location: Locator | undefined): void;
 export declare function reloadContent(): void;
 export interface LocatorExtended {
+    audioPlaybackInfo: IAudioPlaybackInfo | undefined;
     locator: Locator;
     paginationInfo: IPaginationInfo | undefined;
     selectionInfo: ISelectionInfo | undefined;

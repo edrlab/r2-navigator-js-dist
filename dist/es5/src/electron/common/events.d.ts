@@ -1,4 +1,5 @@
 import { Locator, LocatorLocations } from "r2-shared-js/dist/es5/src/models/locator";
+import { IAudioPlaybackInfo } from "./audiobook";
 import { IDocInfo } from "./document";
 import { IHighlight, IHighlightDefinition } from "./highlight";
 import { IPaginationInfo } from "./pagination";
@@ -38,6 +39,7 @@ export interface IEventPayload_R2_EVENT_PAGE_TURN {
 }
 export declare const R2_EVENT_READING_LOCATION = "R2_EVENT_READING_LOCATION";
 export interface IEventPayload_R2_EVENT_READING_LOCATION extends Locator {
+    audioPlaybackInfo: IAudioPlaybackInfo | undefined;
     paginationInfo: IPaginationInfo | undefined;
     selectionInfo: ISelectionInfo | undefined;
     docInfo: IDocInfo | undefined;
@@ -56,6 +58,8 @@ export declare const R2_EVENT_TTS_CLICK_ENABLE = "R2_EVENT_TTS_CLICK_ENABLE";
 export interface IEventPayload_R2_EVENT_TTS_CLICK_ENABLE {
     doEnable: boolean;
 }
+export declare const R2_EVENT_AUDIO_DO_PLAY = "R2_EVENT_AUDIO_DO_PLAY";
+export declare const R2_EVENT_AUDIO_DO_PAUSE = "R2_EVENT_AUDIO_DO_PAUSE";
 export declare const R2_EVENT_TTS_DO_PLAY = "R2_EVENT_TTS_DO_PLAY";
 export interface IEventPayload_R2_EVENT_TTS_DO_PLAY {
     rootElement: string;

@@ -582,6 +582,7 @@ function injectDefaultCSS(documant) {
     appendCSSInline(documant, "electron-target", styles_1.targetCssStyles);
     appendCSSInline(documant, "electron-scrollbars", styles_1.scrollBarCssStyles);
     appendCSSInline(documant, "electron-visibility-mask", styles_1.visibilityMaskCssStyles);
+    appendCSSInline(documant, "electron-audiobook", styles_1.audioCssStyles);
 }
 exports.injectDefaultCSS = injectDefaultCSS;
 function injectReadPosCSS(documant) {

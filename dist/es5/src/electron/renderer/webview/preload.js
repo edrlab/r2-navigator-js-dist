@@ -22,6 +22,7 @@ var querystring_1 = require("../common/querystring");
 var rect_utils_1 = require("../common/rect-utils");
 var url_params_1 = require("../common/url-params");
 var webview_resize_1 = require("../common/webview-resize");
+var audiobook_1 = require("./audiobook");
 var epubReadingSystem_1 = require("./epubReadingSystem");
 var highlight_1 = require("./highlight");
 var popupFootNotes_1 = require("./popupFootNotes");
@@ -36,10 +37,12 @@ win.READIUM2 = {
     fxlViewportScale: 1,
     fxlViewportWidth: 0,
     hashElement: null,
+    isAudio: false,
     isClipboardIntercept: false,
     isFixedLayout: false,
     locationHashOverride: undefined,
     locationHashOverrideInfo: {
+        audioPlaybackInfo: undefined,
         docInfo: undefined,
         href: "",
         locations: {
@@ -79,7 +82,7 @@ win.prompt = function () {
     console.log.apply(win, args);
     return "";
 };
-window.document.addEventListener("keydown", function (ev) {
+win.document.addEventListener("keydown", function (ev) {
     var payload = {
         altKey: ev.altKey,
         code: ev.code,
@@ -90,6 +93,7 @@ window.document.addEventListener("keydown", function (ev) {
     };
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_WEBVIEW_KEYDOWN, payload);
 });
+win.READIUM2.isAudio = win.location.protocol === "data:";
 if (win.READIUM2.urlQueryParams) {
     var readiumEpubReadingSystemJson = void 0;
     var base64EpubReadingSystem = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_EPUBREADINGSYSTEM];
@@ -199,7 +203,10 @@ function computeVisibility_(element) {
 }
 function computeVisibility(location) {
     var visible = false;
-    if (win.READIUM2.isFixedLayout) {
+    if (win.READIUM2.isAudio) {
+        visible = true;
+    }
+    else if (win.READIUM2.isFixedLayout) {
         visible = true;
     }
     else if (!win.document || !win.document.documentElement || !win.document.body) {
@@ -280,6 +287,7 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, function (_event, payload)
 });
 function resetLocationHashOverrideInfo() {
     win.READIUM2.locationHashOverrideInfo = {
+        audioPlaybackInfo: undefined,
         docInfo: undefined,
         href: "",
         locations: {
@@ -388,7 +396,7 @@ function onEventPageTurn(payload) {
     }
     selection_2.clearCurrentSelection(win);
     popup_dialog_1.closePopupDialogs(win.document);
-    if (win.READIUM2.isFixedLayout || !win.document.body) {
+    if (win.READIUM2.isAudio || win.READIUM2.isFixedLayout || !win.document.body) {
         electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, payload);
         return;
     }
@@ -812,8 +820,12 @@ win.addEventListener("DOMContentLoaded", function () {
     if (titleElement && titleElement.textContent) {
         _docTitle = titleElement.textContent;
     }
+    if (win.READIUM2.isAudio) {
+        audiobook_1.setupAudioBook(_docTitle);
+    }
     _cancelInitialScrollCheck = true;
-    if (win.location.hash && win.location.hash.length > 1) {
+    if (!win.READIUM2.isAudio &&
+        win.location.hash && win.location.hash.length > 1) {
         win.READIUM2.hashElement = win.document.getElementById(win.location.hash.substr(1));
         if (win.READIUM2.DEBUG_VISUALS) {
             if (win.READIUM2.hashElement) {
@@ -906,41 +918,40 @@ function loaded(forced) {
     else {
         debug(">>> LOAD EVENT was not forced.");
     }
-    if (!win.READIUM2.isFixedLayout) {
-        debug("++++ scrollToHashDebounced FROM LOAD");
-        scrollToHashDebounced();
-        _cancelInitialScrollCheck = false;
-        setTimeout(function () {
-            if (_cancelInitialScrollCheck) {
-                return;
-            }
-        }, 500);
-    }
-    else {
-        win.READIUM2.locationHashOverride = win.document.body;
-        notifyReadingLocationDebounced();
-    }
-    var useResizeObserver = !win.READIUM2.isFixedLayout;
-    if (useResizeObserver && win.document.body) {
-        setTimeout(function () {
-            var _firstResizeObserver = true;
-            var resizeObserver = new window.ResizeObserver(function (_entries) {
-                if (_firstResizeObserver) {
-                    _firstResizeObserver = false;
-                    debug("ResizeObserver SKIP FIRST");
+    if (!win.READIUM2.isAudio) {
+        if (!win.READIUM2.isFixedLayout) {
+            debug("++++ scrollToHashDebounced FROM LOAD");
+            scrollToHashDebounced();
+            _cancelInitialScrollCheck = false;
+            setTimeout(function () {
+                if (_cancelInitialScrollCheck) {
                     return;
                 }
-                win.document.body.tabbables = undefined;
-                scrollToHashDebounced();
-            });
-            resizeObserver.observe(win.document.body);
-            setTimeout(function () {
-                if (_firstResizeObserver) {
-                    _firstResizeObserver = false;
-                    debug("ResizeObserver CANCEL SKIP FIRST");
-                }
-            }, 700);
-        }, 1000);
+            }, 500);
+        }
+        else {
+            win.READIUM2.locationHashOverride = win.document.body;
+            notifyReadingLocationDebounced();
+        }
+    }
+    win.document.documentElement.addEventListener("keydown", function (ev) {
+        if (win.document && win.document.documentElement) {
+            win.document.documentElement.classList.add(styles_1.ROOT_CLASS_KEYBOARD_INTERACT);
+        }
+        if (ev.code === "ArrowLeft" || ev.code === "ArrowRight") {
+            if (ev.target && elementCapturesKeyboardArrowKeys(ev.target)) {
+                ev.target.r2_leftrightKeyboardTimeStamp = new Date();
+            }
+        }
+    }, true);
+    win.document.documentElement.addEventListener("mousedown", function (_ev) {
+        if (win.document && win.document.documentElement) {
+            win.document.documentElement.classList.remove(styles_1.ROOT_CLASS_KEYBOARD_INTERACT);
+        }
+    }, true);
+    if (win.READIUM2.isAudio) {
+        debug("AUDIOBOOK RENDER ...");
+        return;
     }
     win.document.body.addEventListener("focusin", function (ev) {
         if (_ignoreFocusInEvent) {
@@ -975,21 +986,28 @@ function loaded(forced) {
             }
         }
     }, true);
-    win.document.documentElement.addEventListener("keydown", function (ev) {
-        if (win.document && win.document.documentElement) {
-            win.document.documentElement.classList.add(styles_1.ROOT_CLASS_KEYBOARD_INTERACT);
-        }
-        if (ev.code === "ArrowLeft" || ev.code === "ArrowRight") {
-            if (ev.target && elementCapturesKeyboardArrowKeys(ev.target)) {
-                ev.target.r2_leftrightKeyboardTimeStamp = new Date();
-            }
-        }
-    }, true);
-    win.document.documentElement.addEventListener("mousedown", function (_ev) {
-        if (win.document && win.document.documentElement) {
-            win.document.documentElement.classList.remove(styles_1.ROOT_CLASS_KEYBOARD_INTERACT);
-        }
-    }, true);
+    var useResizeObserver = !win.READIUM2.isFixedLayout;
+    if (useResizeObserver && win.document.body) {
+        setTimeout(function () {
+            var _firstResizeObserver = true;
+            var resizeObserver = new window.ResizeObserver(function (_entries) {
+                if (_firstResizeObserver) {
+                    _firstResizeObserver = false;
+                    debug("ResizeObserver SKIP FIRST");
+                    return;
+                }
+                win.document.body.tabbables = undefined;
+                scrollToHashDebounced();
+            });
+            resizeObserver.observe(win.document.body);
+            setTimeout(function () {
+                if (_firstResizeObserver) {
+                    _firstResizeObserver = false;
+                    debug("ResizeObserver CANCEL SKIP FIRST");
+                }
+            }, 700);
+        }, 1000);
+    }
     win.document.addEventListener("click", function (ev) {
         var currentElement = ev.target;
         var href;
@@ -1611,6 +1629,7 @@ var notifyReadingLocationRaw = function () {
                 !selection_1.sameSelections(win.READIUM2.locationHashOverrideInfo.selectionInfo, selInfo);
     }
     win.READIUM2.locationHashOverrideInfo = {
+        audioPlaybackInfo: undefined,
         docInfo: {
             isFixedLayout: win.READIUM2.isFixedLayout,
             isRightToLeft: readium_css_1.isRTL(),
@@ -1642,65 +1661,67 @@ var notifyReadingLocationRaw = function () {
 var notifyReadingLocationDebounced = debounce_1.debounce(function () {
     notifyReadingLocationRaw();
 }, 250);
-electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_PLAY, function (_event, payload) {
-    var rootElement = win.document.querySelector(payload.rootElement);
-    var startElement = payload.startElement ? win.document.querySelector(payload.startElement) : null;
-    readaloud_1.ttsPlay(focusScrollRaw, rootElement ? rootElement : undefined, startElement ? startElement : undefined, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
-});
-electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_STOP, function (_event) {
-    readaloud_1.ttsStop();
-});
-electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_PAUSE, function (_event) {
-    readaloud_1.ttsPause();
-});
-electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_RESUME, function (_event) {
-    readaloud_1.ttsResume();
-});
-electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_NEXT, function (_event) {
-    readaloud_1.ttsNext();
-});
-electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_PREVIOUS, function (_event) {
-    readaloud_1.ttsPrevious();
-});
-electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_CLICK_ENABLE, function (_event, payload) {
-    win.READIUM2.ttsClickEnabled = payload.doEnable;
-});
-electron_1.ipcRenderer.on(events_1.R2_EVENT_HIGHLIGHT_CREATE, function (_event, payloadPing) {
-    if (payloadPing.highlightDefinitions &&
-        payloadPing.highlightDefinitions.length === 1 &&
-        payloadPing.highlightDefinitions[0].selectionInfo) {
-        var selection = win.getSelection();
-        if (selection) {
-            selection.removeAllRanges();
-        }
-    }
-    var highlightDefinitions = !payloadPing.highlightDefinitions ?
-        [{ color: undefined, selectionInfo: undefined }] :
-        payloadPing.highlightDefinitions;
-    var highlights = [];
-    highlightDefinitions.forEach(function (highlightDefinition) {
-        var selInfo = highlightDefinition.selectionInfo ? highlightDefinition.selectionInfo :
-            selection_2.getCurrentSelectionInfo(win, getCssSelector, exports.computeCFI);
-        if (selInfo) {
-            var highlight = highlight_1.createHighlight(win, selInfo, highlightDefinition.color, true);
-            highlights.push(highlight);
-        }
-        else {
-            highlights.push(null);
-        }
+if (!win.READIUM2.isAudio) {
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_PLAY, function (_event, payload) {
+        var rootElement = win.document.querySelector(payload.rootElement);
+        var startElement = payload.startElement ? win.document.querySelector(payload.startElement) : null;
+        readaloud_1.ttsPlay(focusScrollRaw, rootElement ? rootElement : undefined, startElement ? startElement : undefined, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
     });
-    var payloadPong = {
-        highlightDefinitions: payloadPing.highlightDefinitions,
-        highlights: highlights.length ? highlights : undefined,
-    };
-    electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_HIGHLIGHT_CREATE, payloadPong);
-});
-electron_1.ipcRenderer.on(events_1.R2_EVENT_HIGHLIGHT_REMOVE, function (_event, payload) {
-    payload.highlightIDs.forEach(function (highlightID) {
-        highlight_1.destroyHighlight(win.document, highlightID);
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_STOP, function (_event) {
+        readaloud_1.ttsStop();
     });
-});
-electron_1.ipcRenderer.on(events_1.R2_EVENT_HIGHLIGHT_REMOVE_ALL, function (_event) {
-    highlight_1.destroyAllhighlights(win.document);
-});
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_PAUSE, function (_event) {
+        readaloud_1.ttsPause();
+    });
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_RESUME, function (_event) {
+        readaloud_1.ttsResume();
+    });
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_NEXT, function (_event) {
+        readaloud_1.ttsNext();
+    });
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_PREVIOUS, function (_event) {
+        readaloud_1.ttsPrevious();
+    });
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_CLICK_ENABLE, function (_event, payload) {
+        win.READIUM2.ttsClickEnabled = payload.doEnable;
+    });
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_HIGHLIGHT_CREATE, function (_event, payloadPing) {
+        if (payloadPing.highlightDefinitions &&
+            payloadPing.highlightDefinitions.length === 1 &&
+            payloadPing.highlightDefinitions[0].selectionInfo) {
+            var selection = win.getSelection();
+            if (selection) {
+                selection.removeAllRanges();
+            }
+        }
+        var highlightDefinitions = !payloadPing.highlightDefinitions ?
+            [{ color: undefined, selectionInfo: undefined }] :
+            payloadPing.highlightDefinitions;
+        var highlights = [];
+        highlightDefinitions.forEach(function (highlightDefinition) {
+            var selInfo = highlightDefinition.selectionInfo ? highlightDefinition.selectionInfo :
+                selection_2.getCurrentSelectionInfo(win, getCssSelector, exports.computeCFI);
+            if (selInfo) {
+                var highlight = highlight_1.createHighlight(win, selInfo, highlightDefinition.color, true);
+                highlights.push(highlight);
+            }
+            else {
+                highlights.push(null);
+            }
+        });
+        var payloadPong = {
+            highlightDefinitions: payloadPing.highlightDefinitions,
+            highlights: highlights.length ? highlights : undefined,
+        };
+        electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_HIGHLIGHT_CREATE, payloadPong);
+    });
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_HIGHLIGHT_REMOVE, function (_event, payload) {
+        payload.highlightIDs.forEach(function (highlightID) {
+            highlight_1.destroyHighlight(win.document, highlightID);
+        });
+    });
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_HIGHLIGHT_REMOVE_ALL, function (_event) {
+        highlight_1.destroyAllhighlights(win.document);
+    });
+}
 //# sourceMappingURL=preload.js.map

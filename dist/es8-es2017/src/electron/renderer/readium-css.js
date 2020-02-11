@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const win = window;
 function isRTL() {
-    const publication = window.READIUM2.publication;
+    const publication = win.READIUM2.publication;
     if (publication &&
         publication.Metadata &&
         publication.Metadata.Direction) {
@@ -19,7 +20,7 @@ function isFixedLayout(link) {
             return false;
         }
     }
-    const publication = window.READIUM2.publication;
+    const publication = win.READIUM2.publication;
     if (publication &&
         publication.Metadata &&
         publication.Metadata.Rendition) {
@@ -30,7 +31,7 @@ function isFixedLayout(link) {
 exports.isFixedLayout = isFixedLayout;
 function __computeReadiumCssJsonMessage(link) {
     if (isFixedLayout(link)) {
-        const activeWebView = window.READIUM2.getActiveWebView();
+        const activeWebView = win.READIUM2.getActiveWebView();
         return {
             fixedLayoutWebViewHeight: activeWebView ? activeWebView.clientHeight : undefined,
             fixedLayoutWebViewWidth: activeWebView ? activeWebView.clientWidth : undefined,

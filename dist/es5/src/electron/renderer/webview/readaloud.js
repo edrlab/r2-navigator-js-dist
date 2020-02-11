@@ -360,7 +360,7 @@ function ttsPlayQueueIndex(ttsQueueIndex) {
     _dialogState.ttsQueueItem = undefined;
     _dialogState.ttsUtterance = undefined;
     if (_dialogState.domSlider) {
-        _dialogState.domSlider.value = "" + ttsQueueIndex;
+        _dialogState.domSlider.valueAsNumber = ttsQueueIndex;
     }
     if (ttsQueueIndex >= _dialogState.ttsQueueLength || ttsQueueIndex < 0) {
         ttsStop();
@@ -476,7 +476,7 @@ function startTTSSession(ttsRootElement, ttsQueue, ttsQueueIndexStart, focusScro
     if (_dialogState.domSlider) {
         _dialogState.domSlider.addEventListener("input", function (_ev) {
             if (_dialogState && _dialogState.domSlider) {
-                var n = parseInt(_dialogState.domSlider.value, 10);
+                var n = _dialogState.domSlider.valueAsNumber;
                 ttsPreviewAndEventuallyPlayQueueIndex(n);
             }
         });

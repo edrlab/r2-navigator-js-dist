@@ -21,7 +21,10 @@ function trackBrowserWindow(win, _serverURL) {
 exports.trackBrowserWindow = trackBrowserWindow;
 electron_1.app.on("web-contents-created", (_evt, wc) => {
     wc.on("will-attach-webview", (_event, webPreferences, params) => {
-        debug("WEBVIEW will-attach-webview: " + params.src);
+        debug("WEBVIEW will-attach-webview");
+        if (params.src && !params.src.startsWith("data:")) {
+            debug(params.src);
+        }
         webPreferences.contextIsolation = false;
         webPreferences.javascript = true;
         webPreferences.webSecurity = true;
