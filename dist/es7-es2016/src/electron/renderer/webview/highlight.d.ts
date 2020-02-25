@@ -1,4 +1,3 @@
-/// <reference types="debounce" />
 import { IColor, IHighlight } from "../../common/highlight";
 import { ISelectionInfo } from "../../common/selection";
 import { IReadiumElectronWebviewWindow } from "./state";
