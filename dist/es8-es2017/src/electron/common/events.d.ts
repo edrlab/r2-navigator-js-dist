@@ -88,6 +88,7 @@ export interface IEventPayload_R2_EVENT_HIGHLIGHT_CLICK {
     highlight: IHighlight;
 }
 export declare const R2_EVENT_WEBVIEW_KEYDOWN = "R2_EVENT_WEBVIEW_KEYDOWN";
+export declare const R2_EVENT_WEBVIEW_KEYUP = "R2_EVENT_WEBVIEW_KEYUP";
 export interface IEventPayload_R2_EVENT_WEBVIEW_KEYDOWN {
     key: string;
     code: string;
@@ -95,7 +96,9 @@ export interface IEventPayload_R2_EVENT_WEBVIEW_KEYDOWN {
     ctrlKey: boolean;
     metaKey: boolean;
     shiftKey: boolean;
+    elementName?: string;
 }
+export declare type IEventPayload_R2_EVENT_WEBVIEW_KEYUP = IEventPayload_R2_EVENT_WEBVIEW_KEYDOWN;
 export declare const R2_EVENT_CLIPBOARD_COPY = "R2_EVENT_CLIPBOARD_COPY";
 export interface IEventPayload_R2_EVENT_CLIPBOARD_COPY {
     txt: string;

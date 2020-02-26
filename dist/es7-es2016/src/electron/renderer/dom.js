@@ -83,6 +83,12 @@ function createWebViewInternal(preloadScriptPath) {
                 _keyDownEventHandler(payload);
             }
         }
+        else if (event.channel === events_1.R2_EVENT_WEBVIEW_KEYUP) {
+            const payload = event.args[0];
+            if (_keyUpEventHandler) {
+                _keyUpEventHandler(payload);
+            }
+        }
         else if (event.channel === events_1.R2_EVENT_CLIPBOARD_COPY) {
             const clipboardInterceptor = win.READIUM2.clipboardInterceptor;
             if (clipboardInterceptor) {
@@ -220,4 +226,9 @@ function setKeyDownEventHandler(func) {
     _keyDownEventHandler = func;
 }
 exports.setKeyDownEventHandler = setKeyDownEventHandler;
+let _keyUpEventHandler;
+function setKeyUpEventHandler(func) {
+    _keyUpEventHandler = func;
+}
+exports.setKeyUpEventHandler = setKeyUpEventHandler;
 //# sourceMappingURL=dom.js.map

@@ -74,11 +74,32 @@ win.document.addEventListener("keydown", (ev) => {
         altKey: ev.altKey,
         code: ev.code,
         ctrlKey: ev.ctrlKey,
+        elementName: ev.target.nodeName,
         key: ev.key,
         metaKey: ev.metaKey,
         shiftKey: ev.shiftKey,
     };
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_WEBVIEW_KEYDOWN, payload);
+}, {
+    capture: true,
+    once: false,
+    passive: false,
+});
+win.document.addEventListener("keyup", (ev) => {
+    const payload = {
+        altKey: ev.altKey,
+        code: ev.code,
+        ctrlKey: ev.ctrlKey,
+        elementName: ev.target.nodeName,
+        key: ev.key,
+        metaKey: ev.metaKey,
+        shiftKey: ev.shiftKey,
+    };
+    electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_WEBVIEW_KEYUP, payload);
+}, {
+    capture: true,
+    once: false,
+    passive: false,
 });
 win.READIUM2.isAudio = win.location.protocol === "data:";
 if (win.READIUM2.urlQueryParams) {
