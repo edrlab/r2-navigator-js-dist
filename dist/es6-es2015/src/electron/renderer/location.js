@@ -719,6 +719,7 @@ const _saveReadingLocation = (docHref, locator) => {
     _lastSavedReadingLocation = {
         audioPlaybackInfo: locator.audioPlaybackInfo,
         docInfo: locator.docInfo,
+        epubPage: locator.epubPage,
         locator: {
             href: docHref,
             locations: {

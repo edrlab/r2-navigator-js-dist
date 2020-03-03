@@ -43,6 +43,7 @@ win.READIUM2 = {
     locationHashOverrideInfo: {
         audioPlaybackInfo: undefined,
         docInfo: undefined,
+        epubPage: undefined,
         href: "",
         locations: {
             cfi: undefined,
@@ -69,33 +70,37 @@ win.prompt = (...args) => {
     console.log.apply(win, args);
     return "";
 };
-win.document.addEventListener("keydown", (ev) => {
+function keyDownUpEventHandler(ev, keyDown) {
+    const elementName = (ev.target && ev.target.nodeName) ?
+        ev.target.nodeName : "";
+    const elementAttributes = {};
+    if (ev.target && ev.target.attributes) {
+        for (let i = 0; i < ev.target.attributes.length; i++) {
+            const attr = ev.target.attributes[i];
+            elementAttributes[attr.name] = attr.value;
+        }
+    }
     const payload = {
         altKey: ev.altKey,
         code: ev.code,
         ctrlKey: ev.ctrlKey,
-        elementName: ev.target.nodeName,
+        elementAttributes,
+        elementName,
         key: ev.key,
         metaKey: ev.metaKey,
         shiftKey: ev.shiftKey,
     };
-    electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_WEBVIEW_KEYDOWN, payload);
+    electron_1.ipcRenderer.sendToHost(keyDown ? events_1.R2_EVENT_WEBVIEW_KEYDOWN : events_1.R2_EVENT_WEBVIEW_KEYUP, payload);
+}
+win.document.addEventListener("keydown", (ev) => {
+    keyDownUpEventHandler(ev, true);
 }, {
     capture: true,
     once: false,
     passive: false,
 });
 win.document.addEventListener("keyup", (ev) => {
-    const payload = {
-        altKey: ev.altKey,
-        code: ev.code,
-        ctrlKey: ev.ctrlKey,
-        elementName: ev.target.nodeName,
-        key: ev.key,
-        metaKey: ev.metaKey,
-        shiftKey: ev.shiftKey,
-    };
-    electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_WEBVIEW_KEYUP, payload);
+    keyDownUpEventHandler(ev, false);
 }, {
     capture: true,
     once: false,
@@ -297,6 +302,7 @@ function resetLocationHashOverrideInfo() {
     win.READIUM2.locationHashOverrideInfo = {
         audioPlaybackInfo: undefined,
         docInfo: undefined,
+        epubPage: undefined,
         href: "",
         locations: {
             cfi: undefined,
@@ -1521,6 +1527,50 @@ function getCssSelector(element) {
         return "";
     }
 }
+let _allEpubPageBreaks;
+const _htmlNamespaces = {
+    epub: "http://www.idpf.org/2007/ops",
+};
+const findPrecedingAncestorSiblingEpubPageBreak = (element) => {
+    if (!_allEpubPageBreaks) {
+        const namespaceResolver = (prefix) => {
+            if (!prefix) {
+                return null;
+            }
+            return _htmlNamespaces[prefix] || null;
+        };
+        const xpathResult = win.document.evaluate(`//*[contains(concat(' ', normalize-space(@epub:type), ' '), ' pagebreak ')]`, win.document.body, namespaceResolver, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+        for (let i = 0; i < xpathResult.snapshotLength; i++) {
+            const n = xpathResult.snapshotItem(i);
+            if (n) {
+                const el = n;
+                if (el.textContent) {
+                    const pageBreak = {
+                        element: el,
+                        text: el.textContent,
+                    };
+                    if (!_allEpubPageBreaks) {
+                        _allEpubPageBreaks = [];
+                    }
+                    _allEpubPageBreaks.push(pageBreak);
+                }
+            }
+        }
+        if (!_allEpubPageBreaks) {
+            _allEpubPageBreaks = [];
+        }
+        debug("_allEpubPageBreaks XPath", _allEpubPageBreaks.length);
+    }
+    for (let i = _allEpubPageBreaks.length - 1; i >= 0; i--) {
+        const pageBreak = _allEpubPageBreaks[i];
+        const c = element.compareDocumentPosition(pageBreak.element);
+        if (c === 0 || (c & Node.DOCUMENT_POSITION_PRECEDING) || (c & Node.DOCUMENT_POSITION_CONTAINS)) {
+            debug("preceding or containing EPUB page break", pageBreak.text);
+            return pageBreak.text;
+        }
+    }
+    return undefined;
+};
 const notifyReadingLocationRaw = () => {
     if (!win.READIUM2.locationHashOverride) {
         return;
@@ -1551,6 +1601,7 @@ const notifyReadingLocationRaw = () => {
                 !win.READIUM2.locationHashOverrideInfo.selectionInfo ||
                 !selection_1.sameSelections(win.READIUM2.locationHashOverrideInfo.selectionInfo, selInfo);
     }
+    const epubPage = findPrecedingAncestorSiblingEpubPageBreak(win.READIUM2.locationHashOverride);
     win.READIUM2.locationHashOverrideInfo = {
         audioPlaybackInfo: undefined,
         docInfo: {
@@ -1558,6 +1609,7 @@ const notifyReadingLocationRaw = () => {
             isRightToLeft: readium_css_1.isRTL(),
             isVerticalWritingMode: readium_css_1.isVerticalWritingMode(),
         },
+        epubPage,
         href: "",
         locations: {
             cfi,

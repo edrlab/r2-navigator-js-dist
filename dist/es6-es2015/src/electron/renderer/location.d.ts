@@ -18,6 +18,7 @@ export interface LocatorExtended {
     selectionInfo: ISelectionInfo | undefined;
     selectionIsNew: boolean | undefined;
     docInfo: IDocInfo | undefined;
+    epubPage: string | undefined;
 }
 export declare function getCurrentReadingLocation(): LocatorExtended | undefined;
 export declare function setReadingLocationSaver(func: (locator: LocatorExtended) => void): void;

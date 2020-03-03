@@ -44,6 +44,7 @@ export interface IEventPayload_R2_EVENT_READING_LOCATION extends Locator {
     selectionInfo: ISelectionInfo | undefined;
     docInfo: IDocInfo | undefined;
     selectionIsNew: boolean | undefined;
+    epubPage: string | undefined;
 }
 export declare const R2_EVENT_LINK = "R2_EVENT_LINK";
 export interface IEventPayload_R2_EVENT_LINK {
@@ -96,7 +97,10 @@ export interface IEventPayload_R2_EVENT_WEBVIEW_KEYDOWN {
     ctrlKey: boolean;
     metaKey: boolean;
     shiftKey: boolean;
-    elementName?: string;
+    elementName: string;
+    elementAttributes: {
+        [name: string]: string;
+    };
 }
 export declare type IEventPayload_R2_EVENT_WEBVIEW_KEYUP = IEventPayload_R2_EVENT_WEBVIEW_KEYDOWN;
 export declare const R2_EVENT_CLIPBOARD_COPY = "R2_EVENT_CLIPBOARD_COPY";

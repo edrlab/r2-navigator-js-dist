@@ -80,13 +80,13 @@ function createWebViewInternal(preloadScriptPath) {
         if (event.channel === events_1.R2_EVENT_WEBVIEW_KEYDOWN) {
             const payload = event.args[0];
             if (_keyDownEventHandler) {
-                _keyDownEventHandler(payload);
+                _keyDownEventHandler(payload, payload.elementName, payload.elementAttributes);
             }
         }
         else if (event.channel === events_1.R2_EVENT_WEBVIEW_KEYUP) {
             const payload = event.args[0];
             if (_keyUpEventHandler) {
-                _keyUpEventHandler(payload);
+                _keyUpEventHandler(payload, payload.elementName, payload.elementAttributes);
             }
         }
         else if (event.channel === events_1.R2_EVENT_CLIPBOARD_COPY) {

@@ -131,6 +131,7 @@ function setupAudioBook(_docTitle) {
                 isRightToLeft: false,
                 isVerticalWritingMode: false,
             },
+            epubPage: undefined,
             href: "",
             locations: {
                 cfi: undefined,
