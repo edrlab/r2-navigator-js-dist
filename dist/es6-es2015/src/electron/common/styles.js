@@ -1,5 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.SKIP_LINK_ID = "r2-skip-link";
+exports.LINK_TARGET_CLASS = "r2-link-target";
 exports.ROOT_CLASS_REDUCE_MOTION = "r2-reduce-motion";
 exports.ROOT_CLASS_NO_FOOTNOTES = "r2-no-popup-foonotes";
 exports.ROOT_CLASS_MATHJAX = "r2-mathjax";
@@ -421,6 +423,31 @@ exports.visibilityMaskCssStyles = `
 exports.ROOT_CLASS_KEYBOARD_INTERACT = "r2-keyboard-interact";
 exports.CSS_CLASS_NO_FOCUS_OUTLINE = "r2-no-focus-outline";
 exports.focusCssStyles = `
+
+#${exports.SKIP_LINK_ID} {
+    display: block;
+    overflow: hidden;
+    visibility: visible;
+    opacity: 1;
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    width: 1px;
+    height: 1px;
+    background-color: transparent;
+    color: transparent;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    outline: 0;
+}
+/*
+#${exports.SKIP_LINK_ID}:focus {
+    width: auto;
+    height: auto;
+}
+*/
+
 @keyframes readium2ElectronAnimation_FOCUS {
     0% {
     }
@@ -432,12 +459,12 @@ exports.focusCssStyles = `
 :root *:focus {
     outline: none;
 }
-:root[style].${exports.ROOT_CLASS_KEYBOARD_INTERACT} *.${exports.CSS_CLASS_NO_FOCUS_OUTLINE}:focus,
-:root.${exports.ROOT_CLASS_KEYBOARD_INTERACT} *.${exports.CSS_CLASS_NO_FOCUS_OUTLINE}:focus {
+:root[style].${exports.ROOT_CLASS_KEYBOARD_INTERACT} *.${exports.CSS_CLASS_NO_FOCUS_OUTLINE}:focus:not(:target):not(.${exports.LINK_TARGET_CLASS}),
+:root.${exports.ROOT_CLASS_KEYBOARD_INTERACT} *.${exports.CSS_CLASS_NO_FOCUS_OUTLINE}:focus:not(:target):not(.${exports.LINK_TARGET_CLASS}) {
     outline: none !important;
 }
-:root[style].${exports.ROOT_CLASS_KEYBOARD_INTERACT} *:focus,
-:root.${exports.ROOT_CLASS_KEYBOARD_INTERACT} *:focus {
+:root[style].${exports.ROOT_CLASS_KEYBOARD_INTERACT} *:focus:not(:target):not(.${exports.LINK_TARGET_CLASS}),
+:root.${exports.ROOT_CLASS_KEYBOARD_INTERACT} *:focus:not(:target):not(.${exports.LINK_TARGET_CLASS}) {
     outline-color: blue !important;
     outline-style: solid !important;
     outline-width: 2px !important;
@@ -463,7 +490,10 @@ exports.targetCssStyles = `
     }
 }
 :root[style] *:target,
-:root *:target {
+:root *:target,
+:root[style] *.${exports.LINK_TARGET_CLASS},
+:root *.${exports.LINK_TARGET_CLASS}
+{
     outline-color: green !important;
     outline-style: solid !important;
     outline-width: 2px !important;
@@ -476,7 +506,9 @@ exports.targetCssStyles = `
     animation-timing-function: linear;
 }
 :root[style] *.r2-no-target-outline:target,
-:root *.r2-no-target-outline:target {
+:root *.r2-no-target-outline:target,
+:root[style] *.r2-no-target-outline.${exports.LINK_TARGET_CLASS},
+:root *.r2-no-target-outline.${exports.LINK_TARGET_CLASS} {
     outline: inherit !important;
 }
 `;

@@ -173,19 +173,23 @@ function computeVisibility_(element) {
     if (element === win.document.body || element === win.document.documentElement) {
         return true;
     }
+    const blacklisted = checkBlacklisted(element);
+    if (blacklisted) {
+        return false;
+    }
     const elStyle = win.getComputedStyle(element);
     if (elStyle) {
         const display = elStyle.getPropertyValue("display");
         if (display === "none") {
             if (IS_DEV) {
-                console.log("element DISPLAY NONE");
+                debug("element DISPLAY NONE");
             }
             return false;
         }
         const opacity = elStyle.getPropertyValue("opacity");
         if (opacity === "0") {
             if (IS_DEV) {
-                console.log("element OPACITY ZERO");
+                debug("element OPACITY ZERO");
             }
             return false;
         }
@@ -523,7 +527,7 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_PAGE_TURN, (_event, payload) => {
         onEventPageTurn(payload);
     }, 100);
 });
-function scrollElementIntoView(element) {
+function scrollElementIntoView(element, doFocus) {
     if (win.READIUM2.DEBUG_VISUALS) {
         const existings = win.document.querySelectorAll(`*[${styles_1.readPosCssStylesAttr3}]`);
         existings.forEach((existing) => {
@@ -531,23 +535,55 @@ function scrollElementIntoView(element) {
         });
         element.setAttribute(styles_1.readPosCssStylesAttr3, "scrollElementIntoView");
     }
-    const isPaged = readium_css_inject_1.isPaginated(win.document);
-    if (isPaged) {
-        scrollIntoView(element);
-    }
-    else {
-        const scrollElement = readium_css_1.getScrollingElement(win.document);
-        const rect = element.getBoundingClientRect();
-        const scrollTopMax = scrollElement.scrollHeight - win.document.documentElement.clientHeight;
-        let offset = scrollElement.scrollTop + (rect.top - (win.document.documentElement.clientHeight / 2));
-        if (offset > scrollTopMax) {
-            offset = scrollTopMax;
+    if (doFocus) {
+        if (!tabbable.isFocusable(element)) {
+            const attr = element.getAttribute("tabindex");
+            if (!attr) {
+                element.setAttribute("tabindex", "-1");
+                element.classList.add(styles_1.CSS_CLASS_NO_FOCUS_OUTLINE);
+                if (IS_DEV) {
+                    debug("tabindex -1 set (focusable):");
+                    debug(getCssSelector(element));
+                }
+            }
         }
-        else if (offset < 0) {
-            offset = 0;
+        const targets = win.document.querySelectorAll(`.${styles_1.LINK_TARGET_CLASS}`);
+        targets.forEach((t) => {
+            t.classList.remove(styles_1.LINK_TARGET_CLASS);
+        });
+        element.style.animation = "none";
+        void element.offsetWidth;
+        element.style.animation = "";
+        element.classList.add(styles_1.LINK_TARGET_CLASS);
+        if (element._timeoutTargetClass) {
+            clearTimeout(element._timeoutTargetClass);
+            element._timeoutTargetClass = undefined;
         }
-        scrollElement.scrollTop = offset;
+        element._timeoutTargetClass = setTimeout(() => {
+            debug("ANIMATION TIMEOUT REMOVE");
+            element.classList.remove(styles_1.LINK_TARGET_CLASS);
+        }, 4500);
+        element.focus();
     }
+    setTimeout(() => {
+        const isPaged = readium_css_inject_1.isPaginated(win.document);
+        if (isPaged) {
+            scrollIntoView(element);
+        }
+        else {
+            const scrollElement = readium_css_1.getScrollingElement(win.document);
+            const rect = element.getBoundingClientRect();
+            const scrollTopMax = scrollElement.scrollHeight - win.document.documentElement.clientHeight;
+            let offset = scrollElement.scrollTop + (rect.top - (win.document.documentElement.clientHeight / 2));
+            if (offset > scrollTopMax) {
+                offset = scrollTopMax;
+            }
+            else if (offset < 0) {
+                offset = 0;
+            }
+            scrollElement.scrollTop = offset;
+        }
+    }, doFocus ? 100 : 0);
 }
 function getScrollOffsetIntoView(element) {
     if (!win.document || !win.document.documentElement || !win.document.body ||
@@ -587,13 +623,13 @@ const scrollToHashRaw = () => {
     highlight_1.recreateAllHighlights(win);
     const isPaged = readium_css_inject_1.isPaginated(win.document);
     if (win.READIUM2.locationHashOverride) {
-        scrollElementIntoView(win.READIUM2.locationHashOverride);
+        scrollElementIntoView(win.READIUM2.locationHashOverride, true);
         notifyReadingLocationDebounced();
         return;
     }
     else if (win.READIUM2.hashElement) {
         win.READIUM2.locationHashOverride = win.READIUM2.hashElement;
-        scrollElementIntoView(win.READIUM2.hashElement);
+        scrollElementIntoView(win.READIUM2.hashElement, true);
         notifyReadingLocationDebounced();
         return;
     }
@@ -666,7 +702,7 @@ const scrollToHashRaw = () => {
                     if (win.READIUM2.locationHashOverrideInfo) {
                         win.READIUM2.locationHashOverrideInfo.locations.cssSelector = gotoCssSelector;
                     }
-                    scrollElementIntoView(selected);
+                    scrollElementIntoView(selected, true);
                     notifyReadingLocationDebounced();
                     return;
                 }
@@ -754,73 +790,25 @@ function showHideContentMask(doHide) {
     }
 }
 function focusScrollRaw(el, doFocus) {
-    win.READIUM2.locationHashOverride = el;
-    scrollElementIntoView(win.READIUM2.locationHashOverride);
-    if (doFocus) {
-        setTimeout(() => {
-            el.focus();
-        }, 10);
+    scrollElementIntoView(el, doFocus);
+    const blacklisted = checkBlacklisted(el);
+    if (blacklisted) {
+        return;
     }
+    win.READIUM2.locationHashOverride = el;
     notifyReadingLocationDebounced();
 }
 const focusScrollDebounced = debounce_1.debounce((el, doFocus) => {
     focusScrollRaw(el, doFocus);
-}, 80);
-let _ignoreFocusInEvent = false;
-function handleTab(target, tabKeyDownEvent) {
+}, 100);
+const handleFocusInDebounced = debounce_1.debounce((target, tabKeyDownEvent) => {
+    handleFocusInRaw(target, tabKeyDownEvent);
+}, 100);
+function handleFocusInRaw(target, _tabKeyDownEvent) {
     if (!target || !win.document.body) {
         return;
     }
-    _ignoreFocusInEvent = false;
-    const tabbables = win.document.body.tabbables ?
-        win.document.body.tabbables :
-        (win.document.body.tabbables = tabbable(win.document.body));
-    const i = tabbables.indexOf(target);
-    if (i === 0) {
-        if (!tabKeyDownEvent || tabKeyDownEvent.shiftKey) {
-            _ignoreFocusInEvent = true;
-            focusScrollDebounced(target, true);
-            return;
-        }
-        if (i < (tabbables.length - 1)) {
-            tabKeyDownEvent.preventDefault();
-            const nextTabbable = tabbables[i + 1];
-            focusScrollDebounced(nextTabbable, true);
-            return;
-        }
-    }
-    else if (i === (tabbables.length - 1)) {
-        if (!tabKeyDownEvent || !tabKeyDownEvent.shiftKey) {
-            _ignoreFocusInEvent = true;
-            focusScrollDebounced(target, true);
-            return;
-        }
-        if (i > 0) {
-            tabKeyDownEvent.preventDefault();
-            const previousTabbable = tabbables[i - 1];
-            focusScrollDebounced(previousTabbable, true);
-            return;
-        }
-    }
-    else if (i > 0) {
-        if (tabKeyDownEvent) {
-            if (tabKeyDownEvent.shiftKey) {
-                tabKeyDownEvent.preventDefault();
-                const previousTabbable = tabbables[i - 1];
-                focusScrollDebounced(previousTabbable, true);
-                return;
-            }
-            else {
-                tabKeyDownEvent.preventDefault();
-                const nextTabbable = tabbables[i + 1];
-                focusScrollDebounced(nextTabbable, true);
-                return;
-            }
-        }
-    }
-    if (!tabKeyDownEvent) {
-        focusScrollDebounced(target, true);
-    }
+    focusScrollRaw(target, false);
 }
 electron_1.ipcRenderer.on(events_1.R2_EVENT_READIUMCSS, (_event, payload) => {
     showHideContentMask(false);
@@ -936,6 +924,32 @@ function loaded(forced) {
         if (!win.READIUM2.isFixedLayout) {
             debug("++++ scrollToHashDebounced FROM LOAD");
             scrollToHashDebounced();
+            if (win.document.body) {
+                const linkTxt = "__";
+                const focusLink = win.document.createElement("a");
+                focusLink.setAttribute("id", styles_1.SKIP_LINK_ID);
+                focusLink.appendChild(win.document.createTextNode(linkTxt));
+                focusLink.setAttribute("title", linkTxt);
+                focusLink.setAttribute("aria-label", linkTxt);
+                focusLink.setAttribute("href", "javascript:;");
+                focusLink.setAttribute("tabindex", "0");
+                win.document.body.insertAdjacentElement("afterbegin", focusLink);
+                setTimeout(() => {
+                    focusLink.addEventListener("click", (_ev) => {
+                        if (IS_DEV) {
+                            debug("focus link click:");
+                            debug(win.READIUM2.hashElement ?
+                                getCssSelector(win.READIUM2.hashElement) : "!hashElement");
+                            debug(win.READIUM2.locationHashOverride ?
+                                getCssSelector(win.READIUM2.locationHashOverride) : "!locationHashOverride");
+                        }
+                        const el = win.READIUM2.hashElement || win.READIUM2.locationHashOverride;
+                        if (el) {
+                            focusScrollDebounced(el, true);
+                        }
+                    });
+                }, 200);
+            }
             _cancelInitialScrollCheck = false;
             setTimeout(() => {
                 if (_cancelInitialScrollCheck) {
@@ -968,10 +982,6 @@ function loaded(forced) {
         return;
     }
     win.document.body.addEventListener("focusin", (ev) => {
-        if (_ignoreFocusInEvent) {
-            _ignoreFocusInEvent = false;
-            return;
-        }
         if (popup_dialog_1.isPopupDialogOpen(win.document)) {
             return;
         }
@@ -985,21 +995,13 @@ function loaded(forced) {
                 }
             }
             if (!mouseClickOnLink) {
-                handleTab(ev.target, undefined);
+                handleFocusInDebounced(ev.target, undefined);
+            }
+            else {
+                debug("focusin mouse click --- IGNORE");
             }
         }
     });
-    win.document.body.addEventListener("keydown", (ev) => {
-        if (popup_dialog_1.isPopupDialogOpen(win.document)) {
-            return;
-        }
-        const TAB_KEY = 9;
-        if (ev.which === TAB_KEY) {
-            if (ev.target) {
-                handleTab(ev.target, ev);
-            }
-        }
-    }, true);
     const useResizeObserver = !win.READIUM2.isFixedLayout;
     if (useResizeObserver && win.document.body) {
         setTimeout(() => {
@@ -1154,12 +1156,16 @@ win.addEventListener("load", () => {
 function checkBlacklisted(el) {
     const id = el.getAttribute("id");
     if (id && _blacklistIdClassForCFI.indexOf(id) >= 0) {
-        console.log("checkBlacklisted ID: " + id);
+        if (IS_DEV && id !== styles_1.SKIP_LINK_ID) {
+            debug("checkBlacklisted ID: " + id);
+        }
         return true;
     }
     for (const item of _blacklistIdClassForCFI) {
         if (el.classList.contains(item)) {
-            console.log("checkBlacklisted CLASS: " + item);
+            if (IS_DEV) {
+                debug("checkBlacklisted CLASS: " + item);
+            }
             return true;
         }
     }
@@ -1168,7 +1174,9 @@ function checkBlacklisted(el) {
         const low = el.tagName.toLowerCase();
         for (const item of _blacklistIdClassForCFIMathJax) {
             if (low.startsWith(item)) {
-                console.log("checkBlacklisted MathJax ELEMENT NAME: " + el.tagName);
+                if (IS_DEV) {
+                    debug("checkBlacklisted MathJax ELEMENT NAME: " + el.tagName);
+                }
                 return true;
             }
         }
@@ -1176,7 +1184,9 @@ function checkBlacklisted(el) {
             const lowId = id.toLowerCase();
             for (const item of _blacklistIdClassForCFIMathJax) {
                 if (lowId.startsWith(item)) {
-                    console.log("checkBlacklisted MathJax ID: " + id);
+                    if (IS_DEV) {
+                        debug("checkBlacklisted MathJax ID: " + id);
+                    }
                     return true;
                 }
             }
@@ -1186,7 +1196,9 @@ function checkBlacklisted(el) {
             const lowCl = cl.toLowerCase();
             for (const item of _blacklistIdClassForCFIMathJax) {
                 if (lowCl.startsWith(item)) {
-                    console.log("checkBlacklisted MathJax CLASS: " + cl);
+                    if (IS_DEV) {
+                        debug("checkBlacklisted MathJax CLASS: " + cl);
+                    }
                     return true;
                 }
             }
@@ -1439,9 +1451,9 @@ exports.computeProgressionData = () => {
         percentRatio: progressionRatio,
     };
 };
-const _blacklistIdClassForCssSelectors = [styles_1.POPUP_DIALOG_CLASS, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN, highlight_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA, styles_1.TTS_ID_INJECTED_PARENT, styles_1.TTS_ID_SPEAKING_DOC_ELEMENT, styles_1.ROOT_CLASS_KEYBOARD_INTERACT, styles_1.ROOT_CLASS_INVISIBLE_MASK, readium_css_inject_1.CLASS_PAGINATED, styles_1.ROOT_CLASS_NO_FOOTNOTES];
+const _blacklistIdClassForCssSelectors = [styles_1.LINK_TARGET_CLASS, styles_1.CSS_CLASS_NO_FOCUS_OUTLINE, styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN, highlight_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA, styles_1.TTS_ID_INJECTED_PARENT, styles_1.TTS_ID_SPEAKING_DOC_ELEMENT, styles_1.ROOT_CLASS_KEYBOARD_INTERACT, styles_1.ROOT_CLASS_INVISIBLE_MASK, readium_css_inject_1.CLASS_PAGINATED, styles_1.ROOT_CLASS_NO_FOOTNOTES];
 const _blacklistIdClassForCssSelectorsMathJax = ["mathjax", "ctxt", "mjx"];
-const _blacklistIdClassForCFI = [styles_1.POPUP_DIALOG_CLASS, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN, highlight_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA];
+const _blacklistIdClassForCFI = [styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN, highlight_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA];
 const _blacklistIdClassForCFIMathJax = ["mathjax", "ctxt", "mjx"];
 exports.computeCFI = (node) => {
     if (node.nodeType !== Node.ELEMENT_NODE) {
@@ -1454,14 +1466,19 @@ exports.computeCFI = (node) => {
         if (!blacklisted) {
             const currentElementParentChildren = currentElement.parentNode.children;
             let currentElementIndex = -1;
+            let j = 0;
             for (let i = 0; i < currentElementParentChildren.length; i++) {
+                const childBlacklisted = checkBlacklisted(currentElementParentChildren[i]);
+                if (childBlacklisted) {
+                    j++;
+                }
                 if (currentElement === currentElementParentChildren[i]) {
                     currentElementIndex = i;
                     break;
                 }
             }
             if (currentElementIndex >= 0) {
-                const cfiIndex = (currentElementIndex + 1) * 2;
+                const cfiIndex = (currentElementIndex - j + 1) * 2;
                 cfi = cfiIndex +
                     (currentElement.id ? ("[" + currentElement.id + "]") : "") +
                     (cfi.length ? ("/" + cfi) : "");
@@ -1573,6 +1590,10 @@ const findPrecedingAncestorSiblingEpubPageBreak = (element) => {
 };
 const notifyReadingLocationRaw = () => {
     if (!win.READIUM2.locationHashOverride) {
+        return;
+    }
+    const blacklisted = checkBlacklisted(win.READIUM2.locationHashOverride);
+    if (blacklisted) {
         return;
     }
     let progressionData;
