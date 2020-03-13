@@ -6,6 +6,7 @@ const electron_1 = require("electron");
 const path = require("path");
 const url_1 = require("url");
 const UrlUtils_1 = require("r2-utils-js/dist/es7-es2016/src/_utils/http/UrlUtils");
+const audiobook_1 = require("../common/audiobook");
 const events_1 = require("../common/events");
 const readium_css_inject_1 = require("../common/readium-css-inject");
 const sessions_1 = require("../common/sessions");
@@ -59,7 +60,7 @@ function locationHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
             uri.hash = "";
             uri.search = "";
             const urlNoQueryParams = uri.toString();
-            handleLink(urlNoQueryParams, goPREVIOUS, false);
+            handleLink(urlNoQueryParams, goPREVIOUS, false, activeWebView.READIUM2.readiumCss);
         }
     }
     else if (eventChannel === events_1.R2_EVENT_READING_LOCATION) {
@@ -70,7 +71,7 @@ function locationHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
     }
     else if (eventChannel === events_1.R2_EVENT_LINK) {
         const payload = eventArgs[0];
-        handleLinkUrl(payload.url);
+        handleLinkUrl(payload.url, activeWebView.READIUM2.readiumCss);
     }
     else {
         return false;
@@ -81,7 +82,8 @@ exports.locationHandleIpcMessage = locationHandleIpcMessage;
 electron_1.ipcRenderer.on(events_1.R2_EVENT_LINK, (_event, payload) => {
     debug("R2_EVENT_LINK (ipcRenderer.on)");
     debug(payload.url);
-    handleLinkUrl(payload.url);
+    const activeWebView = win.READIUM2.getActiveWebView();
+    handleLinkUrl(payload.url, activeWebView ? activeWebView.READIUM2.readiumCss : undefined);
 });
 function shiftWebview(webview, offset, backgroundColor) {
     if (!offset) {
@@ -127,7 +129,8 @@ function navLeftOrRight(left, spineNav) {
                 uri.hash = "";
                 uri.search = "";
                 const urlNoQueryParams = uri.toString();
-                handleLink(urlNoQueryParams, false, false);
+                const activeWebView = win.READIUM2.getActiveWebView();
+                handleLink(urlNoQueryParams, false, false, activeWebView ? activeWebView.READIUM2.readiumCss : undefined);
                 return;
             }
             else {
@@ -150,16 +153,16 @@ function navLeftOrRight(left, spineNav) {
     }
 }
 exports.navLeftOrRight = navLeftOrRight;
-function handleLink(href, previous, useGoto) {
+function handleLink(href, previous, useGoto, rcss) {
     const special = href.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://");
     if (special) {
-        const okay = loadLink(href, previous, useGoto);
+        const okay = loadLink(href, previous, useGoto, rcss);
         if (!okay) {
             debug(`Readium link fail?! ${href}`);
         }
     }
     else {
-        const okay = loadLink(href, previous, useGoto);
+        const okay = loadLink(href, previous, useGoto, rcss);
         if (!okay) {
             if (/^http[s]?:\/\/127\.0\.0\.1/.test(href)) {
                 debug(`Internal link, fails to match publication document: ${href}`);
@@ -179,11 +182,11 @@ function handleLink(href, previous, useGoto) {
     }
 }
 exports.handleLink = handleLink;
-function handleLinkUrl(href) {
-    handleLink(href, undefined, false);
+function handleLinkUrl(href, rcss) {
+    handleLink(href, undefined, false, rcss);
 }
 exports.handleLinkUrl = handleLinkUrl;
-function handleLinkLocator(location) {
+function handleLinkLocator(location, rcss) {
     const publication = win.READIUM2.publication;
     const publicationURL = win.READIUM2.publicationURL;
     if (!publication || !publicationURL) {
@@ -231,7 +234,7 @@ function handleLinkLocator(location) {
             ((useGoto) ? ("?" + url_params_1.URL_PARAM_GOTO + "=" +
                 UrlUtils_1.encodeURIComponent_RFC3986(Buffer.from(JSON.stringify(linkToLoadGoto, null, "")).toString("base64"))) :
                 "");
-        handleLink(hrefToLoad, undefined, useGoto);
+        handleLink(hrefToLoad, undefined, useGoto, rcss);
     }
 }
 exports.handleLinkLocator = handleLinkLocator;
@@ -248,12 +251,12 @@ function reloadContent() {
             uri.hash = "";
             uri.search = "";
             const urlNoQueryParams = uri.toString();
-            handleLinkUrl(urlNoQueryParams);
+            handleLinkUrl(urlNoQueryParams, activeWebView.READIUM2.readiumCss);
         }
     }, 0);
 }
 exports.reloadContent = reloadContent;
-function loadLink(hrefFull, previous, useGoto) {
+function loadLink(hrefFull, previous, useGoto, rcss) {
     const publication = win.READIUM2.publication;
     const publicationURL = win.READIUM2.publicationURL;
     if (!publication || !publicationURL) {
@@ -339,7 +342,14 @@ function loadLink(hrefFull, previous, useGoto) {
         debug(`CANNOT LOAD LINK ${pubJsonUri} (${publicationURL}) + ${hrefFull} ==> ${linkPath}`);
         return false;
     }
-    const rcssJson = readium_css_1.__computeReadiumCssJsonMessage(pubLink);
+    const activeWebView = win.READIUM2.getActiveWebView();
+    const actualReadiumCss = (activeWebView && activeWebView.READIUM2.readiumCss) ?
+        activeWebView.READIUM2.readiumCss :
+        readium_css_1.obtainReadiumCss(rcss);
+    if (activeWebView) {
+        activeWebView.READIUM2.readiumCss = actualReadiumCss;
+    }
+    const rcssJson = readium_css_1.adjustReadiumCssJsonMessageForFixedLayout(pubLink, actualReadiumCss);
     const rcssJsonstr = JSON.stringify(rcssJson, null, "");
     const rcssJsonstrBase64 = Buffer.from(rcssJsonstr).toString("base64");
     const fileName = path.basename(linkPath);
@@ -411,7 +421,6 @@ function loadLink(hrefFull, previous, useGoto) {
                     "true" : "false";
         });
     }
-    const activeWebView = win.READIUM2.getActiveWebView();
     const webviewNeedsForcedRefresh = !isAudio &&
         activeWebView && activeWebView.READIUM2.forceRefresh;
     if (activeWebView) {
@@ -474,10 +483,12 @@ function loadLink(hrefFull, previous, useGoto) {
             if (IS_DEV) {
                 debug(`___HARD AUDIO___ WEBVIEW REFRESH: ${uriStr_}`);
             }
+            const readiumCssBackup = activeWebView.READIUM2.readiumCss;
             win.READIUM2.destroyActiveWebView();
             win.READIUM2.createActiveWebView();
             const newActiveWebView = win.READIUM2.getActiveWebView();
             if (newActiveWebView) {
+                newActiveWebView.READIUM2.readiumCss = readiumCssBackup;
                 newActiveWebView.READIUM2.link = pubLink;
                 const coverLink = publication.GetCover();
                 let title;
@@ -499,7 +510,7 @@ function loadLink(hrefFull, previous, useGoto) {
 <head>
     <meta charset="utf-8" />
     <title>${title}</title>
-    <base href="${publicationURL}" />
+    <base href="${publicationURL}" id="${readium_css_inject_1.READIUM2_BASEURL_ID}" />
     <style type="text/css">
     /*<![CDATA[*/
     /*]]>*/
@@ -509,12 +520,27 @@ function loadLink(hrefFull, previous, useGoto) {
     //<![CDATA[
 
     const DEBUG_AUDIO = ${IS_DEV};
+    const DEBUG_AUDIO_X = ${audiobook_1.DEBUG_AUDIO};
 
     document.addEventListener("DOMContentLoaded", () => {
         const _audioElement = document.getElementById("${styles_1.AUDIO_ID}");
 
         if (DEBUG_AUDIO)
         {
+            _audioElement.addEventListener("error", function()
+                {
+                    console.debug("-1) error");
+                    if (_audioElement.error) {
+                        // 1 === MEDIA_ERR_ABORTED
+                        // 2 === MEDIA_ERR_NETWORK
+                        // 3 === MEDIA_ERR_DECODE
+                        // 4 === MEDIA_ERR_SRC_NOT_SUPPORTED
+                        console.debug(_audioElement.error.code);
+                        console.debug(_audioElement.error.message);
+                    }
+                }
+            );
+
             _audioElement.addEventListener("load", function()
                 {
                     console.debug("0) load");
@@ -583,19 +609,81 @@ function loadLink(hrefFull, previous, useGoto) {
 
             _audioElement.addEventListener("seeked", function()
                 {
-                    console.debug("X) seeked");
+                    console.debug("11) seeked");
                 }
             );
 
-            _audioElement.addEventListener("timeupdate", function()
-                {
-                    // console.debug("Y) timeupdate");
-                }
-            );
+            if (DEBUG_AUDIO_X) {
+                _audioElement.addEventListener("timeupdate", function()
+                    {
+                        console.debug("12) timeupdate");
+                    }
+                );
+            }
 
             _audioElement.addEventListener("seeking", function()
                 {
-                    console.debug("Z) seeking");
+                    console.debug("13) seeking");
+                }
+            );
+
+            _audioElement.addEventListener("waiting", function()
+                {
+                    console.debug("14) waiting");
+                }
+            );
+
+            _audioElement.addEventListener("volumechange", function()
+                {
+                    console.debug("15) volumechange");
+                }
+            );
+
+            _audioElement.addEventListener("suspend", function()
+                {
+                    console.debug("16) suspend");
+                }
+            );
+
+            _audioElement.addEventListener("stalled", function()
+                {
+                    console.debug("17) stalled");
+                }
+            );
+
+            _audioElement.addEventListener("ratechange", function()
+                {
+                    console.debug("18) ratechange");
+                }
+            );
+
+            _audioElement.addEventListener("playing", function()
+                {
+                    console.debug("19) playing");
+                }
+            );
+
+            _audioElement.addEventListener("interruptend", function()
+                {
+                    console.debug("20) interruptend");
+                }
+            );
+
+            _audioElement.addEventListener("interruptbegin", function()
+                {
+                    console.debug("21) interruptbegin");
+                }
+            );
+
+            _audioElement.addEventListener("emptied", function()
+                {
+                    console.debug("22) emptied");
+                }
+            );
+
+            _audioElement.addEventListener("abort", function()
+                {
+                    console.debug("23) abort");
                 }
             );
         }
@@ -608,9 +696,19 @@ function loadLink(hrefFull, previous, useGoto) {
 <section id="${styles_1.AUDIO_SECTION_ID}">
 ${title ? `<h3 id="${styles_1.AUDIO_TITLE_ID}">${title}</h3>` : ``}
 ${coverLink ? `<img id="${styles_1.AUDIO_COVER_ID}" src="${coverLink.Href}" alt="" ${coverLink.Height ? `height="${coverLink.Height}"` : ""} ${coverLink.Width ? `width="${coverLink.Width}"` : ""} ${coverLink.Width || coverLink.Height ? `style="${coverLink.Height ? `height: ${coverLink.Height}px !important;` : ""} ${coverLink.Width ? `width: ${coverLink.Width}px !important;` : ""}"` : ""}/>` : ``}
-    <audio id="${styles_1.AUDIO_ID}" controlszz="controlszz" autoplay="autoplay">
+    <audio
+        id="${styles_1.AUDIO_ID}"
+        ${audiobook_1.DEBUG_AUDIO ? `controlsx="controlsx"` : ""}
+        autoplay="autoplay"
+        preload="metadata">
+
         <source src="${uriStr_}" type="${pubLink.TypeLink}" />
     </audio>
+    ${audiobook_1.DEBUG_AUDIO ?
+                    `
+<canvas id="${styles_1.AUDIO_BUFFER_CANVAS_ID}" width="500" height="20"> </canvas>
+    `
+                    : ""}
     <div id="${styles_1.AUDIO_CONTROLS_ID}">
         <button id="${styles_1.AUDIO_PREVIOUS_ID}"></button>
         <button id="${styles_1.AUDIO_REWIND_ID}"></button>
@@ -639,10 +737,12 @@ ${coverLink ? `<img id="${styles_1.AUDIO_COVER_ID}" src="${coverLink.Href}" alt=
             if (IS_DEV) {
                 debug(`___HARD___ WEBVIEW REFRESH: ${uriStr_}`);
             }
+            const readiumCssBackup = activeWebView.READIUM2.readiumCss;
             win.READIUM2.destroyActiveWebView();
             win.READIUM2.createActiveWebView();
             const newActiveWebView = win.READIUM2.getActiveWebView();
             if (newActiveWebView) {
+                newActiveWebView.READIUM2.readiumCss = readiumCssBackup;
                 newActiveWebView.READIUM2.link = pubLink;
                 newActiveWebView.setAttribute("src", uriStr_);
             }

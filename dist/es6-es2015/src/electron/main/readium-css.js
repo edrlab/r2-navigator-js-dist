@@ -5,6 +5,7 @@ const transformer_1 = require("r2-shared-js/dist/es6-es2015/src/transform/transf
 const transformer_html_1 = require("r2-shared-js/dist/es6-es2015/src/transform/transformer-html");
 const readium_css_inject_1 = require("../common/readium-css-inject");
 const readium_css_settings_1 = require("../common/readium-css-settings");
+const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 function isFixedLayout(publication, link) {
     if (link && link.Properties) {
         if (link.Properties.Layout === "fixed") {
@@ -35,33 +36,39 @@ function setupReadiumCSS(server, folderPath, readiumCssGetter) {
         },
     };
     server.expressUse("/" + readium_css_settings_1.READIUM_CSS_URL_PATH, express.static(folderPath, staticOptions));
-    if (readiumCssGetter) {
-        const transformer = (publication, link, str, sessionInfo) => {
-            let mediaType = "application/xhtml+xml";
-            if (link && link.TypeLink) {
-                mediaType = link.TypeLink;
-            }
-            let readiumcssJson = readiumCssGetter(publication, link, sessionInfo);
-            if (isFixedLayout(publication, link)) {
-                const readiumcssJson_ = { setCSS: undefined, isFixedLayout: true };
-                if (readiumcssJson.setCSS) {
-                    if (readiumcssJson.setCSS.mathJax) {
-                    }
-                    if (readiumcssJson.setCSS.reduceMotion) {
-                    }
+    const transformer = (publication, link, str, sessionInfo) => {
+        let mediaType = "application/xhtml+xml";
+        if (link && link.TypeLink) {
+            mediaType = link.TypeLink;
+        }
+        let readiumcssJson = readiumCssGetter(publication, link, sessionInfo);
+        if (isFixedLayout(publication, link)) {
+            const readiumcssJson_ = { setCSS: undefined, isFixedLayout: true };
+            if (readiumcssJson.setCSS) {
+                if (readiumcssJson.setCSS.mathJax) {
                 }
-                readiumcssJson = readiumcssJson_;
+                if (readiumcssJson.setCSS.reduceMotion) {
+                }
             }
-            if (readiumcssJson) {
-                readiumcssJson.urlRoot = server.serverUrl();
-                return readium_css_inject_1.transformHTML(str, readiumcssJson, mediaType);
+            readiumcssJson = readiumcssJson_;
+        }
+        if (readiumcssJson) {
+            if (!readiumcssJson.urlRoot) {
+                const u = server.serverUrl();
+                if (u) {
+                    readiumcssJson.urlRoot = u;
+                }
             }
-            else {
-                return str;
+            if (IS_DEV) {
+                console.log("_____ readiumCssJson.urlRoot (setupReadiumCSS() transformer): ", readiumcssJson.urlRoot);
             }
-        };
-        transformer_1.Transformers.instance().add(new transformer_html_1.TransformerHTML(transformer));
-    }
+            return readium_css_inject_1.transformHTML(str, readiumcssJson, mediaType);
+        }
+        else {
+            return str;
+        }
+    };
+    transformer_1.Transformers.instance().add(new transformer_html_1.TransformerHTML(transformer));
 }
 exports.setupReadiumCSS = setupReadiumCSS;
 //# sourceMappingURL=readium-css.js.map

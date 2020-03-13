@@ -1,6 +1,6 @@
 import { Publication } from "r2-shared-js/dist/es6-es2015/src/models/publication";
 import { Link } from "r2-shared-js/dist/es6-es2015/src/models/publication-link";
-import { IEventPayload_R2_EVENT_CLIPBOARD_COPY, IEventPayload_R2_EVENT_READING_LOCATION } from "../../common/events";
+import { IEventPayload_R2_EVENT_CLIPBOARD_COPY, IEventPayload_R2_EVENT_READING_LOCATION, IEventPayload_R2_EVENT_READIUMCSS } from "../../common/events";
 import { IStringMap } from "../common/querystring";
 export interface IReadiumElectronWebviewWindowState {
     urlQueryParams: IStringMap | undefined;
@@ -23,6 +23,7 @@ export interface IReadiumElectronWebviewState {
     id: number;
     link: Link | undefined;
     forceRefresh?: boolean;
+    readiumCss: IEventPayload_R2_EVENT_READIUMCSS | undefined;
 }
 export interface IReadiumElectronWebview extends Electron.WebviewTag {
     READIUM2: IReadiumElectronWebviewState;

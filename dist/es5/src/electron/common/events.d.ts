@@ -90,13 +90,15 @@ export interface IEventPayload_R2_EVENT_HIGHLIGHT_CLICK {
 }
 export declare const R2_EVENT_WEBVIEW_KEYDOWN = "R2_EVENT_WEBVIEW_KEYDOWN";
 export declare const R2_EVENT_WEBVIEW_KEYUP = "R2_EVENT_WEBVIEW_KEYUP";
-export interface IEventPayload_R2_EVENT_WEBVIEW_KEYDOWN {
-    key: string;
-    code: string;
+export interface IKeyboardEvent {
     altKey: boolean;
     ctrlKey: boolean;
     metaKey: boolean;
     shiftKey: boolean;
+    code: string;
+    key?: string;
+}
+export interface IEventPayload_R2_EVENT_WEBVIEW_KEYDOWN extends IKeyboardEvent {
     elementName: string;
     elementAttributes: {
         [name: string]: string;

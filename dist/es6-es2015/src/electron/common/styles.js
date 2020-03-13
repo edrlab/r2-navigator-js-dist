@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ZERO_TRANSFORM_CLASS = "r2-zeroTransform";
 exports.SKIP_LINK_ID = "r2-skip-link";
 exports.LINK_TARGET_CLASS = "r2-link-target";
 exports.ROOT_CLASS_REDUCE_MOTION = "r2-reduce-motion";
@@ -513,6 +514,12 @@ exports.targetCssStyles = `
 }
 `;
 exports.selectionCssStyles = `
+
+.${exports.ZERO_TRANSFORM_CLASS} {
+    will-change: scroll-position;
+    transform: translateX(0px);
+}
+
 :root[style] ::selection,
 :root ::selection {
 background: rgb(155, 179, 240) !important;
@@ -639,6 +646,7 @@ exports.readPosCssStyles = `
     outline-width: 1px !important;
     outline-offset: 0px !important;
 }`;
+exports.AUDIO_BUFFER_CANVAS_ID = "r2-audio-buffer-canvas";
 exports.AUDIO_PROGRESS_CLASS = "r2-audio-progress";
 exports.AUDIO_ID = "r2-audio";
 exports.AUDIO_BODY_ID = "r2-audio-body";

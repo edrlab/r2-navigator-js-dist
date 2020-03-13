@@ -3,7 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const debug_ = require("debug");
 const xmldom = require("xmldom");
 const readium_css_settings_1 = require("./readium-css-settings");
+const sessions_1 = require("./sessions");
 const styles_1 = require("./styles");
+exports.READIUM2_BASEURL_ID = "r2_BASEURL_ID";
 exports.CLASS_PAGINATED = "r2-css-paginated";
 const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 const debug = debug_("r2:navigator#electron/common/readium-css-inject");
@@ -72,12 +74,29 @@ function isPaginated(documant) {
         documant.documentElement.classList.contains(exports.CLASS_PAGINATED);
 }
 exports.isPaginated = isPaginated;
-function readiumCSSSet(documant, messageJson, urlRootReadiumCSS, isVerticalWritingMode, isRTL) {
+function readiumCSSSet(documant, messageJson, isVerticalWritingMode, isRTL) {
     if (!messageJson) {
         return;
     }
     if (!documant || !documant.documentElement) {
         return;
+    }
+    if (!messageJson.urlRoot) {
+        const baseEl = documant.getElementById(exports.READIUM2_BASEURL_ID);
+        if (baseEl) {
+            const baseUrl = baseEl.getAttribute("href");
+            if (baseUrl) {
+                let u = baseUrl;
+                if (baseUrl.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
+                    u = sessions_1.convertCustomSchemeToHttpUrl(baseUrl);
+                    u = u.replace(/\/pub\/.*/, "");
+                }
+                messageJson.urlRoot = u;
+            }
+        }
+    }
+    if (IS_DEV) {
+        debug("_____ readiumCssJson.urlRoot (readiumCSSSet()): ", messageJson.urlRoot);
     }
     const docElement = documant.documentElement;
     if (messageJson.isFixedLayout) {
@@ -133,9 +152,7 @@ function readiumCSSSet(documant, messageJson, urlRootReadiumCSS, isVerticalWriti
                 needsDefaultCSS = false;
             }
         }
-        const urlRoot = messageJson.urlRoot ?
-            (messageJson.urlRoot + "/" + readium_css_settings_1.READIUM_CSS_URL_PATH + "/") :
-            (urlRootReadiumCSS ? urlRootReadiumCSS : ("/" + readium_css_settings_1.READIUM_CSS_URL_PATH + "/"));
+        const urlRoot = messageJson.urlRoot + "/" + readium_css_settings_1.READIUM_CSS_URL_PATH + "/";
         appendCSS(documant, "before", urlRoot);
         if (needsDefaultCSS) {
             appendCSS(documant, "default", urlRoot);
@@ -830,7 +847,10 @@ function transformHTML(htmlStr, readiumcssJson, mediaType) {
     const rtl = isDocRTL(documant);
     const vertical = isDocVertical(documant);
     if (readiumcssJson) {
-        readiumCSSSet(documant, readiumcssJson, undefined, vertical, rtl);
+        if (IS_DEV) {
+            debug("_____ readiumCssJson.urlRoot (transformHTML()): ", readiumcssJson.urlRoot);
+        }
+        readiumCSSSet(documant, readiumcssJson, vertical, rtl);
     }
     injectDefaultCSS(documant);
     if (IS_DEV) {

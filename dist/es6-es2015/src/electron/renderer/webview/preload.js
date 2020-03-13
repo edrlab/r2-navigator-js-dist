@@ -254,7 +254,6 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, (_event, payload) => {
     showHideContentMask(false);
     selection_2.clearCurrentSelection(win);
     popup_dialog_1.closePopupDialogs(win.document);
-    _cancelInitialScrollCheck = true;
     if (!win.READIUM2.urlQueryParams) {
         win.READIUM2.urlQueryParams = {};
     }
@@ -425,6 +424,7 @@ function onEventPageTurn(payload) {
     const reduceMotion = win.document.documentElement.classList.contains(styles_1.ROOT_CLASS_REDUCE_MOTION);
     const isPaged = readium_css_inject_1.isPaginated(win.document);
     const goPREVIOUS = payload.go === "PREVIOUS";
+    const animationTime = 300;
     if (_lastAnimState && _lastAnimState.animating) {
         win.cancelAnimationFrame(_lastAnimState.id);
         _lastAnimState.object[_lastAnimState.property] = _lastAnimState.destVal;
@@ -452,7 +452,7 @@ function onEventPageTurn(payload) {
                     targetObj[targetProp] = scrollOffset;
                 }
                 else {
-                    _lastAnimState = animateProperty_1.animateProperty(win.cancelAnimationFrame, undefined, targetProp, 300, targetObj, scrollOffset, win.requestAnimationFrame, easings_1.easings.easeInOutQuad);
+                    _lastAnimState = animateProperty_1.animateProperty(win.cancelAnimationFrame, undefined, targetProp, animationTime, targetObj, scrollOffset, win.requestAnimationFrame, easings_1.easings.easeInOutQuad);
                 }
                 return;
             }
@@ -470,7 +470,7 @@ function onEventPageTurn(payload) {
                     targetObj[targetProp] = newVal;
                 }
                 else {
-                    _lastAnimState = animateProperty_1.animateProperty(win.cancelAnimationFrame, undefined, targetProp, 300, targetObj, newVal, win.requestAnimationFrame, easings_1.easings.easeInOutQuad);
+                    _lastAnimState = animateProperty_1.animateProperty(win.cancelAnimationFrame, undefined, targetProp, animationTime, targetObj, newVal, win.requestAnimationFrame, easings_1.easings.easeInOutQuad);
                 }
                 return;
             }
@@ -496,7 +496,7 @@ function onEventPageTurn(payload) {
                     targetObj[targetProp] = scrollOffset;
                 }
                 else {
-                    _lastAnimState = animateProperty_1.animateProperty(win.cancelAnimationFrame, undefined, targetProp, 300, targetObj, scrollOffset, win.requestAnimationFrame, easings_1.easings.easeInOutQuad);
+                    _lastAnimState = animateProperty_1.animateProperty(win.cancelAnimationFrame, undefined, targetProp, animationTime, targetObj, scrollOffset, win.requestAnimationFrame, easings_1.easings.easeInOutQuad);
                 }
                 return;
             }
@@ -514,7 +514,7 @@ function onEventPageTurn(payload) {
                     targetObj[targetProp] = newVal;
                 }
                 else {
-                    _lastAnimState = animateProperty_1.animateProperty(win.cancelAnimationFrame, undefined, targetProp, 300, targetObj, newVal, win.requestAnimationFrame, easings_1.easings.easeInOutQuad);
+                    _lastAnimState = animateProperty_1.animateProperty(win.cancelAnimationFrame, undefined, targetProp, animationTime, targetObj, newVal, win.requestAnimationFrame, easings_1.easings.easeInOutQuad);
                 }
                 return;
             }
@@ -698,6 +698,7 @@ const scrollToHashRaw = () => {
                 }
                 if (selected) {
                     win.READIUM2.locationHashOverride = selected;
+                    win.READIUM2.hashElement = selected;
                     resetLocationHashOverrideInfo();
                     if (win.READIUM2.locationHashOverrideInfo) {
                         win.READIUM2.locationHashOverrideInfo.locations.cssSelector = gotoCssSelector;
@@ -825,7 +826,6 @@ win.addEventListener("DOMContentLoaded", () => {
     if (win.READIUM2.isAudio) {
         audiobook_1.setupAudioBook(_docTitle);
     }
-    _cancelInitialScrollCheck = true;
     if (!win.READIUM2.isAudio &&
         win.location.hash && win.location.hash.length > 1) {
         win.READIUM2.hashElement = win.document.getElementById(win.location.hash.substr(1));
@@ -872,6 +872,12 @@ win.addEventListener("DOMContentLoaded", () => {
     if (!didHide) {
         showHideContentMask(false);
     }
+    if (!win.READIUM2.isFixedLayout && !win.READIUM2.isAudio) {
+        const scrollElement = readium_css_1.getScrollingElement(win.document);
+        if (!scrollElement.classList.contains(styles_1.ZERO_TRANSFORM_CLASS)) {
+            scrollElement.classList.add(styles_1.ZERO_TRANSFORM_CLASS);
+        }
+    }
     const w = (readiumcssJson && readiumcssJson.fixedLayoutWebViewWidth) || win.innerWidth;
     const h = (readiumcssJson && readiumcssJson.fixedLayoutWebViewHeight) || win.innerHeight;
     const wh = readium_css_inject_1.configureFixedLayout(win.document, win.READIUM2.isFixedLayout, win.READIUM2.fxlViewportWidth, win.READIUM2.fxlViewportHeight, w, h);
@@ -907,7 +913,6 @@ win.addEventListener("DOMContentLoaded", () => {
         loaded(true);
     }, 500);
 });
-let _cancelInitialScrollCheck = false;
 let _loaded = false;
 function loaded(forced) {
     if (_loaded) {
@@ -950,12 +955,6 @@ function loaded(forced) {
                     });
                 }, 200);
             }
-            _cancelInitialScrollCheck = false;
-            setTimeout(() => {
-                if (_cancelInitialScrollCheck) {
-                    return;
-                }
-            }, 500);
         }
         else {
             win.READIUM2.locationHashOverride = win.document.body;
@@ -1012,6 +1011,7 @@ function loaded(forced) {
                     debug("ResizeObserver SKIP FIRST");
                     return;
                 }
+                highlight_1.invalidateBoundingClientRectOfDocumentBody(win);
                 win.document.body.tabbables = undefined;
                 scrollToHashDebounced();
             });
@@ -1082,17 +1082,33 @@ function loaded(forced) {
             onResizeDebounced();
         }
     });
+    const onScrollRaw = () => {
+        if (!win.document || !win.document.documentElement) {
+            return;
+        }
+        const el = win.READIUM2.locationHashOverride;
+        if (el && computeVisibility_(el)) {
+            return;
+        }
+        const x = (readium_css_1.isRTL() ? win.document.documentElement.offsetWidth - 1 : 0);
+        processXYRaw(x, 0, false);
+    };
+    const onScrollDebounced = debounce_1.debounce(() => {
+        onScrollRaw();
+    }, 300);
     setTimeout(() => {
         win.addEventListener("scroll", (_ev) => {
             if (_ignoreScrollEvent) {
                 _ignoreScrollEvent = false;
                 return;
             }
+            if (_lastAnimState && _lastAnimState.animating) {
+                return;
+            }
             if (!win.document || !win.document.documentElement) {
                 return;
             }
-            const x = (readium_css_1.isRTL() ? win.document.documentElement.offsetWidth - 1 : 0);
-            processXYDebounced(x, 0, false);
+            onScrollDebounced();
         });
     }, 200);
     function handleMouseEvent(ev) {

@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const debounce_1 = require("debounce");
 const electron_1 = require("electron");
+const audiobook_1 = require("../../common/audiobook");
 const events_1 = require("../../common/events");
 const styles_1 = require("../../common/styles");
 const win = global.window;
@@ -29,6 +30,43 @@ function setupAudioBook(_docTitle) {
     const nextElement = win.document.getElementById(styles_1.AUDIO_NEXT_ID);
     const rewindElement = win.document.getElementById(styles_1.AUDIO_REWIND_ID);
     const forwardElement = win.document.getElementById(styles_1.AUDIO_FORWARD_ID);
+    const bufferCanvasElement = audiobook_1.DEBUG_AUDIO ?
+        win.document.getElementById(styles_1.AUDIO_BUFFER_CANVAS_ID) : undefined;
+    if (bufferCanvasElement) {
+        const context = bufferCanvasElement.getContext("2d");
+        if (context) {
+            const refreshBufferCanvas = () => {
+                const pixelsPerSecond = bufferCanvasElement.width / audioElement.duration;
+                context.fillStyle = "red";
+                context.fillRect(0, 0, bufferCanvasElement.width, bufferCanvasElement.height);
+                context.fillStyle = "green";
+                context.strokeStyle = "magenta";
+                console.log(`audio -- buffered.length: ${audioElement.buffered.length}`);
+                for (let i = 0; i < audioElement.buffered.length; i++) {
+                    const start = audioElement.buffered.start(i);
+                    const end = audioElement.buffered.end(i);
+                    console.log(`audio -- buffered: ${start} ... ${end}`);
+                    const x1 = start * pixelsPerSecond;
+                    const x2 = end * pixelsPerSecond;
+                    const w = x2 - x1;
+                    context.fillRect(x1, 0, w, bufferCanvasElement.height);
+                    context.rect(x1, 0, w, bufferCanvasElement.height);
+                    context.stroke();
+                }
+            };
+            const refreshBufferCanvasThrottled = throttle(() => {
+                refreshBufferCanvas();
+            }, 500);
+            context.fillStyle = "silver";
+            context.fillRect(0, 0, bufferCanvasElement.width, bufferCanvasElement.height);
+            audioElement.addEventListener("timeupdate", () => {
+                if (audioElement.duration <= 0) {
+                    return;
+                }
+                refreshBufferCanvasThrottled();
+            });
+        }
+    }
     electron_1.ipcRenderer.on(events_1.R2_EVENT_AUDIO_DO_PLAY, async (_event) => {
         await audioElement.play();
     });

@@ -1,3 +1,4 @@
+export declare const DEBUG_AUDIO: false;
 export interface IAudioPlaybackInfo {
     globalDuration: number | undefined;
     globalProgression: number | undefined;

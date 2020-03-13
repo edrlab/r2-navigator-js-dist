@@ -15,12 +15,14 @@ var readium_css_1 = require("./readium-css");
 var ELEMENT_ID_SLIDING_VIEWPORT = "r2_navigator_sliding_viewport";
 var debug = debug_("r2:navigator#electron/renderer/index");
 var win = window;
-function readiumCssOnOff(rss) {
+function readiumCssOnOff(rcss) {
     var _this = this;
-    var loc = location_1.getCurrentReadingLocation();
     var activeWebView = win.READIUM2.getActiveWebView();
     if (activeWebView) {
-        var payload1_1 = rss || readium_css_1.__computeReadiumCssJsonMessage(activeWebView.READIUM2.link);
+        var loc_1 = location_1.getCurrentReadingLocation();
+        var actualReadiumCss = readium_css_1.obtainReadiumCss(rcss);
+        activeWebView.READIUM2.readiumCss = actualReadiumCss;
+        var payloadRcss_1 = readium_css_1.adjustReadiumCssJsonMessageForFixedLayout(activeWebView.READIUM2.link, actualReadiumCss);
         if (activeWebView.style.transform !== "none") {
             setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
                 return tslib_1.__generator(this, function (_a) {
@@ -37,7 +39,7 @@ function readiumCssOnOff(rss) {
                     switch (_a.label) {
                         case 0:
                             location_1.shiftWebview(activeWebView, 0, undefined);
-                            return [4, activeWebView.send(events_1.R2_EVENT_READIUMCSS, payload1_1)];
+                            return [4, activeWebView.send(events_1.R2_EVENT_READIUMCSS, payloadRcss_1)];
                         case 1:
                             _a.sent();
                             return [2];
@@ -49,7 +51,7 @@ function readiumCssOnOff(rss) {
             setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
                 return tslib_1.__generator(this, function (_a) {
                     switch (_a.label) {
-                        case 0: return [4, activeWebView.send(events_1.R2_EVENT_READIUMCSS, payload1_1)];
+                        case 0: return [4, activeWebView.send(events_1.R2_EVENT_READIUMCSS, payloadRcss_1)];
                         case 1:
                             _a.sent();
                             return [2];
@@ -57,16 +59,16 @@ function readiumCssOnOff(rss) {
                 });
             }); }, 0);
         }
-    }
-    if (loc) {
-        setTimeout(function () {
-            location_1.handleLinkLocator(loc.locator);
-        }, 60);
+        if (loc_1) {
+            setTimeout(function () {
+                location_1.handleLinkLocator(loc_1.locator, activeWebView.READIUM2.readiumCss);
+            }, 60);
+        }
     }
 }
 exports.readiumCssOnOff = readiumCssOnOff;
-function readiumCssUpdate(rss) {
-    return readiumCssOnOff(rss);
+function readiumCssUpdate(rcss) {
+    return readiumCssOnOff(rcss);
 }
 exports.readiumCssUpdate = readiumCssUpdate;
 var _webview1;
@@ -158,6 +160,7 @@ function createWebView() {
     _webview1.READIUM2 = {
         id: 1,
         link: undefined,
+        readiumCss: undefined,
     };
     _webview1.setAttribute("id", "webview1");
     var domSlidingViewport = win.READIUM2.domSlidingViewport;
@@ -169,7 +172,7 @@ function destroyWebView() {
     _webview1.READIUM2 = undefined;
     _webview1 = undefined;
 }
-function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, preloadScriptPath, location, enableScreenReaderAccessibilityWebViewHardRefresh, clipboardInterceptor, sessionInfo) {
+function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, preloadScriptPath, location, enableScreenReaderAccessibilityWebViewHardRefresh, clipboardInterceptor, sessionInfo, rcss) {
     var _this = this;
     var domRootElement = document.getElementById(rootHtmlElementID);
     if (!domRootElement) {
@@ -226,7 +229,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
             setTimeout(function () {
                 var loc = location_1.getCurrentReadingLocation();
                 if (loc) {
-                    location_1.handleLinkLocator(loc.locator);
+                    location_1.handleLinkLocator(loc.locator, activeWebView ? activeWebView.READIUM2.readiumCss : undefined);
                 }
             }, 100);
         };
@@ -255,7 +258,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
     domRootElement.appendChild(domSlidingViewport);
     createWebView();
     setTimeout(function () {
-        location_1.handleLinkLocator(location);
+        location_1.handleLinkLocator(location, rcss);
     }, 100);
 }
 exports.installNavigatorDOM = installNavigatorDOM;

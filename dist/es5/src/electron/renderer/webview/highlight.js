@@ -23,11 +23,30 @@ var DEFAULT_BACKGROUND_COLOR = {
 };
 var _highlights = [];
 var SVG_XML_NAMESPACE = "http://www.w3.org/2000/svg";
+function getBoundingClientRectOfDocumentBody(win) {
+    if (!win.document.body._CachedBoundingClientRect) {
+        win.document.body._CachedBoundingClientRect = win.document.body.getBoundingClientRect();
+    }
+    return win.document.body._CachedBoundingClientRect;
+}
+exports.getBoundingClientRectOfDocumentBody = getBoundingClientRectOfDocumentBody;
+function invalidateBoundingClientRectOfDocumentBody(win) {
+    win.document.body._CachedBoundingClientRect = undefined;
+}
+exports.invalidateBoundingClientRectOfDocumentBody = invalidateBoundingClientRectOfDocumentBody;
 function resetHighlightBoundingStyle(_win, highlightBounding) {
+    if (!highlightBounding.active) {
+        return;
+    }
+    highlightBounding.active = false;
     highlightBounding.style.outline = "none";
     highlightBounding.style.setProperty("background-color", "transparent", "important");
 }
 function setHighlightBoundingStyle(_win, highlightBounding, highlight) {
+    if (highlightBounding.active) {
+        return;
+    }
+    highlightBounding.active = true;
     var opacity = ALT_BACKGROUND_COLOR_OPACITY;
     highlightBounding.style.setProperty("background-color", "rgba(" + highlight.color.red + ", " + highlight.color.green + ", " + highlight.color.blue + ", " + opacity + ")", "important");
     highlightBounding.style.outlineColor = "rgba(" + highlight.color.red + ", " + highlight.color.green + ", " + highlight.color.blue + ", 1)";
@@ -36,6 +55,10 @@ function setHighlightBoundingStyle(_win, highlightBounding, highlight) {
     highlightBounding.style.outlineOffset = "0px";
 }
 function resetHighlightAreaStyle(win, highlightArea) {
+    if (!highlightArea.active) {
+        return;
+    }
+    highlightArea.active = false;
     var useSVG = !win.READIUM2.DEBUG_VISUALS && USE_SVG;
     var isSVG = useSVG && highlightArea.namespaceURI === SVG_XML_NAMESPACE;
     var id = isSVG ?
@@ -65,6 +88,10 @@ function setHighlightAreaStyle(win, highlightAreas, highlight) {
     try {
         for (var highlightAreas_1 = tslib_1.__values(highlightAreas), highlightAreas_1_1 = highlightAreas_1.next(); !highlightAreas_1_1.done; highlightAreas_1_1 = highlightAreas_1.next()) {
             var highlightArea = highlightAreas_1_1.value;
+            if (highlightArea.active) {
+                return;
+            }
+            highlightArea.active = true;
             var isSVG = useSVG && highlightArea.namespaceURI === SVG_XML_NAMESPACE;
             var opacity = ALT_BACKGROUND_COLOR_OPACITY;
             if (isSVG) {
@@ -88,15 +115,24 @@ function setHighlightAreaStyle(win, highlightAreas, highlight) {
 }
 function processMouseEvent(win, ev) {
     var e_2, _a, e_3, _b, e_4, _c, e_5, _d, e_6, _e;
+    if (!_highlightsContainer) {
+        return;
+    }
+    var isMouseMove = ev.type === "mousemove";
+    if (isMouseMove) {
+        if (ev.buttons > 0) {
+            return;
+        }
+        if (!_highlights.length) {
+            return;
+        }
+    }
     var documant = win.document;
     var scrollElement = readium_css_1.getScrollingElement(documant);
     var x = ev.clientX;
     var y = ev.clientY;
-    if (!_highlightsContainer) {
-        return;
-    }
     var paginated = readium_css_inject_1.isPaginated(documant);
-    var bodyRect = documant.body.getBoundingClientRect();
+    var bodyRect = getBoundingClientRectOfDocumentBody(win);
     var xOffset = paginated ? (-scrollElement.scrollLeft) : bodyRect.left;
     var yOffset = paginated ? (-scrollElement.scrollTop) : bodyRect.top;
     var foundHighlight;
@@ -172,7 +208,7 @@ function processMouseEvent(win, ev) {
         return;
     }
     if (foundElement.getAttribute("data-click")) {
-        if (ev.type === "mousemove") {
+        if (isMouseMove) {
             var foundElementHighlightAreas = Array.from(foundElement.querySelectorAll("." + exports.CLASS_HIGHLIGHT_AREA));
             var allHighlightAreas = _highlightsContainer.querySelectorAll("." + exports.CLASS_HIGHLIGHT_AREA);
             try {
@@ -247,6 +283,7 @@ function ensureHighlightsContainer(win) {
         }
         _highlightsContainer = documant.createElement("div");
         _highlightsContainer.setAttribute("id", exports.ID_HIGHLIGHTS_CONTAINER);
+        _highlightsContainer.setAttribute("style", "background-color: transparent !important");
         _highlightsContainer.style.setProperty("pointer-events", "none");
         documant.body.append(_highlightsContainer);
     }
@@ -336,12 +373,13 @@ function createHighlightDom(win, highlight) {
     var highlightParent = documant.createElement("div");
     highlightParent.setAttribute("id", highlight.id);
     highlightParent.setAttribute("class", exports.CLASS_HIGHLIGHT_CONTAINER);
+    highlightParent.setAttribute("style", "background-color: transparent !important");
     highlightParent.style.setProperty("pointer-events", "none");
     if (highlight.pointerInteraction) {
         highlightParent.setAttribute("data-click", "1");
     }
     documant.body.style.position = "relative";
-    var bodyRect = documant.body.getBoundingClientRect();
+    var bodyRect = getBoundingClientRectOfDocumentBody(win);
     var xOffset = paginated ? (-scrollElement.scrollLeft) : bodyRect.left;
     var yOffset = paginated ? (-scrollElement.scrollTop) : bodyRect.top;
     var scale = 1 / ((win.READIUM2 && win.READIUM2.isFixedLayout) ? win.READIUM2.fxlViewportScale : 1);
@@ -441,6 +479,7 @@ function createHighlightDom(win, highlight) {
                 }
                 highlightArea.setAttribute("style", "border-radius: " + roundedCorner + "px !important; background-color: rgba(" + highlight.color.red + ", " + highlight.color.green + ", " + highlight.color.blue + ", " + opacity + ") !important; " + extra);
                 highlightArea.style.setProperty("pointer-events", "none");
+                highlightArea.style.transform = "translate3d(0px, 0px, 0px)";
                 highlightArea.style.position = paginated ? "fixed" : "absolute";
                 highlightArea.scale = scale;
                 highlightArea.rect = {
@@ -459,6 +498,7 @@ function createHighlightDom(win, highlight) {
                     highlightAreaLine.setAttribute("class", exports.CLASS_HIGHLIGHT_AREA);
                     highlightAreaLine.setAttribute("style", "background-color: rgba(" + highlight.color.red + ", " + highlight.color.green + ", " + highlight.color.blue + ", " + opacity + ") !important;");
                     highlightAreaLine.style.setProperty("pointer-events", "none");
+                    highlightAreaLine.style.transform = "translate3d(0px, 0px, 0px)";
                     highlightAreaLine.style.position = paginated ? "fixed" : "absolute";
                     highlightAreaLine.scale = scale;
                     highlightAreaLine.rect = {
@@ -485,6 +525,7 @@ function createHighlightDom(win, highlight) {
     }
     if (useSVG && highlightAreaSVGDocFrag) {
         var highlightAreaSVG = documant.createElementNS(SVG_XML_NAMESPACE, "svg");
+        highlightAreaSVG.setAttribute("style", "background-color: transparent !important");
         highlightAreaSVG.setAttribute("pointer-events", "none");
         highlightAreaSVG.style.position = paginated ? "fixed" : "absolute";
         highlightAreaSVG.style.overflow = "visible";
@@ -497,7 +538,10 @@ function createHighlightDom(win, highlight) {
     var highlightBounding = documant.createElement("div");
     highlightBounding.setAttribute("class", exports.CLASS_HIGHLIGHT_BOUNDING_AREA);
     if (win.READIUM2.DEBUG_VISUALS) {
-        highlightBounding.setAttribute("style", "outline-color: magenta; outline-style: solid; outline-width: 1px; outline-offset: -1px;");
+        highlightBounding.setAttribute("style", "background-color: transparent !important; outline-color: magenta; outline-style: solid; outline-width: 1px; outline-offset: -1px;");
+    }
+    else {
+        highlightBounding.setAttribute("style", "background-color: transparent !important");
     }
     highlightBounding.style.setProperty("pointer-events", "none");
     highlightBounding.style.position = paginated ? "fixed" : "absolute";

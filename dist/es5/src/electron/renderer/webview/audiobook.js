@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = require("tslib");
 var debounce_1 = require("debounce");
 var electron_1 = require("electron");
+var audiobook_1 = require("../../common/audiobook");
 var events_1 = require("../../common/events");
 var styles_1 = require("../../common/styles");
 var win = global.window;
@@ -35,6 +36,43 @@ function setupAudioBook(_docTitle) {
     var nextElement = win.document.getElementById(styles_1.AUDIO_NEXT_ID);
     var rewindElement = win.document.getElementById(styles_1.AUDIO_REWIND_ID);
     var forwardElement = win.document.getElementById(styles_1.AUDIO_FORWARD_ID);
+    var bufferCanvasElement = audiobook_1.DEBUG_AUDIO ?
+        win.document.getElementById(styles_1.AUDIO_BUFFER_CANVAS_ID) : undefined;
+    if (bufferCanvasElement) {
+        var context_1 = bufferCanvasElement.getContext("2d");
+        if (context_1) {
+            var refreshBufferCanvas_1 = function () {
+                var pixelsPerSecond = bufferCanvasElement.width / audioElement.duration;
+                context_1.fillStyle = "red";
+                context_1.fillRect(0, 0, bufferCanvasElement.width, bufferCanvasElement.height);
+                context_1.fillStyle = "green";
+                context_1.strokeStyle = "magenta";
+                console.log("audio -- buffered.length: " + audioElement.buffered.length);
+                for (var i = 0; i < audioElement.buffered.length; i++) {
+                    var start = audioElement.buffered.start(i);
+                    var end = audioElement.buffered.end(i);
+                    console.log("audio -- buffered: " + start + " ... " + end);
+                    var x1 = start * pixelsPerSecond;
+                    var x2 = end * pixelsPerSecond;
+                    var w = x2 - x1;
+                    context_1.fillRect(x1, 0, w, bufferCanvasElement.height);
+                    context_1.rect(x1, 0, w, bufferCanvasElement.height);
+                    context_1.stroke();
+                }
+            };
+            var refreshBufferCanvasThrottled_1 = throttle(function () {
+                refreshBufferCanvas_1();
+            }, 500);
+            context_1.fillStyle = "silver";
+            context_1.fillRect(0, 0, bufferCanvasElement.width, bufferCanvasElement.height);
+            audioElement.addEventListener("timeupdate", function () {
+                if (audioElement.duration <= 0) {
+                    return;
+                }
+                refreshBufferCanvasThrottled_1();
+            });
+        }
+    }
     electron_1.ipcRenderer.on(events_1.R2_EVENT_AUDIO_DO_PLAY, function (_event) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
         return tslib_1.__generator(this, function (_a) {
             switch (_a.label) {

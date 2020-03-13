@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const win = window;
+const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 function isRTL() {
     const publication = win.READIUM2.publication;
     if (publication &&
@@ -29,7 +30,19 @@ function isFixedLayout(link) {
     return false;
 }
 exports.isFixedLayout = isFixedLayout;
-function __computeReadiumCssJsonMessage(link) {
+const _defaultReadiumCss = { setCSS: undefined, isFixedLayout: false };
+function obtainReadiumCss(rcss) {
+    const r = rcss ? rcss :
+        (_computeReadiumCssJsonMessage ? _computeReadiumCssJsonMessage() :
+            _defaultReadiumCss);
+    if (IS_DEV) {
+        console.log(`ReadiumCSS obtain: ${rcss ? "provided" : (_computeReadiumCssJsonMessage ? "pulled" : "default")}`);
+        console.log(r);
+    }
+    return r;
+}
+exports.obtainReadiumCss = obtainReadiumCss;
+function adjustReadiumCssJsonMessageForFixedLayout(link, rcss) {
     if (isFixedLayout(link)) {
         const activeWebView = win.READIUM2.getActiveWebView();
         return {
@@ -39,16 +52,10 @@ function __computeReadiumCssJsonMessage(link) {
             setCSS: undefined,
         };
     }
-    if (!_computeReadiumCssJsonMessage) {
-        return { setCSS: undefined, isFixedLayout: false };
-    }
-    const readiumCssJsonMessage = _computeReadiumCssJsonMessage();
-    return readiumCssJsonMessage;
+    return rcss;
 }
-exports.__computeReadiumCssJsonMessage = __computeReadiumCssJsonMessage;
-let _computeReadiumCssJsonMessage = () => {
-    return { setCSS: undefined, isFixedLayout: false };
-};
+exports.adjustReadiumCssJsonMessageForFixedLayout = adjustReadiumCssJsonMessageForFixedLayout;
+let _computeReadiumCssJsonMessage;
 function setReadiumCssJsonGetter(func) {
     _computeReadiumCssJsonMessage = func;
 }

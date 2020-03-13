@@ -1,16 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const readium_css_inject_1 = require("../../common/readium-css-inject");
-const readium_css_settings_1 = require("../../common/readium-css-settings");
-const sessions_1 = require("../../common/sessions");
 const styles_1 = require("../../common/styles");
 const win = global.window;
-let origin = win.location.origin;
-if (origin.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
-    origin = sessions_1.convertCustomSchemeToHttpUrl(win.location.href);
-    origin = origin.replace(/\/pub\/.*/, "");
-}
-const urlRootReadiumCSS = origin + "/" + readium_css_settings_1.READIUM_CSS_URL_PATH + "/";
+const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 exports.getScrollingElement = (documant) => {
     if (documant.scrollingElement) {
         return documant.scrollingElement;
@@ -214,7 +207,10 @@ function checkHiddenFootNotes(documant) {
 }
 exports.checkHiddenFootNotes = checkHiddenFootNotes;
 exports.readiumCSS = (documant, messageJson) => {
-    readium_css_inject_1.readiumCSSSet(documant, messageJson, urlRootReadiumCSS, _isVerticalWritingMode, _isRTL);
+    if (IS_DEV) {
+        console.log("_____ readiumCssJson.urlRoot (readiumCSS()): ", messageJson.urlRoot);
+    }
+    readium_css_inject_1.readiumCSSSet(documant, messageJson, _isVerticalWritingMode, _isRTL);
     if ((messageJson && messageJson.setCSS && !messageJson.setCSS.noFootnotes)) {
         checkHiddenFootNotes(documant);
     }

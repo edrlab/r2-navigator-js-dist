@@ -6,6 +6,7 @@ var electron_1 = require("electron");
 var path = require("path");
 var url_1 = require("url");
 var UrlUtils_1 = require("r2-utils-js/dist/es5/src/_utils/http/UrlUtils");
+var audiobook_1 = require("../common/audiobook");
 var events_1 = require("../common/events");
 var readium_css_inject_1 = require("../common/readium-css-inject");
 var sessions_1 = require("../common/sessions");
@@ -59,7 +60,7 @@ function locationHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
             uri.hash = "";
             uri.search = "";
             var urlNoQueryParams = uri.toString();
-            handleLink(urlNoQueryParams, goPREVIOUS, false);
+            handleLink(urlNoQueryParams, goPREVIOUS, false, activeWebView.READIUM2.readiumCss);
         }
     }
     else if (eventChannel === events_1.R2_EVENT_READING_LOCATION) {
@@ -70,7 +71,7 @@ function locationHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
     }
     else if (eventChannel === events_1.R2_EVENT_LINK) {
         var payload = eventArgs[0];
-        handleLinkUrl(payload.url);
+        handleLinkUrl(payload.url, activeWebView.READIUM2.readiumCss);
     }
     else {
         return false;
@@ -81,7 +82,8 @@ exports.locationHandleIpcMessage = locationHandleIpcMessage;
 electron_1.ipcRenderer.on(events_1.R2_EVENT_LINK, function (_event, payload) {
     debug("R2_EVENT_LINK (ipcRenderer.on)");
     debug(payload.url);
-    handleLinkUrl(payload.url);
+    var activeWebView = win.READIUM2.getActiveWebView();
+    handleLinkUrl(payload.url, activeWebView ? activeWebView.READIUM2.readiumCss : undefined);
 });
 function shiftWebview(webview, offset, backgroundColor) {
     if (!offset) {
@@ -128,7 +130,8 @@ function navLeftOrRight(left, spineNav) {
                 uri.hash = "";
                 uri.search = "";
                 var urlNoQueryParams = uri.toString();
-                handleLink(urlNoQueryParams, false, false);
+                var activeWebView = win.READIUM2.getActiveWebView();
+                handleLink(urlNoQueryParams, false, false, activeWebView ? activeWebView.READIUM2.readiumCss : undefined);
                 return;
             }
             else {
@@ -158,17 +161,17 @@ function navLeftOrRight(left, spineNav) {
     }
 }
 exports.navLeftOrRight = navLeftOrRight;
-function handleLink(href, previous, useGoto) {
+function handleLink(href, previous, useGoto, rcss) {
     var _this = this;
     var special = href.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://");
     if (special) {
-        var okay = loadLink(href, previous, useGoto);
+        var okay = loadLink(href, previous, useGoto, rcss);
         if (!okay) {
             debug("Readium link fail?! " + href);
         }
     }
     else {
-        var okay = loadLink(href, previous, useGoto);
+        var okay = loadLink(href, previous, useGoto, rcss);
         if (!okay) {
             if (/^http[s]?:\/\/127\.0\.0\.1/.test(href)) {
                 debug("Internal link, fails to match publication document: " + href);
@@ -198,11 +201,11 @@ function handleLink(href, previous, useGoto) {
     }
 }
 exports.handleLink = handleLink;
-function handleLinkUrl(href) {
-    handleLink(href, undefined, false);
+function handleLinkUrl(href, rcss) {
+    handleLink(href, undefined, false, rcss);
 }
 exports.handleLinkUrl = handleLinkUrl;
-function handleLinkLocator(location) {
+function handleLinkLocator(location, rcss) {
     var publication = win.READIUM2.publication;
     var publicationURL = win.READIUM2.publicationURL;
     if (!publication || !publicationURL) {
@@ -250,7 +253,7 @@ function handleLinkLocator(location) {
             ((useGoto) ? ("?" + url_params_1.URL_PARAM_GOTO + "=" +
                 UrlUtils_1.encodeURIComponent_RFC3986(Buffer.from(JSON.stringify(linkToLoadGoto, null, "")).toString("base64"))) :
                 "");
-        handleLink(hrefToLoad, undefined, useGoto);
+        handleLink(hrefToLoad, undefined, useGoto, rcss);
     }
 }
 exports.handleLinkLocator = handleLinkLocator;
@@ -267,12 +270,12 @@ function reloadContent() {
             uri.hash = "";
             uri.search = "";
             var urlNoQueryParams = uri.toString();
-            handleLinkUrl(urlNoQueryParams);
+            handleLinkUrl(urlNoQueryParams, activeWebView.READIUM2.readiumCss);
         }
     }, 0);
 }
 exports.reloadContent = reloadContent;
-function loadLink(hrefFull, previous, useGoto) {
+function loadLink(hrefFull, previous, useGoto, rcss) {
     var _this = this;
     var publication = win.READIUM2.publication;
     var publicationURL = win.READIUM2.publicationURL;
@@ -359,7 +362,14 @@ function loadLink(hrefFull, previous, useGoto) {
         debug("CANNOT LOAD LINK " + pubJsonUri + " (" + publicationURL + ") + " + hrefFull + " ==> " + linkPath);
         return false;
     }
-    var rcssJson = readium_css_1.__computeReadiumCssJsonMessage(pubLink);
+    var activeWebView = win.READIUM2.getActiveWebView();
+    var actualReadiumCss = (activeWebView && activeWebView.READIUM2.readiumCss) ?
+        activeWebView.READIUM2.readiumCss :
+        readium_css_1.obtainReadiumCss(rcss);
+    if (activeWebView) {
+        activeWebView.READIUM2.readiumCss = actualReadiumCss;
+    }
+    var rcssJson = readium_css_1.adjustReadiumCssJsonMessageForFixedLayout(pubLink, actualReadiumCss);
     var rcssJsonstr = JSON.stringify(rcssJson, null, "");
     var rcssJsonstrBase64 = Buffer.from(rcssJsonstr).toString("base64");
     var fileName = path.basename(linkPath);
@@ -431,7 +441,6 @@ function loadLink(hrefFull, previous, useGoto) {
                     "true" : "false";
         });
     }
-    var activeWebView = win.READIUM2.getActiveWebView();
     var webviewNeedsForcedRefresh = !isAudio &&
         activeWebView && activeWebView.READIUM2.forceRefresh;
     if (activeWebView) {
@@ -516,10 +525,12 @@ function loadLink(hrefFull, previous, useGoto) {
             if (IS_DEV) {
                 debug("___HARD AUDIO___ WEBVIEW REFRESH: " + uriStr_1);
             }
+            var readiumCssBackup = activeWebView.READIUM2.readiumCss;
             win.READIUM2.destroyActiveWebView();
             win.READIUM2.createActiveWebView();
             var newActiveWebView = win.READIUM2.getActiveWebView();
             if (newActiveWebView) {
+                newActiveWebView.READIUM2.readiumCss = readiumCssBackup;
                 newActiveWebView.READIUM2.link = pubLink;
                 var coverLink = publication.GetCover();
                 var title = void 0;
@@ -536,7 +547,9 @@ function loadLink(hrefFull, previous, useGoto) {
                         return map_1[entityName] ? map_1[entityName] : entityName;
                     });
                 }
-                var htmlMarkup = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:epub=\"http://www.idpf.org/2007/ops\">\n<head>\n    <meta charset=\"utf-8\" />\n    <title>" + title + "</title>\n    <base href=\"" + publicationURL + "\" />\n    <style type=\"text/css\">\n    /*<![CDATA[*/\n    /*]]>*/\n    </style>\n\n    <script>\n    //<![CDATA[\n\n    const DEBUG_AUDIO = " + IS_DEV + ";\n\n    document.addEventListener(\"DOMContentLoaded\", () => {\n        const _audioElement = document.getElementById(\"" + styles_1.AUDIO_ID + "\");\n\n        if (DEBUG_AUDIO)\n        {\n            _audioElement.addEventListener(\"load\", function()\n                {\n                    console.debug(\"0) load\");\n                }\n            );\n\n            _audioElement.addEventListener(\"loadstart\", function()\n                {\n                    console.debug(\"1) loadstart\");\n                }\n            );\n\n            _audioElement.addEventListener(\"durationchange\", function()\n                {\n                    console.debug(\"2) durationchange\");\n                }\n            );\n\n            _audioElement.addEventListener(\"loadedmetadata\", function()\n                {\n                    console.debug(\"3) loadedmetadata\");\n                }\n            );\n\n            _audioElement.addEventListener(\"loadeddata\", function()\n                {\n                    console.debug(\"4) loadeddata\");\n                }\n            );\n\n            _audioElement.addEventListener(\"progress\", function()\n                {\n                    console.debug(\"5) progress\");\n                }\n            );\n\n            _audioElement.addEventListener(\"canplay\", function()\n                {\n                    console.debug(\"6) canplay\");\n                }\n            );\n\n            _audioElement.addEventListener(\"canplaythrough\", function()\n                {\n                    console.debug(\"7) canplaythrough\");\n                }\n            );\n\n            _audioElement.addEventListener(\"play\", function()\n                {\n                    console.debug(\"8) play\");\n                }\n            );\n\n            _audioElement.addEventListener(\"pause\", function()\n                {\n                    console.debug(\"9) pause\");\n                }\n            );\n\n            _audioElement.addEventListener(\"ended\", function()\n                {\n                    console.debug(\"10) ended\");\n                }\n            );\n\n            _audioElement.addEventListener(\"seeked\", function()\n                {\n                    console.debug(\"X) seeked\");\n                }\n            );\n\n            _audioElement.addEventListener(\"timeupdate\", function()\n                {\n                    // console.debug(\"Y) timeupdate\");\n                }\n            );\n\n            _audioElement.addEventListener(\"seeking\", function()\n                {\n                    console.debug(\"Z) seeking\");\n                }\n            );\n        }\n    }, false);\n\n    //]]>\n    </script>\n</head>\n<body id=\"" + styles_1.AUDIO_BODY_ID + "\">\n<section id=\"" + styles_1.AUDIO_SECTION_ID + "\">\n" + (title ? "<h3 id=\"" + styles_1.AUDIO_TITLE_ID + "\">" + title + "</h3>" : "") + "\n" + (coverLink ? "<img id=\"" + styles_1.AUDIO_COVER_ID + "\" src=\"" + coverLink.Href + "\" alt=\"\" " + (coverLink.Height ? "height=\"" + coverLink.Height + "\"" : "") + " " + (coverLink.Width ? "width=\"" + coverLink.Width + "\"" : "") + " " + (coverLink.Width || coverLink.Height ? "style=\"" + (coverLink.Height ? "height: " + coverLink.Height + "px !important;" : "") + " " + (coverLink.Width ? "width: " + coverLink.Width + "px !important;" : "") + "\"" : "") + "/>" : "") + "\n    <audio id=\"" + styles_1.AUDIO_ID + "\" controlszz=\"controlszz\" autoplay=\"autoplay\">\n        <source src=\"" + uriStr_1 + "\" type=\"" + pubLink.TypeLink + "\" />\n    </audio>\n    <div id=\"" + styles_1.AUDIO_CONTROLS_ID + "\">\n        <button id=\"" + styles_1.AUDIO_PREVIOUS_ID + "\"></button>\n        <button id=\"" + styles_1.AUDIO_REWIND_ID + "\"></button>\n        <button id=\"" + styles_1.AUDIO_PLAYPAUSE_ID + "\"></button>\n        <button id=\"" + styles_1.AUDIO_FORWARD_ID + "\"></button>\n        <button id=\"" + styles_1.AUDIO_NEXT_ID + "\"></button>\n        <input id=\"" + styles_1.AUDIO_SLIDER_ID + "\" type=\"range\" min=\"0\" max=\"100\" value=\"0\" step=\"1\" />\n        <span id=\"" + styles_1.AUDIO_TIME_ID + "\">-</span>\n        <span id=\"" + styles_1.AUDIO_PERCENT_ID + "\">-</span>\n    </div>\n</section>\n</body>\n</html>";
+                var htmlMarkup = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:epub=\"http://www.idpf.org/2007/ops\">\n<head>\n    <meta charset=\"utf-8\" />\n    <title>" + title + "</title>\n    <base href=\"" + publicationURL + "\" id=\"" + readium_css_inject_1.READIUM2_BASEURL_ID + "\" />\n    <style type=\"text/css\">\n    /*<![CDATA[*/\n    /*]]>*/\n    </style>\n\n    <script>\n    //<![CDATA[\n\n    const DEBUG_AUDIO = " + IS_DEV + ";\n    const DEBUG_AUDIO_X = " + audiobook_1.DEBUG_AUDIO + ";\n\n    document.addEventListener(\"DOMContentLoaded\", () => {\n        const _audioElement = document.getElementById(\"" + styles_1.AUDIO_ID + "\");\n\n        if (DEBUG_AUDIO)\n        {\n            _audioElement.addEventListener(\"error\", function()\n                {\n                    console.debug(\"-1) error\");\n                    if (_audioElement.error) {\n                        // 1 === MEDIA_ERR_ABORTED\n                        // 2 === MEDIA_ERR_NETWORK\n                        // 3 === MEDIA_ERR_DECODE\n                        // 4 === MEDIA_ERR_SRC_NOT_SUPPORTED\n                        console.debug(_audioElement.error.code);\n                        console.debug(_audioElement.error.message);\n                    }\n                }\n            );\n\n            _audioElement.addEventListener(\"load\", function()\n                {\n                    console.debug(\"0) load\");\n                }\n            );\n\n            _audioElement.addEventListener(\"loadstart\", function()\n                {\n                    console.debug(\"1) loadstart\");\n                }\n            );\n\n            _audioElement.addEventListener(\"durationchange\", function()\n                {\n                    console.debug(\"2) durationchange\");\n                }\n            );\n\n            _audioElement.addEventListener(\"loadedmetadata\", function()\n                {\n                    console.debug(\"3) loadedmetadata\");\n                }\n            );\n\n            _audioElement.addEventListener(\"loadeddata\", function()\n                {\n                    console.debug(\"4) loadeddata\");\n                }\n            );\n\n            _audioElement.addEventListener(\"progress\", function()\n                {\n                    console.debug(\"5) progress\");\n                }\n            );\n\n            _audioElement.addEventListener(\"canplay\", function()\n                {\n                    console.debug(\"6) canplay\");\n                }\n            );\n\n            _audioElement.addEventListener(\"canplaythrough\", function()\n                {\n                    console.debug(\"7) canplaythrough\");\n                }\n            );\n\n            _audioElement.addEventListener(\"play\", function()\n                {\n                    console.debug(\"8) play\");\n                }\n            );\n\n            _audioElement.addEventListener(\"pause\", function()\n                {\n                    console.debug(\"9) pause\");\n                }\n            );\n\n            _audioElement.addEventListener(\"ended\", function()\n                {\n                    console.debug(\"10) ended\");\n                }\n            );\n\n            _audioElement.addEventListener(\"seeked\", function()\n                {\n                    console.debug(\"11) seeked\");\n                }\n            );\n\n            if (DEBUG_AUDIO_X) {\n                _audioElement.addEventListener(\"timeupdate\", function()\n                    {\n                        console.debug(\"12) timeupdate\");\n                    }\n                );\n            }\n\n            _audioElement.addEventListener(\"seeking\", function()\n                {\n                    console.debug(\"13) seeking\");\n                }\n            );\n\n            _audioElement.addEventListener(\"waiting\", function()\n                {\n                    console.debug(\"14) waiting\");\n                }\n            );\n\n            _audioElement.addEventListener(\"volumechange\", function()\n                {\n                    console.debug(\"15) volumechange\");\n                }\n            );\n\n            _audioElement.addEventListener(\"suspend\", function()\n                {\n                    console.debug(\"16) suspend\");\n                }\n            );\n\n            _audioElement.addEventListener(\"stalled\", function()\n                {\n                    console.debug(\"17) stalled\");\n                }\n            );\n\n            _audioElement.addEventListener(\"ratechange\", function()\n                {\n                    console.debug(\"18) ratechange\");\n                }\n            );\n\n            _audioElement.addEventListener(\"playing\", function()\n                {\n                    console.debug(\"19) playing\");\n                }\n            );\n\n            _audioElement.addEventListener(\"interruptend\", function()\n                {\n                    console.debug(\"20) interruptend\");\n                }\n            );\n\n            _audioElement.addEventListener(\"interruptbegin\", function()\n                {\n                    console.debug(\"21) interruptbegin\");\n                }\n            );\n\n            _audioElement.addEventListener(\"emptied\", function()\n                {\n                    console.debug(\"22) emptied\");\n                }\n            );\n\n            _audioElement.addEventListener(\"abort\", function()\n                {\n                    console.debug(\"23) abort\");\n                }\n            );\n        }\n    }, false);\n\n    //]]>\n    </script>\n</head>\n<body id=\"" + styles_1.AUDIO_BODY_ID + "\">\n<section id=\"" + styles_1.AUDIO_SECTION_ID + "\">\n" + (title ? "<h3 id=\"" + styles_1.AUDIO_TITLE_ID + "\">" + title + "</h3>" : "") + "\n" + (coverLink ? "<img id=\"" + styles_1.AUDIO_COVER_ID + "\" src=\"" + coverLink.Href + "\" alt=\"\" " + (coverLink.Height ? "height=\"" + coverLink.Height + "\"" : "") + " " + (coverLink.Width ? "width=\"" + coverLink.Width + "\"" : "") + " " + (coverLink.Width || coverLink.Height ? "style=\"" + (coverLink.Height ? "height: " + coverLink.Height + "px !important;" : "") + " " + (coverLink.Width ? "width: " + coverLink.Width + "px !important;" : "") + "\"" : "") + "/>" : "") + "\n    <audio\n        id=\"" + styles_1.AUDIO_ID + "\"\n        " + (audiobook_1.DEBUG_AUDIO ? "controlsx=\"controlsx\"" : "") + "\n        autoplay=\"autoplay\"\n        preload=\"metadata\">\n\n        <source src=\"" + uriStr_1 + "\" type=\"" + pubLink.TypeLink + "\" />\n    </audio>\n    " + (audiobook_1.DEBUG_AUDIO ?
+                    "\n<canvas id=\"" + styles_1.AUDIO_BUFFER_CANVAS_ID + "\" width=\"500\" height=\"20\"> </canvas>\n    "
+                    : "") + "\n    <div id=\"" + styles_1.AUDIO_CONTROLS_ID + "\">\n        <button id=\"" + styles_1.AUDIO_PREVIOUS_ID + "\"></button>\n        <button id=\"" + styles_1.AUDIO_REWIND_ID + "\"></button>\n        <button id=\"" + styles_1.AUDIO_PLAYPAUSE_ID + "\"></button>\n        <button id=\"" + styles_1.AUDIO_FORWARD_ID + "\"></button>\n        <button id=\"" + styles_1.AUDIO_NEXT_ID + "\"></button>\n        <input id=\"" + styles_1.AUDIO_SLIDER_ID + "\" type=\"range\" min=\"0\" max=\"100\" value=\"0\" step=\"1\" />\n        <span id=\"" + styles_1.AUDIO_TIME_ID + "\">-</span>\n        <span id=\"" + styles_1.AUDIO_PERCENT_ID + "\">-</span>\n    </div>\n</section>\n</body>\n</html>";
                 var contentType = "application/xhtml+xml";
                 if (rcssJson.setCSS) {
                     rcssJson.setCSS.paged = false;
@@ -552,10 +565,12 @@ function loadLink(hrefFull, previous, useGoto) {
             if (IS_DEV) {
                 debug("___HARD___ WEBVIEW REFRESH: " + uriStr_1);
             }
+            var readiumCssBackup = activeWebView.READIUM2.readiumCss;
             win.READIUM2.destroyActiveWebView();
             win.READIUM2.createActiveWebView();
             var newActiveWebView = win.READIUM2.getActiveWebView();
             if (newActiveWebView) {
+                newActiveWebView.READIUM2.readiumCss = readiumCssBackup;
                 newActiveWebView.READIUM2.link = pubLink;
                 newActiveWebView.setAttribute("src", uriStr_1);
             }
