@@ -263,9 +263,11 @@ function convertRange(range, getCssSelector, computeElementCFI) {
     return {
         cfi: cfi,
         endContainerChildTextNodeIndex: endContainerChildTextNodeIndex,
+        endContainerElementCFI: endElementCfi,
         endContainerElementCssSelector: endContainerElementCssSelector,
         endOffset: range.endOffset,
         startContainerChildTextNodeIndex: startContainerChildTextNodeIndex,
+        startContainerElementCFI: startElementCfi,
         startContainerElementCssSelector: startContainerElementCssSelector,
         startOffset: range.startOffset,
     };

@@ -1572,15 +1572,19 @@ const findPrecedingAncestorSiblingEpubPageBreak = (element) => {
             }
             return _htmlNamespaces[prefix] || null;
         };
-        const xpathResult = win.document.evaluate(`//*[contains(concat(' ', normalize-space(@epub:type), ' '), ' pagebreak ')]`, win.document.body, namespaceResolver, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+        const xpathResult = win.document.evaluate(`//*[contains(concat(' ', normalize-space(@epub:type), ' '), ' pagebreak ') or contains(concat(' ', normalize-space(role), ' '), ' doc-pagebreak ')]`, win.document.body, namespaceResolver, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
         for (let i = 0; i < xpathResult.snapshotLength; i++) {
             const n = xpathResult.snapshotItem(i);
             if (n) {
                 const el = n;
-                if (el.textContent) {
+                const elTitle = el.getAttribute("title");
+                const elLabel = el.getAttribute("aria-label");
+                const elText = el.textContent;
+                const pageLabel = elTitle || elLabel || elText;
+                if (pageLabel) {
                     const pageBreak = {
                         element: el,
-                        text: el.textContent,
+                        text: pageLabel,
                     };
                     if (!_allEpubPageBreaks) {
                         _allEpubPageBreaks = [];
@@ -1613,8 +1617,8 @@ const notifyReadingLocationRaw = () => {
         return;
     }
     let progressionData;
-    const cssSelector = getCssSelector(win.READIUM2.locationHashOverride);
-    const cfi = exports.computeCFI(win.READIUM2.locationHashOverride);
+    let cssSelector = getCssSelector(win.READIUM2.locationHashOverride);
+    let cfi = exports.computeCFI(win.READIUM2.locationHashOverride);
     let progression = 0;
     if (win.READIUM2.isFixedLayout) {
         progression = 1;
@@ -1626,6 +1630,10 @@ const notifyReadingLocationRaw = () => {
     const pinfo = (progressionData && progressionData.paginationInfo) ?
         progressionData.paginationInfo : undefined;
     const selInfo = selection_2.getCurrentSelectionInfo(win, getCssSelector, exports.computeCFI);
+    if (selInfo) {
+        cssSelector = selInfo.rangeInfo.startContainerElementCssSelector;
+        cfi = selInfo.rangeInfo.startContainerElementCFI;
+    }
     const text = selInfo ? {
         after: undefined,
         before: undefined,

@@ -1670,15 +1670,19 @@ var findPrecedingAncestorSiblingEpubPageBreak = function (element) {
             }
             return _htmlNamespaces[prefix] || null;
         };
-        var xpathResult = win.document.evaluate("//*[contains(concat(' ', normalize-space(@epub:type), ' '), ' pagebreak ')]", win.document.body, namespaceResolver, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+        var xpathResult = win.document.evaluate("//*[contains(concat(' ', normalize-space(@epub:type), ' '), ' pagebreak ') or contains(concat(' ', normalize-space(role), ' '), ' doc-pagebreak ')]", win.document.body, namespaceResolver, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
         for (var i = 0; i < xpathResult.snapshotLength; i++) {
             var n = xpathResult.snapshotItem(i);
             if (n) {
                 var el = n;
-                if (el.textContent) {
+                var elTitle = el.getAttribute("title");
+                var elLabel = el.getAttribute("aria-label");
+                var elText = el.textContent;
+                var pageLabel = elTitle || elLabel || elText;
+                if (pageLabel) {
                     var pageBreak = {
                         element: el,
-                        text: el.textContent,
+                        text: pageLabel,
                     };
                     if (!_allEpubPageBreaks) {
                         _allEpubPageBreaks = [];
@@ -1724,6 +1728,10 @@ var notifyReadingLocationRaw = function () {
     var pinfo = (progressionData && progressionData.paginationInfo) ?
         progressionData.paginationInfo : undefined;
     var selInfo = selection_2.getCurrentSelectionInfo(win, getCssSelector, exports.computeCFI);
+    if (selInfo) {
+        cssSelector = selInfo.rangeInfo.startContainerElementCssSelector;
+        cfi = selInfo.rangeInfo.startContainerElementCFI;
+    }
     var text = selInfo ? {
         after: undefined,
         before: undefined,

@@ -178,7 +178,7 @@ function setupAudioBook(_docTitle) {
             },
             paginationInfo: undefined,
             selectionInfo: undefined,
-            selectionIsNew: false,
+            selectionIsNew: undefined,
             text: undefined,
             title: _docTitle,
         };
