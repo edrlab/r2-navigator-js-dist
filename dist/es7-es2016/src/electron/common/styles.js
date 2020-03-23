@@ -707,6 +707,18 @@ exports.audioCssStyles = `
     cursor: wait;
 }
 
+#${exports.AUDIO_BUFFER_CANVAS_ID} {
+    width: 500px;
+    height: 20px;
+
+    margin-left: auto;
+    margin-right: auto;
+
+    margin-bottom: 1em;
+
+    display: block;
+}
+
 #${exports.AUDIO_ID} {
     display: block;
     margin-left: auto;

@@ -4,6 +4,7 @@ var tslib_1 = require("tslib");
 var IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 var debounce_1 = require("debounce");
 var debug_ = require("debug");
+var electron_1 = require("electron");
 var events_1 = require("../common/events");
 var sessions_1 = require("../common/sessions");
 var url_params_1 = require("./common/url-params");
@@ -92,6 +93,45 @@ function createWebViewInternal(preloadScriptPath) {
     }, 500);
     wv.addEventListener("dom-ready", function () {
         wv.clearHistory();
+        if (IS_DEV) {
+            var wc_1 = wv.getWebContents();
+            wc_1.on("context-menu", function (_ev, params) {
+                var x = params.x, y = params.y;
+                var openDevToolsAndInspect = function () {
+                    var devToolsOpened = function () {
+                        wc_1.off("devtools-opened", devToolsOpened);
+                        wc_1.inspectElement(x, y);
+                        setTimeout(function () {
+                            if (wc_1.isDevToolsOpened()) {
+                                wc_1.devToolsWebContents.focus();
+                            }
+                        }, 500);
+                    };
+                    wc_1.on("devtools-opened", devToolsOpened);
+                    wc_1.openDevTools({ activate: true, mode: "detach" });
+                };
+                electron_1.remote.Menu.buildFromTemplate([{
+                        click: function () {
+                            var wasOpened = wc_1.isDevToolsOpened();
+                            if (!wasOpened) {
+                                openDevToolsAndInspect();
+                            }
+                            else {
+                                if (!wc_1.isDevToolsFocused()) {
+                                    wc_1.closeDevTools();
+                                    setImmediate(function () {
+                                        openDevToolsAndInspect();
+                                    });
+                                }
+                                else {
+                                    wc_1.inspectElement(x, y);
+                                }
+                            }
+                        },
+                        label: "Inspect element",
+                    }]).popup({ window: electron_1.remote.getCurrentWindow() });
+            });
+        }
         if (win.READIUM2) {
             readaloud_1.ttsClickEnable(win.READIUM2.ttsClickEnabled);
         }

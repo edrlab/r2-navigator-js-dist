@@ -524,22 +524,22 @@ function loadLink(hrefFull, previous, useGoto, rcss) {
     document.addEventListener("DOMContentLoaded", () => {
         const _audioElement = document.getElementById("${styles_1.AUDIO_ID}");
 
+        _audioElement.addEventListener("error", function()
+            {
+                console.debug("-1) error");
+                if (_audioElement.error) {
+                    // 1 === MEDIA_ERR_ABORTED
+                    // 2 === MEDIA_ERR_NETWORK
+                    // 3 === MEDIA_ERR_DECODE
+                    // 4 === MEDIA_ERR_SRC_NOT_SUPPORTED
+                    console.log(_audioElement.error.code);
+                    console.log(_audioElement.error.message);
+                }
+            }
+        );
+
         if (DEBUG_AUDIO)
         {
-            _audioElement.addEventListener("error", function()
-                {
-                    console.debug("-1) error");
-                    if (_audioElement.error) {
-                        // 1 === MEDIA_ERR_ABORTED
-                        // 2 === MEDIA_ERR_NETWORK
-                        // 3 === MEDIA_ERR_DECODE
-                        // 4 === MEDIA_ERR_SRC_NOT_SUPPORTED
-                        console.debug(_audioElement.error.code);
-                        console.debug(_audioElement.error.message);
-                    }
-                }
-            );
-
             _audioElement.addEventListener("load", function()
                 {
                     console.debug("0) load");
@@ -705,7 +705,7 @@ ${coverLink ? `<img id="${styles_1.AUDIO_COVER_ID}" src="${coverLink.Href}" alt=
     </audio>
     ${audiobook_1.DEBUG_AUDIO ?
                     `
-<canvas id="${styles_1.AUDIO_BUFFER_CANVAS_ID}" width="500" height="20"> </canvas>
+<canvas id="${styles_1.AUDIO_BUFFER_CANVAS_ID}"> </canvas>
     `
                     : ""}
     <div id="${styles_1.AUDIO_CONTROLS_ID}">
