@@ -36,7 +36,7 @@ function setupReadiumCSS(server, folderPath, readiumCssGetter) {
         },
     };
     server.expressUse("/" + readium_css_settings_1.READIUM_CSS_URL_PATH, express.static(folderPath, staticOptions));
-    const transformer = (publication, link, str, sessionInfo) => {
+    const transformerReadiumCss = (publication, link, _url, str, sessionInfo) => {
         let mediaType = "application/xhtml+xml";
         if (link && link.TypeLink) {
             mediaType = link.TypeLink;
@@ -62,13 +62,13 @@ function setupReadiumCSS(server, folderPath, readiumCssGetter) {
             if (IS_DEV) {
                 console.log("_____ readiumCssJson.urlRoot (setupReadiumCSS() transformer): ", readiumcssJson.urlRoot);
             }
-            return readium_css_inject_1.transformHTML(str, readiumcssJson, mediaType);
+            return readium_css_inject_1.readiumCssTransformHtml(str, readiumcssJson, mediaType);
         }
         else {
             return str;
         }
     };
-    transformer_1.Transformers.instance().add(new transformer_html_1.TransformerHTML(transformer));
+    transformer_1.Transformers.instance().add(new transformer_html_1.TransformerHTML(transformerReadiumCss));
 }
 exports.setupReadiumCSS = setupReadiumCSS;
 //# sourceMappingURL=readium-css.js.map

@@ -509,7 +509,7 @@ function loadLink(hrefFull, previous, useGoto, rcss) {
 <head>
     <meta charset="utf-8" />
     <title>${title}</title>
-    <base href="${publicationURL}" id="${readium_css_inject_1.READIUM2_BASEURL_ID}" />
+    <base href="${pubJsonUri}" id="${readium_css_inject_1.READIUM2_BASEURL_ID}" />
     <style type="text/css">
     /*<![CDATA[*/
     /*]]>*/
@@ -701,7 +701,7 @@ ${coverLink ? `<img id="${styles_1.AUDIO_COVER_ID}" src="${coverLink.Href}" alt=
         autoplay="autoplay"
         preload="metadata">
 
-        <source src="${uriStr_}" type="${pubLink.TypeLink}" />
+        <source src="${uriStr}" type="${pubLink.TypeLink}" />
     </audio>
     ${audiobook_1.DEBUG_AUDIO ?
                     `
@@ -725,7 +725,7 @@ ${coverLink ? `<img id="${styles_1.AUDIO_COVER_ID}" src="${coverLink.Href}" alt=
                 if (rcssJson.setCSS) {
                     rcssJson.setCSS.paged = false;
                 }
-                htmlMarkup = readium_css_inject_1.transformHTML(htmlMarkup, rcssJson, contentType);
+                htmlMarkup = readium_css_inject_1.readiumCssTransformHtml(htmlMarkup, rcssJson, contentType);
                 const b64HTML = Buffer.from(htmlMarkup).toString("base64");
                 const dataUri = `data:${contentType};base64,${b64HTML}`;
                 newActiveWebView.setAttribute("src", dataUri);

@@ -71,7 +71,7 @@ function createWebViewInternal(preloadScriptPath) {
     wv.addEventListener("dom-ready", () => {
         wv.clearHistory();
         if (IS_DEV) {
-            const wc = wv.getWebContents();
+            const wc = electron_1.remote.webContents.fromId(wv.getWebContentsId());
             wc.on("context-menu", (_ev, params) => {
                 const { x, y } = params;
                 const openDevToolsAndInspect = () => {
@@ -151,7 +151,7 @@ if (webview_resize_1.ENABLE_WEBVIEW_RESIZE) {
     const adjustResize = (webview) => {
         const width = webview.clientWidth;
         const height = webview.clientHeight;
-        const wc = webview.getWebContents();
+        const wc = electron_1.webContents.fromId(webview.getWebContentsId());
         if (wc && wc.setSize && width && height) {
             wc.setSize({
                 normal: {

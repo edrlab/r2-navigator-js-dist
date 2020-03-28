@@ -20,4 +20,4 @@ export declare function removeCSS(documant: Document, mod: string): void;
 export declare function removeAllCSS(documant: Document): void;
 export declare function injectDefaultCSS(documant: Document): void;
 export declare function injectReadPosCSS(documant: Document): void;
-export declare function transformHTML(htmlStr: string, readiumcssJson: IEventPayload_R2_EVENT_READIUMCSS | undefined, mediaType: string | undefined): string;
+export declare function readiumCssTransformHtml(htmlStr: string, readiumcssJson: IEventPayload_R2_EVENT_READIUMCSS | undefined, mediaType: string | undefined): string;

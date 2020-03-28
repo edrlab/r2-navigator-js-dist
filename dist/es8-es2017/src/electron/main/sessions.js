@@ -2,8 +2,14 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const debug_ = require("debug");
 const electron_1 = require("electron");
+const request = require("request");
+const requestPromise = require("request-promise-native");
+const transformer_1 = require("r2-shared-js/dist/es8-es2017/src/transform/transformer");
+const transformer_html_1 = require("r2-shared-js/dist/es8-es2017/src/transform/transformer-html");
+const dom_1 = require("../common/dom");
 const sessions_1 = require("../common/sessions");
 const debug = debug_("r2:navigator#electron/main/sessions");
+const USE_STREAM_PROTOCOL_INSTEAD_OF_HTTP = true;
 async function promiseAllSettled(promises) {
     const promises_ = promises.map(async (promise) => {
         return promise
@@ -22,7 +28,9 @@ async function promiseAllSettled(promises) {
     });
     return Promise.all(promises_);
 }
+let _server;
 function secureSessions(server) {
+    _server = server;
     const filter = { urls: ["*://*/*"] };
     const onHeadersReceivedCB = (details, callback) => {
         if (!details.url) {
@@ -59,11 +67,11 @@ function secureSessions(server) {
             callback({ cancel: false });
         }
     };
-    const setCertificateVerifyProcCB = (request, callback) => {
+    const setCertificateVerifyProcCB = (req, callback) => {
         if (server.isSecured()) {
             const info = server.serverInfo();
             if (info) {
-                if (request.hostname === info.urlHost) {
+                if (req.hostname === info.urlHost) {
                     callback(0);
                     return;
                 }
@@ -97,14 +105,181 @@ function secureSessions(server) {
     });
 }
 exports.secureSessions = secureSessions;
-const httpProtocolHandler = (request, callback) => {
-    const url = sessions_1.convertCustomSchemeToHttpUrl(request.url);
+const streamProtocolHandler = async (req, callback) => {
+    const url = sessions_1.convertCustomSchemeToHttpUrl(req.url);
+    const u = new URL(url);
+    let ref = u.origin;
+    if (req.referrer && req.referrer.trim()) {
+        ref = req.referrer;
+    }
+    const failure = (err) => {
+        debug(err);
+        callback();
+    };
+    const success = (response) => {
+        const headers = {};
+        Object.keys(response.headers).forEach((header) => {
+            const val = response.headers[header];
+            if (val) {
+                headers[header] = val;
+            }
+        });
+        if (!headers.referer) {
+            headers.referer = ref;
+        }
+        if (response.statusCode && (response.statusCode < 200 || response.statusCode >= 300)) {
+            failure("HTTP CODE " + response.statusCode);
+            return;
+        }
+        response
+            .on("error", function h() {
+            debug("RESPONSE ERROR " + url);
+        });
+        const obj = {
+            data: response,
+            headers,
+            statusCode: response.statusCode,
+        };
+        callback(obj);
+    };
+    const reqHeaders = req.headers;
+    if (_server) {
+        const serverUrl = _server.serverUrl();
+        if (_server.isSecured() &&
+            ((serverUrl && url.startsWith(serverUrl)) ||
+                url.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://"))) {
+            const header = _server.getSecureHTTPHeader(url);
+            if (header) {
+                reqHeaders[header.name] = header.value;
+            }
+        }
+    }
+    const needsStreamingResponse = true;
+    if (needsStreamingResponse) {
+        request.get({
+            headers: reqHeaders,
+            method: "GET",
+            rejectUnauthorized: false,
+            uri: url,
+        })
+            .on("response", (response) => {
+            success(response);
+        })
+            .on("error", (err) => {
+            failure(err);
+        });
+    }
+    else {
+        let response;
+        try {
+            response = await requestPromise({
+                headers: reqHeaders,
+                method: "GET",
+                rejectUnauthorized: false,
+                resolveWithFullResponse: true,
+                uri: url,
+            });
+            success(response);
+        }
+        catch (err) {
+            failure(err);
+        }
+    }
+};
+const httpProtocolHandler = (req, callback) => {
+    const url = sessions_1.convertCustomSchemeToHttpUrl(req.url);
     callback({
-        method: request.method,
+        method: req.method,
+        session: getWebViewSession(),
         url,
     });
 };
+const transformerAudioVideo = (_publication, link, url, htmlStr, _sessionInfo) => {
+    if (!url) {
+        return htmlStr;
+    }
+    if (htmlStr.indexOf("<audio") < 0 && htmlStr.indexOf("<video") < 0) {
+        return htmlStr;
+    }
+    const iHtmlStart = htmlStr.indexOf("<html");
+    if (iHtmlStart < 0) {
+        return htmlStr;
+    }
+    const iBodyStart = htmlStr.indexOf("<body");
+    if (iBodyStart < 0) {
+        return htmlStr;
+    }
+    const parseableChunk = htmlStr.substr(iHtmlStart);
+    const htmlStrToParse = `<?xml version="1.0" encoding="utf-8"?>${parseableChunk}`;
+    let mediaType = "application/xhtml+xml";
+    if (link && link.TypeLink) {
+        mediaType = link.TypeLink;
+    }
+    const documant = dom_1.parseDOM(htmlStrToParse, mediaType);
+    let urlHttp = url;
+    if (urlHttp.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
+        urlHttp = sessions_1.convertCustomSchemeToHttpUrl(urlHttp);
+    }
+    const url_ = new URL(urlHttp);
+    url_.search = "";
+    url_.hash = "";
+    const urlStr = url_.toString();
+    const patchElementSrc = (el) => {
+        const src = el.getAttribute("src");
+        if (!src || src[0] === "/" ||
+            /^http[s]?:\/\//.test(src) || /^data:\/\//.test(src)) {
+            return;
+        }
+        let src_ = src;
+        if (src_.startsWith("./")) {
+            src_ = src_.substr(2);
+        }
+        src_ = `${urlStr}/../${src_}`;
+        debug(`VIDEO/AUDIO SRC PATCH: ${src} ==> ${src_}`);
+        el.setAttribute("src", src_);
+    };
+    const processTree = (el) => {
+        let elName = el.nodeName.toLowerCase();
+        if (elName === "audio" || elName === "video") {
+            patchElementSrc(el);
+            if (!el.childNodes) {
+                return;
+            }
+            for (let i = 0; i < el.childNodes.length; i++) {
+                const childNode = el.childNodes[i];
+                if (childNode.nodeType === 1) {
+                    elName = childNode.nodeName.toLowerCase();
+                    if (elName === "source") {
+                        patchElementSrc(childNode);
+                    }
+                }
+            }
+        }
+        else {
+            if (!el.childNodes) {
+                return;
+            }
+            for (let i = 0; i < el.childNodes.length; i++) {
+                const childNode = el.childNodes[i];
+                if (childNode.nodeType === 1) {
+                    processTree(childNode);
+                }
+            }
+        }
+    };
+    processTree(documant.body);
+    const serialized = dom_1.serializeDOM(documant);
+    const prefix = htmlStr.substr(0, iHtmlStart);
+    const iHtmlStart_ = serialized.indexOf("<html");
+    if (iHtmlStart_ < 0) {
+        return htmlStr;
+    }
+    const remaining = serialized.substr(iHtmlStart_);
+    const newStr = `${prefix}${remaining}`;
+    return newStr;
+};
 function initSessions() {
+    transformer_1.Transformers.instance().add(new transformer_html_1.TransformerHTML(transformerAudioVideo));
     if (electron_1.protocol.registerStandardSchemes) {
         electron_1.protocol.registerStandardSchemes([sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL], { secure: true });
     }
@@ -130,25 +305,53 @@ function initSessions() {
             debug(err);
         }
         if (electron_1.session.defaultSession) {
-            electron_1.session.defaultSession.protocol.registerHttpProtocol(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL, httpProtocolHandler, (error) => {
-                if (error) {
-                    debug(error);
-                }
-                else {
-                    debug("registerHttpProtocol OKAY (default session)");
-                }
-            });
+            if (USE_STREAM_PROTOCOL_INSTEAD_OF_HTTP) {
+                electron_1.session.defaultSession.protocol.registerStreamProtocol(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL, streamProtocolHandler, (error) => {
+                    if (error) {
+                        debug("registerStreamProtocol ERROR (default session)");
+                        debug(error);
+                    }
+                    else {
+                        debug("registerStreamProtocol OKAY (default session)");
+                    }
+                });
+            }
+            else {
+                electron_1.session.defaultSession.protocol.registerHttpProtocol(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL, httpProtocolHandler, (error) => {
+                    if (error) {
+                        debug("registerHttpProtocol ERROR (default session)");
+                        debug(error);
+                    }
+                    else {
+                        debug("registerHttpProtocol OKAY (default session)");
+                    }
+                });
+            }
         }
         const webViewSession = getWebViewSession();
         if (webViewSession) {
-            webViewSession.protocol.registerHttpProtocol(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL, httpProtocolHandler, (error) => {
-                if (error) {
-                    debug(error);
-                }
-                else {
-                    debug("registerHttpProtocol OKAY (webview session)");
-                }
-            });
+            if (USE_STREAM_PROTOCOL_INSTEAD_OF_HTTP) {
+                webViewSession.protocol.registerStreamProtocol(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL, streamProtocolHandler, (error) => {
+                    if (error) {
+                        debug("registerStreamProtocol ERROR (webview session)");
+                        debug(error);
+                    }
+                    else {
+                        debug("registerStreamProtocol OKAY (webview session)");
+                    }
+                });
+            }
+            else {
+                webViewSession.protocol.registerHttpProtocol(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL, httpProtocolHandler, (error) => {
+                    if (error) {
+                        debug("registerHttpProtocol ERROR (webview session)");
+                        debug(error);
+                    }
+                    else {
+                        debug("registerHttpProtocol OKAY (webview session)");
+                    }
+                });
+            }
             webViewSession.setPermissionRequestHandler((wc, permission, callback) => {
                 debug("setPermissionRequestHandler");
                 debug(wc.getURL());

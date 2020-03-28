@@ -3,8 +3,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = require("tslib");
 var debug_ = require("debug");
 var electron_1 = require("electron");
+var request = require("request");
+var requestPromise = require("request-promise-native");
+var transformer_1 = require("r2-shared-js/dist/es5/src/transform/transformer");
+var transformer_html_1 = require("r2-shared-js/dist/es5/src/transform/transformer-html");
+var dom_1 = require("../common/dom");
 var sessions_1 = require("../common/sessions");
 var debug = debug_("r2:navigator#electron/main/sessions");
+var USE_STREAM_PROTOCOL_INSTEAD_OF_HTTP = true;
 function promiseAllSettled(promises) {
     return tslib_1.__awaiter(this, void 0, void 0, function () {
         var promises_;
@@ -31,7 +37,9 @@ function promiseAllSettled(promises) {
         });
     });
 }
+var _server;
 function secureSessions(server) {
+    _server = server;
     var filter = { urls: ["*://*/*"] };
     var onHeadersReceivedCB = function (details, callback) {
         if (!details.url) {
@@ -68,11 +76,11 @@ function secureSessions(server) {
             callback({ cancel: false });
         }
     };
-    var setCertificateVerifyProcCB = function (request, callback) {
+    var setCertificateVerifyProcCB = function (req, callback) {
         if (server.isSecured()) {
             var info = server.serverInfo();
             if (info) {
-                if (request.hostname === info.urlHost) {
+                if (req.hostname === info.urlHost) {
                     callback(0);
                     return;
                 }
@@ -106,15 +114,193 @@ function secureSessions(server) {
     });
 }
 exports.secureSessions = secureSessions;
-var httpProtocolHandler = function (request, callback) {
-    var url = sessions_1.convertCustomSchemeToHttpUrl(request.url);
+var streamProtocolHandler = function (req, callback) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+    var url, u, ref, failure, success, reqHeaders, serverUrl, header, needsStreamingResponse, response, err_1;
+    return tslib_1.__generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                url = sessions_1.convertCustomSchemeToHttpUrl(req.url);
+                u = new URL(url);
+                ref = u.origin;
+                if (req.referrer && req.referrer.trim()) {
+                    ref = req.referrer;
+                }
+                failure = function (err) {
+                    debug(err);
+                    callback();
+                };
+                success = function (response) {
+                    var headers = {};
+                    Object.keys(response.headers).forEach(function (header) {
+                        var val = response.headers[header];
+                        if (val) {
+                            headers[header] = val;
+                        }
+                    });
+                    if (!headers.referer) {
+                        headers.referer = ref;
+                    }
+                    if (response.statusCode && (response.statusCode < 200 || response.statusCode >= 300)) {
+                        failure("HTTP CODE " + response.statusCode);
+                        return;
+                    }
+                    response
+                        .on("error", function h() {
+                        debug("RESPONSE ERROR " + url);
+                    });
+                    var obj = {
+                        data: response,
+                        headers: headers,
+                        statusCode: response.statusCode,
+                    };
+                    callback(obj);
+                };
+                reqHeaders = req.headers;
+                if (_server) {
+                    serverUrl = _server.serverUrl();
+                    if (_server.isSecured() &&
+                        ((serverUrl && url.startsWith(serverUrl)) ||
+                            url.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://"))) {
+                        header = _server.getSecureHTTPHeader(url);
+                        if (header) {
+                            reqHeaders[header.name] = header.value;
+                        }
+                    }
+                }
+                needsStreamingResponse = true;
+                if (!needsStreamingResponse) return [3, 1];
+                request.get({
+                    headers: reqHeaders,
+                    method: "GET",
+                    rejectUnauthorized: false,
+                    uri: url,
+                })
+                    .on("response", function (response) {
+                    success(response);
+                })
+                    .on("error", function (err) {
+                    failure(err);
+                });
+                return [3, 5];
+            case 1:
+                response = void 0;
+                _a.label = 2;
+            case 2:
+                _a.trys.push([2, 4, , 5]);
+                return [4, requestPromise({
+                        headers: reqHeaders,
+                        method: "GET",
+                        rejectUnauthorized: false,
+                        resolveWithFullResponse: true,
+                        uri: url,
+                    })];
+            case 3:
+                response = _a.sent();
+                success(response);
+                return [3, 5];
+            case 4:
+                err_1 = _a.sent();
+                failure(err_1);
+                return [3, 5];
+            case 5: return [2];
+        }
+    });
+}); };
+var httpProtocolHandler = function (req, callback) {
+    var url = sessions_1.convertCustomSchemeToHttpUrl(req.url);
     callback({
-        method: request.method,
+        method: req.method,
+        session: getWebViewSession(),
         url: url,
     });
 };
+var transformerAudioVideo = function (_publication, link, url, htmlStr, _sessionInfo) {
+    if (!url) {
+        return htmlStr;
+    }
+    if (htmlStr.indexOf("<audio") < 0 && htmlStr.indexOf("<video") < 0) {
+        return htmlStr;
+    }
+    var iHtmlStart = htmlStr.indexOf("<html");
+    if (iHtmlStart < 0) {
+        return htmlStr;
+    }
+    var iBodyStart = htmlStr.indexOf("<body");
+    if (iBodyStart < 0) {
+        return htmlStr;
+    }
+    var parseableChunk = htmlStr.substr(iHtmlStart);
+    var htmlStrToParse = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" + parseableChunk;
+    var mediaType = "application/xhtml+xml";
+    if (link && link.TypeLink) {
+        mediaType = link.TypeLink;
+    }
+    var documant = dom_1.parseDOM(htmlStrToParse, mediaType);
+    var urlHttp = url;
+    if (urlHttp.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
+        urlHttp = sessions_1.convertCustomSchemeToHttpUrl(urlHttp);
+    }
+    var url_ = new URL(urlHttp);
+    url_.search = "";
+    url_.hash = "";
+    var urlStr = url_.toString();
+    var patchElementSrc = function (el) {
+        var src = el.getAttribute("src");
+        if (!src || src[0] === "/" ||
+            /^http[s]?:\/\//.test(src) || /^data:\/\//.test(src)) {
+            return;
+        }
+        var src_ = src;
+        if (src_.startsWith("./")) {
+            src_ = src_.substr(2);
+        }
+        src_ = urlStr + "/../" + src_;
+        debug("VIDEO/AUDIO SRC PATCH: " + src + " ==> " + src_);
+        el.setAttribute("src", src_);
+    };
+    var processTree = function (el) {
+        var elName = el.nodeName.toLowerCase();
+        if (elName === "audio" || elName === "video") {
+            patchElementSrc(el);
+            if (!el.childNodes) {
+                return;
+            }
+            for (var i = 0; i < el.childNodes.length; i++) {
+                var childNode = el.childNodes[i];
+                if (childNode.nodeType === 1) {
+                    elName = childNode.nodeName.toLowerCase();
+                    if (elName === "source") {
+                        patchElementSrc(childNode);
+                    }
+                }
+            }
+        }
+        else {
+            if (!el.childNodes) {
+                return;
+            }
+            for (var i = 0; i < el.childNodes.length; i++) {
+                var childNode = el.childNodes[i];
+                if (childNode.nodeType === 1) {
+                    processTree(childNode);
+                }
+            }
+        }
+    };
+    processTree(documant.body);
+    var serialized = dom_1.serializeDOM(documant);
+    var prefix = htmlStr.substr(0, iHtmlStart);
+    var iHtmlStart_ = serialized.indexOf("<html");
+    if (iHtmlStart_ < 0) {
+        return htmlStr;
+    }
+    var remaining = serialized.substr(iHtmlStart_);
+    var newStr = "" + prefix + remaining;
+    return newStr;
+};
 function initSessions() {
     var _this = this;
+    transformer_1.Transformers.instance().add(new transformer_html_1.TransformerHTML(transformerAudioVideo));
     if (electron_1.protocol.registerStandardSchemes) {
         electron_1.protocol.registerStandardSchemes([sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL], { secure: true });
     }
@@ -132,7 +318,7 @@ function initSessions() {
             }]);
     }
     electron_1.app.on("ready", function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-        var err_1, webViewSession;
+        var err_2, webViewSession;
         return tslib_1.__generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -145,30 +331,58 @@ function initSessions() {
                     _a.sent();
                     return [3, 4];
                 case 3:
-                    err_1 = _a.sent();
-                    debug(err_1);
+                    err_2 = _a.sent();
+                    debug(err_2);
                     return [3, 4];
                 case 4:
                     if (electron_1.session.defaultSession) {
-                        electron_1.session.defaultSession.protocol.registerHttpProtocol(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL, httpProtocolHandler, function (error) {
-                            if (error) {
-                                debug(error);
-                            }
-                            else {
-                                debug("registerHttpProtocol OKAY (default session)");
-                            }
-                        });
+                        if (USE_STREAM_PROTOCOL_INSTEAD_OF_HTTP) {
+                            electron_1.session.defaultSession.protocol.registerStreamProtocol(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL, streamProtocolHandler, function (error) {
+                                if (error) {
+                                    debug("registerStreamProtocol ERROR (default session)");
+                                    debug(error);
+                                }
+                                else {
+                                    debug("registerStreamProtocol OKAY (default session)");
+                                }
+                            });
+                        }
+                        else {
+                            electron_1.session.defaultSession.protocol.registerHttpProtocol(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL, httpProtocolHandler, function (error) {
+                                if (error) {
+                                    debug("registerHttpProtocol ERROR (default session)");
+                                    debug(error);
+                                }
+                                else {
+                                    debug("registerHttpProtocol OKAY (default session)");
+                                }
+                            });
+                        }
                     }
                     webViewSession = getWebViewSession();
                     if (webViewSession) {
-                        webViewSession.protocol.registerHttpProtocol(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL, httpProtocolHandler, function (error) {
-                            if (error) {
-                                debug(error);
-                            }
-                            else {
-                                debug("registerHttpProtocol OKAY (webview session)");
-                            }
-                        });
+                        if (USE_STREAM_PROTOCOL_INSTEAD_OF_HTTP) {
+                            webViewSession.protocol.registerStreamProtocol(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL, streamProtocolHandler, function (error) {
+                                if (error) {
+                                    debug("registerStreamProtocol ERROR (webview session)");
+                                    debug(error);
+                                }
+                                else {
+                                    debug("registerStreamProtocol OKAY (webview session)");
+                                }
+                            });
+                        }
+                        else {
+                            webViewSession.protocol.registerHttpProtocol(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL, httpProtocolHandler, function (error) {
+                                if (error) {
+                                    debug("registerHttpProtocol ERROR (webview session)");
+                                    debug(error);
+                                }
+                                else {
+                                    debug("registerHttpProtocol OKAY (webview session)");
+                                }
+                            });
+                        }
                         webViewSession.setPermissionRequestHandler(function (wc, permission, callback) {
                             debug("setPermissionRequestHandler");
                             debug(wc.getURL());
@@ -182,7 +396,7 @@ function initSessions() {
     }); });
     function willQuitCallback(evt) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var err_2;
+            var err_3;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -197,8 +411,8 @@ function initSessions() {
                         _a.sent();
                         return [3, 4];
                     case 3:
-                        err_2 = _a.sent();
-                        debug(err_2);
+                        err_3 = _a.sent();
+                        debug(err_3);
                         return [3, 4];
                     case 4:
                         debug("Cache and StorageData cleared, now quitting...");
@@ -213,7 +427,7 @@ function initSessions() {
 exports.initSessions = initSessions;
 function clearSession(sess, str) {
     return tslib_1.__awaiter(this, void 0, void 0, function () {
-        var prom1, prom2, results, results_1, results_1_1, result, err_3;
+        var prom1, prom2, results, results_1, results_1_1, result, err_4;
         var e_1, _a;
         return tslib_1.__generator(this, function (_b) {
             switch (_b.label) {
@@ -252,8 +466,8 @@ function clearSession(sess, str) {
                     }
                     return [3, 4];
                 case 3:
-                    err_3 = _b.sent();
-                    debug(err_3);
+                    err_4 = _b.sent();
+                    debug(err_4);
                     return [3, 4];
                 case 4: return [2, Promise.resolve()];
             }
@@ -267,7 +481,7 @@ function getWebViewSession() {
 exports.getWebViewSession = getWebViewSession;
 function clearWebviewSession() {
     return tslib_1.__awaiter(this, void 0, void 0, function () {
-        var sess, err_4;
+        var sess, err_5;
         return tslib_1.__generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -281,8 +495,8 @@ function clearWebviewSession() {
                     _a.sent();
                     return [3, 4];
                 case 3:
-                    err_4 = _a.sent();
-                    debug(err_4);
+                    err_5 = _a.sent();
+                    debug(err_5);
                     return [3, 4];
                 case 4: return [2, Promise.resolve()];
             }
@@ -292,7 +506,7 @@ function clearWebviewSession() {
 exports.clearWebviewSession = clearWebviewSession;
 function clearDefaultSession() {
     return tslib_1.__awaiter(this, void 0, void 0, function () {
-        var err_5;
+        var err_6;
         return tslib_1.__generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -305,8 +519,8 @@ function clearDefaultSession() {
                     _a.sent();
                     return [3, 4];
                 case 3:
-                    err_5 = _a.sent();
-                    debug(err_5);
+                    err_6 = _a.sent();
+                    debug(err_6);
                     return [3, 4];
                 case 4: return [2, Promise.resolve()];
             }
@@ -316,7 +530,7 @@ function clearDefaultSession() {
 exports.clearDefaultSession = clearDefaultSession;
 function clearSessions() {
     return tslib_1.__awaiter(this, void 0, void 0, function () {
-        var err_6;
+        var err_7;
         return tslib_1.__generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -326,8 +540,8 @@ function clearSessions() {
                     _a.sent();
                     return [3, 3];
                 case 2:
-                    err_6 = _a.sent();
-                    debug(err_6);
+                    err_7 = _a.sent();
+                    debug(err_7);
                     return [3, 3];
                 case 3: return [2, Promise.resolve()];
             }
