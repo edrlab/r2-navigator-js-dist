@@ -59,6 +59,7 @@ function locationHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
             uri.hash = "";
             uri.search = "";
             const urlNoQueryParams = uri.toString();
+            debug(`locationHandleIpcMessage R2_EVENT_PAGE_TURN_RES: ${urlNoQueryParams}`);
             handleLink(urlNoQueryParams, goPREVIOUS, false, activeWebView.READIUM2.readiumCss);
         }
     }
@@ -70,6 +71,7 @@ function locationHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
     }
     else if (eventChannel === events_1.R2_EVENT_LINK) {
         const payload = eventArgs[0];
+        debug(`locationHandleIpcMessage R2_EVENT_LINK: ${payload.url}`);
         handleLinkUrl(payload.url, activeWebView.READIUM2.readiumCss);
     }
     else if (eventChannel === events_1.R2_EVENT_AUDIO_SOUNDTRACK) {
@@ -153,6 +155,7 @@ function navLeftOrRight(left, spineNav) {
                 uri.search = "";
                 const urlNoQueryParams = uri.toString();
                 const activeWebView = win.READIUM2.getActiveWebView();
+                debug(`navLeftOrRight: ${urlNoQueryParams}`);
                 handleLink(urlNoQueryParams, false, false, activeWebView ? activeWebView.READIUM2.readiumCss : undefined);
                 return;
             }
@@ -177,14 +180,17 @@ function navLeftOrRight(left, spineNav) {
 }
 exports.navLeftOrRight = navLeftOrRight;
 function handleLink(href, previous, useGoto, rcss) {
+    debug(`handleLink: ${href}`);
     const special = href.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://");
     if (special) {
+        debug(`handleLink R2 URL`);
         const okay = loadLink(href, previous, useGoto, rcss);
         if (!okay) {
             debug(`Readium link fail?! ${href}`);
         }
     }
     else {
+        debug(`handleLink non-R2 URL`);
         const okay = loadLink(href, previous, useGoto, rcss);
         if (!okay) {
             if (/^http[s]?:\/\/127\.0\.0\.1/.test(href)) {
@@ -206,6 +212,7 @@ function handleLink(href, previous, useGoto, rcss) {
 }
 exports.handleLink = handleLink;
 function handleLinkUrl(href, rcss) {
+    debug(`handleLinkUrl: ${href}`);
     handleLink(href, undefined, false, rcss);
 }
 exports.handleLinkUrl = handleLinkUrl;
@@ -257,6 +264,7 @@ function handleLinkLocator(location, rcss) {
             ((useGoto) ? ("?" + url_params_1.URL_PARAM_GOTO + "=" +
                 UrlUtils_1.encodeURIComponent_RFC3986(Buffer.from(JSON.stringify(linkToLoadGoto, null, "")).toString("base64"))) :
                 "");
+        debug(`handleLinkLocator: ${hrefToLoad}`);
         handleLink(hrefToLoad, undefined, useGoto, rcss);
     }
 }
@@ -274,34 +282,37 @@ function reloadContent() {
             uri.hash = "";
             uri.search = "";
             const urlNoQueryParams = uri.toString();
+            debug(`reloadContent: ${urlNoQueryParams}`);
             handleLinkUrl(urlNoQueryParams, activeWebView.READIUM2.readiumCss);
         }
     }, 0);
 }
 exports.reloadContent = reloadContent;
-function loadLink(hrefFull, previous, useGoto, rcss) {
+function loadLink(hrefToLoad, previous, useGoto, rcss) {
     const publication = win.READIUM2.publication;
     const publicationURL = win.READIUM2.publicationURL;
     if (!publication || !publicationURL) {
         return false;
     }
-    if (hrefFull.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
-        hrefFull = sessions_1.convertCustomSchemeToHttpUrl(hrefFull);
+    let hrefToLoadHttp = hrefToLoad;
+    if (hrefToLoadHttp.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
+        hrefToLoadHttp = sessions_1.convertCustomSchemeToHttpUrl(hrefToLoadHttp);
     }
-    const pubJsonUri = publicationURL.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://") ?
+    const pubIsServedViaSpecialUrlProtocol = publicationURL.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://");
+    const publicationURLHttp = pubIsServedViaSpecialUrlProtocol ?
         sessions_1.convertCustomSchemeToHttpUrl(publicationURL) : publicationURL;
     let linkPath;
-    const urlToLink = new url_1.URL(hrefFull);
-    urlToLink.hash = "";
-    urlToLink.search = "";
-    const urlPublication = new url_1.URL(pubJsonUri);
-    urlPublication.hash = "";
-    urlPublication.search = "";
+    const hrefToLoadHttpObj = new url_1.URL(hrefToLoadHttp);
+    hrefToLoadHttpObj.hash = "";
+    hrefToLoadHttpObj.search = "";
+    const publicationURLHttpObj = new url_1.URL(publicationURLHttp);
+    publicationURLHttpObj.hash = "";
+    publicationURLHttpObj.search = "";
     let iBreak = -1;
-    for (let i = 0; i < urlPublication.pathname.length; i++) {
-        const c1 = urlPublication.pathname[i];
-        if (i < urlToLink.pathname.length) {
-            const c2 = urlToLink.pathname[i];
+    for (let i = 0; i < publicationURLHttpObj.pathname.length; i++) {
+        const c1 = publicationURLHttpObj.pathname[i];
+        if (i < hrefToLoadHttpObj.pathname.length) {
+            const c2 = hrefToLoadHttpObj.pathname[i];
             if (c1 !== c2) {
                 iBreak = i;
                 break;
@@ -312,13 +323,14 @@ function loadLink(hrefFull, previous, useGoto, rcss) {
         }
     }
     if (iBreak > 0) {
-        linkPath = urlToLink.pathname.substr(iBreak);
+        linkPath = hrefToLoadHttpObj.pathname.substr(iBreak);
     }
     if (!linkPath) {
+        debug(`R2LOADLINK?? ${hrefToLoad} ... ${publicationURL} !!! ${hrefToLoadHttp} ... ${publicationURLHttp}`);
         return false;
     }
     linkPath = decodeURIComponent(linkPath);
-    debug(`R2LOADLINK: ${pubJsonUri} (${publicationURL}) + ${hrefFull} ==> ${linkPath}`);
+    debug(`R2LOADLINK: ${hrefToLoad} ... ${publicationURL} ==> ${linkPath}`);
     let pubLink = publication.Spine ? publication.Spine.find((spineLink) => {
         return spineLink.Href === linkPath;
     }) : undefined;
@@ -328,11 +340,11 @@ function loadLink(hrefFull, previous, useGoto, rcss) {
         });
     }
     if (!pubLink) {
-        let hrefNoHash;
+        let hrefToLoadHttpNoHash;
         try {
-            const u = new URI(hrefFull);
-            u.hash("").normalizeHash();
-            u.search((data) => {
+            const hrefToLoadHttpObjUri = new URI(hrefToLoadHttp);
+            hrefToLoadHttpObjUri.hash("").normalizeHash();
+            hrefToLoadHttpObjUri.search((data) => {
                 data[url_params_1.URL_PARAM_PREVIOUS] = undefined;
                 data[url_params_1.URL_PARAM_GOTO] = undefined;
                 data[url_params_1.URL_PARAM_CSS] = undefined;
@@ -341,28 +353,28 @@ function loadLink(hrefFull, previous, useGoto, rcss) {
                 data[url_params_1.URL_PARAM_CLIPBOARD_INTERCEPT] = undefined;
                 data[url_params_1.URL_PARAM_REFRESH] = undefined;
             });
-            hrefNoHash = u.toString();
+            hrefToLoadHttpNoHash = hrefToLoadHttpObjUri.toString();
         }
         catch (err) {
             debug(err);
         }
-        if (hrefNoHash) {
+        if (hrefToLoadHttpNoHash) {
             pubLink = publication.Spine ? publication.Spine.find((spineLink) => {
-                return spineLink.Href === hrefNoHash;
+                return spineLink.Href === hrefToLoadHttpNoHash;
             }) : undefined;
             if (!pubLink && publication.Resources) {
                 pubLink = publication.Resources.find((resLink) => {
-                    return resLink.Href === hrefNoHash;
+                    return resLink.Href === hrefToLoadHttpNoHash;
                 });
             }
         }
         if (!pubLink) {
-            debug(`CANNOT LOAD EXT LINK ${pubJsonUri} (${publicationURL}) + ${hrefFull} (${hrefNoHash}) ==> ${linkPath}`);
+            debug(`CANNOT LOAD EXT LINK ${hrefToLoad} ... ${publicationURL} --- (${hrefToLoadHttpNoHash}) ==> ${linkPath}`);
             return false;
         }
     }
     if (!pubLink) {
-        debug(`CANNOT LOAD LINK ${pubJsonUri} (${publicationURL}) + ${hrefFull} ==> ${linkPath}`);
+        debug(`CANNOT LOAD LINK ${hrefToLoad} ... ${publicationURL} ==> ${linkPath}`);
         return false;
     }
     const activeWebView = win.READIUM2.getActiveWebView();
@@ -388,24 +400,24 @@ function loadLink(hrefFull, previous, useGoto, rcss) {
             /\.aiff$/.test(ext) ||
             /\.wma$/.test(ext) ||
             /\.flac$/.test(ext));
-    const linkUri = new URI(hrefFull);
+    const hrefToLoadHttpUri = new URI(hrefToLoadHttp);
     if (isAudio) {
         if (useGoto) {
-            linkUri.hash("").normalizeHash();
+            hrefToLoadHttpUri.hash("").normalizeHash();
             if (pubLink.Duration) {
-                const gotoBase64 = linkUri.search(true)[url_params_1.URL_PARAM_GOTO];
+                const gotoBase64 = hrefToLoadHttpUri.search(true)[url_params_1.URL_PARAM_GOTO];
                 if (gotoBase64) {
                     const str = Buffer.from(gotoBase64, "base64").toString("utf8");
                     const json = JSON.parse(str);
                     const gotoProgression = json.progression;
                     if (typeof gotoProgression !== "undefined") {
                         const time = gotoProgression * pubLink.Duration;
-                        linkUri.hash(`t=${time}`).normalizeHash();
+                        hrefToLoadHttpUri.hash(`t=${time}`).normalizeHash();
                     }
                 }
             }
         }
-        linkUri.search((data) => {
+        hrefToLoadHttpUri.search((data) => {
             data[url_params_1.URL_PARAM_PREVIOUS] = undefined;
             data[url_params_1.URL_PARAM_GOTO] = undefined;
             data[url_params_1.URL_PARAM_CSS] = undefined;
@@ -416,7 +428,7 @@ function loadLink(hrefFull, previous, useGoto, rcss) {
         });
     }
     else {
-        linkUri.search((data) => {
+        hrefToLoadHttpUri.search((data) => {
             if (typeof previous === "undefined") {
                 data[url_params_1.URL_PARAM_PREVIOUS] = undefined;
             }
@@ -428,12 +440,12 @@ function loadLink(hrefFull, previous, useGoto, rcss) {
             }
         });
         if (useGoto) {
-            linkUri.hash("").normalizeHash();
+            hrefToLoadHttpUri.hash("").normalizeHash();
         }
         const rersJson = epubReadingSystem_1.getEpubReadingSystemInfo();
         const rersJsonstr = JSON.stringify(rersJson, null, "");
         const rersJsonstrBase64 = Buffer.from(rersJsonstr).toString("base64");
-        linkUri.search((data) => {
+        hrefToLoadHttpUri.search((data) => {
             data[url_params_1.URL_PARAM_CSS] = rcssJsonstrBase64;
             data[url_params_1.URL_PARAM_EPUBREADINGSYSTEM] = rersJsonstrBase64;
             data[url_params_1.URL_PARAM_DEBUG_VISUALS] = (IS_DEV &&
@@ -454,8 +466,8 @@ function loadLink(hrefFull, previous, useGoto, rcss) {
             && state_1.isScreenReaderMounted());
     if (!isAudio && !webviewNeedsHardRefresh && !webviewNeedsForcedRefresh &&
         activeWebView && activeWebView.READIUM2.link === pubLink) {
-        const goto = useGoto ? linkUri.search(true)[url_params_1.URL_PARAM_GOTO] : undefined;
-        const hash = useGoto ? undefined : linkUri.fragment();
+        const goto = useGoto ? hrefToLoadHttpUri.search(true)[url_params_1.URL_PARAM_GOTO] : undefined;
+        const hash = useGoto ? undefined : hrefToLoadHttpUri.fragment();
         debug("WEBVIEW ALREADY LOADED: " + pubLink.Href);
         const payload = {
             goto,
@@ -486,22 +498,21 @@ function loadLink(hrefFull, previous, useGoto, rcss) {
     }
     if (activeWebView) {
         if (webviewNeedsForcedRefresh) {
-            linkUri.search((data) => {
+            hrefToLoadHttpUri.search((data) => {
                 data[url_params_1.URL_PARAM_REFRESH] = `${++_reloadCounter}`;
             });
         }
         if (win.READIUM2.sessionInfo) {
-            linkUri.search((data) => {
+            hrefToLoadHttpUri.search((data) => {
                 if (win.READIUM2.sessionInfo) {
                     const b64SessionInfo = Buffer.from(win.READIUM2.sessionInfo).toString("base64");
                     data[url_params_1.URL_PARAM_SESSION_INFO] = b64SessionInfo;
                 }
             });
         }
-        const uriStr = linkUri.toString();
-        const needConvert = publicationURL.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://");
-        const uriStr_ = uriStr.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://") ?
-            uriStr : (needConvert ? sessions_1.convertHttpUrlToCustomScheme(uriStr) : uriStr);
+        const uriStr = hrefToLoadHttpUri.toString();
+        const uriStr_ = uriStr.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://") ? uriStr :
+            (pubIsServedViaSpecialUrlProtocol ? sessions_1.convertHttpUrlToCustomScheme(uriStr) : uriStr);
         if (isAudio) {
             if (IS_DEV) {
                 debug(`___HARD AUDIO___ WEBVIEW REFRESH: ${uriStr_}`);
@@ -533,7 +544,7 @@ function loadLink(hrefFull, previous, useGoto, rcss) {
 <head>
     <meta charset="utf-8" />
     <title>${title}</title>
-    <base href="${pubJsonUri}" id="${readium_css_inject_1.READIUM2_BASEURL_ID}" />
+    <base href="${publicationURLHttp}" id="${readium_css_inject_1.READIUM2_BASEURL_ID}" />
     <style type="text/css">
     /*<![CDATA[*/
     /*]]>*/

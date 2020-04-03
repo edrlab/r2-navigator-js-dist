@@ -46,6 +46,10 @@ electron_1.app.on("web-contents-created", function (_evt, wc) {
                 debug("webview.getWebContents().on('will-navigate'");
                 debug(url);
                 event.preventDefault();
+                if (event) {
+                    debug("'will-navigate' SKIPPED.");
+                    return;
+                }
                 var payload = {
                     url: url,
                 };

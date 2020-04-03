@@ -1,6 +1,5 @@
 import { IEventPayload_R2_EVENT_READIUMCSS } from "./events";
 export declare const READIUM2_BASEURL_ID = "r2_BASEURL_ID";
-export declare const CLASS_PAGINATED = "r2-css-paginated";
 export declare function isDocVertical(documant: Document): boolean;
 export declare function isDocRTL(documant: Document): boolean;
 export declare function isPaginated(documant: Document): boolean;

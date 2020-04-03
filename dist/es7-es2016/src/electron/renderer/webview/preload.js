@@ -784,10 +784,10 @@ electron_1.ipcRenderer.on("R2_EVENT_HIDE", (_event) => {
 });
 function showHideContentMask(doHide) {
     if (doHide) {
-        win.document.body.classList.add(styles_1.ROOT_CLASS_INVISIBLE_MASK);
+        win.document.documentElement.classList.add(styles_1.ROOT_CLASS_INVISIBLE_MASK);
     }
     else {
-        win.document.body.classList.remove(styles_1.ROOT_CLASS_INVISIBLE_MASK);
+        win.document.documentElement.classList.remove(styles_1.ROOT_CLASS_INVISIBLE_MASK);
     }
 }
 function focusScrollRaw(el, doFocus) {
@@ -812,9 +812,10 @@ function handleFocusInRaw(target, _tabKeyDownEvent) {
     focusScrollRaw(target, false);
 }
 electron_1.ipcRenderer.on(events_1.R2_EVENT_READIUMCSS, (_event, payload) => {
-    showHideContentMask(false);
+    showHideContentMask(true);
     readium_css_1.readiumCSS(win.document, payload);
     highlight_1.recreateAllHighlights(win);
+    showHideContentMask(false);
 });
 let _docTitle;
 win.addEventListener("DOMContentLoaded", () => {
@@ -857,20 +858,6 @@ win.addEventListener("DOMContentLoaded", () => {
     if (readiumcssJson) {
         win.READIUM2.isFixedLayout = (typeof readiumcssJson.isFixedLayout !== "undefined") ?
             readiumcssJson.isFixedLayout : false;
-    }
-    let didHide = false;
-    if (!win.READIUM2.isFixedLayout) {
-        if (win.READIUM2.urlQueryParams) {
-            const previous = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_PREVIOUS];
-            const isPreviousNavDirection = previous === "true";
-            if (isPreviousNavDirection) {
-                didHide = true;
-                showHideContentMask(true);
-            }
-        }
-    }
-    if (!didHide) {
-        showHideContentMask(false);
     }
     if (!win.READIUM2.isFixedLayout && !win.READIUM2.isAudio) {
         const scrollElement = readium_css_1.getScrollingElement(win.document);
@@ -972,9 +959,12 @@ function loaded(forced) {
     else {
         debug(">>> LOAD EVENT was not forced.");
     }
-    if (!win.READIUM2.isAudio) {
-        checkSoundtrack(win.document);
+    if (win.READIUM2.isAudio) {
+        showHideContentMask(false);
+    }
+    else {
         if (!win.READIUM2.isFixedLayout) {
+            showHideContentMask(false);
             debug("++++ scrollToHashDebounced FROM LOAD");
             scrollToHashDebounced();
             if (win.document.body) {
@@ -1005,9 +995,11 @@ function loaded(forced) {
             }
         }
         else {
+            showHideContentMask(false);
             win.READIUM2.locationHashOverride = win.document.body;
             notifyReadingLocationDebounced();
         }
+        checkSoundtrack(win.document);
     }
     win.document.documentElement.addEventListener("keydown", (ev) => {
         if (win.document && win.document.documentElement) {
@@ -1078,6 +1070,8 @@ function loaded(forced) {
         while (currentElement && currentElement.nodeType === Node.ELEMENT_NODE) {
             if (currentElement.tagName.toLowerCase() === "a") {
                 href = currentElement.href;
+                const href_ = currentElement.getAttribute("href");
+                debug(`A LINK CLICK: ${href} (${href_})`);
                 break;
             }
             currentElement = currentElement.parentNode;
@@ -1515,7 +1509,7 @@ exports.computeProgressionData = () => {
         percentRatio: progressionRatio,
     };
 };
-const _blacklistIdClassForCssSelectors = [styles_1.LINK_TARGET_CLASS, styles_1.CSS_CLASS_NO_FOCUS_OUTLINE, styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN, highlight_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA, styles_1.TTS_ID_INJECTED_PARENT, styles_1.TTS_ID_SPEAKING_DOC_ELEMENT, styles_1.ROOT_CLASS_KEYBOARD_INTERACT, styles_1.ROOT_CLASS_INVISIBLE_MASK, readium_css_inject_1.CLASS_PAGINATED, styles_1.ROOT_CLASS_NO_FOOTNOTES];
+const _blacklistIdClassForCssSelectors = [styles_1.LINK_TARGET_CLASS, styles_1.CSS_CLASS_NO_FOCUS_OUTLINE, styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN, highlight_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA, styles_1.TTS_ID_INJECTED_PARENT, styles_1.TTS_ID_SPEAKING_DOC_ELEMENT, styles_1.ROOT_CLASS_KEYBOARD_INTERACT, styles_1.ROOT_CLASS_INVISIBLE_MASK, styles_1.CLASS_PAGINATED, styles_1.ROOT_CLASS_NO_FOOTNOTES];
 const _blacklistIdClassForCssSelectorsMathJax = ["mathjax", "ctxt", "mjx"];
 const _blacklistIdClassForCFI = [styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN, highlight_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA];
 const _blacklistIdClassForCFIMathJax = ["mathjax", "ctxt", "mjx"];

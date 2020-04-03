@@ -6,7 +6,6 @@ const readium_css_settings_1 = require("./readium-css-settings");
 const sessions_1 = require("./sessions");
 const styles_1 = require("./styles");
 exports.READIUM2_BASEURL_ID = "r2_BASEURL_ID";
-exports.CLASS_PAGINATED = "r2-css-paginated";
 const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 const debug = debug_("r2:navigator#electron/common/readium-css-inject");
 function isDEBUG_VISUALS(documant) {
@@ -71,7 +70,7 @@ function isDocRTL(documant) {
 exports.isDocRTL = isDocRTL;
 function isPaginated(documant) {
     return documant && documant.documentElement &&
-        documant.documentElement.classList.contains(exports.CLASS_PAGINATED);
+        documant.documentElement.classList.contains(styles_1.CLASS_PAGINATED);
 }
 exports.isPaginated = isPaginated;
 function readiumCSSSet(documant, messageJson, isVerticalWritingMode, isRTL) {
@@ -89,8 +88,8 @@ function readiumCSSSet(documant, messageJson, isVerticalWritingMode, isRTL) {
                 let u = baseUrl;
                 if (baseUrl.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
                     u = sessions_1.convertCustomSchemeToHttpUrl(baseUrl);
-                    u = u.replace(/\/pub\/.*/, "");
                 }
+                u = u.replace(/\/pub\/.*/, "");
                 messageJson.urlRoot = u;
             }
         }
@@ -201,11 +200,11 @@ function readiumCSSSet(documant, messageJson, isVerticalWritingMode, isRTL) {
     docElement.style.setProperty("--USER__view", setCSS.paged ? "readium-paged-on" : "readium-scroll-on");
     if (setCSS.paged) {
         docElement.style.overflow = "hidden";
-        docElement.classList.add(exports.CLASS_PAGINATED);
+        docElement.classList.add(styles_1.CLASS_PAGINATED);
     }
     else {
         docElement.style.overflow = "auto";
-        docElement.classList.remove(exports.CLASS_PAGINATED);
+        docElement.classList.remove(styles_1.CLASS_PAGINATED);
     }
     const defaultPublisherFont = !setCSS.font || setCSS.font === "DEFAULT";
     const a11yNormalize = ((typeof setCSS.a11yNormalize !== "undefined") ?
@@ -622,6 +621,7 @@ function readiumCssTransformHtml(htmlStr, readiumcssJson, mediaType) {
     const htmlStrToParse = `<?xml version="1.0" encoding="utf-8"?>${parseableChunk}TXT</body></html>`;
     const documant = dom_1.parseDOM(htmlStrToParse, mediaType);
     documant.documentElement.setAttribute("data-readiumcss-injected", "yes");
+    documant.documentElement.classList.add(styles_1.ROOT_CLASS_INVISIBLE_MASK);
     const rtl = isDocRTL(documant);
     const vertical = isDocVertical(documant);
     if (readiumcssJson) {

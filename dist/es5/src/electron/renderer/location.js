@@ -60,6 +60,7 @@ function locationHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
             uri.hash = "";
             uri.search = "";
             var urlNoQueryParams = uri.toString();
+            debug("locationHandleIpcMessage R2_EVENT_PAGE_TURN_RES: " + urlNoQueryParams);
             handleLink(urlNoQueryParams, goPREVIOUS, false, activeWebView.READIUM2.readiumCss);
         }
     }
@@ -71,6 +72,7 @@ function locationHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
     }
     else if (eventChannel === events_1.R2_EVENT_LINK) {
         var payload = eventArgs[0];
+        debug("locationHandleIpcMessage R2_EVENT_LINK: " + payload.url);
         handleLinkUrl(payload.url, activeWebView.READIUM2.readiumCss);
     }
     else if (eventChannel === events_1.R2_EVENT_AUDIO_SOUNDTRACK) {
@@ -155,6 +157,7 @@ function navLeftOrRight(left, spineNav) {
                 uri.search = "";
                 var urlNoQueryParams = uri.toString();
                 var activeWebView = win.READIUM2.getActiveWebView();
+                debug("navLeftOrRight: " + urlNoQueryParams);
                 handleLink(urlNoQueryParams, false, false, activeWebView ? activeWebView.READIUM2.readiumCss : undefined);
                 return;
             }
@@ -187,14 +190,17 @@ function navLeftOrRight(left, spineNav) {
 exports.navLeftOrRight = navLeftOrRight;
 function handleLink(href, previous, useGoto, rcss) {
     var _this = this;
+    debug("handleLink: " + href);
     var special = href.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://");
     if (special) {
+        debug("handleLink R2 URL");
         var okay = loadLink(href, previous, useGoto, rcss);
         if (!okay) {
             debug("Readium link fail?! " + href);
         }
     }
     else {
+        debug("handleLink non-R2 URL");
         var okay = loadLink(href, previous, useGoto, rcss);
         if (!okay) {
             if (/^http[s]?:\/\/127\.0\.0\.1/.test(href)) {
@@ -226,6 +232,7 @@ function handleLink(href, previous, useGoto, rcss) {
 }
 exports.handleLink = handleLink;
 function handleLinkUrl(href, rcss) {
+    debug("handleLinkUrl: " + href);
     handleLink(href, undefined, false, rcss);
 }
 exports.handleLinkUrl = handleLinkUrl;
@@ -277,6 +284,7 @@ function handleLinkLocator(location, rcss) {
             ((useGoto) ? ("?" + url_params_1.URL_PARAM_GOTO + "=" +
                 UrlUtils_1.encodeURIComponent_RFC3986(Buffer.from(JSON.stringify(linkToLoadGoto, null, "")).toString("base64"))) :
                 "");
+        debug("handleLinkLocator: " + hrefToLoad);
         handleLink(hrefToLoad, undefined, useGoto, rcss);
     }
 }
@@ -294,35 +302,38 @@ function reloadContent() {
             uri.hash = "";
             uri.search = "";
             var urlNoQueryParams = uri.toString();
+            debug("reloadContent: " + urlNoQueryParams);
             handleLinkUrl(urlNoQueryParams, activeWebView.READIUM2.readiumCss);
         }
     }, 0);
 }
 exports.reloadContent = reloadContent;
-function loadLink(hrefFull, previous, useGoto, rcss) {
+function loadLink(hrefToLoad, previous, useGoto, rcss) {
     var _this = this;
     var publication = win.READIUM2.publication;
     var publicationURL = win.READIUM2.publicationURL;
     if (!publication || !publicationURL) {
         return false;
     }
-    if (hrefFull.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
-        hrefFull = sessions_1.convertCustomSchemeToHttpUrl(hrefFull);
+    var hrefToLoadHttp = hrefToLoad;
+    if (hrefToLoadHttp.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
+        hrefToLoadHttp = sessions_1.convertCustomSchemeToHttpUrl(hrefToLoadHttp);
     }
-    var pubJsonUri = publicationURL.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://") ?
+    var pubIsServedViaSpecialUrlProtocol = publicationURL.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://");
+    var publicationURLHttp = pubIsServedViaSpecialUrlProtocol ?
         sessions_1.convertCustomSchemeToHttpUrl(publicationURL) : publicationURL;
     var linkPath;
-    var urlToLink = new url_1.URL(hrefFull);
-    urlToLink.hash = "";
-    urlToLink.search = "";
-    var urlPublication = new url_1.URL(pubJsonUri);
-    urlPublication.hash = "";
-    urlPublication.search = "";
+    var hrefToLoadHttpObj = new url_1.URL(hrefToLoadHttp);
+    hrefToLoadHttpObj.hash = "";
+    hrefToLoadHttpObj.search = "";
+    var publicationURLHttpObj = new url_1.URL(publicationURLHttp);
+    publicationURLHttpObj.hash = "";
+    publicationURLHttpObj.search = "";
     var iBreak = -1;
-    for (var i = 0; i < urlPublication.pathname.length; i++) {
-        var c1 = urlPublication.pathname[i];
-        if (i < urlToLink.pathname.length) {
-            var c2 = urlToLink.pathname[i];
+    for (var i = 0; i < publicationURLHttpObj.pathname.length; i++) {
+        var c1 = publicationURLHttpObj.pathname[i];
+        if (i < hrefToLoadHttpObj.pathname.length) {
+            var c2 = hrefToLoadHttpObj.pathname[i];
             if (c1 !== c2) {
                 iBreak = i;
                 break;
@@ -333,13 +344,14 @@ function loadLink(hrefFull, previous, useGoto, rcss) {
         }
     }
     if (iBreak > 0) {
-        linkPath = urlToLink.pathname.substr(iBreak);
+        linkPath = hrefToLoadHttpObj.pathname.substr(iBreak);
     }
     if (!linkPath) {
+        debug("R2LOADLINK?? " + hrefToLoad + " ... " + publicationURL + " !!! " + hrefToLoadHttp + " ... " + publicationURLHttp);
         return false;
     }
     linkPath = decodeURIComponent(linkPath);
-    debug("R2LOADLINK: " + pubJsonUri + " (" + publicationURL + ") + " + hrefFull + " ==> " + linkPath);
+    debug("R2LOADLINK: " + hrefToLoad + " ... " + publicationURL + " ==> " + linkPath);
     var pubLink = publication.Spine ? publication.Spine.find(function (spineLink) {
         return spineLink.Href === linkPath;
     }) : undefined;
@@ -349,11 +361,11 @@ function loadLink(hrefFull, previous, useGoto, rcss) {
         });
     }
     if (!pubLink) {
-        var hrefNoHash_1;
+        var hrefToLoadHttpNoHash_1;
         try {
-            var u = new URI(hrefFull);
-            u.hash("").normalizeHash();
-            u.search(function (data) {
+            var hrefToLoadHttpObjUri = new URI(hrefToLoadHttp);
+            hrefToLoadHttpObjUri.hash("").normalizeHash();
+            hrefToLoadHttpObjUri.search(function (data) {
                 data[url_params_1.URL_PARAM_PREVIOUS] = undefined;
                 data[url_params_1.URL_PARAM_GOTO] = undefined;
                 data[url_params_1.URL_PARAM_CSS] = undefined;
@@ -362,28 +374,28 @@ function loadLink(hrefFull, previous, useGoto, rcss) {
                 data[url_params_1.URL_PARAM_CLIPBOARD_INTERCEPT] = undefined;
                 data[url_params_1.URL_PARAM_REFRESH] = undefined;
             });
-            hrefNoHash_1 = u.toString();
+            hrefToLoadHttpNoHash_1 = hrefToLoadHttpObjUri.toString();
         }
         catch (err) {
             debug(err);
         }
-        if (hrefNoHash_1) {
+        if (hrefToLoadHttpNoHash_1) {
             pubLink = publication.Spine ? publication.Spine.find(function (spineLink) {
-                return spineLink.Href === hrefNoHash_1;
+                return spineLink.Href === hrefToLoadHttpNoHash_1;
             }) : undefined;
             if (!pubLink && publication.Resources) {
                 pubLink = publication.Resources.find(function (resLink) {
-                    return resLink.Href === hrefNoHash_1;
+                    return resLink.Href === hrefToLoadHttpNoHash_1;
                 });
             }
         }
         if (!pubLink) {
-            debug("CANNOT LOAD EXT LINK " + pubJsonUri + " (" + publicationURL + ") + " + hrefFull + " (" + hrefNoHash_1 + ") ==> " + linkPath);
+            debug("CANNOT LOAD EXT LINK " + hrefToLoad + " ... " + publicationURL + " --- (" + hrefToLoadHttpNoHash_1 + ") ==> " + linkPath);
             return false;
         }
     }
     if (!pubLink) {
-        debug("CANNOT LOAD LINK " + pubJsonUri + " (" + publicationURL + ") + " + hrefFull + " ==> " + linkPath);
+        debug("CANNOT LOAD LINK " + hrefToLoad + " ... " + publicationURL + " ==> " + linkPath);
         return false;
     }
     var activeWebView = win.READIUM2.getActiveWebView();
@@ -409,24 +421,24 @@ function loadLink(hrefFull, previous, useGoto, rcss) {
             /\.aiff$/.test(ext) ||
             /\.wma$/.test(ext) ||
             /\.flac$/.test(ext));
-    var linkUri = new URI(hrefFull);
+    var hrefToLoadHttpUri = new URI(hrefToLoadHttp);
     if (isAudio) {
         if (useGoto) {
-            linkUri.hash("").normalizeHash();
+            hrefToLoadHttpUri.hash("").normalizeHash();
             if (pubLink.Duration) {
-                var gotoBase64 = linkUri.search(true)[url_params_1.URL_PARAM_GOTO];
+                var gotoBase64 = hrefToLoadHttpUri.search(true)[url_params_1.URL_PARAM_GOTO];
                 if (gotoBase64) {
                     var str = Buffer.from(gotoBase64, "base64").toString("utf8");
                     var json = JSON.parse(str);
                     var gotoProgression = json.progression;
                     if (typeof gotoProgression !== "undefined") {
                         var time = gotoProgression * pubLink.Duration;
-                        linkUri.hash("t=" + time).normalizeHash();
+                        hrefToLoadHttpUri.hash("t=" + time).normalizeHash();
                     }
                 }
             }
         }
-        linkUri.search(function (data) {
+        hrefToLoadHttpUri.search(function (data) {
             data[url_params_1.URL_PARAM_PREVIOUS] = undefined;
             data[url_params_1.URL_PARAM_GOTO] = undefined;
             data[url_params_1.URL_PARAM_CSS] = undefined;
@@ -437,7 +449,7 @@ function loadLink(hrefFull, previous, useGoto, rcss) {
         });
     }
     else {
-        linkUri.search(function (data) {
+        hrefToLoadHttpUri.search(function (data) {
             if (typeof previous === "undefined") {
                 data[url_params_1.URL_PARAM_PREVIOUS] = undefined;
             }
@@ -449,12 +461,12 @@ function loadLink(hrefFull, previous, useGoto, rcss) {
             }
         });
         if (useGoto) {
-            linkUri.hash("").normalizeHash();
+            hrefToLoadHttpUri.hash("").normalizeHash();
         }
         var rersJson = epubReadingSystem_1.getEpubReadingSystemInfo();
         var rersJsonstr = JSON.stringify(rersJson, null, "");
         var rersJsonstrBase64_1 = Buffer.from(rersJsonstr).toString("base64");
-        linkUri.search(function (data) {
+        hrefToLoadHttpUri.search(function (data) {
             data[url_params_1.URL_PARAM_CSS] = rcssJsonstrBase64;
             data[url_params_1.URL_PARAM_EPUBREADINGSYSTEM] = rersJsonstrBase64_1;
             data[url_params_1.URL_PARAM_DEBUG_VISUALS] = (IS_DEV &&
@@ -475,8 +487,8 @@ function loadLink(hrefFull, previous, useGoto, rcss) {
             && state_1.isScreenReaderMounted());
     if (!isAudio && !webviewNeedsHardRefresh && !webviewNeedsForcedRefresh &&
         activeWebView && activeWebView.READIUM2.link === pubLink) {
-        var goto = useGoto ? linkUri.search(true)[url_params_1.URL_PARAM_GOTO] : undefined;
-        var hash = useGoto ? undefined : linkUri.fragment();
+        var goto = useGoto ? hrefToLoadHttpUri.search(true)[url_params_1.URL_PARAM_GOTO] : undefined;
+        var hash = useGoto ? undefined : hrefToLoadHttpUri.fragment();
         debug("WEBVIEW ALREADY LOADED: " + pubLink.Href);
         var payload_2 = {
             goto: goto,
@@ -529,22 +541,21 @@ function loadLink(hrefFull, previous, useGoto, rcss) {
     }
     if (activeWebView) {
         if (webviewNeedsForcedRefresh) {
-            linkUri.search(function (data) {
+            hrefToLoadHttpUri.search(function (data) {
                 data[url_params_1.URL_PARAM_REFRESH] = "" + ++_reloadCounter;
             });
         }
         if (win.READIUM2.sessionInfo) {
-            linkUri.search(function (data) {
+            hrefToLoadHttpUri.search(function (data) {
                 if (win.READIUM2.sessionInfo) {
                     var b64SessionInfo = Buffer.from(win.READIUM2.sessionInfo).toString("base64");
                     data[url_params_1.URL_PARAM_SESSION_INFO] = b64SessionInfo;
                 }
             });
         }
-        var uriStr = linkUri.toString();
-        var needConvert = publicationURL.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://");
-        var uriStr_1 = uriStr.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://") ?
-            uriStr : (needConvert ? sessions_1.convertHttpUrlToCustomScheme(uriStr) : uriStr);
+        var uriStr = hrefToLoadHttpUri.toString();
+        var uriStr_1 = uriStr.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://") ? uriStr :
+            (pubIsServedViaSpecialUrlProtocol ? sessions_1.convertHttpUrlToCustomScheme(uriStr) : uriStr);
         if (isAudio) {
             if (IS_DEV) {
                 debug("___HARD AUDIO___ WEBVIEW REFRESH: " + uriStr_1);
@@ -571,7 +582,7 @@ function loadLink(hrefFull, previous, useGoto, rcss) {
                         return map_1[entityName] ? map_1[entityName] : entityName;
                     });
                 }
-                var htmlMarkup = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:epub=\"http://www.idpf.org/2007/ops\">\n<head>\n    <meta charset=\"utf-8\" />\n    <title>" + title + "</title>\n    <base href=\"" + pubJsonUri + "\" id=\"" + readium_css_inject_1.READIUM2_BASEURL_ID + "\" />\n    <style type=\"text/css\">\n    /*<![CDATA[*/\n    /*]]>*/\n    </style>\n\n    <script>\n    //<![CDATA[\n\n    const DEBUG_AUDIO = " + IS_DEV + ";\n    const DEBUG_AUDIO_X = " + audiobook_1.DEBUG_AUDIO + ";\n\n    document.addEventListener(\"DOMContentLoaded\", () => {\n        const _audioElement = document.getElementById(\"" + styles_1.AUDIO_ID + "\");\n\n        _audioElement.addEventListener(\"error\", function()\n            {\n                console.debug(\"-1) error\");\n                if (_audioElement.error) {\n                    // 1 === MEDIA_ERR_ABORTED\n                    // 2 === MEDIA_ERR_NETWORK\n                    // 3 === MEDIA_ERR_DECODE\n                    // 4 === MEDIA_ERR_SRC_NOT_SUPPORTED\n                    console.log(_audioElement.error.code);\n                    console.log(_audioElement.error.message);\n                }\n            }\n        );\n\n        if (DEBUG_AUDIO)\n        {\n            _audioElement.addEventListener(\"load\", function()\n                {\n                    console.debug(\"0) load\");\n                }\n            );\n\n            _audioElement.addEventListener(\"loadstart\", function()\n                {\n                    console.debug(\"1) loadstart\");\n                }\n            );\n\n            _audioElement.addEventListener(\"durationchange\", function()\n                {\n                    console.debug(\"2) durationchange\");\n                }\n            );\n\n            _audioElement.addEventListener(\"loadedmetadata\", function()\n                {\n                    console.debug(\"3) loadedmetadata\");\n                }\n            );\n\n            _audioElement.addEventListener(\"loadeddata\", function()\n                {\n                    console.debug(\"4) loadeddata\");\n                }\n            );\n\n            _audioElement.addEventListener(\"progress\", function()\n                {\n                    console.debug(\"5) progress\");\n                }\n            );\n\n            _audioElement.addEventListener(\"canplay\", function()\n                {\n                    console.debug(\"6) canplay\");\n                }\n            );\n\n            _audioElement.addEventListener(\"canplaythrough\", function()\n                {\n                    console.debug(\"7) canplaythrough\");\n                }\n            );\n\n            _audioElement.addEventListener(\"play\", function()\n                {\n                    console.debug(\"8) play\");\n                }\n            );\n\n            _audioElement.addEventListener(\"pause\", function()\n                {\n                    console.debug(\"9) pause\");\n                }\n            );\n\n            _audioElement.addEventListener(\"ended\", function()\n                {\n                    console.debug(\"10) ended\");\n                }\n            );\n\n            _audioElement.addEventListener(\"seeked\", function()\n                {\n                    console.debug(\"11) seeked\");\n                }\n            );\n\n            if (DEBUG_AUDIO_X) {\n                _audioElement.addEventListener(\"timeupdate\", function()\n                    {\n                        console.debug(\"12) timeupdate\");\n                    }\n                );\n            }\n\n            _audioElement.addEventListener(\"seeking\", function()\n                {\n                    console.debug(\"13) seeking\");\n                }\n            );\n\n            _audioElement.addEventListener(\"waiting\", function()\n                {\n                    console.debug(\"14) waiting\");\n                }\n            );\n\n            _audioElement.addEventListener(\"volumechange\", function()\n                {\n                    console.debug(\"15) volumechange\");\n                }\n            );\n\n            _audioElement.addEventListener(\"suspend\", function()\n                {\n                    console.debug(\"16) suspend\");\n                }\n            );\n\n            _audioElement.addEventListener(\"stalled\", function()\n                {\n                    console.debug(\"17) stalled\");\n                }\n            );\n\n            _audioElement.addEventListener(\"ratechange\", function()\n                {\n                    console.debug(\"18) ratechange\");\n                }\n            );\n\n            _audioElement.addEventListener(\"playing\", function()\n                {\n                    console.debug(\"19) playing\");\n                }\n            );\n\n            _audioElement.addEventListener(\"interruptend\", function()\n                {\n                    console.debug(\"20) interruptend\");\n                }\n            );\n\n            _audioElement.addEventListener(\"interruptbegin\", function()\n                {\n                    console.debug(\"21) interruptbegin\");\n                }\n            );\n\n            _audioElement.addEventListener(\"emptied\", function()\n                {\n                    console.debug(\"22) emptied\");\n                }\n            );\n\n            _audioElement.addEventListener(\"abort\", function()\n                {\n                    console.debug(\"23) abort\");\n                }\n            );\n        }\n    }, false);\n\n    //]]>\n    </script>\n</head>\n<body id=\"" + styles_1.AUDIO_BODY_ID + "\">\n<section id=\"" + styles_1.AUDIO_SECTION_ID + "\">\n" + (title ? "<h3 id=\"" + styles_1.AUDIO_TITLE_ID + "\">" + title + "</h3>" : "") + "\n" + (coverLink ? "<img id=\"" + styles_1.AUDIO_COVER_ID + "\" src=\"" + coverLink.Href + "\" alt=\"\" " + (coverLink.Height ? "height=\"" + coverLink.Height + "\"" : "") + " " + (coverLink.Width ? "width=\"" + coverLink.Width + "\"" : "") + " " + (coverLink.Width || coverLink.Height ? "style=\"" + (coverLink.Height ? "height: " + coverLink.Height + "px !important;" : "") + " " + (coverLink.Width ? "width: " + coverLink.Width + "px !important;" : "") + "\"" : "") + "/>" : "") + "\n    <audio\n        id=\"" + styles_1.AUDIO_ID + "\"\n        " + (audiobook_1.DEBUG_AUDIO ? "controlsx=\"controlsx\"" : "") + "\n        autoplay=\"autoplay\"\n        preload=\"metadata\">\n\n        <source src=\"" + uriStr + "\" type=\"" + pubLink.TypeLink + "\" />\n    </audio>\n    " + (audiobook_1.DEBUG_AUDIO ?
+                var htmlMarkup = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:epub=\"http://www.idpf.org/2007/ops\">\n<head>\n    <meta charset=\"utf-8\" />\n    <title>" + title + "</title>\n    <base href=\"" + publicationURLHttp + "\" id=\"" + readium_css_inject_1.READIUM2_BASEURL_ID + "\" />\n    <style type=\"text/css\">\n    /*<![CDATA[*/\n    /*]]>*/\n    </style>\n\n    <script>\n    //<![CDATA[\n\n    const DEBUG_AUDIO = " + IS_DEV + ";\n    const DEBUG_AUDIO_X = " + audiobook_1.DEBUG_AUDIO + ";\n\n    document.addEventListener(\"DOMContentLoaded\", () => {\n        const _audioElement = document.getElementById(\"" + styles_1.AUDIO_ID + "\");\n\n        _audioElement.addEventListener(\"error\", function()\n            {\n                console.debug(\"-1) error\");\n                if (_audioElement.error) {\n                    // 1 === MEDIA_ERR_ABORTED\n                    // 2 === MEDIA_ERR_NETWORK\n                    // 3 === MEDIA_ERR_DECODE\n                    // 4 === MEDIA_ERR_SRC_NOT_SUPPORTED\n                    console.log(_audioElement.error.code);\n                    console.log(_audioElement.error.message);\n                }\n            }\n        );\n\n        if (DEBUG_AUDIO)\n        {\n            _audioElement.addEventListener(\"load\", function()\n                {\n                    console.debug(\"0) load\");\n                }\n            );\n\n            _audioElement.addEventListener(\"loadstart\", function()\n                {\n                    console.debug(\"1) loadstart\");\n                }\n            );\n\n            _audioElement.addEventListener(\"durationchange\", function()\n                {\n                    console.debug(\"2) durationchange\");\n                }\n            );\n\n            _audioElement.addEventListener(\"loadedmetadata\", function()\n                {\n                    console.debug(\"3) loadedmetadata\");\n                }\n            );\n\n            _audioElement.addEventListener(\"loadeddata\", function()\n                {\n                    console.debug(\"4) loadeddata\");\n                }\n            );\n\n            _audioElement.addEventListener(\"progress\", function()\n                {\n                    console.debug(\"5) progress\");\n                }\n            );\n\n            _audioElement.addEventListener(\"canplay\", function()\n                {\n                    console.debug(\"6) canplay\");\n                }\n            );\n\n            _audioElement.addEventListener(\"canplaythrough\", function()\n                {\n                    console.debug(\"7) canplaythrough\");\n                }\n            );\n\n            _audioElement.addEventListener(\"play\", function()\n                {\n                    console.debug(\"8) play\");\n                }\n            );\n\n            _audioElement.addEventListener(\"pause\", function()\n                {\n                    console.debug(\"9) pause\");\n                }\n            );\n\n            _audioElement.addEventListener(\"ended\", function()\n                {\n                    console.debug(\"10) ended\");\n                }\n            );\n\n            _audioElement.addEventListener(\"seeked\", function()\n                {\n                    console.debug(\"11) seeked\");\n                }\n            );\n\n            if (DEBUG_AUDIO_X) {\n                _audioElement.addEventListener(\"timeupdate\", function()\n                    {\n                        console.debug(\"12) timeupdate\");\n                    }\n                );\n            }\n\n            _audioElement.addEventListener(\"seeking\", function()\n                {\n                    console.debug(\"13) seeking\");\n                }\n            );\n\n            _audioElement.addEventListener(\"waiting\", function()\n                {\n                    console.debug(\"14) waiting\");\n                }\n            );\n\n            _audioElement.addEventListener(\"volumechange\", function()\n                {\n                    console.debug(\"15) volumechange\");\n                }\n            );\n\n            _audioElement.addEventListener(\"suspend\", function()\n                {\n                    console.debug(\"16) suspend\");\n                }\n            );\n\n            _audioElement.addEventListener(\"stalled\", function()\n                {\n                    console.debug(\"17) stalled\");\n                }\n            );\n\n            _audioElement.addEventListener(\"ratechange\", function()\n                {\n                    console.debug(\"18) ratechange\");\n                }\n            );\n\n            _audioElement.addEventListener(\"playing\", function()\n                {\n                    console.debug(\"19) playing\");\n                }\n            );\n\n            _audioElement.addEventListener(\"interruptend\", function()\n                {\n                    console.debug(\"20) interruptend\");\n                }\n            );\n\n            _audioElement.addEventListener(\"interruptbegin\", function()\n                {\n                    console.debug(\"21) interruptbegin\");\n                }\n            );\n\n            _audioElement.addEventListener(\"emptied\", function()\n                {\n                    console.debug(\"22) emptied\");\n                }\n            );\n\n            _audioElement.addEventListener(\"abort\", function()\n                {\n                    console.debug(\"23) abort\");\n                }\n            );\n        }\n    }, false);\n\n    //]]>\n    </script>\n</head>\n<body id=\"" + styles_1.AUDIO_BODY_ID + "\">\n<section id=\"" + styles_1.AUDIO_SECTION_ID + "\">\n" + (title ? "<h3 id=\"" + styles_1.AUDIO_TITLE_ID + "\">" + title + "</h3>" : "") + "\n" + (coverLink ? "<img id=\"" + styles_1.AUDIO_COVER_ID + "\" src=\"" + coverLink.Href + "\" alt=\"\" " + (coverLink.Height ? "height=\"" + coverLink.Height + "\"" : "") + " " + (coverLink.Width ? "width=\"" + coverLink.Width + "\"" : "") + " " + (coverLink.Width || coverLink.Height ? "style=\"" + (coverLink.Height ? "height: " + coverLink.Height + "px !important;" : "") + " " + (coverLink.Width ? "width: " + coverLink.Width + "px !important;" : "") + "\"" : "") + "/>" : "") + "\n    <audio\n        id=\"" + styles_1.AUDIO_ID + "\"\n        " + (audiobook_1.DEBUG_AUDIO ? "controlsx=\"controlsx\"" : "") + "\n        autoplay=\"autoplay\"\n        preload=\"metadata\">\n\n        <source src=\"" + uriStr + "\" type=\"" + pubLink.TypeLink + "\" />\n    </audio>\n    " + (audiobook_1.DEBUG_AUDIO ?
                     "\n<canvas id=\"" + styles_1.AUDIO_BUFFER_CANVAS_ID + "\"> </canvas>\n    "
                     : "") + "\n    <div id=\"" + styles_1.AUDIO_CONTROLS_ID + "\">\n        <button id=\"" + styles_1.AUDIO_PREVIOUS_ID + "\"></button>\n        <button id=\"" + styles_1.AUDIO_REWIND_ID + "\"></button>\n        <button id=\"" + styles_1.AUDIO_PLAYPAUSE_ID + "\"></button>\n        <button id=\"" + styles_1.AUDIO_FORWARD_ID + "\"></button>\n        <button id=\"" + styles_1.AUDIO_NEXT_ID + "\"></button>\n        <input id=\"" + styles_1.AUDIO_SLIDER_ID + "\" type=\"range\" min=\"0\" max=\"100\" value=\"0\" step=\"1\" />\n        <span id=\"" + styles_1.AUDIO_TIME_ID + "\">-</span>\n        <span id=\"" + styles_1.AUDIO_PERCENT_ID + "\">-</span>\n    </div>\n</section>\n</body>\n</html>";
                 var contentType = "application/xhtml+xml";

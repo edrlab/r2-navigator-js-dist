@@ -5,6 +5,7 @@ const transformer_1 = require("r2-shared-js/dist/es7-es2016/src/transform/transf
 const transformer_html_1 = require("r2-shared-js/dist/es7-es2016/src/transform/transformer-html");
 const readium_css_inject_1 = require("../common/readium-css-inject");
 const readium_css_settings_1 = require("../common/readium-css-settings");
+const url_params_1 = require("../renderer/common/url-params");
 const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 function isFixedLayout(publication, link) {
     if (link && link.Properties) {
@@ -36,10 +37,16 @@ function setupReadiumCSS(server, folderPath, readiumCssGetter) {
         },
     };
     server.expressUse("/" + readium_css_settings_1.READIUM_CSS_URL_PATH, express.static(folderPath, staticOptions));
-    const transformerReadiumCss = (publication, link, _url, str, sessionInfo) => {
-        let mediaType = "application/xhtml+xml";
-        if (link && link.TypeLink) {
-            mediaType = link.TypeLink;
+    const transformerReadiumCss = (publication, link, url, str, sessionInfo) => {
+        let isIframe = false;
+        if (url) {
+            const url_ = new URL(url);
+            if (url_.searchParams.has(url_params_1.URL_PARAM_IS_IFRAME)) {
+                isIframe = true;
+            }
+        }
+        if (isIframe) {
+            return str;
         }
         let readiumcssJson = readiumCssGetter(publication, link, sessionInfo);
         if (isFixedLayout(publication, link)) {
@@ -61,6 +68,10 @@ function setupReadiumCSS(server, folderPath, readiumCssGetter) {
             }
             if (IS_DEV) {
                 console.log("_____ readiumCssJson.urlRoot (setupReadiumCSS() transformer): ", readiumcssJson.urlRoot);
+            }
+            let mediaType = "application/xhtml+xml";
+            if (link && link.TypeLink) {
+                mediaType = link.TypeLink;
             }
             return readium_css_inject_1.readiumCssTransformHtml(str, readiumcssJson, mediaType);
         }

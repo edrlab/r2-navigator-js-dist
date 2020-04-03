@@ -370,6 +370,7 @@ var transformerHttpBaseIframes = function (_publication, link, url, htmlStr, _se
         if (r2CSS) {
             iframeUrl.searchParams.append(url_params_1.URL_PARAM_CSS, r2CSS);
         }
+        iframeUrl.searchParams.append(url_params_1.URL_PARAM_IS_IFRAME, "1");
         src_ = iframeUrl.toString();
         debug("IFRAME SRC PATCH: " + src + " ==> " + src_);
         el.setAttribute("src", src_);

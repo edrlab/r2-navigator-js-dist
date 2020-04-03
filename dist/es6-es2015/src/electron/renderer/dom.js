@@ -39,6 +39,7 @@ function readiumCssOnOff(rcss) {
         }
         if (loc) {
             setTimeout(() => {
+                debug(`readiumCssOnOff -> handleLinkLocator`);
                 location_1.handleLinkLocator(loc.locator, activeWebView.READIUM2.readiumCss);
             }, 60);
         }
@@ -238,6 +239,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
             setTimeout(() => {
                 const loc = location_1.getCurrentReadingLocation();
                 if (loc) {
+                    debug(`READIUM2.debug -> handleLinkLocator`);
                     location_1.handleLinkLocator(loc.locator, activeWebView ? activeWebView.READIUM2.readiumCss : undefined);
                 }
             }, 100);
@@ -260,6 +262,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
     domRootElement.appendChild(domSlidingViewport);
     createWebView();
     setTimeout(() => {
+        debug(`installNavigatorDOM -> handleLinkLocator`);
         location_1.handleLinkLocator(location, rcss);
     }, 100);
 }

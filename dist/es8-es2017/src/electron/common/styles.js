@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.CLASS_PAGINATED = "r2-css-paginated";
 exports.ZERO_TRANSFORM_CLASS = "r2-zeroTransform";
 exports.SKIP_LINK_ID = "r2-skip-link";
 exports.LINK_TARGET_CLASS = "r2-link-target";
@@ -414,10 +415,11 @@ exports.ttsCssStyles = `
     outline-color: var(--USER__textColor);
 }
 `;
-exports.ROOT_CLASS_INVISIBLE_MASK = "r2-visibility-mask";
+exports.ROOT_CLASS_INVISIBLE_MASK = "r2-visibility-mask-class";
 exports.visibilityMaskCssStyles = `
-:root[style] *.${exports.ROOT_CLASS_INVISIBLE_MASK},
-:root *.${exports.ROOT_CLASS_INVISIBLE_MASK} {
+
+:root.${exports.ROOT_CLASS_INVISIBLE_MASK}[style] > body,
+:root.${exports.ROOT_CLASS_INVISIBLE_MASK} > body {
     visibility: hidden !important;
 }
 `;
