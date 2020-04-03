@@ -926,6 +926,53 @@ win.addEventListener("DOMContentLoaded", function () {
         loaded(true);
     }, 500);
 });
+function checkSoundtrack(documant) {
+    var audioNodeList = documant.querySelectorAll("audio");
+    if (!audioNodeList || !audioNodeList.length) {
+        return;
+    }
+    var audio = audioNodeList[0];
+    var epubType = audio.getAttribute("epub:type");
+    if (!epubType) {
+        epubType = audio.getAttributeNS("http://www.idpf.org/2007/ops", "type");
+    }
+    if (!epubType) {
+        return;
+    }
+    if (epubType.indexOf("ibooks:soundtrack") < 0) {
+        return;
+    }
+    var src = audio.getAttribute("src");
+    if (!src) {
+        if (!audio.childNodes) {
+            return;
+        }
+        for (var i = 0; i < audio.childNodes.length; i++) {
+            var childNode = audio.childNodes[i];
+            if (childNode.nodeType === 1) {
+                var el = childNode;
+                var elName = el.nodeName.toLowerCase();
+                if (elName === "source") {
+                    src = el.getAttribute("src");
+                    if (src) {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    if (!src) {
+        return;
+    }
+    debug("AUDIO SOUNDTRACK: " + src + " ---> " + audio.src);
+    if (!audio.src) {
+        return;
+    }
+    var payload = {
+        url: audio.src,
+    };
+    electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_AUDIO_SOUNDTRACK, payload);
+}
 var _loaded = false;
 function loaded(forced) {
     if (_loaded) {
@@ -939,6 +986,7 @@ function loaded(forced) {
         debug(">>> LOAD EVENT was not forced.");
     }
     if (!win.READIUM2.isAudio) {
+        checkSoundtrack(win.document);
         if (!win.READIUM2.isFixedLayout) {
             debug("++++ scrollToHashDebounced FROM LOAD");
             scrollToHashDebounced();

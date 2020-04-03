@@ -7,7 +7,10 @@ function serializeDOM(documant) {
 }
 exports.serializeDOM = serializeDOM;
 function parseDOM(htmlStrToParse, mediaType) {
-    const documant = typeof mediaType === "string" ?
+    if (mediaType === "application/xhtml+xml") {
+        mediaType = "application/xhtml";
+    }
+    const documant = mediaType ?
         new xmldom.DOMParser().parseFromString(htmlStrToParse, mediaType) :
         new xmldom.DOMParser().parseFromString(htmlStrToParse);
     if (!documant.head) {

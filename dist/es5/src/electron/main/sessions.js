@@ -9,6 +9,7 @@ var transformer_1 = require("r2-shared-js/dist/es5/src/transform/transformer");
 var transformer_html_1 = require("r2-shared-js/dist/es5/src/transform/transformer-html");
 var dom_1 = require("../common/dom");
 var sessions_1 = require("../common/sessions");
+var url_params_1 = require("../renderer/common/url-params");
 var debug = debug_("r2:navigator#electron/main/sessions");
 var USE_STREAM_PROTOCOL_INSTEAD_OF_HTTP = true;
 function promiseAllSettled(promises) {
@@ -114,11 +115,13 @@ function secureSessions(server) {
     });
 }
 exports.secureSessions = secureSessions;
+var _customUrlProtocolSchemeHandlerWasCalled = false;
 var streamProtocolHandler = function (req, callback) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
     var url, u, ref, failure, success, reqHeaders, serverUrl, header, needsStreamingResponse, response, err_1;
     return tslib_1.__generator(this, function (_a) {
         switch (_a.label) {
             case 0:
+                _customUrlProtocolSchemeHandlerWasCalled = true;
                 url = sessions_1.convertCustomSchemeToHttpUrl(req.url);
                 u = new URL(url);
                 ref = u.origin;
@@ -207,6 +210,7 @@ var streamProtocolHandler = function (req, callback) { return tslib_1.__awaiter(
     });
 }); };
 var httpProtocolHandler = function (req, callback) {
+    _customUrlProtocolSchemeHandlerWasCalled = true;
     var url = sessions_1.convertCustomSchemeToHttpUrl(req.url);
     callback({
         method: req.method,
@@ -215,6 +219,9 @@ var httpProtocolHandler = function (req, callback) {
     });
 };
 var transformerAudioVideo = function (_publication, link, url, htmlStr, _sessionInfo) {
+    if (!_customUrlProtocolSchemeHandlerWasCalled) {
+        return htmlStr;
+    }
     if (!url) {
         return htmlStr;
     }
@@ -298,9 +305,137 @@ var transformerAudioVideo = function (_publication, link, url, htmlStr, _session
     var newStr = "" + prefix + remaining;
     return newStr;
 };
+var transformerHttpBaseIframes = function (_publication, link, url, htmlStr, _sessionInfo) {
+    if (!_customUrlProtocolSchemeHandlerWasCalled) {
+        return htmlStr;
+    }
+    if (!url) {
+        return htmlStr;
+    }
+    if (htmlStr.indexOf("<iframe") < 0) {
+        return htmlStr;
+    }
+    var iHtmlStart = htmlStr.indexOf("<html");
+    if (iHtmlStart < 0) {
+        return htmlStr;
+    }
+    var iBodyStart = htmlStr.indexOf("<body");
+    if (iBodyStart < 0) {
+        return htmlStr;
+    }
+    var parseableChunk = htmlStr.substr(iHtmlStart);
+    var htmlStrToParse = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" + parseableChunk;
+    var mediaType = "application/xhtml+xml";
+    if (link && link.TypeLink) {
+        mediaType = link.TypeLink;
+    }
+    var documant = dom_1.parseDOM(htmlStrToParse, mediaType);
+    var urlHttp = url;
+    if (!urlHttp.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
+        urlHttp = sessions_1.convertHttpUrlToCustomScheme(urlHttp);
+    }
+    var url_ = new URL(urlHttp);
+    var r2CSS = url_.searchParams.get(url_params_1.URL_PARAM_CSS);
+    var r2ERS = url_.searchParams.get(url_params_1.URL_PARAM_EPUBREADINGSYSTEM);
+    var r2DEBUG = url_.searchParams.get(url_params_1.URL_PARAM_DEBUG_VISUALS);
+    var r2CLIPBOARDINTERCEPT = url_.searchParams.get(url_params_1.URL_PARAM_CLIPBOARD_INTERCEPT);
+    var r2SESSIONINFO = url_.searchParams.get(url_params_1.URL_PARAM_SESSION_INFO);
+    url_.search = "";
+    url_.hash = "";
+    var urlStr = url_.toString();
+    var patchElementSrc = function (el) {
+        var src = el.getAttribute("src");
+        if (!src || src[0] === "/" ||
+            /^http[s]?:\/\//.test(src) || /^data:\/\//.test(src)) {
+            return;
+        }
+        var src_ = src;
+        if (src_.startsWith("./")) {
+            src_ = src_.substr(2);
+        }
+        src_ = urlStr + "/../" + src_;
+        var iframeUrl = new URL(src_);
+        if (r2CLIPBOARDINTERCEPT) {
+            iframeUrl.searchParams.append(url_params_1.URL_PARAM_CLIPBOARD_INTERCEPT, r2CLIPBOARDINTERCEPT);
+        }
+        if (r2SESSIONINFO) {
+            iframeUrl.searchParams.append(url_params_1.URL_PARAM_SESSION_INFO, r2SESSIONINFO);
+        }
+        if (r2DEBUG) {
+            iframeUrl.searchParams.append(url_params_1.URL_PARAM_DEBUG_VISUALS, r2DEBUG);
+        }
+        if (r2ERS) {
+            iframeUrl.searchParams.append(url_params_1.URL_PARAM_EPUBREADINGSYSTEM, r2ERS);
+        }
+        if (r2CSS) {
+            iframeUrl.searchParams.append(url_params_1.URL_PARAM_CSS, r2CSS);
+        }
+        src_ = iframeUrl.toString();
+        debug("IFRAME SRC PATCH: " + src + " ==> " + src_);
+        el.setAttribute("src", src_);
+    };
+    var processTree = function (el) {
+        var elName = el.nodeName.toLowerCase();
+        if (elName === "iframe") {
+            patchElementSrc(el);
+        }
+        else {
+            if (!el.childNodes) {
+                return;
+            }
+            for (var i = 0; i < el.childNodes.length; i++) {
+                var childNode = el.childNodes[i];
+                if (childNode.nodeType === 1) {
+                    processTree(childNode);
+                }
+            }
+        }
+    };
+    processTree(documant.body);
+    var serialized = dom_1.serializeDOM(documant);
+    var prefix = htmlStr.substr(0, iHtmlStart);
+    var iHtmlStart_ = serialized.indexOf("<html");
+    if (iHtmlStart_ < 0) {
+        return htmlStr;
+    }
+    var remaining = serialized.substr(iHtmlStart_);
+    var newStr = "" + prefix + remaining;
+    return newStr;
+};
+var transformerHttpBase = function (publication, link, url, htmlStr, sessionInfo) {
+    if (!_customUrlProtocolSchemeHandlerWasCalled) {
+        return htmlStr;
+    }
+    if (!url) {
+        return htmlStr;
+    }
+    var iHead = htmlStr.indexOf("</head>");
+    if (iHead < 0) {
+        return htmlStr;
+    }
+    var urlHttp = url;
+    if (urlHttp.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
+        urlHttp = sessions_1.convertCustomSchemeToHttpUrl(urlHttp);
+    }
+    var url_ = new URL(urlHttp);
+    url_.search = "";
+    url_.hash = "";
+    var urlStr = url_.toString();
+    var baseStr = "\n<base href=\"" + urlStr + "\" />\n";
+    var newStr = htmlStr.substr(0, iHead) + baseStr + htmlStr.substr(iHead);
+    newStr = transformerHttpBaseIframes(publication, link, url, newStr, sessionInfo);
+    return newStr;
+};
+var INJECT_HTTP_BASE = true;
 function initSessions() {
     var _this = this;
-    transformer_1.Transformers.instance().add(new transformer_html_1.TransformerHTML(transformerAudioVideo));
+    electron_1.app.commandLine.appendSwitch("autoplay-policy", "no-user-gesture-required");
+    if (INJECT_HTTP_BASE) {
+        transformer_1.Transformers.instance().add(new transformer_html_1.TransformerHTML(transformerHttpBase));
+    }
+    else {
+        transformer_1.Transformers.instance().add(new transformer_html_1.TransformerHTML(transformerAudioVideo));
+    }
     if (electron_1.protocol.registerStandardSchemes) {
         electron_1.protocol.registerStandardSchemes([sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL], { secure: true });
     }

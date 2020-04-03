@@ -50,6 +50,10 @@ export declare const R2_EVENT_LINK = "R2_EVENT_LINK";
 export interface IEventPayload_R2_EVENT_LINK {
     url: string;
 }
+export declare const R2_EVENT_AUDIO_SOUNDTRACK = "R2_EVENT_AUDIO_SOUNDTRACK";
+export interface IEventPayload_R2_EVENT_AUDIO_SOUNDTRACK {
+    url: string;
+}
 export declare const R2_EVENT_SHIFT_VIEW_X = "R2_EVENT_SHIFT_VIEW_X";
 export interface IEventPayload_R2_EVENT_SHIFT_VIEW_X {
     offset: number;
