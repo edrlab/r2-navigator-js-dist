@@ -18,7 +18,7 @@ function throttle(fn, time) {
         }
     };
 }
-function setupAudioBook(_docTitle) {
+function setupAudioBook(_docTitle, audioPlaybackRate) {
     win.document.documentElement.classList.add(styles_1.AUDIO_PROGRESS_CLASS);
     const coverElement = win.document.getElementById(styles_1.AUDIO_COVER_ID);
     const audioElement = win.document.getElementById(styles_1.AUDIO_ID);
@@ -30,6 +30,46 @@ function setupAudioBook(_docTitle) {
     const nextElement = win.document.getElementById(styles_1.AUDIO_NEXT_ID);
     const rewindElement = win.document.getElementById(styles_1.AUDIO_REWIND_ID);
     const forwardElement = win.document.getElementById(styles_1.AUDIO_FORWARD_ID);
+    const rateElement = win.document.getElementById(styles_1.AUDIO_RATE_ID);
+    if (audioPlaybackRate) {
+        rateElement.value = `${audioPlaybackRate}`;
+    }
+    else {
+        rateElement.value = `${audioElement.playbackRate}`;
+    }
+    rateElement.addEventListener("change", () => {
+        const speed = parseFloat(rateElement.value);
+        audioElement.playbackRate = speed;
+        const payload = {
+            speed,
+        };
+        electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_AUDIO_PLAYBACK_RATE, payload);
+    });
+    function refreshTimeElements(p) {
+        const prettyPercent = percentElement.displayAlt ? `${p}%` : `${formatTime(audioElement.duration)}`;
+        percentElement.innerText = prettyPercent;
+        const prettyTime = timeElement.displayAlt ?
+            `-${formatTime(audioElement.duration - audioElement.currentTime)}` :
+            `${formatTime(audioElement.currentTime)}`;
+        timeElement.innerText = prettyTime;
+    }
+    function onTimeElementsClick(el) {
+        if (el.displayAlt) {
+            el.displayAlt = false;
+        }
+        else {
+            el.displayAlt = true;
+        }
+        const percent = audioElement.currentTime / audioElement.duration;
+        const p = Math.round(percent * 100);
+        refreshTimeElements(p);
+    }
+    timeElement.addEventListener("click", () => {
+        onTimeElementsClick(timeElement);
+    });
+    percentElement.addEventListener("click", () => {
+        onTimeElementsClick(percentElement);
+    });
     const bufferCanvasElement = audiobook_1.DEBUG_AUDIO ?
         win.document.getElementById(styles_1.AUDIO_BUFFER_CANVAS_ID) : undefined;
     if (bufferCanvasElement) {
@@ -67,19 +107,19 @@ function setupAudioBook(_docTitle) {
             });
         }
     }
-    electron_1.ipcRenderer.on(events_1.R2_EVENT_AUDIO_DO_PLAY, async (_event) => {
-        await audioElement.play();
-    });
-    electron_1.ipcRenderer.on(events_1.R2_EVENT_AUDIO_DO_PAUSE, (_event) => {
-        audioElement.pause();
-    });
-    rewindElement.addEventListener("click", () => {
+    function rewind() {
         const newTime = Math.max(0, audioElement.currentTime - 30);
         audioElement.currentTime = newTime;
+    }
+    rewindElement.addEventListener("click", () => {
+        rewind();
     });
-    forwardElement.addEventListener("click", () => {
+    function forward() {
         const newTime = Math.min(audioElement.duration, audioElement.currentTime + 30);
         audioElement.currentTime = newTime;
+    }
+    forwardElement.addEventListener("click", () => {
+        forward();
     });
     previousElement.addEventListener("click", () => {
         const payload = {
@@ -122,8 +162,10 @@ function setupAudioBook(_docTitle) {
             }
         }
     }
-    coverElement.addEventListener("mousedown", () => {
-        togglePlayPause();
+    coverElement.addEventListener("mouseup", (ev) => {
+        if (ev.button === 0) {
+            togglePlayPause();
+        }
     });
     playPauseElement.addEventListener("click", () => {
         togglePlayPause();
@@ -149,10 +191,8 @@ function setupAudioBook(_docTitle) {
     function notifyPlaybackLocation() {
         const percent = audioElement.currentTime / audioElement.duration;
         const p = Math.round(percent * 100);
+        refreshTimeElements(p);
         sliderElement.valueAsNumber = p;
-        percentElement.innerText = `${p}%`;
-        const prettyTime = `${formatTime(audioElement.currentTime)} / ${formatTime(audioElement.duration)}`;
-        timeElement.innerText = prettyTime;
         win.READIUM2.locationHashOverrideInfo = {
             audioPlaybackInfo: {
                 globalDuration: undefined,
@@ -224,6 +264,24 @@ function setupAudioBook(_docTitle) {
     });
     audioElement.addEventListener("timeupdate", () => {
         notifyPlaybackLocationThrottled();
+    });
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_AUDIO_DO_PLAY, async (_event) => {
+        await audioElement.play();
+    });
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_AUDIO_DO_PAUSE, (_event) => {
+        audioElement.pause();
+    });
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_AUDIO_DO_PLAY, async (_event) => {
+        await audioElement.play();
+    });
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_AUDIO_TOGGLE_PLAY_PAUSE, (_event) => {
+        togglePlayPause();
+    });
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_AUDIO_REWIND, (_event) => {
+        rewind();
+    });
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_AUDIO_FORWARD, (_event) => {
+        forward();
     });
 }
 exports.setupAudioBook = setupAudioBook;

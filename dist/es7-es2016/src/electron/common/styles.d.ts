@@ -49,6 +49,7 @@ export declare const AUDIO_TITLE_ID = "r2-audio-title";
 export declare const AUDIO_SLIDER_ID = "r2-audio-slider";
 export declare const AUDIO_TIME_ID = "r2-audio-time";
 export declare const AUDIO_PERCENT_ID = "r2-audio-percent";
+export declare const AUDIO_RATE_ID = "r2-audio-rate";
 export declare const AUDIO_PLAYPAUSE_ID = "r2-audio-playPause";
 export declare const AUDIO_PREVIOUS_ID = "r2-audio-previous";
 export declare const AUDIO_NEXT_ID = "r2-audio-next";

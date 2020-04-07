@@ -837,9 +837,6 @@ win.addEventListener("DOMContentLoaded", function () {
     if (titleElement && titleElement.textContent) {
         _docTitle = titleElement.textContent;
     }
-    if (win.READIUM2.isAudio) {
-        audiobook_1.setupAudioBook(_docTitle);
-    }
     if (!win.READIUM2.isAudio &&
         win.location.hash && win.location.hash.length > 1) {
         win.READIUM2.hashElement = win.document.getElementById(win.location.hash.substr(1));
@@ -867,6 +864,9 @@ win.addEventListener("DOMContentLoaded", function () {
                 debug(str);
             }
         }
+    }
+    if (win.READIUM2.isAudio) {
+        audiobook_1.setupAudioBook(_docTitle, undefined);
     }
     if (readiumcssJson) {
         win.READIUM2.isFixedLayout = (typeof readiumcssJson.isFixedLayout !== "undefined") ?

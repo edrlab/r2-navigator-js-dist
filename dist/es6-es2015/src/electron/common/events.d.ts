@@ -65,6 +65,13 @@ export interface IEventPayload_R2_EVENT_TTS_CLICK_ENABLE {
 }
 export declare const R2_EVENT_AUDIO_DO_PLAY = "R2_EVENT_AUDIO_DO_PLAY";
 export declare const R2_EVENT_AUDIO_DO_PAUSE = "R2_EVENT_AUDIO_DO_PAUSE";
+export declare const R2_EVENT_AUDIO_TOGGLE_PLAY_PAUSE = "R2_EVENT_AUDIO_TOGGLE_PLAY_PAUSE";
+export declare const R2_EVENT_AUDIO_REWIND = "R2_EVENT_AUDIO_REWIND";
+export declare const R2_EVENT_AUDIO_FORWARD = "R2_EVENT_AUDIO_FORWARD";
+export declare const R2_EVENT_AUDIO_PLAYBACK_RATE = "R2_EVENT_AUDIO_PLAYBACK_RATE";
+export interface IEventPayload_R2_EVENT_AUDIO_PLAYBACK_RATE {
+    speed: number;
+}
 export declare const R2_EVENT_TTS_DO_PLAY = "R2_EVENT_TTS_DO_PLAY";
 export interface IEventPayload_R2_EVENT_TTS_DO_PLAY {
     rootElement: string;

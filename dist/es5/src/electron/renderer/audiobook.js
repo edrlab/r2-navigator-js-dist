@@ -39,4 +39,67 @@ function audioPause() {
     }); }, 0);
 }
 exports.audioPause = audioPause;
+function audioTogglePlayPause() {
+    var _this = this;
+    var activeWebView = win.READIUM2.getActiveWebView();
+    if (!activeWebView) {
+        return;
+    }
+    setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+        return tslib_1.__generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4, activeWebView.send(events_1.R2_EVENT_AUDIO_TOGGLE_PLAY_PAUSE)];
+                case 1:
+                    _a.sent();
+                    return [2];
+            }
+        });
+    }); }, 0);
+}
+exports.audioTogglePlayPause = audioTogglePlayPause;
+function audioRewind() {
+    var _this = this;
+    var activeWebView = win.READIUM2.getActiveWebView();
+    if (!activeWebView) {
+        return;
+    }
+    setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+        return tslib_1.__generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4, activeWebView.send(events_1.R2_EVENT_AUDIO_REWIND)];
+                case 1:
+                    _a.sent();
+                    return [2];
+            }
+        });
+    }); }, 0);
+}
+exports.audioRewind = audioRewind;
+function audioForward() {
+    var _this = this;
+    var activeWebView = win.READIUM2.getActiveWebView();
+    if (!activeWebView) {
+        return;
+    }
+    setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+        return tslib_1.__generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4, activeWebView.send(events_1.R2_EVENT_AUDIO_FORWARD)];
+                case 1:
+                    _a.sent();
+                    return [2];
+            }
+        });
+    }); }, 0);
+}
+exports.audioForward = audioForward;
+var _playbackRate = 1;
+function setCurrentAudioPlaybackRate(speed) {
+    _playbackRate = speed;
+}
+exports.setCurrentAudioPlaybackRate = setCurrentAudioPlaybackRate;
+function getCurrentAudioPlaybackRate() {
+    return _playbackRate;
+}
+exports.getCurrentAudioPlaybackRate = getCurrentAudioPlaybackRate;
 //# sourceMappingURL=audiobook.js.map

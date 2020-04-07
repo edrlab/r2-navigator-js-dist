@@ -659,6 +659,7 @@ exports.AUDIO_TITLE_ID = "r2-audio-title";
 exports.AUDIO_SLIDER_ID = "r2-audio-slider";
 exports.AUDIO_TIME_ID = "r2-audio-time";
 exports.AUDIO_PERCENT_ID = "r2-audio-percent";
+exports.AUDIO_RATE_ID = "r2-audio-rate";
 exports.AUDIO_PLAYPAUSE_ID = "r2-audio-playPause";
 exports.AUDIO_PREVIOUS_ID = "r2-audio-previous";
 exports.AUDIO_NEXT_ID = "r2-audio-next";
@@ -751,8 +752,9 @@ exports.audioCssStyles = `
 }
 
 #${exports.AUDIO_CONTROLS_ID} button {
-    border: 0;
-    background-color: transparent;
+    border: 0 !important;
+    background-color: transparent !important;
+    background: transparent !important;
     text-align: center;
     padding: 0;
     margin: 0;
@@ -770,46 +772,46 @@ exports.audioCssStyles = `
     box-sizing: border-box;
 
     justify-self: center;
+
+    width: 60px;
+    height: 60px;
 }
 
-:root:not(.${exports.AUDIO_PROGRESS_CLASS}) #${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_PLAYPAUSE_ID},
-:root[style]:not(.${exports.AUDIO_PROGRESS_CLASS}) #${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_PLAYPAUSE_ID} {
-
-    width: 0;
-    height: 40px;
-
-    border-color: transparent transparent transparent #202020 !important;
-
-    transition: 100ms all ease;
-    will-change: border-width;
-
-    border-style: solid;
-    border-width: 20px 0 20px 40px;
+:root #${exports.AUDIO_CONTROLS_ID} svg,
+:root[style] #${exports.AUDIO_CONTROLS_ID} svg {
+    fill: #202020;
+}
+:root[style*="readium-night-on"] #${exports.AUDIO_CONTROLS_ID} svg {
+    fill: #999999;
 }
 
-:root:not(.${exports.AUDIO_PROGRESS_CLASS}) #${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_PLAYPAUSE_ID}.pause {
-    border-style: double;
-    border-width: 0px 0 0px 40px;
+:root:not(.${exports.AUDIO_PROGRESS_CLASS}) #${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_PLAYPAUSE_ID} #${exports.AUDIO_PLAYPAUSE_ID}_0,
+:root[style]:not(.${exports.AUDIO_PROGRESS_CLASS}) #${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_PLAYPAUSE_ID} #${exports.AUDIO_PLAYPAUSE_ID}_0 {
+
+    display: none;
 }
 
-:root:not(.${exports.AUDIO_PROGRESS_CLASS}) #${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_PLAYPAUSE_ID}:hover,
-:root[style]:not(.${exports.AUDIO_PROGRESS_CLASS}) #${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_PLAYPAUSE_ID}:hover {
-
-    border-color: transparent transparent transparent #404040 !important;
+:root:not(.${exports.AUDIO_PROGRESS_CLASS}) #${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_PLAYPAUSE_ID}.pause #${exports.AUDIO_PLAYPAUSE_ID}_1 {
+    display: none;
 }
 
+:root:not(.${exports.AUDIO_PROGRESS_CLASS}) #${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_PLAYPAUSE_ID}.pause #${exports.AUDIO_PLAYPAUSE_ID}_0 {
+    display: block;
+}
+
+:root.${exports.AUDIO_PROGRESS_CLASS} #${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_PLAYPAUSE_ID} svg {
+    display: none;
+}
 :root.${exports.AUDIO_PROGRESS_CLASS} #${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_PLAYPAUSE_ID} {
     cursor: wait;
-    width: 40px;
-    height: 40px;
 }
 :root[style].${exports.AUDIO_PROGRESS_CLASS} #${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_PLAYPAUSE_ID}:after {
     content: "";
     border-radius: 50%;
 
     position: absolute;
-    width: 40px;
-    height: 40px;
+    width: 60px;
+    height: 60px;
     left: 0px;
     top: 0px;
 
@@ -841,20 +843,10 @@ exports.audioCssStyles = `
 #${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_PREVIOUS_ID},
 #${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_REWIND_ID},
 #${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_FORWARD_ID} {
-    width: 30px;
-    height: 30px;
+    width: 48px;
+    height: 48px;
     position: relative;
     align-self: center;
-}
-
-#${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_NEXT_ID}:before, #${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_NEXT_ID}:after,
-#${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_PREVIOUS_ID}:before, #${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_PREVIOUS_ID}:after,
-#${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_REWIND_ID}:before, #${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_REWIND_ID}:after,
-#${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_FORWARD_ID}:before, #${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_FORWARD_ID}:after {
-    content: '';
-    border-color: transparent;
-    border-style: solid;
-    position: absolute;
 }
 
 #${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_PREVIOUS_ID} {
@@ -866,21 +858,6 @@ exports.audioCssStyles = `
     justify-self: left;
 }
 
-#${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_PREVIOUS_ID}:before {
-    border: none;
-    background-color: #555;
-    height: 30%;
-    width: 30%;
-    top: 35%;
-    left: 50%;
-}
-#${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_PREVIOUS_ID}:after {
-    left: -50%;
-    top: 0;
-    border-width: 15px 15px;
-    border-right-color: #555;
-}
-
 #${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_NEXT_ID} {
     grid-column-start: 5;
     grid-column-end: 6;
@@ -889,21 +866,6 @@ exports.audioCssStyles = `
 
     justify-self: right;
 }
-#${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_NEXT_ID}:before {
-    border: none;
-    background-color: #555;
-    height: 30%;
-    width: 30%;
-    top: 35%;
-    left: 20%;
-}
-#${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_NEXT_ID}:after {
-    left: 50%;
-    top: 0;
-    border-width: 15px 15px;
-    border-left-color: #555;
-}
-
 #${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_REWIND_ID} {
     grid-column-start: 2;
     grid-column-end: 3;
@@ -912,19 +874,6 @@ exports.audioCssStyles = `
 
     justify-self: right;
 }
-#${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_REWIND_ID}:before {
-    left: -20%;
-    top: 0;
-    border-width: 15px 15px;
-    border-right-color: #555;
-}
-#${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_REWIND_ID}:after {
-    left: -50%;
-    top: 0;
-    border-width: 15px 15px;
-    border-right-color: #555;
-}
-
 #${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_FORWARD_ID} {
     grid-column-start: 4;
     grid-column-end: 5;
@@ -933,47 +882,63 @@ exports.audioCssStyles = `
 
     justify-self: left;
 }
-#${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_FORWARD_ID}:before {
-    left: 20%;
-    top: 0;
-    border-width: 15px 15px;
-    border-left-color: #555;
-}
-#${exports.AUDIO_CONTROLS_ID} #${exports.AUDIO_FORWARD_ID}:after {
-    left: 50%;
-    top: 0;
-    border-width: 15px 15px;
-    border-left-color: #555;
-}
-
-
 :root.${exports.AUDIO_PROGRESS_CLASS} #${exports.AUDIO_FORWARD_ID},
 :root.${exports.AUDIO_PROGRESS_CLASS} #${exports.AUDIO_REWIND_ID} {
     display: none;
 }
 
-#${exports.AUDIO_PERCENT_ID}, #${exports.AUDIO_TIME_ID} {
+#${exports.AUDIO_PERCENT_ID}, #${exports.AUDIO_TIME_ID}, #${exports.AUDIO_RATE_ID} {
     font-size: 0.9em !important;
     font-family: sans-serif !important;
+}
+#${exports.AUDIO_PERCENT_ID}, #${exports.AUDIO_TIME_ID} {
     margin-top: -0.5em;
 }
-#${exports.AUDIO_TIME_ID} {
-    grid-column-start: 1;
+#${exports.AUDIO_RATE_ID} {
+    grid-column-start: 3;
     grid-column-end: 4;
     grid-row-start: 3;
     grid-row-end: 4;
 
-    text-align: left;
+    font-size: 0.8em !important;
+    width: 4em;
+
+    justify-self: center;
+
+    text-align: center !important;
+
+    margin-top: -0.5em;
+
+    -webkit-appearance: none;
+    border: 1px solid #aaa;
+    border-radius: .4em;
+    box-sizing: border-box;
+    padding: .15em .15em .15em .3em;
+    background-color: transparent;
+
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23aaa%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+    background-repeat: no-repeat, repeat;
+    background-position: right .3em top 50%, 0 0;
+    background-size: .7em auto, 100%;
+}
+#${exports.AUDIO_TIME_ID} {
+    grid-column-start: 1;
+    grid-column-end: 2;
+    grid-row-start: 3;
+    grid-row-end: 4;
+
+    text-align: left !important;
 }
 #${exports.AUDIO_PERCENT_ID} {
-    grid-column-start: 4;
+    grid-column-start: 5;
     grid-column-end: 6;
     grid-row-start: 3;
     grid-row-end: 4;
 
-    text-align: right;
+    text-align: right !important;
 }
 
+:root.${exports.AUDIO_PROGRESS_CLASS} #${exports.AUDIO_RATE_ID},
 :root.${exports.AUDIO_PROGRESS_CLASS} #${exports.AUDIO_PERCENT_ID},
 :root.${exports.AUDIO_PROGRESS_CLASS} #${exports.AUDIO_TIME_ID} {
     visibility: hidden;

@@ -23,7 +23,7 @@ function throttle(fn, time) {
         }
     };
 }
-function setupAudioBook(_docTitle) {
+function setupAudioBook(_docTitle, audioPlaybackRate) {
     var _this = this;
     win.document.documentElement.classList.add(styles_1.AUDIO_PROGRESS_CLASS);
     var coverElement = win.document.getElementById(styles_1.AUDIO_COVER_ID);
@@ -36,6 +36,46 @@ function setupAudioBook(_docTitle) {
     var nextElement = win.document.getElementById(styles_1.AUDIO_NEXT_ID);
     var rewindElement = win.document.getElementById(styles_1.AUDIO_REWIND_ID);
     var forwardElement = win.document.getElementById(styles_1.AUDIO_FORWARD_ID);
+    var rateElement = win.document.getElementById(styles_1.AUDIO_RATE_ID);
+    if (audioPlaybackRate) {
+        rateElement.value = "" + audioPlaybackRate;
+    }
+    else {
+        rateElement.value = "" + audioElement.playbackRate;
+    }
+    rateElement.addEventListener("change", function () {
+        var speed = parseFloat(rateElement.value);
+        audioElement.playbackRate = speed;
+        var payload = {
+            speed: speed,
+        };
+        electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_AUDIO_PLAYBACK_RATE, payload);
+    });
+    function refreshTimeElements(p) {
+        var prettyPercent = percentElement.displayAlt ? p + "%" : "" + formatTime(audioElement.duration);
+        percentElement.innerText = prettyPercent;
+        var prettyTime = timeElement.displayAlt ?
+            "-" + formatTime(audioElement.duration - audioElement.currentTime) :
+            "" + formatTime(audioElement.currentTime);
+        timeElement.innerText = prettyTime;
+    }
+    function onTimeElementsClick(el) {
+        if (el.displayAlt) {
+            el.displayAlt = false;
+        }
+        else {
+            el.displayAlt = true;
+        }
+        var percent = audioElement.currentTime / audioElement.duration;
+        var p = Math.round(percent * 100);
+        refreshTimeElements(p);
+    }
+    timeElement.addEventListener("click", function () {
+        onTimeElementsClick(timeElement);
+    });
+    percentElement.addEventListener("click", function () {
+        onTimeElementsClick(percentElement);
+    });
     var bufferCanvasElement = audiobook_1.DEBUG_AUDIO ?
         win.document.getElementById(styles_1.AUDIO_BUFFER_CANVAS_ID) : undefined;
     if (bufferCanvasElement) {
@@ -73,26 +113,19 @@ function setupAudioBook(_docTitle) {
             });
         }
     }
-    electron_1.ipcRenderer.on(events_1.R2_EVENT_AUDIO_DO_PLAY, function (_event) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-        return tslib_1.__generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4, audioElement.play()];
-                case 1:
-                    _a.sent();
-                    return [2];
-            }
-        });
-    }); });
-    electron_1.ipcRenderer.on(events_1.R2_EVENT_AUDIO_DO_PAUSE, function (_event) {
-        audioElement.pause();
-    });
-    rewindElement.addEventListener("click", function () {
+    function rewind() {
         var newTime = Math.max(0, audioElement.currentTime - 30);
         audioElement.currentTime = newTime;
+    }
+    rewindElement.addEventListener("click", function () {
+        rewind();
     });
-    forwardElement.addEventListener("click", function () {
+    function forward() {
         var newTime = Math.min(audioElement.duration, audioElement.currentTime + 30);
         audioElement.currentTime = newTime;
+    }
+    forwardElement.addEventListener("click", function () {
+        forward();
     });
     previousElement.addEventListener("click", function () {
         var payload = {
@@ -143,8 +176,10 @@ function setupAudioBook(_docTitle) {
             }
         }
     }
-    coverElement.addEventListener("mousedown", function () {
-        togglePlayPause();
+    coverElement.addEventListener("mouseup", function (ev) {
+        if (ev.button === 0) {
+            togglePlayPause();
+        }
     });
     playPauseElement.addEventListener("click", function () {
         togglePlayPause();
@@ -170,10 +205,8 @@ function setupAudioBook(_docTitle) {
     function notifyPlaybackLocation() {
         var percent = audioElement.currentTime / audioElement.duration;
         var p = Math.round(percent * 100);
+        refreshTimeElements(p);
         sliderElement.valueAsNumber = p;
-        percentElement.innerText = p + "%";
-        var prettyTime = formatTime(audioElement.currentTime) + " / " + formatTime(audioElement.duration);
-        timeElement.innerText = prettyTime;
         win.READIUM2.locationHashOverrideInfo = {
             audioPlaybackInfo: {
                 globalDuration: undefined,
@@ -245,6 +278,38 @@ function setupAudioBook(_docTitle) {
     });
     audioElement.addEventListener("timeupdate", function () {
         notifyPlaybackLocationThrottled();
+    });
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_AUDIO_DO_PLAY, function (_event) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+        return tslib_1.__generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4, audioElement.play()];
+                case 1:
+                    _a.sent();
+                    return [2];
+            }
+        });
+    }); });
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_AUDIO_DO_PAUSE, function (_event) {
+        audioElement.pause();
+    });
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_AUDIO_DO_PLAY, function (_event) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+        return tslib_1.__generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4, audioElement.play()];
+                case 1:
+                    _a.sent();
+                    return [2];
+            }
+        });
+    }); });
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_AUDIO_TOGGLE_PLAY_PAUSE, function (_event) {
+        togglePlayPause();
+    });
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_AUDIO_REWIND, function (_event) {
+        rewind();
+    });
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_AUDIO_FORWARD, function (_event) {
+        forward();
     });
 }
 exports.setupAudioBook = setupAudioBook;
