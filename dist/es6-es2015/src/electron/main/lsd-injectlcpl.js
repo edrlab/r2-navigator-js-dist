@@ -11,7 +11,10 @@ function lsdLcpUpdateInject(lcplStr, publication, publicationPath) {
     return tslib_1.__awaiter(this, void 0, void 0, function* () {
         const lcplJson = global.JSON.parse(lcplStr);
         debug(lcplJson);
-        const zipEntryPath = "META-INF/license.lcpl";
+        const isAudio = publication.Metadata &&
+            publication.Metadata.RDFType &&
+            /http[s]?:\/\/schema\.org\/Audiobook$/.test(publication.Metadata.RDFType);
+        const zipEntryPath = isAudio ? "license.lcpl" : "META-INF/license.lcpl";
         let lcpl;
         try {
             lcpl = serializable_1.TaJsonDeserialize(lcplJson, lcp_1.LCP);

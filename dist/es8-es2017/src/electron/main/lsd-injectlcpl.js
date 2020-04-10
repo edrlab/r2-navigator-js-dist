@@ -9,7 +9,10 @@ const debug = debug_("r2:navigator#electron/main/lsd-injectlcpl");
 async function lsdLcpUpdateInject(lcplStr, publication, publicationPath) {
     const lcplJson = global.JSON.parse(lcplStr);
     debug(lcplJson);
-    const zipEntryPath = "META-INF/license.lcpl";
+    const isAudio = publication.Metadata &&
+        publication.Metadata.RDFType &&
+        /http[s]?:\/\/schema\.org\/Audiobook$/.test(publication.Metadata.RDFType);
+    const zipEntryPath = isAudio ? "license.lcpl" : "META-INF/license.lcpl";
     let lcpl;
     try {
         lcpl = serializable_1.TaJsonDeserialize(lcplJson, lcp_1.LCP);
