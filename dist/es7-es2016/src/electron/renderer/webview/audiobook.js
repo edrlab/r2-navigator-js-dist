@@ -139,6 +139,7 @@ function setupAudioBook(_docTitle, audioPlaybackRate) {
     sliderElement.addEventListener("input", () => {
         const p = sliderElement.valueAsNumber / 100;
         audioElement.currentTime = audioElement.duration * p;
+        sliderElement.style.setProperty("--audiopercent", `${sliderElement.valueAsNumber}%`);
     });
     function togglePlayPause() {
         if (win.READIUM2.locationHashOverrideInfo &&
@@ -194,6 +195,7 @@ function setupAudioBook(_docTitle, audioPlaybackRate) {
         const p = Math.round(percent * 100);
         refreshTimeElements(p);
         sliderElement.valueAsNumber = p;
+        sliderElement.style.setProperty("--audiopercent", `${p}%`);
         win.READIUM2.locationHashOverrideInfo = {
             audioPlaybackInfo: {
                 globalDuration: undefined,
