@@ -80,7 +80,7 @@ function createWebViewInternal(preloadScriptPath) {
                         wc.off("devtools-opened", devToolsOpened);
                         wc.inspectElement(x, y);
                         setTimeout(() => {
-                            if (wc.isDevToolsOpened()) {
+                            if (wc.devToolsWebContents && wc.isDevToolsOpened()) {
                                 wc.devToolsWebContents.focus();
                             }
                         }, 500);

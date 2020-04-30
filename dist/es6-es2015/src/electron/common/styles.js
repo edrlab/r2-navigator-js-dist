@@ -88,10 +88,11 @@ exports.footnotesCssStyles = `
     margin: 0.2em;
 }
 
-:root[style] .${exports.FOOTNOTES_CONTAINER_CLASS} > div > *,
-:root .${exports.FOOTNOTES_CONTAINER_CLASS} > div > * {
+:root[style] .${exports.FOOTNOTES_CONTAINER_CLASS} > *,
+:root .${exports.FOOTNOTES_CONTAINER_CLASS} > * {
     margin: 0 !important;
     padding: 0 !important;
+    width: 100%;
 }
 
 /*

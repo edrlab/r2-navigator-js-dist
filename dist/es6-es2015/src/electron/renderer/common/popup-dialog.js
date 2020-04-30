@@ -93,18 +93,81 @@ class PopupDialog {
             + (optionalCssClass ? ` ${optionalCssClass}` : ""));
         this.dialog.setAttribute("id", styles_1.POPUP_DIALOG_CLASS);
         this.dialog.setAttribute("dir", "ltr");
+        const namespaces = Array.from(documant.documentElement.attributes).reduce((pv, cv) => {
+            if (cv.name.startsWith("xmlns:")) {
+                return `${pv} ${cv.name}="${cv.value}"`;
+            }
+            else {
+                return `${pv}`;
+            }
+        }, "");
+        let toInsert = outerHTML.replace(/>/, ` ${namespaces} >`);
         try {
-            this.dialog.insertAdjacentHTML("beforeend", outerHTML);
+            this.dialog.insertAdjacentHTML("beforeend", toInsert);
         }
         catch (err) {
             console.log(err);
-            console.log(outerHTML);
+            console.log("outerHTML", outerHTML);
+            console.log("toInsert", toInsert);
+            Array.from(documant.getElementsByTagName("parsererror")).forEach((pe) => {
+                if (pe.parentNode) {
+                    pe.parentNode.removeChild(pe);
+                }
+            });
+            const parseFullHTML = false;
             try {
-                this.dialog.innerHTML = outerHTML;
+                if (parseFullHTML) {
+                    toInsert = `<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml" ${namespaces} ><body>${outerHTML}</body></html>`;
+                }
+                else {
+                }
+                const domparser = new DOMParser();
+                const xmlDoc = domparser.parseFromString(toInsert, "application/xhtml+xml");
+                const xmlSerializer = new XMLSerializer();
+                const xmlStr = xmlSerializer.serializeToString(xmlDoc);
+                if (xmlStr.indexOf("parsererror") > 0) {
+                    console.log("parsererror", xmlStr);
+                    this.dialog.insertAdjacentHTML("beforeend", `<pre class="${styles_1.FOOTNOTES_CONTAINER_CLASS}" stylexx="overflow-y: scroll; position: absolute; top: 0px; right: 0px; left: 0px; bottom: 0px; margin: 0px; padding: 0px;">${outerHTML.replace(/>/g, "&gt;").replace(/</g, "&lt;")}</pre>`);
+                }
+                else {
+                    const el = parseFullHTML ?
+                        xmlDoc.documentElement.firstElementChild.firstElementChild :
+                        xmlDoc.documentElement;
+                    toInsert = xmlSerializer.serializeToString(el);
+                    console.log("toInsert", toInsert);
+                    this.dialog.insertAdjacentHTML("beforeend", toInsert);
+                }
             }
             catch (err) {
                 console.log(err);
-                console.log(outerHTML);
+                console.log("outerHTML", outerHTML);
+                console.log("toInsert", toInsert);
+                Array.from(documant.getElementsByTagName("parsererror")).forEach((pe) => {
+                    if (pe.parentNode) {
+                        pe.parentNode.removeChild(pe);
+                    }
+                });
+                try {
+                    this.dialog.innerHTML = toInsert;
+                }
+                catch (err) {
+                    console.log(err);
+                    console.log("outerHTML", outerHTML);
+                    console.log("toInsert", toInsert);
+                    Array.from(documant.getElementsByTagName("parsererror")).forEach((pe) => {
+                        if (pe.parentNode) {
+                            pe.parentNode.removeChild(pe);
+                        }
+                    });
+                    try {
+                        this.dialog.insertAdjacentHTML("beforeend", `<pre>${outerHTML}</pre>`);
+                    }
+                    catch (err) {
+                        console.log(err);
+                        console.log("outerHTML", outerHTML);
+                        console.log("toInsert", toInsert);
+                    }
+                }
             }
         }
         documant.body.appendChild(this.dialog);
