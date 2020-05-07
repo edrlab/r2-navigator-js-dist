@@ -530,40 +530,11 @@ function initSessions() {
             }
         });
     }); });
-    function willQuitCallback(evt) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var err_3;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        debug("app will quit");
-                        evt.preventDefault();
-                        electron_1.app.removeListener("will-quit", willQuitCallback);
-                        _a.label = 1;
-                    case 1:
-                        _a.trys.push([1, 3, , 4]);
-                        return [4, clearSessions()];
-                    case 2:
-                        _a.sent();
-                        return [3, 4];
-                    case 3:
-                        err_3 = _a.sent();
-                        debug(err_3);
-                        return [3, 4];
-                    case 4:
-                        debug("Cache and StorageData cleared, now quitting...");
-                        electron_1.app.quit();
-                        return [2];
-                }
-            });
-        });
-    }
-    electron_1.app.on("will-quit", willQuitCallback);
 }
 exports.initSessions = initSessions;
 function clearSession(sess, str) {
     return tslib_1.__awaiter(this, void 0, void 0, function () {
-        var prom1, prom2, results, results_1, results_1_1, result, err_4;
+        var prom1, prom2, results, results_1, results_1_1, result, err_3;
         var e_1, _a;
         return tslib_1.__generator(this, function (_b) {
             switch (_b.label) {
@@ -602,8 +573,8 @@ function clearSession(sess, str) {
                     }
                     return [3, 4];
                 case 3:
-                    err_4 = _b.sent();
-                    debug(err_4);
+                    err_3 = _b.sent();
+                    debug(err_3);
                     return [3, 4];
                 case 4: return [2, Promise.resolve()];
             }
@@ -617,7 +588,7 @@ function getWebViewSession() {
 exports.getWebViewSession = getWebViewSession;
 function clearWebviewSession() {
     return tslib_1.__awaiter(this, void 0, void 0, function () {
-        var sess, err_5;
+        var sess, err_4;
         return tslib_1.__generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -631,8 +602,8 @@ function clearWebviewSession() {
                     _a.sent();
                     return [3, 4];
                 case 3:
-                    err_5 = _a.sent();
-                    debug(err_5);
+                    err_4 = _a.sent();
+                    debug(err_4);
                     return [3, 4];
                 case 4: return [2, Promise.resolve()];
             }
@@ -642,7 +613,7 @@ function clearWebviewSession() {
 exports.clearWebviewSession = clearWebviewSession;
 function clearDefaultSession() {
     return tslib_1.__awaiter(this, void 0, void 0, function () {
-        var err_6;
+        var err_5;
         return tslib_1.__generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -655,8 +626,8 @@ function clearDefaultSession() {
                     _a.sent();
                     return [3, 4];
                 case 3:
-                    err_6 = _a.sent();
-                    debug(err_6);
+                    err_5 = _a.sent();
+                    debug(err_5);
                     return [3, 4];
                 case 4: return [2, Promise.resolve()];
             }
@@ -666,7 +637,7 @@ function clearDefaultSession() {
 exports.clearDefaultSession = clearDefaultSession;
 function clearSessions() {
     return tslib_1.__awaiter(this, void 0, void 0, function () {
-        var err_7;
+        var err_6;
         return tslib_1.__generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -676,8 +647,8 @@ function clearSessions() {
                     _a.sent();
                     return [3, 3];
                 case 2:
-                    err_7 = _a.sent();
-                    debug(err_7);
+                    err_6 = _a.sent();
+                    debug(err_6);
                     return [3, 3];
                 case 3: return [2, Promise.resolve()];
             }

@@ -14,6 +14,7 @@ export interface IReadiumElectronWebviewWindowState {
     fxlViewportScale: number;
     DEBUG_VISUALS: boolean;
     ttsClickEnabled: boolean;
+    ttsPlaybackRate: number;
     isClipboardIntercept: boolean;
 }
 export interface IReadiumElectronWebviewWindow extends Window {
@@ -36,6 +37,7 @@ export interface IReadiumElectronBrowserWindowState {
     domSlidingViewport: HTMLElement;
     DEBUG_VISUALS: boolean;
     ttsClickEnabled: boolean;
+    ttsPlaybackRate: number;
     clipboardInterceptor: ((data: IEventPayload_R2_EVENT_CLIPBOARD_COPY) => void) | undefined;
     preloadScriptPath: string;
     getActiveWebView: () => IReadiumElectronWebview | undefined;

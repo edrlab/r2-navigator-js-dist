@@ -58,6 +58,7 @@ win.READIUM2 = {
         title: undefined,
     },
     ttsClickEnabled: false,
+    ttsPlaybackRate: 1,
     urlQueryParams: win.location.search ? querystring_1.getURLQueryParams(win.location.search) : undefined,
 };
 win.alert = function () {
@@ -1191,10 +1192,10 @@ function loaded(forced) {
             }
             if (element) {
                 if (ev.altKey) {
-                    readaloud_1.ttsPlay(focusScrollRaw, element, undefined, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+                    readaloud_1.ttsPlay(win.READIUM2.ttsPlaybackRate, focusScrollRaw, element, undefined, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
                     return;
                 }
-                readaloud_1.ttsPlay(focusScrollRaw, element.ownerDocument.body, element, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+                readaloud_1.ttsPlay(win.READIUM2.ttsPlaybackRate, focusScrollRaw, element.ownerDocument.body, element, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
             }
         }
     }
@@ -1825,7 +1826,7 @@ if (!win.READIUM2.isAudio) {
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_PLAY, function (_event, payload) {
         var rootElement = win.document.querySelector(payload.rootElement);
         var startElement = payload.startElement ? win.document.querySelector(payload.startElement) : null;
-        readaloud_1.ttsPlay(focusScrollRaw, rootElement ? rootElement : undefined, startElement ? startElement : undefined, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+        readaloud_1.ttsPlay(payload.speed, focusScrollRaw, rootElement ? rootElement : undefined, startElement ? startElement : undefined, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_STOP, function (_event) {
         readaloud_1.ttsStop();
@@ -1841,6 +1842,9 @@ if (!win.READIUM2.isAudio) {
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_PREVIOUS, function (_event) {
         readaloud_1.ttsPrevious();
+    });
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_PLAYBACK_RATE, function (_event, payload) {
+        readaloud_1.ttsPlaybackRate(payload.speed);
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_CLICK_ENABLE, function (_event, payload) {
         win.READIUM2.ttsClickEnabled = payload.doEnable;

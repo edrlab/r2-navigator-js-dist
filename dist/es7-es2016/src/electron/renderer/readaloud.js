@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
 const events_1 = require("../common/events");
 const location_1 = require("./location");
+const readium_css_1 = require("./readium-css");
 const win = window;
 function ttsHandleIpcMessage(eventChannel, _eventArgs, _eventCurrentTarget) {
     if (eventChannel === events_1.R2_EVENT_TTS_IS_PAUSED) {
@@ -18,6 +19,44 @@ function ttsHandleIpcMessage(eventChannel, _eventArgs, _eventCurrentTarget) {
     else if (eventChannel === events_1.R2_EVENT_TTS_IS_PLAYING) {
         if (_ttsListener) {
             _ttsListener(TTSStateEnum.PLAYING);
+        }
+    }
+    else if (eventChannel === events_1.R2_EVENT_TTS_DOC_END) {
+        const nextSpine = location_1.navLeftOrRight(readium_css_1.isRTL(), true);
+        if (nextSpine) {
+            setTimeout(() => {
+                const activeWebView = win.READIUM2.getActiveWebView();
+                if (activeWebView) {
+                    let done = false;
+                    const cb = (event) => {
+                        if (event.channel === events_1.R2_EVENT_READING_LOCATION) {
+                            const webview = event.currentTarget;
+                            if (webview !== activeWebView) {
+                                console.log("Wrong navigator webview?!");
+                                return;
+                            }
+                            done = true;
+                            activeWebView.removeEventListener("ipc-message", cb);
+                            if (activeWebView.READIUM2.link &&
+                                activeWebView.READIUM2.link.Href === nextSpine.Href) {
+                                ttsPlay(win.READIUM2.ttsPlaybackRate);
+                            }
+                        }
+                    };
+                    setTimeout(() => {
+                        if (done) {
+                            return;
+                        }
+                        try {
+                            activeWebView.removeEventListener("ipc-message", cb);
+                        }
+                        catch (err) {
+                            console.log(err);
+                        }
+                    }, 1000);
+                    activeWebView.addEventListener("ipc-message", cb);
+                }
+            }, 200);
         }
     }
     else {
@@ -37,7 +76,10 @@ function ttsListen(ttsListener) {
     _ttsListener = ttsListener;
 }
 exports.ttsListen = ttsListen;
-function ttsPlay() {
+function ttsPlay(speed) {
+    if (win.READIUM2) {
+        win.READIUM2.ttsPlaybackRate = speed;
+    }
     const activeWebView = win.READIUM2.getActiveWebView();
     if (!activeWebView) {
         return;
@@ -51,6 +93,7 @@ function ttsPlay() {
     }
     const payload = {
         rootElement: "html > body",
+        speed,
         startElement: startElementCSSSelector,
     };
     setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
@@ -124,4 +167,20 @@ function ttsClickEnable(doEnable) {
     }), 0);
 }
 exports.ttsClickEnable = ttsClickEnable;
+function ttsPlaybackRate(speed) {
+    if (win.READIUM2) {
+        win.READIUM2.ttsPlaybackRate = speed;
+    }
+    const activeWebView = win.READIUM2.getActiveWebView();
+    if (!activeWebView) {
+        return;
+    }
+    const payload = {
+        speed,
+    };
+    setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+        yield activeWebView.send(events_1.R2_EVENT_TTS_PLAYBACK_RATE, payload);
+    }), 0);
+}
+exports.ttsPlaybackRate = ttsPlaybackRate;
 //# sourceMappingURL=readaloud.js.map

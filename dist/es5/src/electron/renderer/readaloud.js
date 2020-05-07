@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = require("tslib");
 var events_1 = require("../common/events");
 var location_1 = require("./location");
+var readium_css_1 = require("./readium-css");
 var win = window;
 function ttsHandleIpcMessage(eventChannel, _eventArgs, _eventCurrentTarget) {
     if (eventChannel === events_1.R2_EVENT_TTS_IS_PAUSED) {
@@ -18,6 +19,44 @@ function ttsHandleIpcMessage(eventChannel, _eventArgs, _eventCurrentTarget) {
     else if (eventChannel === events_1.R2_EVENT_TTS_IS_PLAYING) {
         if (_ttsListener) {
             _ttsListener(TTSStateEnum.PLAYING);
+        }
+    }
+    else if (eventChannel === events_1.R2_EVENT_TTS_DOC_END) {
+        var nextSpine_1 = location_1.navLeftOrRight(readium_css_1.isRTL(), true);
+        if (nextSpine_1) {
+            setTimeout(function () {
+                var activeWebView = win.READIUM2.getActiveWebView();
+                if (activeWebView) {
+                    var done_1 = false;
+                    var cb_1 = function (event) {
+                        if (event.channel === events_1.R2_EVENT_READING_LOCATION) {
+                            var webview = event.currentTarget;
+                            if (webview !== activeWebView) {
+                                console.log("Wrong navigator webview?!");
+                                return;
+                            }
+                            done_1 = true;
+                            activeWebView.removeEventListener("ipc-message", cb_1);
+                            if (activeWebView.READIUM2.link &&
+                                activeWebView.READIUM2.link.Href === nextSpine_1.Href) {
+                                ttsPlay(win.READIUM2.ttsPlaybackRate);
+                            }
+                        }
+                    };
+                    setTimeout(function () {
+                        if (done_1) {
+                            return;
+                        }
+                        try {
+                            activeWebView.removeEventListener("ipc-message", cb_1);
+                        }
+                        catch (err) {
+                            console.log(err);
+                        }
+                    }, 1000);
+                    activeWebView.addEventListener("ipc-message", cb_1);
+                }
+            }, 200);
         }
     }
     else {
@@ -37,8 +76,11 @@ function ttsListen(ttsListener) {
     _ttsListener = ttsListener;
 }
 exports.ttsListen = ttsListen;
-function ttsPlay() {
+function ttsPlay(speed) {
     var _this = this;
+    if (win.READIUM2) {
+        win.READIUM2.ttsPlaybackRate = speed;
+    }
     var activeWebView = win.READIUM2.getActiveWebView();
     if (!activeWebView) {
         return;
@@ -52,6 +94,7 @@ function ttsPlay() {
     }
     var payload = {
         rootElement: "html > body",
+        speed: speed,
         startElement: startElementCSSSelector,
     };
     setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
@@ -180,4 +223,28 @@ function ttsClickEnable(doEnable) {
     }); }, 0);
 }
 exports.ttsClickEnable = ttsClickEnable;
+function ttsPlaybackRate(speed) {
+    var _this = this;
+    if (win.READIUM2) {
+        win.READIUM2.ttsPlaybackRate = speed;
+    }
+    var activeWebView = win.READIUM2.getActiveWebView();
+    if (!activeWebView) {
+        return;
+    }
+    var payload = {
+        speed: speed,
+    };
+    setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+        return tslib_1.__generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4, activeWebView.send(events_1.R2_EVENT_TTS_PLAYBACK_RATE, payload)];
+                case 1:
+                    _a.sent();
+                    return [2];
+            }
+        });
+    }); }, 0);
+}
+exports.ttsPlaybackRate = ttsPlaybackRate;
 //# sourceMappingURL=readaloud.js.map

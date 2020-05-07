@@ -9,9 +9,10 @@ export declare class PopupDialog {
     readonly onDialogClosed: (el: HTMLOrSVGElement | null) => void;
     readonly role: string;
     readonly dialog: IHTMLDialogElementWithPopup;
+    readonly doNotTrapKeyboardFocusTabIndexCycling: boolean;
     private readonly _onKeyUp;
     private readonly _onKeyDown;
-    constructor(documant: Document, outerHTML: string, onDialogClosed: (el: HTMLOrSVGElement | null) => void, optionalCssClass?: string);
+    constructor(documant: Document, outerHTML: string, onDialogClosed: (el: HTMLOrSVGElement | null) => void, optionalCssClass?: string, doNotTrapKeyboardFocusTabIndexCycling?: boolean);
     show(toRefocus: Element | undefined): void;
     cancelRefocus(): void;
     hide(): void;

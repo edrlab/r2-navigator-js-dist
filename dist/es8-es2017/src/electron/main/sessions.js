@@ -498,20 +498,6 @@ function initSessions() {
             });
         }
     });
-    async function willQuitCallback(evt) {
-        debug("app will quit");
-        evt.preventDefault();
-        electron_1.app.removeListener("will-quit", willQuitCallback);
-        try {
-            await clearSessions();
-        }
-        catch (err) {
-            debug(err);
-        }
-        debug("Cache and StorageData cleared, now quitting...");
-        electron_1.app.quit();
-    }
-    electron_1.app.on("will-quit", willQuitCallback);
 }
 exports.initSessions = initSessions;
 async function clearSession(sess, str) {

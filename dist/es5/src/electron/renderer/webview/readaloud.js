@@ -4,7 +4,9 @@ var debounce_1 = require("debounce");
 var electron_1 = require("electron");
 var events_1 = require("../../common/events");
 var styles_1 = require("../../common/styles");
+var animateProperty_1 = require("../common/animateProperty");
 var dom_text_utils_1 = require("../common/dom-text-utils");
+var easings_1 = require("../common/easings");
 var popup_dialog_1 = require("../common/popup-dialog");
 var readium_css_1 = require("./readium-css");
 var win = global.window;
@@ -29,9 +31,10 @@ function resetState() {
         _dialogState.remove();
     }
     _dialogState = undefined;
+    win.document.documentElement.classList.remove(styles_1.TTS_CLASS_IS_ACTIVE);
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_TTS_IS_STOPPED);
 }
-function ttsPlay(focusScrollRaw, rootElem, startElem, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
+function ttsPlay(speed, focusScrollRaw, rootElem, startElem, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
     ttsStop();
     var rootEl = rootElem;
     if (!rootEl) {
@@ -52,7 +55,7 @@ function ttsPlay(focusScrollRaw, rootElem, startElem, ensureTwoPageSpreadWithOdd
         ttsQueueIndex = 0;
     }
     setTimeout(function () {
-        startTTSSession(rootEl, ttsQueue, ttsQueueIndex, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+        startTTSSession(speed, rootEl, ttsQueue, ttsQueueIndex, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
     }, 100);
 }
 exports.ttsPlay = ttsPlay;
@@ -85,9 +88,21 @@ function ttsPause() {
             win.speechSynthesis.cancel();
         }, 0);
     }
+    win.document.documentElement.classList.add(styles_1.TTS_CLASS_IS_ACTIVE);
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_TTS_IS_PAUSED);
 }
 exports.ttsPause = ttsPause;
+function ttsPlaybackRate(speed) {
+    win.READIUM2.ttsPlaybackRate = speed;
+    ttsPause();
+    if (_dialogState && _dialogState.ttsUtterance) {
+        _dialogState.ttsUtterance.rate = speed;
+    }
+    setTimeout(function () {
+        ttsResume();
+    }, 60);
+}
+exports.ttsPlaybackRate = ttsPlaybackRate;
 var _resumableState;
 function ttsResume() {
     if (_dialogState &&
@@ -100,12 +115,13 @@ function ttsResume() {
                 win.speechSynthesis.speak(_dialogState.ttsUtterance);
             }
         }, 0);
+        win.document.documentElement.classList.add(styles_1.TTS_CLASS_IS_ACTIVE);
         electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_TTS_IS_PLAYING);
     }
     else if (_resumableState) {
         setTimeout(function () {
             if (_resumableState) {
-                startTTSSession(_resumableState.ttsRootElement, _resumableState.ttsQueue, _resumableState.ttsQueueIndex, _resumableState.focusScrollRaw, _resumableState.ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, _resumableState.ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+                startTTSSession(win.READIUM2.ttsPlaybackRate, _resumableState.ttsRootElement, _resumableState.ttsQueue, _resumableState.ttsQueueIndex, _resumableState.focusScrollRaw, _resumableState.ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, _resumableState.ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
             }
         }, 100);
     }
@@ -204,10 +220,13 @@ function highlights(doHighlight) {
         }
     }
 }
+var _lastAnimState;
+var animationTime = 400;
 var scrollIntoViewSpokenTextDebounced = debounce_1.debounce(function (id) {
     scrollIntoViewSpokenText(id);
-}, 100);
+}, 200);
 function scrollIntoViewSpokenText(id) {
+    var reduceMotion = win.document.documentElement.classList.contains(styles_1.ROOT_CLASS_REDUCE_MOTION);
     var span = win.document.getElementById(id);
     if (span && _dialogState && _dialogState.domText) {
         var rect = span.getBoundingClientRect();
@@ -220,7 +239,23 @@ function scrollIntoViewSpokenText(id) {
         else if (offset < 0) {
             offset = 0;
         }
-        _dialogState.domText.scrollTop = offset;
+        var diff = Math.abs(_dialogState.domText.scrollTop - offset);
+        if (diff < 20) {
+            return;
+        }
+        if (_lastAnimState && _lastAnimState.animating) {
+            win.cancelAnimationFrame(_lastAnimState.id);
+            _lastAnimState.object[_lastAnimState.property] = _lastAnimState.destVal;
+        }
+        var targetObj = _dialogState.domText;
+        var targetProp = "scrollTop";
+        if (reduceMotion) {
+            _lastAnimState = undefined;
+            targetObj[targetProp] = offset;
+        }
+        else {
+            _lastAnimState = animateProperty_1.animateProperty(win.cancelAnimationFrame, undefined, targetProp, animationTime, targetObj, offset, win.requestAnimationFrame, easings_1.easings.easeInOutQuad);
+        }
     }
 }
 var R2_DATA_ATTR_UTTERANCE_INDEX = "data-r2-tts-utterance-index";
@@ -362,8 +397,15 @@ function ttsPlayQueueIndex(ttsQueueIndex) {
     if (_dialogState.domSlider) {
         _dialogState.domSlider.valueAsNumber = ttsQueueIndex;
     }
-    if (ttsQueueIndex >= _dialogState.ttsQueueLength || ttsQueueIndex < 0) {
+    if (ttsQueueIndex < 0) {
         ttsStop();
+        return;
+    }
+    if (ttsQueueIndex >= _dialogState.ttsQueueLength) {
+        ttsStop();
+        setTimeout(function () {
+            electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_TTS_DOC_END);
+        }, 400);
         return;
     }
     var ttsQueueItem = dom_text_utils_1.getTtsQueueItemRef(_dialogState.ttsQueue, ttsQueueIndex);
@@ -383,6 +425,9 @@ function ttsPlayQueueIndex(ttsQueueIndex) {
     utterance.r2_ttsQueueIndex = ttsQueueIndex;
     if (_dialogState.ttsQueueItem.item.lang) {
         utterance.lang = _dialogState.ttsQueueItem.item.lang;
+    }
+    if (win.READIUM2.ttsPlaybackRate >= 0.1 && win.READIUM2.ttsPlaybackRate <= 10) {
+        utterance.rate = win.READIUM2.ttsPlaybackRate;
     }
     utterance.onboundary = function (ev) {
         if (utterance.r2_cancel) {
@@ -424,10 +469,12 @@ function ttsPlayQueueIndex(ttsQueueIndex) {
     setTimeout(function () {
         win.speechSynthesis.speak(utterance);
     }, 0);
+    win.document.documentElement.classList.add(styles_1.TTS_CLASS_IS_ACTIVE);
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_TTS_IS_PLAYING);
 }
 exports.ttsPlayQueueIndex = ttsPlayQueueIndex;
-function startTTSSession(ttsRootElement, ttsQueue, ttsQueueIndexStart, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
+function startTTSSession(speed, ttsRootElement, ttsQueue, ttsQueueIndexStart, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
+    win.READIUM2.ttsPlaybackRate = speed;
     var ttsQueueItemStart = dom_text_utils_1.getTtsQueueItemRef(ttsQueue, ttsQueueIndexStart);
     if (!ttsQueueItemStart) {
         ttsStop();
@@ -453,8 +500,8 @@ function startTTSSession(ttsRootElement, ttsQueue, ttsQueueIndexStart, focusScro
             resetState();
         }, 50);
     }
-    var outerHTML = "<div id=\"" + styles_1.TTS_ID_CONTAINER + "\"\n        class=\"" + styles_1.CSS_CLASS_NO_FOCUS_OUTLINE + "\"\n        dir=\"ltr\"\n        lang=\"en\"\n        xml:lang=\"en\"\n        tabindex=\"0\" autofocus=\"autofocus\"></div>\n    <div id=\"" + styles_1.TTS_ID_INFO + "\"> </div>\n    <button id=\"" + styles_1.TTS_ID_PREVIOUS + "\" class=\"" + styles_1.TTS_NAV_BUTTON_CLASS + "\"><span>&#9668;</span></button>\n    <button id=\"" + styles_1.TTS_ID_NEXT + "\" class=\"" + styles_1.TTS_NAV_BUTTON_CLASS + "\"><span>&#9658;</span></button>\n    <input id=\"" + styles_1.TTS_ID_SLIDER + "\" type=\"range\" min=\"0\" max=\"" + (ttsQueueLength - 1) + "\" value=\"0\"\n        " + (readium_css_1.isRTL() ? "dir=\"rtl\"" : "dir=\"ltr\"") + "/>";
-    var pop = new popup_dialog_1.PopupDialog(win.document, outerHTML, onDialogClosed, styles_1.TTS_POPUP_DIALOG_CLASS);
+    var outerHTML = "<div id=\"" + styles_1.TTS_ID_CONTAINER + "\"\n        class=\"" + styles_1.CSS_CLASS_NO_FOCUS_OUTLINE + "\"\n        dir=\"ltr\"\n        lang=\"en\"\n        xml:lang=\"en\"\n        tabindex=\"0\" autofocus=\"autofocus\"></div>\n    <div id=\"" + styles_1.TTS_ID_INFO + "\"> </div>\n    <button id=\"" + styles_1.TTS_ID_PREVIOUS + "\" class=\"" + styles_1.TTS_NAV_BUTTON_CLASS + "\" title=\"previous\"><span>&#9668;</span></button>\n    <button id=\"" + styles_1.TTS_ID_NEXT + "\" class=\"" + styles_1.TTS_NAV_BUTTON_CLASS + "\" title=\"next\"><span>&#9658;</span></button>\n    <input id=\"" + styles_1.TTS_ID_SLIDER + "\" type=\"range\" min=\"0\" max=\"" + (ttsQueueLength - 1) + "\" value=\"0\"\n        " + (readium_css_1.isRTL() ? "dir=\"rtl\"" : "dir=\"ltr\"") + "  title=\"progress\"/>";
+    var pop = new popup_dialog_1.PopupDialog(win.document, outerHTML, onDialogClosed, styles_1.TTS_POPUP_DIALOG_CLASS, true);
     pop.show(ttsQueueItemStart.item.parentElement);
     _dialogState = pop.dialog;
     if (!_dialogState) {

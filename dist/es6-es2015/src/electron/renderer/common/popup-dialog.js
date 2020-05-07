@@ -58,6 +58,9 @@ function onKeyUp(ev) {
     }
 }
 function onKeyDown(ev) {
+    if (this.doNotTrapKeyboardFocusTabIndexCycling) {
+        return;
+    }
     const TAB_KEY = 9;
     if (ev.which === TAB_KEY) {
         const focusables = getFocusables(this.dialog);
@@ -80,13 +83,14 @@ function onKeyDown(ev) {
     }
 }
 class PopupDialog {
-    constructor(documant, outerHTML, onDialogClosed, optionalCssClass) {
+    constructor(documant, outerHTML, onDialogClosed, optionalCssClass, doNotTrapKeyboardFocusTabIndexCycling) {
         this.documant = documant;
         this.onDialogClosed = onDialogClosed;
         closePopupDialogs(documant);
         const that = this;
         this._onKeyUp = onKeyUp.bind(this);
         this._onKeyDown = onKeyDown.bind(this);
+        this.doNotTrapKeyboardFocusTabIndexCycling = doNotTrapKeyboardFocusTabIndexCycling ? true : false;
         this.dialog = documant.createElement("dialog");
         this.dialog.popDialog = this;
         this.dialog.setAttribute("class", styles_1.POPUP_DIALOG_CLASS

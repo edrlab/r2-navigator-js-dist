@@ -134,15 +134,15 @@ function navLeftOrRight(left, spineNav) {
     var publication = win.READIUM2.publication;
     var publicationURL = win.READIUM2.publicationURL;
     if (!publication || !publicationURL) {
-        return;
+        return undefined;
     }
     var rtl = readium_css_1.isRTL();
     if (spineNav) {
         if (!publication.Spine) {
-            return;
+            return undefined;
         }
         if (!_lastSavedReadingLocation) {
-            return;
+            return undefined;
         }
         var loc_1 = _lastSavedReadingLocation;
         var rtl_ = loc_1.docInfo && loc_1.docInfo.isRightToLeft;
@@ -164,7 +164,7 @@ function navLeftOrRight(left, spineNav) {
                 var activeWebView = win.READIUM2.getActiveWebView();
                 debug("navLeftOrRight: " + urlNoQueryParams);
                 handleLink(urlNoQueryParams, false, false, activeWebView ? activeWebView.READIUM2.readiumCss : undefined);
-                return;
+                return nextOrPreviousSpineItem;
             }
             else {
                 electron_1.shell.beep();
@@ -191,6 +191,7 @@ function navLeftOrRight(left, spineNav) {
             }); }, 0);
         }
     }
+    return undefined;
 }
 exports.navLeftOrRight = navLeftOrRight;
 function handleLink(href, previous, useGoto, rcss) {

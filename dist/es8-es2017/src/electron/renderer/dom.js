@@ -215,6 +215,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
         publicationURL,
         sessionInfo,
         ttsClickEnabled: false,
+        ttsPlaybackRate: 1,
     };
     if (IS_DEV) {
         debug("||||||++||||| installNavigatorDOM: ", JSON.stringify(location));

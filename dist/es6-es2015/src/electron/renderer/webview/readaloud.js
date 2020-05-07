@@ -4,7 +4,9 @@ const debounce_1 = require("debounce");
 const electron_1 = require("electron");
 const events_1 = require("../../common/events");
 const styles_1 = require("../../common/styles");
+const animateProperty_1 = require("../common/animateProperty");
 const dom_text_utils_1 = require("../common/dom-text-utils");
+const easings_1 = require("../common/easings");
 const popup_dialog_1 = require("../common/popup-dialog");
 const readium_css_1 = require("./readium-css");
 const win = global.window;
@@ -29,9 +31,10 @@ function resetState() {
         _dialogState.remove();
     }
     _dialogState = undefined;
+    win.document.documentElement.classList.remove(styles_1.TTS_CLASS_IS_ACTIVE);
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_TTS_IS_STOPPED);
 }
-function ttsPlay(focusScrollRaw, rootElem, startElem, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
+function ttsPlay(speed, focusScrollRaw, rootElem, startElem, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
     ttsStop();
     let rootEl = rootElem;
     if (!rootEl) {
@@ -52,7 +55,7 @@ function ttsPlay(focusScrollRaw, rootElem, startElem, ensureTwoPageSpreadWithOdd
         ttsQueueIndex = 0;
     }
     setTimeout(() => {
-        startTTSSession(rootEl, ttsQueue, ttsQueueIndex, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+        startTTSSession(speed, rootEl, ttsQueue, ttsQueueIndex, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
     }, 100);
 }
 exports.ttsPlay = ttsPlay;
@@ -85,9 +88,21 @@ function ttsPause() {
             win.speechSynthesis.cancel();
         }, 0);
     }
+    win.document.documentElement.classList.add(styles_1.TTS_CLASS_IS_ACTIVE);
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_TTS_IS_PAUSED);
 }
 exports.ttsPause = ttsPause;
+function ttsPlaybackRate(speed) {
+    win.READIUM2.ttsPlaybackRate = speed;
+    ttsPause();
+    if (_dialogState && _dialogState.ttsUtterance) {
+        _dialogState.ttsUtterance.rate = speed;
+    }
+    setTimeout(() => {
+        ttsResume();
+    }, 60);
+}
+exports.ttsPlaybackRate = ttsPlaybackRate;
 let _resumableState;
 function ttsResume() {
     if (_dialogState &&
@@ -100,12 +115,13 @@ function ttsResume() {
                 win.speechSynthesis.speak(_dialogState.ttsUtterance);
             }
         }, 0);
+        win.document.documentElement.classList.add(styles_1.TTS_CLASS_IS_ACTIVE);
         electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_TTS_IS_PLAYING);
     }
     else if (_resumableState) {
         setTimeout(() => {
             if (_resumableState) {
-                startTTSSession(_resumableState.ttsRootElement, _resumableState.ttsQueue, _resumableState.ttsQueueIndex, _resumableState.focusScrollRaw, _resumableState.ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, _resumableState.ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+                startTTSSession(win.READIUM2.ttsPlaybackRate, _resumableState.ttsRootElement, _resumableState.ttsQueue, _resumableState.ttsQueueIndex, _resumableState.focusScrollRaw, _resumableState.ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, _resumableState.ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
             }
         }, 100);
     }
@@ -204,10 +220,13 @@ function highlights(doHighlight) {
         }
     }
 }
+let _lastAnimState;
+const animationTime = 400;
 const scrollIntoViewSpokenTextDebounced = debounce_1.debounce((id) => {
     scrollIntoViewSpokenText(id);
-}, 100);
+}, 200);
 function scrollIntoViewSpokenText(id) {
+    const reduceMotion = win.document.documentElement.classList.contains(styles_1.ROOT_CLASS_REDUCE_MOTION);
     const span = win.document.getElementById(id);
     if (span && _dialogState && _dialogState.domText) {
         const rect = span.getBoundingClientRect();
@@ -220,7 +239,23 @@ function scrollIntoViewSpokenText(id) {
         else if (offset < 0) {
             offset = 0;
         }
-        _dialogState.domText.scrollTop = offset;
+        const diff = Math.abs(_dialogState.domText.scrollTop - offset);
+        if (diff < 20) {
+            return;
+        }
+        if (_lastAnimState && _lastAnimState.animating) {
+            win.cancelAnimationFrame(_lastAnimState.id);
+            _lastAnimState.object[_lastAnimState.property] = _lastAnimState.destVal;
+        }
+        const targetObj = _dialogState.domText;
+        const targetProp = "scrollTop";
+        if (reduceMotion) {
+            _lastAnimState = undefined;
+            targetObj[targetProp] = offset;
+        }
+        else {
+            _lastAnimState = animateProperty_1.animateProperty(win.cancelAnimationFrame, undefined, targetProp, animationTime, targetObj, offset, win.requestAnimationFrame, easings_1.easings.easeInOutQuad);
+        }
     }
 }
 const R2_DATA_ATTR_UTTERANCE_INDEX = "data-r2-tts-utterance-index";
@@ -362,8 +397,15 @@ function ttsPlayQueueIndex(ttsQueueIndex) {
     if (_dialogState.domSlider) {
         _dialogState.domSlider.valueAsNumber = ttsQueueIndex;
     }
-    if (ttsQueueIndex >= _dialogState.ttsQueueLength || ttsQueueIndex < 0) {
+    if (ttsQueueIndex < 0) {
         ttsStop();
+        return;
+    }
+    if (ttsQueueIndex >= _dialogState.ttsQueueLength) {
+        ttsStop();
+        setTimeout(() => {
+            electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_TTS_DOC_END);
+        }, 400);
         return;
     }
     const ttsQueueItem = dom_text_utils_1.getTtsQueueItemRef(_dialogState.ttsQueue, ttsQueueIndex);
@@ -383,6 +425,9 @@ function ttsPlayQueueIndex(ttsQueueIndex) {
     utterance.r2_ttsQueueIndex = ttsQueueIndex;
     if (_dialogState.ttsQueueItem.item.lang) {
         utterance.lang = _dialogState.ttsQueueItem.item.lang;
+    }
+    if (win.READIUM2.ttsPlaybackRate >= 0.1 && win.READIUM2.ttsPlaybackRate <= 10) {
+        utterance.rate = win.READIUM2.ttsPlaybackRate;
     }
     utterance.onboundary = (ev) => {
         if (utterance.r2_cancel) {
@@ -424,10 +469,12 @@ function ttsPlayQueueIndex(ttsQueueIndex) {
     setTimeout(() => {
         win.speechSynthesis.speak(utterance);
     }, 0);
+    win.document.documentElement.classList.add(styles_1.TTS_CLASS_IS_ACTIVE);
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_TTS_IS_PLAYING);
 }
 exports.ttsPlayQueueIndex = ttsPlayQueueIndex;
-function startTTSSession(ttsRootElement, ttsQueue, ttsQueueIndexStart, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
+function startTTSSession(speed, ttsRootElement, ttsQueue, ttsQueueIndexStart, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
+    win.READIUM2.ttsPlaybackRate = speed;
     const ttsQueueItemStart = dom_text_utils_1.getTtsQueueItemRef(ttsQueue, ttsQueueIndexStart);
     if (!ttsQueueItemStart) {
         ttsStop();
@@ -460,11 +507,11 @@ function startTTSSession(ttsRootElement, ttsQueue, ttsQueueIndexStart, focusScro
         xml:lang="en"
         tabindex="0" autofocus="autofocus"></div>
     <div id="${styles_1.TTS_ID_INFO}"> </div>
-    <button id="${styles_1.TTS_ID_PREVIOUS}" class="${styles_1.TTS_NAV_BUTTON_CLASS}"><span>&#9668;</span></button>
-    <button id="${styles_1.TTS_ID_NEXT}" class="${styles_1.TTS_NAV_BUTTON_CLASS}"><span>&#9658;</span></button>
+    <button id="${styles_1.TTS_ID_PREVIOUS}" class="${styles_1.TTS_NAV_BUTTON_CLASS}" title="previous"><span>&#9668;</span></button>
+    <button id="${styles_1.TTS_ID_NEXT}" class="${styles_1.TTS_NAV_BUTTON_CLASS}" title="next"><span>&#9658;</span></button>
     <input id="${styles_1.TTS_ID_SLIDER}" type="range" min="0" max="${ttsQueueLength - 1}" value="0"
-        ${readium_css_1.isRTL() ? `dir="rtl"` : `dir="ltr"`}/>`;
-    const pop = new popup_dialog_1.PopupDialog(win.document, outerHTML, onDialogClosed, styles_1.TTS_POPUP_DIALOG_CLASS);
+        ${readium_css_1.isRTL() ? `dir="rtl"` : `dir="ltr"`}  title="progress"/>`;
+    const pop = new popup_dialog_1.PopupDialog(win.document, outerHTML, onDialogClosed, styles_1.TTS_POPUP_DIALOG_CLASS, true);
     pop.show(ttsQueueItemStart.item.parentElement);
     _dialogState = pop.dialog;
     if (!_dialogState) {

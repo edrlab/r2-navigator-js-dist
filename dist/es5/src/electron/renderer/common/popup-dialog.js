@@ -58,6 +58,9 @@ function onKeyUp(ev) {
     }
 }
 function onKeyDown(ev) {
+    if (this.doNotTrapKeyboardFocusTabIndexCycling) {
+        return;
+    }
     var TAB_KEY = 9;
     if (ev.which === TAB_KEY) {
         var focusables = getFocusables(this.dialog);
@@ -80,13 +83,14 @@ function onKeyDown(ev) {
     }
 }
 var PopupDialog = (function () {
-    function PopupDialog(documant, outerHTML, onDialogClosed, optionalCssClass) {
+    function PopupDialog(documant, outerHTML, onDialogClosed, optionalCssClass, doNotTrapKeyboardFocusTabIndexCycling) {
         this.documant = documant;
         this.onDialogClosed = onDialogClosed;
         closePopupDialogs(documant);
         var that = this;
         this._onKeyUp = onKeyUp.bind(this);
         this._onKeyDown = onKeyDown.bind(this);
+        this.doNotTrapKeyboardFocusTabIndexCycling = doNotTrapKeyboardFocusTabIndexCycling ? true : false;
         this.dialog = documant.createElement("dialog");
         this.dialog.popDialog = this;
         this.dialog.setAttribute("class", styles_1.POPUP_DIALOG_CLASS
