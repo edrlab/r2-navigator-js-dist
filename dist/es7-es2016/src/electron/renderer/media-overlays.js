@@ -410,15 +410,8 @@ const _skippables = [
     "note",
     "rearnote",
     "sidebar",
-    "practice",
     "marginalia",
     "annotation",
-    "help",
-    "table",
-    "table-row",
-    "table-cell",
-    "list",
-    "list-item",
 ];
 function isSkippable(mo) {
     return mo.Role && mo.Role.findIndex((r) => {
