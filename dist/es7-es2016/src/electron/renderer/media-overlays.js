@@ -182,6 +182,7 @@ function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
                         debug("playMediaOverlaysAudio() - playClip() - _currentAudioElement.play()");
                     }
                     ensureOnTimeUpdate(false);
+                    _currentAudioElement.playbackRate = _mediaOverlaysPlaybackRate;
                     yield _currentAudioElement.play();
                 }
                 else {
@@ -196,6 +197,7 @@ function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
                         }
                         ensureOnTimeUpdate(false);
                         if (_currentAudioElement) {
+                            _currentAudioElement.playbackRate = _mediaOverlaysPlaybackRate;
                             yield _currentAudioElement.play();
                         }
                     });
@@ -905,6 +907,7 @@ function mediaOverlaysResume() {
         if (_currentAudioElement) {
             setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
                 if (_currentAudioElement) {
+                    _currentAudioElement.playbackRate = _mediaOverlaysPlaybackRate;
                     yield _currentAudioElement.play();
                 }
             }), 0);

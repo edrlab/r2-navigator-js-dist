@@ -216,6 +216,7 @@ function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
                                         debug("playMediaOverlaysAudio() - playClip() - _currentAudioElement.play()");
                                     }
                                     ensureOnTimeUpdate(false);
+                                    _currentAudioElement.playbackRate = _mediaOverlaysPlaybackRate;
                                     return [4, _currentAudioElement.play()];
                                 case 1:
                                     _a.sent();
@@ -236,6 +237,7 @@ function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
                                                     }
                                                     ensureOnTimeUpdate(false);
                                                     if (!_currentAudioElement) return [3, 2];
+                                                    _currentAudioElement.playbackRate = _mediaOverlaysPlaybackRate;
                                                     return [4, _currentAudioElement.play()];
                                                 case 1:
                                                     _a.sent();
@@ -1078,6 +1080,7 @@ function mediaOverlaysResume() {
                     switch (_a.label) {
                         case 0:
                             if (!_currentAudioElement) return [3, 2];
+                            _currentAudioElement.playbackRate = _mediaOverlaysPlaybackRate;
                             return [4, _currentAudioElement.play()];
                         case 1:
                             _a.sent();
