@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.sameSelections = exports.sameRanges = void 0;
 function sameRanges(r1, r2) {
     if (!r1 || !r2) {
         return false;

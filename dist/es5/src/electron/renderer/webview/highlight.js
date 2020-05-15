@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.createHighlight = exports.recreateAllHighlights = exports.recreateAllHighlightsDebounced = exports.recreateAllHighlightsRaw = exports.destroyHighlight = exports.destroyAllhighlights = exports.hideAllhighlights = exports.getBoundingClientRectOfDocumentBody = exports.CLASS_HIGHLIGHT_BOUNDING_AREA = exports.CLASS_HIGHLIGHT_AREA = exports.CLASS_HIGHLIGHT_CONTAINER = exports.ID_HIGHLIGHTS_CONTAINER = void 0;
 var tslib_1 = require("tslib");
 var crypto = require("crypto");
 var debounce_1 = require("debounce");
@@ -24,16 +25,9 @@ var DEFAULT_BACKGROUND_COLOR = {
 var _highlights = [];
 var SVG_XML_NAMESPACE = "http://www.w3.org/2000/svg";
 function getBoundingClientRectOfDocumentBody(win) {
-    if (!win.document.body._CachedBoundingClientRect) {
-        win.document.body._CachedBoundingClientRect = win.document.body.getBoundingClientRect();
-    }
-    return win.document.body._CachedBoundingClientRect;
+    return win.document.body.getBoundingClientRect();
 }
 exports.getBoundingClientRectOfDocumentBody = getBoundingClientRectOfDocumentBody;
-function invalidateBoundingClientRectOfDocumentBody(win) {
-    win.document.body._CachedBoundingClientRect = undefined;
-}
-exports.invalidateBoundingClientRectOfDocumentBody = invalidateBoundingClientRectOfDocumentBody;
 function resetHighlightBoundingStyle(_win, highlightBounding) {
     if (!highlightBounding.active) {
         return;
@@ -283,7 +277,7 @@ function ensureHighlightsContainer(win) {
         }
         _highlightsContainer = documant.createElement("div");
         _highlightsContainer.setAttribute("id", exports.ID_HIGHLIGHTS_CONTAINER);
-        _highlightsContainer.setAttribute("style", "background-color: transparent !important");
+        _highlightsContainer.setAttribute("style", "background-color: transparent !important; position: absolute; width: 1px; height: 1px; top: 0; left: 0; overflow: visible;");
         _highlightsContainer.style.setProperty("pointer-events", "none");
         documant.body.append(_highlightsContainer);
     }
@@ -373,7 +367,7 @@ function createHighlightDom(win, highlight) {
     var highlightParent = documant.createElement("div");
     highlightParent.setAttribute("id", highlight.id);
     highlightParent.setAttribute("class", exports.CLASS_HIGHLIGHT_CONTAINER);
-    highlightParent.setAttribute("style", "background-color: transparent !important");
+    highlightParent.setAttribute("style", "background-color: transparent !important; position: absolute; width: 1px; height: 1px; top: 0; left: 0; overflow: visible;");
     highlightParent.style.setProperty("pointer-events", "none");
     if (highlight.pointerInteraction) {
         highlightParent.setAttribute("data-click", "1");
@@ -490,6 +484,8 @@ function createHighlightDom(win, highlight) {
                 };
                 highlightArea.style.width = highlightArea.rect.width * scale + "px";
                 highlightArea.style.height = highlightArea.rect.height * scale + "px";
+                highlightArea.style.minWidth = highlightArea.style.width;
+                highlightArea.style.minHeight = highlightArea.style.height;
                 highlightArea.style.left = highlightArea.rect.left * scale + "px";
                 highlightArea.style.top = highlightArea.rect.top * scale + "px";
                 highlightParent.append(highlightArea);
@@ -509,6 +505,8 @@ function createHighlightDom(win, highlight) {
                     };
                     highlightAreaLine.style.width = highlightAreaLine.rect.width * scale + "px";
                     highlightAreaLine.style.height = strikeThroughLineThickness * scale + "px";
+                    highlightAreaLine.style.minWidth = highlightAreaLine.style.width;
+                    highlightAreaLine.style.minHeight = highlightAreaLine.style.height;
                     highlightAreaLine.style.left = highlightAreaLine.rect.left * scale + "px";
                     highlightAreaLine.style.top = (highlightAreaLine.rect.top + (highlightAreaLine.rect.height / 2) - (strikeThroughLineThickness / 2)) * scale + "px";
                     highlightParent.append(highlightAreaLine);
@@ -554,6 +552,8 @@ function createHighlightDom(win, highlight) {
     };
     highlightBounding.style.width = highlightBounding.rect.width * scale + "px";
     highlightBounding.style.height = highlightBounding.rect.height * scale + "px";
+    highlightBounding.style.minWidth = highlightBounding.style.width;
+    highlightBounding.style.minHeight = highlightBounding.style.height;
     highlightBounding.style.left = highlightBounding.rect.left * scale + "px";
     highlightBounding.style.top = highlightBounding.rect.top * scale + "px";
     highlightParent.append(highlightBounding);

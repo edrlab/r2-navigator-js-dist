@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.uniqueCssSelector = void 0;
 var tslib_1 = require("tslib");
 var cssesc = require("cssesc");
 var Limit;

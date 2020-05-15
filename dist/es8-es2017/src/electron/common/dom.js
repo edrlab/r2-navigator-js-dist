@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.parseDOM = exports.serializeDOM = void 0;
 const xmldom = require("xmldom");
 function serializeDOM(documant) {
     const serialized = new xmldom.XMLSerializer().serializeToString(documant);

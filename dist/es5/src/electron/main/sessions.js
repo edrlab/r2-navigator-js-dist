@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.clearSessions = exports.clearDefaultSession = exports.clearWebviewSession = exports.getWebViewSession = exports.clearSession = exports.initSessions = exports.secureSessions = void 0;
 var tslib_1 = require("tslib");
 var debug_ = require("debug");
 var electron_1 = require("electron");

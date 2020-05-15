@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ttsPlaybackRate = exports.ttsClickEnable = exports.ttsNext = exports.ttsPrevious = exports.ttsResume = exports.ttsStop = exports.ttsPause = exports.ttsPlay = exports.ttsListen = exports.TTSStateEnum = exports.ttsHandleIpcMessage = void 0;
 var tslib_1 = require("tslib");
 var events_1 = require("../common/events");
 var location_1 = require("./location");

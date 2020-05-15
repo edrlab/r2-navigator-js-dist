@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.checkOverlaps = exports.removeContainedRects = exports.getRectOverlapY = exports.getRectOverlapX = exports.replaceOverlapingRects = exports.mergeTouchingRects = exports.rectsTouchOrOverlap = exports.getBoundingRect = exports.rectContains = exports.rectContainsPoint = exports.rectSubtract = exports.rectIntersect = exports.getClientRectsNoOverlap_ = exports.getClientRectsNoOverlap = void 0;
 const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 function getClientRectsNoOverlap(range, doNotMergeHorizontallyAlignedRects) {
     const rangeClientRects = range.getClientRects();

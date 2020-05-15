@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.registerProtocol = void 0;
 var electron_1 = require("electron");
 var sessions_1 = require("../../common/sessions");
 exports.registerProtocol = function () {

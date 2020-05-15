@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.highlightsCreate = exports.highlightsRemove = exports.highlightsRemoveAll = exports.highlightsClickListen = exports.highlightsHandleIpcMessage = void 0;
 const events_1 = require("../common/events");
 const win = window;
 function highlightsHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {

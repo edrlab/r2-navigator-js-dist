@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.wrapHighlight = exports.generateTtsQueue = exports.findTtsQueueItemIndex = exports.getTtsQueueItemRef = exports.getTtsQueueItemRefText = exports.getTtsQueueLength = exports.consoleLogTtsQueue = exports.consoleLogTtsQueueItem = exports.normalizeText = exports.getDirection = exports.getLanguage = void 0;
 const sentence_splitter_1 = require("sentence-splitter");
 const cssselector2_1 = require("../common/cssselector2");
 function getLanguage(el) {

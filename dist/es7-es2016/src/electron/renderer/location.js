@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.isLocatorVisible = exports.setReadingLocationSaver = exports.getCurrentReadingLocation = exports.reloadContent = exports.handleLinkLocator = exports.handleLinkUrl = exports.handleLink = exports.navLeftOrRight = exports.shiftWebview = exports.locationHandleIpcMessage = void 0;
 const tslib_1 = require("tslib");
 const debug_ = require("debug");
 const electron_1 = require("electron");
@@ -14,6 +15,7 @@ const styles_1 = require("../common/styles");
 const audiobook_2 = require("./audiobook");
 const url_params_1 = require("./common/url-params");
 const epubReadingSystem_1 = require("./epubReadingSystem");
+const media_overlays_1 = require("./media-overlays");
 const readium_css_1 = require("./readium-css");
 const state_1 = require("./webview/state");
 const URI = require("urijs");
@@ -76,10 +78,6 @@ function locationHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
         debug(`locationHandleIpcMessage R2_EVENT_LINK: ${payload.url}`);
         handleLinkUrl(payload.url, activeWebView.READIUM2.readiumCss);
     }
-    else if (eventChannel === events_1.R2_EVENT_AUDIO_SOUNDTRACK) {
-        const payload = eventArgs[0];
-        handleAudioSoundTrack(payload.url);
-    }
     else if (eventChannel === events_1.R2_EVENT_AUDIO_PLAYBACK_RATE) {
         const payload = eventArgs[0];
         audiobook_2.setCurrentAudioPlaybackRate(payload.speed);
@@ -90,26 +88,6 @@ function locationHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
     return true;
 }
 exports.locationHandleIpcMessage = locationHandleIpcMessage;
-const AUDIO_SOUNDTRACK_ID = "R2_AUDIO_SOUNDTRACK_ID";
-let _currentAudioSoundTrack;
-function handleAudioSoundTrack(url) {
-    if (url === _currentAudioSoundTrack) {
-        return;
-    }
-    _currentAudioSoundTrack = url;
-    let audioEl = document.getElementById(AUDIO_SOUNDTRACK_ID);
-    if (audioEl && audioEl.parentNode) {
-        audioEl.parentNode.removeChild(audioEl);
-    }
-    audioEl = document.createElement("audio");
-    audioEl.setAttribute("style", "display: none");
-    audioEl.setAttribute("id", AUDIO_SOUNDTRACK_ID);
-    audioEl.setAttribute("src", url);
-    audioEl.setAttribute("loop", "loop");
-    audioEl.setAttribute("autoplay", "autoplay");
-    audioEl.setAttribute("role", "ibooks:soundtrack");
-    document.body.appendChild(audioEl);
-}
 electron_1.ipcRenderer.on(events_1.R2_EVENT_LINK, (_event, payload) => {
     debug("R2_EVENT_LINK (ipcRenderer.on)");
     debug(payload.url);
@@ -169,8 +147,10 @@ function navLeftOrRight(left, spineNav) {
                 electron_1.shell.beep();
             }
         }
+        media_overlays_1.mediaOverlaysInterrupt();
     }
     else {
+        media_overlays_1.mediaOverlaysInterrupt();
         const goPREVIOUS = left ? !rtl : rtl;
         const payload = {
             direction: rtl ? "RTL" : "LTR",
@@ -301,6 +281,7 @@ function loadLink(hrefToLoad, previous, useGoto, rcss) {
     if (!publication || !publicationURL) {
         return false;
     }
+    media_overlays_1.mediaOverlaysInterrupt();
     let hrefToLoadHttp = hrefToLoad;
     if (hrefToLoadHttp.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
         hrefToLoadHttp = sessions_1.convertCustomSchemeToHttpUrl(hrefToLoadHttp);

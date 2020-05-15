@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.readiumCssTransformHtml = exports.injectReadPosCSS = exports.injectDefaultCSS = exports.removeAllCSS = exports.removeCSS = exports.appendCSS = exports.appendCSSInline = exports.ensureHead = exports.configureFixedLayout = exports.readiumCSSSet = exports.isPaginated = exports.isDocRTL = exports.isDocVertical = exports.READIUM2_BASEURL_ID = void 0;
 var debug_ = require("debug");
 var dom_1 = require("./dom");
 var readium_css_settings_1 = require("./readium-css-settings");
@@ -590,6 +591,7 @@ function removeAllCSS(documant) {
 }
 exports.removeAllCSS = removeAllCSS;
 function injectDefaultCSS(documant) {
+    appendCSSInline(documant, "electron-mo", styles_1.mediaOverlaysCssStyles);
     appendCSSInline(documant, "electron-tts", styles_1.ttsCssStyles);
     appendCSSInline(documant, "electron-footnotes", styles_1.footnotesCssStyles);
     appendCSSInline(documant, "electron-selection", styles_1.selectionCssStyles);

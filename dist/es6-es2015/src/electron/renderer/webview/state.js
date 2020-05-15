@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.isScreenReaderMounted = void 0;
 const electron_1 = require("electron");
 let _isScreenReaderMounted;
 function isScreenReaderMounted() {

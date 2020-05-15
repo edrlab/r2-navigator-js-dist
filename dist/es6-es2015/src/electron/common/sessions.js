@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.convertCustomSchemeToHttpUrl = exports.convertHttpUrlToCustomScheme = exports.READIUM2_ELECTRON_HTTP_PROTOCOL = exports.R2_SESSION_WEBVIEW = void 0;
 exports.R2_SESSION_WEBVIEW = "persist:readium2pubwebview";
 const UrlUtils_1 = require("r2-utils-js/dist/es6-es2015/src/_utils/http/UrlUtils");
 exports.READIUM2_ELECTRON_HTTP_PROTOCOL = "httpsr2";

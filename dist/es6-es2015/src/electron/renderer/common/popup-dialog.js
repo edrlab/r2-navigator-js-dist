@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.PopupDialog = exports.isElementInsidePopupDialog = exports.closePopupDialogs = exports.isPopupDialogOpen = void 0;
 const tabbable = require("tabbable");
 const styles_1 = require("../../common/styles");
 function isPopupDialogOpen(documant) {

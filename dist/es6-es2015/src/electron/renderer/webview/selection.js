@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.normalizeRange = exports.convertRangeInfo = exports.convertRange = exports.createOrderedRange = exports.getCurrentSelectionInfo = exports.clearCurrentSelection = void 0;
 const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 function dumpDebug(msg, startNode, startOffset, endNode, endOffset, getCssSelector) {
     console.log("$$$$$$$$$$$$$$$$$ " + msg);

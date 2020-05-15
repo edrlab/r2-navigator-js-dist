@@ -54,6 +54,17 @@ export declare const R2_EVENT_AUDIO_SOUNDTRACK = "R2_EVENT_AUDIO_SOUNDTRACK";
 export interface IEventPayload_R2_EVENT_AUDIO_SOUNDTRACK {
     url: string;
 }
+export declare const R2_EVENT_MEDIA_OVERLAY_CLICK = "R2_EVENT_MEDIA_OVERLAY_CLICK";
+export interface IEventPayload_R2_EVENT_MEDIA_OVERLAY_CLICK {
+    textFragmentIDChain: Array<string | null> | undefined;
+    userInteract: boolean;
+}
+export declare const R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT = "R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT";
+export interface IEventPayload_R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT {
+    id: string | undefined;
+    classActive: string | undefined;
+    classActivePlayback: string | undefined;
+}
 export declare const R2_EVENT_SHIFT_VIEW_X = "R2_EVENT_SHIFT_VIEW_X";
 export interface IEventPayload_R2_EVENT_SHIFT_VIEW_X {
     offset: number;

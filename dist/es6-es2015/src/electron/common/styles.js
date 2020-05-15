@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.audioCssStyles = exports.AUDIO_FORWARD_ID = exports.AUDIO_REWIND_ID = exports.AUDIO_NEXT_ID = exports.AUDIO_PREVIOUS_ID = exports.AUDIO_PLAYPAUSE_ID = exports.AUDIO_RATE_ID = exports.AUDIO_PERCENT_ID = exports.AUDIO_TIME_ID = exports.AUDIO_SLIDER_ID = exports.AUDIO_TITLE_ID = exports.AUDIO_COVER_ID = exports.AUDIO_CONTROLS_ID = exports.AUDIO_SECTION_ID = exports.AUDIO_BODY_ID = exports.AUDIO_ID = exports.AUDIO_PROGRESS_CLASS = exports.AUDIO_BUFFER_CANVAS_ID = exports.readPosCssStyles = exports.readPosCssStylesAttr4 = exports.readPosCssStylesAttr3 = exports.readPosCssStylesAttr2 = exports.readPosCssStylesAttr1 = exports.scrollBarCssStyles = exports.selectionCssStyles = exports.targetCssStyles = exports.focusCssStyles = exports.CSS_CLASS_NO_FOCUS_OUTLINE = exports.ROOT_CLASS_KEYBOARD_INTERACT = exports.visibilityMaskCssStyles = exports.ROOT_CLASS_INVISIBLE_MASK = exports.ttsCssStyles = exports.TTS_POPUP_DIALOG_CLASS = exports.TTS_ID_INJECTED_PARENT = exports.TTS_CLASS_INJECTED_SUBSPAN = exports.TTS_CLASS_INJECTED_SPAN = exports.TTS_ID_SPEAKING_DOC_ELEMENT = exports.TTS_NAV_BUTTON_CLASS = exports.TTS_ID_INFO = exports.TTS_ID_CONTAINER = exports.TTS_CLASS_UTTERANCE = exports.TTS_ID_ACTIVE_UTTERANCE = exports.TTS_ID_ACTIVE_WORD = exports.TTS_ID_SLIDER = exports.TTS_ID_NEXT = exports.TTS_ID_PREVIOUS = exports.TTS_CLASS_IS_ACTIVE = exports.mediaOverlaysCssStyles = exports.R2_MO_CLASS_ACTIVE_PLAYBACK = exports.R2_MO_CLASS_ACTIVE = exports.footnotesCssStyles = exports.FOOTNOTE_FORCE_SHOW = exports.FOOTNOTES_CLOSE_BUTTON_CLASS = exports.FOOTNOTES_CONTAINER_CLASS = exports.POPUP_DIALOG_CLASS = exports.ROOT_CLASS_MATHJAX = exports.ROOT_CLASS_NO_FOOTNOTES = exports.ROOT_CLASS_REDUCE_MOTION = exports.LINK_TARGET_CLASS = exports.SKIP_LINK_ID = exports.ZERO_TRANSFORM_CLASS = exports.CLASS_PAGINATED = void 0;
 exports.CLASS_PAGINATED = "r2-css-paginated";
 exports.ZERO_TRANSFORM_CLASS = "r2-zeroTransform";
 exports.SKIP_LINK_ID = "r2-skip-link";
@@ -118,6 +119,15 @@ exports.footnotesCssStyles = `
     color: white !important;
 }
 */
+`;
+exports.R2_MO_CLASS_ACTIVE = "r2-mo-active";
+exports.R2_MO_CLASS_ACTIVE_PLAYBACK = "r2-mo-active-playback";
+exports.mediaOverlaysCssStyles = `
+:root[style] .${exports.R2_MO_CLASS_ACTIVE},
+:root .${exports.R2_MO_CLASS_ACTIVE} {
+    background-color: yellow !important;
+    color: black !important;
+}
 `;
 exports.TTS_CLASS_IS_ACTIVE = "r2-tts-isPlaying";
 exports.TTS_ID_PREVIOUS = "r2-tts-previous";

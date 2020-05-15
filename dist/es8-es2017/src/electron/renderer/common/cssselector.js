@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.fullQualifiedSelector = void 0;
 exports.fullQualifiedSelector = (node, justSelector) => {
     if (node.nodeType !== Node.ELEMENT_NODE) {
         const lowerCaseName = (node.localName && node.localName.toLowerCase())

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.parseDOM = exports.serializeDOM = void 0;
 var tslib_1 = require("tslib");
 var xmldom = require("xmldom");
 function serializeDOM(documant) {

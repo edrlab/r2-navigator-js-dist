@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.popupFootNote = void 0;
 const styles_1 = require("../../common/styles");
 const popup_dialog_1 = require("../common/popup-dialog");
 function popupFootNote(element, focusScrollRaw, href, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {

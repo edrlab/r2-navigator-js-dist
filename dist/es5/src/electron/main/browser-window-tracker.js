@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.trackBrowserWindow = void 0;
 var debug_ = require("debug");
 var electron_1 = require("electron");
 var events_1 = require("../common/events");

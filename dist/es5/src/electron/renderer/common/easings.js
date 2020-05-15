@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.easings = void 0;
 exports.easings = {
     linearTween: function (t, b, c, d) {
         return c * t / d + b;

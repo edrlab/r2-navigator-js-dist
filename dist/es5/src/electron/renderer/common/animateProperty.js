@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.animateProperty = void 0;
 exports.animateProperty = function (cAF, callback, property, duration, object, destVal, rAF, transition) {
     var state = {
         animating: false,

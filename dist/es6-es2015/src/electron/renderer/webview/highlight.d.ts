@@ -6,7 +6,6 @@ export declare const CLASS_HIGHLIGHT_CONTAINER = "R2_CLASS_HIGHLIGHT_CONTAINER";
 export declare const CLASS_HIGHLIGHT_AREA = "R2_CLASS_HIGHLIGHT_AREA";
 export declare const CLASS_HIGHLIGHT_BOUNDING_AREA = "R2_CLASS_HIGHLIGHT_BOUNDING_AREA";
 export declare function getBoundingClientRectOfDocumentBody(win: IReadiumElectronWebviewWindow): DOMRect;
-export declare function invalidateBoundingClientRectOfDocumentBody(win: IReadiumElectronWebviewWindow): void;
 export declare function hideAllhighlights(_documant: Document): void;
 export declare function destroyAllhighlights(documant: Document): void;
 export declare function destroyHighlight(documant: Document, id: string): void;

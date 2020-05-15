@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.setKeyUpEventHandler = exports.setKeyDownEventHandler = exports.installNavigatorDOM = exports.readiumCssUpdate = exports.readiumCssOnOff = void 0;
 var tslib_1 = require("tslib");
 var IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 var debounce_1 = require("debounce");
@@ -11,8 +12,10 @@ var url_params_1 = require("./common/url-params");
 var webview_resize_1 = require("./common/webview-resize");
 var highlight_1 = require("./highlight");
 var location_1 = require("./location");
+var media_overlays_1 = require("./media-overlays");
 var readaloud_1 = require("./readaloud");
 var readium_css_1 = require("./readium-css");
+var soundtrack_1 = require("./soundtrack");
 var ELEMENT_ID_SLIDING_VIEWPORT = "r2_navigator_sliding_viewport";
 var debug = debug_("r2:navigator#electron/renderer/index");
 var win = window;
@@ -164,7 +167,9 @@ function createWebViewInternal(preloadScriptPath) {
         }
         else if (!highlight_1.highlightsHandleIpcMessage(event.channel, event.args, webview) &&
             !readaloud_1.ttsHandleIpcMessage(event.channel, event.args, webview) &&
-            !location_1.locationHandleIpcMessage(event.channel, event.args, webview)) {
+            !location_1.locationHandleIpcMessage(event.channel, event.args, webview) &&
+            !media_overlays_1.mediaOverlaysHandleIpcMessage(event.channel, event.args, webview) &&
+            !soundtrack_1.soundtrackHandleIpcMessage(event.channel, event.args, webview)) {
             debug("webview1 ipc-message");
             debug(event.channel);
         }

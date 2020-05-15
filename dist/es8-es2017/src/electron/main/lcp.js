@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.doTryLcpPass = void 0;
 const crypto = require("crypto");
 const debug_ = require("debug");
 const debug = debug_("r2:navigator#electron/main/lcp");

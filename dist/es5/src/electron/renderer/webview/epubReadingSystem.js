@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.setWindowNavigatorEpubReadingSystem = void 0;
 function setWindowNavigatorEpubReadingSystem(win, obj) {
     var ers = {};
     win.navigator.epubReadingSystem = ers;

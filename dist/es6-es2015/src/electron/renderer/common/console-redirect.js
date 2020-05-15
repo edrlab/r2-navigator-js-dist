@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.consoleRedirect = void 0;
 const debugBrowser = require("debug");
 const debugNode = require("debug/src/node");
 const util = require("util");
