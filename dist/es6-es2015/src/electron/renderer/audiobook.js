@@ -5,7 +5,7 @@ const tslib_1 = require("tslib");
 const events_1 = require("../common/events");
 const win = window;
 function audioPlay() {
-    const activeWebView = win.READIUM2.getActiveWebView();
+    const activeWebView = win.READIUM2.getFirstOrSecondWebView();
     if (!activeWebView) {
         return;
     }
@@ -15,7 +15,7 @@ function audioPlay() {
 }
 exports.audioPlay = audioPlay;
 function audioPause() {
-    const activeWebView = win.READIUM2.getActiveWebView();
+    const activeWebView = win.READIUM2.getFirstOrSecondWebView();
     if (!activeWebView) {
         return;
     }
@@ -25,7 +25,7 @@ function audioPause() {
 }
 exports.audioPause = audioPause;
 function audioTogglePlayPause() {
-    const activeWebView = win.READIUM2.getActiveWebView();
+    const activeWebView = win.READIUM2.getFirstOrSecondWebView();
     if (!activeWebView) {
         return;
     }
@@ -35,7 +35,7 @@ function audioTogglePlayPause() {
 }
 exports.audioTogglePlayPause = audioTogglePlayPause;
 function audioRewind() {
-    const activeWebView = win.READIUM2.getActiveWebView();
+    const activeWebView = win.READIUM2.getFirstOrSecondWebView();
     if (!activeWebView) {
         return;
     }
@@ -45,7 +45,7 @@ function audioRewind() {
 }
 exports.audioRewind = audioRewind;
 function audioForward() {
-    const activeWebView = win.READIUM2.getActiveWebView();
+    const activeWebView = win.READIUM2.getFirstOrSecondWebView();
     if (!activeWebView) {
         return;
     }

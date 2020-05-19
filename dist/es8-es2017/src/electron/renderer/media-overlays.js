@@ -48,6 +48,7 @@ let _currentAudioElement;
 let _mediaOverlayRoot;
 let _mediaOverlayTextAudioPair;
 let _mediaOverlayTextId;
+let _mediaOverlayTextHref;
 let _mediaOverlayActive = false;
 async function playMediaOverlays(textHref, rootMo, textFragmentIDChain) {
     if (IS_DEV) {
@@ -663,8 +664,8 @@ async function playMediaOverlaysForLink(link, textFragmentIDChain) {
             _timeoutAutoNext = undefined;
             mediaOverlaysStop(true);
             const rtl = readium_css_1.isRTL();
-            location_1.navLeftOrRight(rtl, true);
-        }, 2000);
+            location_1.navLeftOrRight(rtl, true, true);
+        }, 600);
         if (_mediaOverlaysListener) {
             _mediaOverlaysListener(MediaOverlaysStateEnum.PLAYING);
         }
@@ -728,8 +729,8 @@ function mediaOverlaysHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarg
             if (IS_DEV) {
                 debug("R2_EVENT_MEDIA_OVERLAY_CLICK");
             }
-            mediaOverlaysInterrupt();
             const payload = eventArgs[0];
+            mediaOverlaysInterrupt();
             _lastClickedNotification = {
                 link: activeWebView.READIUM2.link,
                 textFragmentIDChain: payload.textFragmentIDChain,
@@ -744,6 +745,29 @@ function mediaOverlaysHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarg
                         await playMediaOverlaysForLink(activeWebView.READIUM2.link, payload.textFragmentIDChain);
                     }
                 }, 0);
+            }
+        }
+    }
+    else if (eventChannel === events_1.R2_EVENT_MEDIA_OVERLAY_STARTSTOP) {
+        const payload = eventArgs[0];
+        if (IS_DEV) {
+            debug("R2_EVENT_MEDIA_OVERLAY_STARTSTOP");
+        }
+        mediaOverlaysStop();
+        if (payload.start) {
+            const rate = _mediaOverlaysPlaybackRate;
+            mediaOverlaysPlay(1);
+            _mediaOverlaysPlaybackRate = rate;
+        }
+        else if (payload.stop) {
+        }
+        else {
+            if (_currentAudioElement && !_currentAudioElement.paused) {
+            }
+            else {
+                const rate = _mediaOverlaysPlaybackRate;
+                mediaOverlaysPlay(1);
+                _mediaOverlaysPlaybackRate = rate;
             }
         }
     }
@@ -763,15 +787,16 @@ function moHighlight_(moTextAudioPair) {
             const id = moTextAudioPair.Text.substr(i + 1);
             if (id) {
                 _mediaOverlayTextId = id;
-                moHighlight(_mediaOverlayTextId);
+                _mediaOverlayTextHref = moTextAudioPair.Text.substr(0, i);
+                moHighlight(_mediaOverlayTextHref, _mediaOverlayTextId);
             }
         }
     }
 }
-function moHighlight(id) {
-    var _a, _b, _c, _d;
+function moHighlight(href, id) {
+    var _a, _b, _c, _d, _e;
     if (IS_DEV) {
-        debug("moHighlight: " + id);
+        debug("moHighlight: " + href + " ## " + id);
     }
     const classActive = (_b = (_a = win.READIUM2.publication.Metadata) === null || _a === void 0 ? void 0 : _a.MediaOverlay) === null || _b === void 0 ? void 0 : _b.ActiveClass;
     const classActivePlayback = (_d = (_c = win.READIUM2.publication.Metadata) === null || _c === void 0 ? void 0 : _c.MediaOverlay) === null || _d === void 0 ? void 0 : _d.PlaybackActiveClass;
@@ -780,8 +805,11 @@ function moHighlight(id) {
         classActivePlayback: classActivePlayback ? classActivePlayback : undefined,
         id,
     };
-    const activeWebView = win.READIUM2.getActiveWebView();
-    if (activeWebView) {
+    const activeWebViews = win.READIUM2.getActiveWebViews();
+    for (const activeWebView of activeWebViews) {
+        if (href && ((_e = activeWebView.READIUM2.link) === null || _e === void 0 ? void 0 : _e.Href) !== href) {
+            continue;
+        }
         setTimeout(async () => {
             await activeWebView.send(events_1.R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT, payload);
         }, 0);
@@ -799,6 +827,7 @@ function mediaOverlaysListen(mediaOverlaysListener) {
 }
 exports.mediaOverlaysListen = mediaOverlaysListen;
 function mediaOverlaysPlay(speed) {
+    var _a;
     if (IS_DEV) {
         debug("mediaOverlaysPlay()");
     }
@@ -810,13 +839,20 @@ function mediaOverlaysPlay(speed) {
         if (IS_DEV) {
             debug("mediaOverlaysPlay() - playMediaOverlaysForLink()");
         }
-        setTimeout(async () => {
+        let textFragmentIDChain;
+        const href = (_a = _lastClickedNotification === null || _lastClickedNotification === void 0 ? void 0 : _lastClickedNotification.link) === null || _a === void 0 ? void 0 : _a.Href;
+        let activeWebView = win.READIUM2.getActiveWebViews().find((webview) => {
             var _a;
-            const activeWebView = win.READIUM2.getActiveWebView();
-            if (activeWebView === null || activeWebView === void 0 ? void 0 : activeWebView.READIUM2.link) {
-                const textFragmentIDChain = ((_a = _lastClickedNotification === null || _lastClickedNotification === void 0 ? void 0 : _lastClickedNotification.link) === null || _a === void 0 ? void 0 : _a.Href) === activeWebView.READIUM2.link.Href ?
-                    _lastClickedNotification.textFragmentIDChain :
-                    undefined;
+            return href && ((_a = webview.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href) === href;
+        });
+        if (activeWebView) {
+            textFragmentIDChain = _lastClickedNotification === null || _lastClickedNotification === void 0 ? void 0 : _lastClickedNotification.textFragmentIDChain;
+        }
+        else {
+            activeWebView = win.READIUM2.getFirstWebView();
+        }
+        setTimeout(async () => {
+            if (activeWebView && activeWebView.READIUM2.link) {
                 await playMediaOverlaysForLink(activeWebView.READIUM2.link, textFragmentIDChain);
             }
         }, 0);
@@ -836,7 +872,7 @@ function mediaOverlaysPause() {
     if (!win.READIUM2 || !win.READIUM2.publication) {
         return;
     }
-    moHighlight(undefined);
+    moHighlight(undefined, undefined);
     ensureOnTimeUpdate(true);
     if (_currentAudioElement) {
         _currentAudioElement.pause();
@@ -927,7 +963,7 @@ function mediaOverlaysPrevious() {
             }
             mediaOverlaysStop(true);
             const rtl = readium_css_1.isRTL();
-            location_1.navLeftOrRight(!rtl, true);
+            location_1.navLeftOrRight(!rtl, true, true);
         }
         else {
             let switchDoc = false;
@@ -949,7 +985,7 @@ function mediaOverlaysPrevious() {
                 if (IS_DEV) {
                     debug("mediaOverlaysPrevious() - handleLinkUrl()");
                 }
-                const activeWebView = win.READIUM2.getActiveWebView();
+                const activeWebView = win.READIUM2.getFirstOrSecondWebView();
                 location_1.handleLinkUrl(urlFull, activeWebView ? activeWebView.READIUM2.readiumCss : undefined);
             }
             else {
@@ -968,7 +1004,7 @@ function mediaOverlaysPrevious() {
         }
         mediaOverlaysStop(true);
         const rtl = readium_css_1.isRTL();
-        location_1.navLeftOrRight(!rtl, true);
+        location_1.navLeftOrRight(!rtl, true, true);
     }
 }
 exports.mediaOverlaysPrevious = mediaOverlaysPrevious;
@@ -988,7 +1024,7 @@ function mediaOverlaysNext(escape) {
             }
             mediaOverlaysStop(true);
             const rtl = readium_css_1.isRTL();
-            location_1.navLeftOrRight(rtl, true);
+            location_1.navLeftOrRight(rtl, true, true);
         }
         else {
             let switchDoc = false;
@@ -1010,7 +1046,7 @@ function mediaOverlaysNext(escape) {
                 if (IS_DEV) {
                     debug("mediaOverlaysNext() - handleLinkUrl()");
                 }
-                const activeWebView = win.READIUM2.getActiveWebView();
+                const activeWebView = win.READIUM2.getFirstOrSecondWebView();
                 location_1.handleLinkUrl(urlFull, activeWebView ? activeWebView.READIUM2.readiumCss : undefined);
             }
             else {
@@ -1029,7 +1065,7 @@ function mediaOverlaysNext(escape) {
         }
         mediaOverlaysStop(true);
         const rtl = readium_css_1.isRTL();
-        location_1.navLeftOrRight(rtl, true);
+        location_1.navLeftOrRight(rtl, true, true);
     }
 }
 exports.mediaOverlaysNext = mediaOverlaysNext;

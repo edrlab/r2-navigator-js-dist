@@ -2,11 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.computeCFI = exports.computeProgressionData = void 0;
 var tslib_1 = require("tslib");
-var IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
-if (IS_DEV) {
-    var cr = require("../common/console-redirect");
-    cr.consoleRedirect("r2:navigator#electron/renderer/webview/preload", process.stdout, process.stderr, true);
-}
 var debounce_1 = require("debounce");
 var debug_ = require("debug");
 var electron_1 = require("electron");
@@ -22,7 +17,6 @@ var popup_dialog_1 = require("../common/popup-dialog");
 var querystring_1 = require("../common/querystring");
 var rect_utils_1 = require("../common/rect-utils");
 var url_params_1 = require("../common/url-params");
-var webview_resize_1 = require("../common/webview-resize");
 var audiobook_1 = require("./audiobook");
 var epubReadingSystem_1 = require("./epubReadingSystem");
 var highlight_1 = require("./highlight");
@@ -30,6 +24,11 @@ var popupFootNotes_1 = require("./popupFootNotes");
 var readaloud_1 = require("./readaloud");
 var readium_css_1 = require("./readium-css");
 var selection_2 = require("./selection");
+var IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
+if (IS_DEV) {
+    var cr = require("../common/console-redirect");
+    cr.consoleRedirect("r2:navigator#electron/renderer/webview/preload", process.stdout, process.stderr, true);
+}
 var debug = debug_("r2:navigator#electron/renderer/webview/preload");
 var win = global.window;
 win.READIUM2 = {
@@ -54,13 +53,16 @@ win.READIUM2 = {
             progression: undefined,
         },
         paginationInfo: undefined,
+        secondWebViewHref: undefined,
         selectionInfo: undefined,
         selectionIsNew: undefined,
         title: undefined,
+        userInteract: false,
     },
     ttsClickEnabled: false,
     ttsPlaybackRate: 1,
     urlQueryParams: win.location.search ? querystring_1.getURLQueryParams(win.location.search) : undefined,
+    webViewSlot: styles_1.WebViewSlotEnum.center,
 };
 win.alert = function () {
     var args = [];
@@ -139,6 +141,10 @@ if (win.READIUM2.urlQueryParams) {
     }
     win.READIUM2.DEBUG_VISUALS = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_DEBUG_VISUALS] === "true";
     win.READIUM2.isClipboardIntercept = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_CLIPBOARD_INTERCEPT] === "true";
+    win.READIUM2.webViewSlot =
+        win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_WEBVIEW_SLOT] === "left" ? styles_1.WebViewSlotEnum.left :
+            (win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_WEBVIEW_SLOT] === "right" ? styles_1.WebViewSlotEnum.right :
+                styles_1.WebViewSlotEnum.center);
 }
 if (IS_DEV) {
     electron_1.ipcRenderer.on(events_1.R2_EVENT_DEBUG_VISUALS, function (_event, payload) {
@@ -266,14 +272,20 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_LOCATOR_VISIBLE, function (_event, p
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_LOCATOR_VISIBLE, payload);
 });
 electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, function (_event, payload) {
-    if (win.READIUM2.isAudio || win.READIUM2.isFixedLayout) {
+    if (win.READIUM2.isAudio) {
         return;
     }
-    showHideContentMask(false);
+    showHideContentMask(false, win.READIUM2.isFixedLayout);
     selection_2.clearCurrentSelection(win);
     popup_dialog_1.closePopupDialogs(win.document);
     if (!win.READIUM2.urlQueryParams) {
         win.READIUM2.urlQueryParams = {};
+    }
+    if (payload.isSecondWebView) {
+        win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_SECOND_WEBVIEW] = "1";
+    }
+    else {
+        win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_SECOND_WEBVIEW] = "0";
     }
     if (payload.previous) {
         win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_PREVIOUS] = "true";
@@ -290,6 +302,14 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, function (_event, payload)
         if (typeof win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_GOTO] !== "undefined") {
             delete win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_GOTO];
         }
+    }
+    if (win.READIUM2.isFixedLayout) {
+        win.READIUM2.locationHashOverride = win.document.body;
+        resetLocationHashOverrideInfo();
+        debug("processXYRaw BODY");
+        processXYRaw(0, 0, false);
+        notifyReadingLocationDebounced();
+        return;
     }
     var delayScrollIntoView = false;
     if (payload.hash) {
@@ -332,9 +352,11 @@ function resetLocationHashOverrideInfo() {
             progression: undefined,
         },
         paginationInfo: undefined,
+        secondWebViewHref: undefined,
         selectionInfo: undefined,
         selectionIsNew: undefined,
         title: undefined,
+        userInteract: false,
     };
 }
 var _lastAnimState;
@@ -574,6 +596,10 @@ function scrollElementIntoView_(element, doFocus, animate) {
         });
         element.setAttribute(styles_1.readPosCssStylesAttr3, "scrollElementIntoView");
     }
+    if (win.READIUM2.isFixedLayout) {
+        debug("scrollElementIntoView_ SKIP FXL");
+        return;
+    }
     if (doFocus) {
         if (!tabbable.isFocusable(element)) {
             var attr = element.getAttribute("tabindex");
@@ -680,8 +706,12 @@ var scrollToHashRaw = function () {
     if (!win.document || !win.document.body || !win.document.documentElement) {
         return;
     }
-    debug("++++ scrollToHashRaw");
     highlight_1.recreateAllHighlights(win);
+    if (win.READIUM2.isFixedLayout) {
+        debug("scrollToHashRaw skipped, FXL");
+        return;
+    }
+    debug("++++ scrollToHashRaw");
     var isPaged = readium_css_inject_1.isPaginated(win.document);
     if (win.READIUM2.locationHashOverride) {
         scrollElementIntoView(win.READIUM2.locationHashOverride, true);
@@ -729,7 +759,7 @@ var scrollToHashRaw = function () {
                 resetLocationHashOverrideInfo();
                 setTimeout(function () {
                     processXYRaw(0, 0, false);
-                    showHideContentMask(false);
+                    showHideContentMask(false, win.READIUM2.isFixedLayout);
                     if (!win.READIUM2.locationHashOverride) {
                         notifyReadingLocationDebounced();
                     }
@@ -841,14 +871,18 @@ var scrollToHashDebounced = debounce_1.debounce(function () {
     scrollToHashRaw();
 }, 100);
 var _ignoreScrollEvent = false;
-electron_1.ipcRenderer.on("R2_EVENT_HIDE", function (_event) {
-    showHideContentMask(true);
+electron_1.ipcRenderer.on("R2_EVENT_HIDE", function (_event, payload) {
+    showHideContentMask(true, payload);
 });
-function showHideContentMask(doHide) {
+function showHideContentMask(doHide, isFixedLayout) {
     if (doHide) {
         win.document.documentElement.classList.add(styles_1.ROOT_CLASS_INVISIBLE_MASK);
+        win.document.documentElement.classList.remove(styles_1.ROOT_CLASS_INVISIBLE_MASK_REMOVED);
     }
     else {
+        if (isFixedLayout) {
+            win.document.documentElement.classList.add(styles_1.ROOT_CLASS_INVISIBLE_MASK_REMOVED);
+        }
         win.document.documentElement.classList.remove(styles_1.ROOT_CLASS_INVISIBLE_MASK);
     }
 }
@@ -874,10 +908,10 @@ function handleFocusInRaw(target, _tabKeyDownEvent) {
     focusScrollRaw(target, false);
 }
 electron_1.ipcRenderer.on(events_1.R2_EVENT_READIUMCSS, function (_event, payload) {
-    showHideContentMask(true);
+    showHideContentMask(true, payload.isFixedLayout || win.READIUM2.isFixedLayout);
     readium_css_1.readiumCSS(win.document, payload);
     highlight_1.recreateAllHighlights(win);
-    showHideContentMask(false);
+    showHideContentMask(false, payload.isFixedLayout || win.READIUM2.isFixedLayout);
 });
 var _docTitle;
 win.addEventListener("DOMContentLoaded", function () {
@@ -929,7 +963,7 @@ win.addEventListener("DOMContentLoaded", function () {
     }
     var w = (readiumcssJson && readiumcssJson.fixedLayoutWebViewWidth) || win.innerWidth;
     var h = (readiumcssJson && readiumcssJson.fixedLayoutWebViewHeight) || win.innerHeight;
-    var wh = readium_css_inject_1.configureFixedLayout(win.document, win.READIUM2.isFixedLayout, win.READIUM2.fxlViewportWidth, win.READIUM2.fxlViewportHeight, w, h);
+    var wh = readium_css_inject_1.configureFixedLayout(win.document, win.READIUM2.isFixedLayout, win.READIUM2.fxlViewportWidth, win.READIUM2.fxlViewportHeight, w, h, win.READIUM2.webViewSlot);
     if (wh) {
         win.READIUM2.fxlViewportWidth = wh.width;
         win.READIUM2.fxlViewportHeight = wh.height;
@@ -1054,11 +1088,11 @@ function loaded(forced) {
         debug(">>> LOAD EVENT was not forced.");
     }
     if (win.READIUM2.isAudio) {
-        showHideContentMask(false);
+        showHideContentMask(false, win.READIUM2.isFixedLayout);
     }
     else {
         if (!win.READIUM2.isFixedLayout) {
-            showHideContentMask(false);
+            showHideContentMask(false, win.READIUM2.isFixedLayout);
             debug("++++ scrollToHashDebounced FROM LOAD");
             scrollToHashDebounced();
             if (win.document.body) {
@@ -1089,7 +1123,7 @@ function loaded(forced) {
             }
         }
         else {
-            showHideContentMask(false);
+            showHideContentMask(false, win.READIUM2.isFixedLayout);
             win.READIUM2.locationHashOverride = win.document.body;
             notifyReadingLocationDebounced();
         }
@@ -1176,12 +1210,19 @@ function loaded(forced) {
         if (!href) {
             return;
         }
-        if (/^javascript:/.test(href)) {
+        if (href.animVal) {
+            href = href.animVal;
+            if (!href) {
+                return;
+            }
+        }
+        var hrefStr = href;
+        if (/^javascript:/.test(hrefStr)) {
             return;
         }
         ev.preventDefault();
         ev.stopPropagation();
-        var done = popupFootNotes_1.popupFootNote(currentElement, focusScrollRaw, href, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+        var done = popupFootNotes_1.popupFootNote(currentElement, focusScrollRaw, hrefStr, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
         if (!done) {
             focusScrollDebounced.clear();
             processXYDebouncedImmediate.clear();
@@ -1192,14 +1233,14 @@ function loaded(forced) {
             onResizeDebounced.clear();
             handleFocusInDebounced.clear();
             var payload = {
-                url: href,
+                url: hrefStr,
             };
             electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_LINK, payload);
         }
         return false;
     }, true);
     var onResizeRaw = function () {
-        var wh = readium_css_inject_1.configureFixedLayout(win.document, win.READIUM2.isFixedLayout, win.READIUM2.fxlViewportWidth, win.READIUM2.fxlViewportHeight, win.innerWidth, win.innerHeight);
+        var wh = readium_css_inject_1.configureFixedLayout(win.document, win.READIUM2.isFixedLayout, win.READIUM2.fxlViewportWidth, win.READIUM2.fxlViewportHeight, win.innerWidth, win.innerHeight, win.READIUM2.webViewSlot);
         if (wh) {
             win.READIUM2.fxlViewportWidth = wh.width;
             win.READIUM2.fxlViewportHeight = wh.height;
@@ -1218,12 +1259,7 @@ function loaded(forced) {
             _firstWindowResize = false;
             return;
         }
-        if (webview_resize_1.ENABLE_WEBVIEW_RESIZE) {
-            onResizeRaw();
-        }
-        else {
-            onResizeDebounced();
-        }
+        onResizeDebounced();
     });
     setTimeout(function () {
         win.addEventListener("scroll", function (_ev) {
@@ -1279,6 +1315,20 @@ function loaded(forced) {
     win.document.documentElement.addEventListener("mouseup", function (ev) {
         handleMouseEvent(ev);
     });
+    win.document.addEventListener("mouseup", function (ev) {
+        if (ev.target && ev.target.getAttribute) {
+            var iBooksMO = ev.target.getAttribute("ibooks:readaloud") ||
+                ev.target.getAttribute("readaloud");
+            if (iBooksMO) {
+                var payload = {
+                    start: iBooksMO === "start" ? true : undefined,
+                    startstop: iBooksMO === "startstop" ? true : undefined,
+                    stop: iBooksMO === "stop" ? true : undefined,
+                };
+                electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_MEDIA_OVERLAY_STARTSTOP, payload);
+            }
+        }
+    }, true);
     win.document.body.addEventListener("copy", function (evt) {
         if (win.READIUM2.isClipboardIntercept) {
             var selection = win.document.getSelection();
@@ -1671,7 +1721,7 @@ exports.computeProgressionData = function () {
         percentRatio: progressionRatio,
     };
 };
-var _blacklistIdClassForCssSelectors = [styles_1.LINK_TARGET_CLASS, styles_1.CSS_CLASS_NO_FOCUS_OUTLINE, styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN, highlight_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA, styles_1.TTS_ID_INJECTED_PARENT, styles_1.TTS_ID_SPEAKING_DOC_ELEMENT, styles_1.ROOT_CLASS_KEYBOARD_INTERACT, styles_1.ROOT_CLASS_INVISIBLE_MASK, styles_1.CLASS_PAGINATED, styles_1.ROOT_CLASS_NO_FOOTNOTES];
+var _blacklistIdClassForCssSelectors = [styles_1.LINK_TARGET_CLASS, styles_1.CSS_CLASS_NO_FOCUS_OUTLINE, styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN, highlight_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA, styles_1.TTS_ID_INJECTED_PARENT, styles_1.TTS_ID_SPEAKING_DOC_ELEMENT, styles_1.ROOT_CLASS_KEYBOARD_INTERACT, styles_1.ROOT_CLASS_INVISIBLE_MASK, styles_1.ROOT_CLASS_INVISIBLE_MASK_REMOVED, styles_1.CLASS_PAGINATED, styles_1.ROOT_CLASS_NO_FOOTNOTES];
 var _blacklistIdClassForCssSelectorsMathJax = ["mathjax", "ctxt", "mjx"];
 var _blacklistIdClassForCFI = [styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN, highlight_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA];
 var _blacklistIdClassForCFIMathJax = ["mathjax", "ctxt", "mjx"];
@@ -1849,6 +1899,10 @@ var notifyReadingLocationRaw = function (userInteract, ignoreMediaOverlays) {
     if (!win.READIUM2.locationHashOverride) {
         return;
     }
+    if (win.READIUM2.urlQueryParams && win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_SECOND_WEBVIEW] === "1") {
+        win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_SECOND_WEBVIEW] = "2";
+        return;
+    }
     var blacklisted = checkBlacklisted(win.READIUM2.locationHashOverride);
     if (blacklisted) {
         return;
@@ -1884,6 +1938,12 @@ var notifyReadingLocationRaw = function (userInteract, ignoreMediaOverlays) {
                 !selection_1.sameSelections(win.READIUM2.locationHashOverrideInfo.selectionInfo, selInfo);
     }
     var epubPage = findPrecedingAncestorSiblingEpubPageBreak(win.READIUM2.locationHashOverride);
+    var secondWebViewHref = win.READIUM2.urlQueryParams &&
+        win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_SECOND_WEBVIEW] &&
+        win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_SECOND_WEBVIEW].length > 1 &&
+        win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_SECOND_WEBVIEW].startsWith("0") ?
+        win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_SECOND_WEBVIEW].substr(1) :
+        undefined;
     win.READIUM2.locationHashOverrideInfo = {
         audioPlaybackInfo: undefined,
         docInfo: {
@@ -1900,10 +1960,12 @@ var notifyReadingLocationRaw = function (userInteract, ignoreMediaOverlays) {
             progression: progression,
         },
         paginationInfo: pinfo,
+        secondWebViewHref: secondWebViewHref,
         selectionInfo: selInfo,
         selectionIsNew: selectionIsNew,
         text: text,
         title: _docTitle,
+        userInteract: userInteract ? true : false,
     };
     var payload = win.READIUM2.locationHashOverrideInfo;
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_READING_LOCATION, payload);
@@ -1952,13 +2014,26 @@ if (!win.READIUM2.isAudio) {
         win.READIUM2.ttsClickEnabled = payload.doEnable;
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT, function (_event, payload) {
-        var activeClass = payload.classActive ? payload.classActive : styles_1.R2_MO_CLASS_ACTIVE;
+        var styleAttr = win.document.documentElement.getAttribute("style");
+        var isNight = styleAttr ? styleAttr.indexOf("readium-night-on") > 0 : false;
+        var isSepia = styleAttr ? styleAttr.indexOf("readium-sepia-on") > 0 : false;
+        var activeClass = (isNight || isSepia) ? styles_1.R2_MO_CLASS_ACTIVE :
+            (payload.classActive ? payload.classActive : styles_1.R2_MO_CLASS_ACTIVE);
         var activeClassPlayback = payload.classActivePlayback ? payload.classActivePlayback : styles_1.R2_MO_CLASS_ACTIVE_PLAYBACK;
-        var activeMoElements = win.document.body.querySelectorAll("." + activeClass);
-        activeMoElements.forEach(function (elem) {
-            elem.classList.remove(activeClass);
+        if (payload.classActive) {
+            var activeMoElements = win.document.body.querySelectorAll("." + payload.classActive);
+            activeMoElements.forEach(function (elem) {
+                if (payload.classActive) {
+                    elem.classList.remove(payload.classActive);
+                }
+            });
+        }
+        var activeMoElements_ = win.document.body.querySelectorAll("." + styles_1.R2_MO_CLASS_ACTIVE);
+        activeMoElements_.forEach(function (elem) {
+            elem.classList.remove(styles_1.R2_MO_CLASS_ACTIVE);
         });
         if (!payload.id) {
+            win.document.documentElement.classList.remove(styles_1.R2_MO_CLASS_ACTIVE_PLAYBACK);
             win.document.documentElement.classList.remove(activeClassPlayback);
         }
         else {
@@ -1967,9 +2042,7 @@ if (!win.READIUM2.isAudio) {
             if (targetEl) {
                 targetEl.classList.add(activeClass);
                 win.READIUM2.locationHashOverride = targetEl;
-                if (!win.READIUM2.isFixedLayout) {
-                    scrollElementIntoView_(targetEl, false, true);
-                }
+                scrollElementIntoView_(targetEl, false, true);
                 scrollToHashDebounced.clear();
                 notifyReadingLocationRaw(false, true);
                 if (win.READIUM2.DEBUG_VISUALS) {

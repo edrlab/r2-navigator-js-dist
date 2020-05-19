@@ -376,7 +376,7 @@ function readiumCSSSet(documant, messageJson, isVerticalWritingMode, isRTL) {
     }
 }
 exports.readiumCSSSet = readiumCSSSet;
-function configureFixedLayout(documant, isFixedLayout, fxlViewportWidth, fxlViewportHeight, innerWidth, innerHeight) {
+function configureFixedLayout(documant, isFixedLayout, fxlViewportWidth, fxlViewportHeight, innerWidth, innerHeight, wvSlot) {
     if (!documant || !documant.head || !documant.body) {
         return undefined;
     }
@@ -471,6 +471,10 @@ function configureFixedLayout(documant, isFixedLayout, fxlViewportWidth, fxlView
     if (innerWidth && innerHeight && width && height && isFixedLayout
         && documant && documant.documentElement && documant.body) {
         documant.documentElement.style.overflow = "hidden";
+        documant.body.style.width = width + "px";
+        documant.body.style.height = height + "px";
+        documant.body.style.overflow = "hidden";
+        documant.body.style.margin = "0";
         if (isDEBUG_VISUALS(documant)) {
             debug("FXL width: " + width);
             debug("FXL height: " + height);
@@ -484,7 +488,8 @@ function configureFixedLayout(documant, isFixedLayout, fxlViewportWidth, fxlView
         const ratioX = visibleWidth / width;
         const ratioY = visibleHeight / height;
         const ratio = Math.min(ratioX, ratioY);
-        const tx = (visibleWidth - (width * ratio)) / 2;
+        const tx = (visibleWidth - (width * ratio)) *
+            (wvSlot === styles_1.WebViewSlotEnum.center ? 0.5 : (wvSlot === styles_1.WebViewSlotEnum.right ? 0 : 1));
         const ty = (visibleHeight - (height * ratio)) / 2;
         if (isDEBUG_VISUALS(documant)) {
             debug("FXL trans X: " + tx);
@@ -624,6 +629,7 @@ function readiumCssTransformHtml(htmlStr, readiumcssJson, mediaType) {
     const documant = dom_1.parseDOM(htmlStrToParse, mediaType);
     documant.documentElement.setAttribute("data-readiumcss-injected", "yes");
     documant.documentElement.classList.add(styles_1.ROOT_CLASS_INVISIBLE_MASK);
+    documant.documentElement.classList.remove(styles_1.ROOT_CLASS_INVISIBLE_MASK_REMOVED);
     const rtl = isDocRTL(documant);
     const vertical = isDocVertical(documant);
     if (readiumcssJson) {

@@ -43,12 +43,14 @@ function obtainReadiumCss(rcss) {
     return r;
 }
 exports.obtainReadiumCss = obtainReadiumCss;
-function adjustReadiumCssJsonMessageForFixedLayout(link, rcss) {
-    if (isFixedLayout(link)) {
-        const activeWebView = win.READIUM2.getActiveWebView();
+function adjustReadiumCssJsonMessageForFixedLayout(webview, rcss) {
+    if (!webview) {
+        return rcss;
+    }
+    if (isFixedLayout(webview.READIUM2.link)) {
         return {
-            fixedLayoutWebViewHeight: activeWebView ? activeWebView.clientHeight : undefined,
-            fixedLayoutWebViewWidth: activeWebView ? activeWebView.clientWidth : undefined,
+            fixedLayoutWebViewHeight: webview.clientHeight,
+            fixedLayoutWebViewWidth: webview.clientWidth,
             isFixedLayout: true,
             setCSS: undefined,
         };

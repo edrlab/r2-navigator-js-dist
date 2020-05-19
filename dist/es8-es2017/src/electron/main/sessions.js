@@ -321,6 +321,8 @@ const transformerHttpBaseIframes = (_publication, link, url, htmlStr, _sessionIn
     const r2DEBUG = url_.searchParams.get(url_params_1.URL_PARAM_DEBUG_VISUALS);
     const r2CLIPBOARDINTERCEPT = url_.searchParams.get(url_params_1.URL_PARAM_CLIPBOARD_INTERCEPT);
     const r2SESSIONINFO = url_.searchParams.get(url_params_1.URL_PARAM_SESSION_INFO);
+    const r2WEBVIEWSLOT = url_.searchParams.get(url_params_1.URL_PARAM_WEBVIEW_SLOT);
+    const r2SECONDWEBVIEW = url_.searchParams.get(url_params_1.URL_PARAM_SECOND_WEBVIEW);
     url_.search = "";
     url_.hash = "";
     const urlStr = url_.toString();
@@ -350,6 +352,12 @@ const transformerHttpBaseIframes = (_publication, link, url, htmlStr, _sessionIn
         }
         if (r2CSS) {
             iframeUrl.searchParams.append(url_params_1.URL_PARAM_CSS, r2CSS);
+        }
+        if (r2WEBVIEWSLOT) {
+            iframeUrl.searchParams.append(url_params_1.URL_PARAM_WEBVIEW_SLOT, r2WEBVIEWSLOT);
+        }
+        if (r2SECONDWEBVIEW) {
+            iframeUrl.searchParams.append(url_params_1.URL_PARAM_SECOND_WEBVIEW, r2SECONDWEBVIEW);
         }
         iframeUrl.searchParams.append(url_params_1.URL_PARAM_IS_IFRAME, "1");
         src_ = iframeUrl.toString();

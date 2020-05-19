@@ -1,4 +1,5 @@
 import { IEventPayload_R2_EVENT_READIUMCSS } from "./events";
+import { WebViewSlotEnum } from "./styles";
 export declare const READIUM2_BASEURL_ID = "r2_BASEURL_ID";
 export declare function isDocVertical(documant: Document): boolean;
 export declare function isDocRTL(documant: Document): boolean;
@@ -11,7 +12,7 @@ export interface IwidthHeight {
     tx: number;
     ty: number;
 }
-export declare function configureFixedLayout(documant: Document, isFixedLayout: boolean, fxlViewportWidth: number, fxlViewportHeight: number, innerWidth: number, innerHeight: number): IwidthHeight | undefined;
+export declare function configureFixedLayout(documant: Document, isFixedLayout: boolean, fxlViewportWidth: number, fxlViewportHeight: number, innerWidth: number, innerHeight: number, wvSlot: WebViewSlotEnum): IwidthHeight | undefined;
 export declare function ensureHead(documant: Document): void;
 export declare function appendCSSInline(documant: Document, id: string, css: string): void;
 export declare function appendCSS(documant: Document, mod: string, urlRoot: string): void;

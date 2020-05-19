@@ -1,6 +1,7 @@
 import { Publication } from "r2-shared-js/dist/es6-es2015/src/models/publication";
 import { Link } from "r2-shared-js/dist/es6-es2015/src/models/publication-link";
 import { IEventPayload_R2_EVENT_CLIPBOARD_COPY, IEventPayload_R2_EVENT_READING_LOCATION, IEventPayload_R2_EVENT_READIUMCSS } from "../../common/events";
+import { WebViewSlotEnum } from "../../common/styles";
 import { IStringMap } from "../common/querystring";
 export interface IReadiumElectronWebviewWindowState {
     urlQueryParams: IStringMap | undefined;
@@ -12,6 +13,7 @@ export interface IReadiumElectronWebviewWindowState {
     fxlViewportWidth: number;
     fxlViewportHeight: number;
     fxlViewportScale: number;
+    webViewSlot: WebViewSlotEnum;
     DEBUG_VISUALS: boolean;
     ttsClickEnabled: boolean;
     ttsPlaybackRate: number;
@@ -40,9 +42,14 @@ export interface IReadiumElectronBrowserWindowState {
     ttsPlaybackRate: number;
     clipboardInterceptor: ((data: IEventPayload_R2_EVENT_CLIPBOARD_COPY) => void) | undefined;
     preloadScriptPath: string;
-    getActiveWebView: () => IReadiumElectronWebview | undefined;
-    destroyActiveWebView: () => void;
-    createActiveWebView: () => void;
+    getFirstWebView: () => IReadiumElectronWebview | undefined;
+    destroyFirstWebView: () => void;
+    createFirstWebView: () => void;
+    getSecondWebView: (create: boolean) => IReadiumElectronWebview | undefined;
+    destroySecondWebView: () => void;
+    createSecondWebView: () => void;
+    getFirstOrSecondWebView: () => IReadiumElectronWebview | undefined;
+    getActiveWebViews: () => IReadiumElectronWebview[];
     enableScreenReaderAccessibilityWebViewHardRefresh: boolean;
 }
 export interface IWithReadiumElectronBrowserWindowState {

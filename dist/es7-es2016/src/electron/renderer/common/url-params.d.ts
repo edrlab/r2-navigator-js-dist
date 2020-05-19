@@ -7,3 +7,5 @@ export declare const URL_PARAM_REFRESH = "r2_REFRESH";
 export declare const URL_PARAM_SESSION_INFO = "r2_SESSION_INFO";
 export declare const URL_PARAM_CLIPBOARD_INTERCEPT = "r2_CLIPBOARD_INTERCEPT";
 export declare const URL_PARAM_IS_IFRAME = "r2_IS_IFRAME";
+export declare const URL_PARAM_WEBVIEW_SLOT = "r2_WEBVIEW_SLOT";
+export declare const URL_PARAM_SECOND_WEBVIEW = "r2_SECOND_WEBVIEW";

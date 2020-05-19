@@ -1,5 +1,5 @@
 import { IReadiumElectronWebview } from "./webview/state";
-export declare function ttsHandleIpcMessage(eventChannel: string, _eventArgs: any[], _eventCurrentTarget: IReadiumElectronWebview): boolean;
+export declare function ttsHandleIpcMessage(eventChannel: string, _eventArgs: any[], eventCurrentTarget: IReadiumElectronWebview): boolean;
 export declare enum TTSStateEnum {
     PAUSED = "PAUSED",
     PLAYING = "PLAYING",

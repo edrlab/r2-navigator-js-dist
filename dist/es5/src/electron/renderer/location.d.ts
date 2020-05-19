@@ -5,10 +5,12 @@ import { IDocInfo } from "../common/document";
 import { IEventPayload_R2_EVENT_READIUMCSS } from "../common/events";
 import { IPaginationInfo } from "../common/pagination";
 import { ISelectionInfo } from "../common/selection";
+import { WebViewSlotEnum } from "../common/styles";
 import { IReadiumElectronWebview } from "./webview/state";
+export declare function setWebViewStyle(wv: IReadiumElectronWebview, wvSlot: WebViewSlotEnum): void;
 export declare function locationHandleIpcMessage(eventChannel: string, eventArgs: any[], eventCurrentTarget: IReadiumElectronWebview): boolean;
 export declare function shiftWebview(webview: IReadiumElectronWebview, offset: number, backgroundColor: string | undefined): void;
-export declare function navLeftOrRight(left: boolean, spineNav?: boolean): Link | undefined;
+export declare function navLeftOrRight(left: boolean, spineNav?: boolean, ignorePageSpreadHandling?: boolean): Link | undefined;
 export declare function handleLink(href: string, previous: boolean | undefined, useGoto: boolean, rcss?: IEventPayload_R2_EVENT_READIUMCSS): void;
 export declare function handleLinkUrl(href: string, rcss?: IEventPayload_R2_EVENT_READIUMCSS): void;
 export declare function handleLinkLocator(location: Locator | undefined, rcss?: IEventPayload_R2_EVENT_READIUMCSS): void;
@@ -21,6 +23,7 @@ export interface LocatorExtended {
     selectionIsNew: boolean | undefined;
     docInfo: IDocInfo | undefined;
     epubPage: string | undefined;
+    secondWebViewHref: string | undefined;
 }
 export declare function getCurrentReadingLocation(): LocatorExtended | undefined;
 export declare function setReadingLocationSaver(func: (locator: LocatorExtended) => void): void;

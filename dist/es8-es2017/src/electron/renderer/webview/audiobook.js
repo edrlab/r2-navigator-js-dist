@@ -220,10 +220,12 @@ function setupAudioBook(_docTitle, audioPlaybackRate) {
                 progression: percent,
             },
             paginationInfo: undefined,
+            secondWebViewHref: undefined,
             selectionInfo: undefined,
             selectionIsNew: undefined,
             text: undefined,
             title: _docTitle,
+            userInteract: false,
         };
         const payload = win.READIUM2.locationHashOverrideInfo;
         electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_READING_LOCATION, payload);

@@ -30,6 +30,7 @@ export interface IEventPayload_R2_EVENT_SCROLLTO {
     goto: string | undefined;
     hash: string | undefined;
     previous: boolean;
+    isSecondWebView: boolean;
 }
 export declare const R2_EVENT_PAGE_TURN = "R2_EVENT_PAGE_TURN";
 export declare const R2_EVENT_PAGE_TURN_RES = "R2_EVENT_PAGE_TURN_RES";
@@ -45,6 +46,8 @@ export interface IEventPayload_R2_EVENT_READING_LOCATION extends Locator {
     docInfo: IDocInfo | undefined;
     selectionIsNew: boolean | undefined;
     epubPage: string | undefined;
+    userInteract: boolean;
+    secondWebViewHref: string | undefined;
 }
 export declare const R2_EVENT_LINK = "R2_EVENT_LINK";
 export interface IEventPayload_R2_EVENT_LINK {
@@ -58,6 +61,12 @@ export declare const R2_EVENT_MEDIA_OVERLAY_CLICK = "R2_EVENT_MEDIA_OVERLAY_CLIC
 export interface IEventPayload_R2_EVENT_MEDIA_OVERLAY_CLICK {
     textFragmentIDChain: Array<string | null> | undefined;
     userInteract: boolean;
+}
+export declare const R2_EVENT_MEDIA_OVERLAY_STARTSTOP = "R2_EVENT_MEDIA_OVERLAY_STARTSTOP";
+export interface IEventPayload_R2_EVENT_MEDIA_OVERLAY_STARTSTOP {
+    start: boolean | undefined;
+    stop: boolean | undefined;
+    startstop: boolean | undefined;
 }
 export declare const R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT = "R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT";
 export interface IEventPayload_R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT {

@@ -26,8 +26,12 @@ function highlightsClickListen(highlightsClickListener) {
 }
 exports.highlightsClickListen = highlightsClickListen;
 function highlightsRemoveAll(href) {
-    const activeWebView = win.READIUM2.getActiveWebView();
-    if (activeWebView && activeWebView.READIUM2.link && activeWebView.READIUM2.link.Href === href) {
+    var _a;
+    const activeWebViews = win.READIUM2.getActiveWebViews();
+    for (const activeWebView of activeWebViews) {
+        if (((_a = activeWebView.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href) !== href) {
+            continue;
+        }
         setTimeout(async () => {
             await activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_REMOVE_ALL);
         }, 0);
@@ -35,8 +39,12 @@ function highlightsRemoveAll(href) {
 }
 exports.highlightsRemoveAll = highlightsRemoveAll;
 function highlightsRemove(href, highlightIDs) {
-    const activeWebView = win.READIUM2.getActiveWebView();
-    if (activeWebView && activeWebView.READIUM2.link && activeWebView.READIUM2.link.Href === href) {
+    var _a;
+    const activeWebViews = win.READIUM2.getActiveWebViews();
+    for (const activeWebView of activeWebViews) {
+        if (((_a = activeWebView.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href) !== href) {
+            continue;
+        }
         const payload = {
             highlightIDs,
         };
@@ -48,44 +56,40 @@ function highlightsRemove(href, highlightIDs) {
 exports.highlightsRemove = highlightsRemove;
 async function highlightsCreate(href, highlightDefinitions) {
     return new Promise((resolve, reject) => {
-        const activeWebView = win.READIUM2.getActiveWebView();
-        if (!activeWebView) {
-            reject("No navigator webview?!");
-            return;
-        }
-        if (!activeWebView.READIUM2.link) {
-            reject("No navigator webview link?!");
-            return;
-        }
-        if (activeWebView.READIUM2.link.Href !== href) {
-            reject("Navigator webview link no match?!");
-            return;
-        }
-        const cb = (event) => {
-            if (event.channel === events_1.R2_EVENT_HIGHLIGHT_CREATE) {
-                const webview = event.currentTarget;
-                if (webview !== activeWebView) {
-                    reject("Wrong navigator webview?!");
-                    return;
-                }
-                const payloadPong = event.args[0];
-                activeWebView.removeEventListener("ipc-message", cb);
-                if (!payloadPong.highlights) {
-                    reject("highlightCreate fail?!");
-                }
-                else {
-                    resolve(payloadPong.highlights);
-                }
+        var _a;
+        const activeWebViews = win.READIUM2.getActiveWebViews();
+        for (const activeWebView of activeWebViews) {
+            if (((_a = activeWebView.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href) !== href) {
+                continue;
             }
-        };
-        activeWebView.addEventListener("ipc-message", cb);
-        const payloadPing = {
-            highlightDefinitions,
-            highlights: undefined,
-        };
-        setTimeout(async () => {
-            await activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_CREATE, payloadPing);
-        }, 0);
+            const cb = (event) => {
+                if (event.channel === events_1.R2_EVENT_HIGHLIGHT_CREATE) {
+                    const webview = event.currentTarget;
+                    if (webview !== activeWebView) {
+                        console.log("Wrong navigator webview?!");
+                        return;
+                    }
+                    const payloadPong = event.args[0];
+                    webview.removeEventListener("ipc-message", cb);
+                    if (!payloadPong.highlights) {
+                        reject("highlightCreate fail?!");
+                    }
+                    else {
+                        resolve(payloadPong.highlights);
+                    }
+                }
+            };
+            activeWebView.addEventListener("ipc-message", cb);
+            const payloadPing = {
+                highlightDefinitions,
+                highlights: undefined,
+            };
+            setTimeout(async () => {
+                await activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_CREATE, payloadPing);
+            }, 0);
+            return;
+        }
+        reject("highlightsCreate - no webview match?!");
     });
 }
 exports.highlightsCreate = highlightsCreate;

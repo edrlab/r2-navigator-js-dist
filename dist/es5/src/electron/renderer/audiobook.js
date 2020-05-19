@@ -6,7 +6,7 @@ var events_1 = require("../common/events");
 var win = window;
 function audioPlay() {
     var _this = this;
-    var activeWebView = win.READIUM2.getActiveWebView();
+    var activeWebView = win.READIUM2.getFirstOrSecondWebView();
     if (!activeWebView) {
         return;
     }
@@ -24,7 +24,7 @@ function audioPlay() {
 exports.audioPlay = audioPlay;
 function audioPause() {
     var _this = this;
-    var activeWebView = win.READIUM2.getActiveWebView();
+    var activeWebView = win.READIUM2.getFirstOrSecondWebView();
     if (!activeWebView) {
         return;
     }
@@ -42,7 +42,7 @@ function audioPause() {
 exports.audioPause = audioPause;
 function audioTogglePlayPause() {
     var _this = this;
-    var activeWebView = win.READIUM2.getActiveWebView();
+    var activeWebView = win.READIUM2.getFirstOrSecondWebView();
     if (!activeWebView) {
         return;
     }
@@ -60,7 +60,7 @@ function audioTogglePlayPause() {
 exports.audioTogglePlayPause = audioTogglePlayPause;
 function audioRewind() {
     var _this = this;
-    var activeWebView = win.READIUM2.getActiveWebView();
+    var activeWebView = win.READIUM2.getFirstOrSecondWebView();
     if (!activeWebView) {
         return;
     }
@@ -78,7 +78,7 @@ function audioRewind() {
 exports.audioRewind = audioRewind;
 function audioForward() {
     var _this = this;
-    var activeWebView = win.READIUM2.getActiveWebView();
+    var activeWebView = win.READIUM2.getFirstOrSecondWebView();
     if (!activeWebView) {
         return;
     }

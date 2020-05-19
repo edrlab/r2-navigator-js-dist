@@ -1,3 +1,8 @@
+export declare enum WebViewSlotEnum {
+    center = "center",
+    left = "left",
+    right = "right"
+}
 export declare const CLASS_PAGINATED = "r2-css-paginated";
 export declare const ZERO_TRANSFORM_CLASS = "r2-zeroTransform";
 export declare const SKIP_LINK_ID = "r2-skip-link";
@@ -30,6 +35,7 @@ export declare const TTS_ID_INJECTED_PARENT = "r2-tts-speaking-txt-parent";
 export declare const TTS_POPUP_DIALOG_CLASS = "r2-tts-popup-dialog";
 export declare const ttsCssStyles: string;
 export declare const ROOT_CLASS_INVISIBLE_MASK = "r2-visibility-mask-class";
+export declare const ROOT_CLASS_INVISIBLE_MASK_REMOVED = "r2-visibility-mask-removed-class";
 export declare const visibilityMaskCssStyles: string;
 export declare const ROOT_CLASS_KEYBOARD_INTERACT = "r2-keyboard-interact";
 export declare const CSS_CLASS_NO_FOCUS_OUTLINE = "r2-no-focus-outline";
