@@ -5,6 +5,7 @@ const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV =
 const debug_ = require("debug");
 const electron_1 = require("electron");
 const events_1 = require("../common/events");
+const readium_css_settings_1 = require("../common/readium-css-settings");
 const sessions_1 = require("../common/sessions");
 const styles_1 = require("../common/styles");
 const url_params_1 = require("./common/url-params");
@@ -15,6 +16,51 @@ const readaloud_1 = require("./readaloud");
 const readium_css_1 = require("./readium-css");
 const soundtrack_1 = require("./soundtrack");
 const ELEMENT_ID_SLIDING_VIEWPORT = "r2_navigator_sliding_viewport";
+const ELEMENT_ID_CAPTIONS = "r2_navigator_captions_overlay";
+const ELEMENT_ID_READIUM_CSS_STYLE = "r2_navigator_readium_css";
+const captionsOverlayCssStyles = `
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    justify-content: center;
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    box-sizing: border-box;
+    border: 0;
+    margin: 0;
+    padding: 2em;
+    line-height: initial;
+    user-select: none;
+`.replace(/\n/g, " ").replace(/\s\s+/g, " ").trim();
+const captionsOverlayParaCssStyles = `
+    margin: 0;
+    margin-top: auto;
+    margin-bottom: auto;
+    padding: 0;
+    max-width: 900px;
+    font-weight: bolder;
+    text-align: center;
+`.replace(/\n/g, " ").replace(/\s\s+/g, " ").trim();
+const readiumCssStyle = `
+@font-face {
+font-family: AccessibleDfA;
+font-style: normal;
+font-weight: normal;
+src: local("AccessibleDfA"),
+url("{RCSS_BASE_URL}fonts/AccessibleDfA.otf") format("opentype");
+}
+
+@font-face {
+font-family: "IA Writer Duospace";
+font-style: normal;
+font-weight: normal;
+src: local("iAWriterDuospace-Regular"),
+url("{RCSS_BASE_URL}fonts/iAWriterDuospace-Regular.ttf") format("truetype");
+}
+`;
 const debug = debug_("r2:navigator#electron/renderer/index");
 const win = window;
 function readiumCssApplyToWebview(loc, activeWebView, rcss) {
@@ -133,6 +179,46 @@ function createWebViewInternal(preloadScriptPath) {
             const payload = event.args[0];
             if (_keyUpEventHandler) {
                 _keyUpEventHandler(payload, payload.elementName, payload.elementAttributes);
+            }
+        }
+        else if (event.channel === events_1.R2_EVENT_CAPTIONS) {
+            const payload = event.args[0];
+            let captionElement = win.document.getElementById(ELEMENT_ID_CAPTIONS);
+            let rssStyleElement = win.document.getElementById(ELEMENT_ID_READIUM_CSS_STYLE);
+            const rootElement = win.document.getElementById(ELEMENT_ID_SLIDING_VIEWPORT);
+            if (payload.text && rootElement) {
+                if (!rssStyleElement) {
+                    const urlStr = win.READIUM2.publicationURL.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL) ?
+                        sessions_1.convertCustomSchemeToHttpUrl(win.READIUM2.publicationURL) :
+                        win.READIUM2.publicationURL;
+                    const rcssUrl = new URL(urlStr);
+                    rcssUrl.pathname = `${readium_css_settings_1.READIUM_CSS_URL_PATH}/`;
+                    rssStyleElement = win.document.createElement("style");
+                    rssStyleElement.setAttribute("id", ELEMENT_ID_READIUM_CSS_STYLE);
+                    const styleTxtNode = win.document.createTextNode(readiumCssStyle.replace(/{RCSS_BASE_URL}/g, rcssUrl.toString()));
+                    rssStyleElement.appendChild(styleTxtNode);
+                    win.document.head.appendChild(rssStyleElement);
+                }
+                if (!captionElement) {
+                    captionElement = win.document.createElement("div");
+                    captionElement.setAttribute("id", ELEMENT_ID_CAPTIONS);
+                    const para = win.document.createElement("p");
+                    captionElement.appendChild(para);
+                    rootElement.appendChild(captionElement);
+                }
+                captionElement.setAttribute("style", captionsOverlayCssStyles +
+                    (payload.containerStyle ? ` ${payload.containerStyle}` : " "));
+                const p = captionElement.firstElementChild;
+                if (p) {
+                    p.setAttribute("style", captionsOverlayParaCssStyles +
+                        (payload.textStyle ? ` ${payload.textStyle}` : " "));
+                    p.textContent = payload.text;
+                }
+            }
+            else {
+                if (captionElement && captionElement.parentNode) {
+                    captionElement.parentNode.removeChild(captionElement);
+                }
             }
         }
         else if (event.channel === events_1.R2_EVENT_CLIPBOARD_COPY) {

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.mediaOverlaysEnableSkippability = exports.mediaOverlaysPlaybackRate = exports.mediaOverlaysClickEnable = exports.mediaOverlaysEscape = exports.mediaOverlaysNext = exports.mediaOverlaysPrevious = exports.mediaOverlaysResume = exports.mediaOverlaysStop = exports.mediaOverlaysInterrupt = exports.mediaOverlaysPause = exports.mediaOverlaysPlay = exports.mediaOverlaysListen = exports.MediaOverlaysStateEnum = exports.mediaOverlaysHandleIpcMessage = exports.publicationHasMediaOverlays = void 0;
+exports.mediaOverlaysEnableSkippability = exports.mediaOverlaysPlaybackRate = exports.mediaOverlaysClickEnable = exports.mediaOverlaysEnableCaptionsMode = exports.mediaOverlaysEscape = exports.mediaOverlaysNext = exports.mediaOverlaysPrevious = exports.mediaOverlaysResume = exports.mediaOverlaysStop = exports.mediaOverlaysInterrupt = exports.mediaOverlaysPause = exports.mediaOverlaysPlay = exports.mediaOverlaysListen = exports.MediaOverlaysStateEnum = exports.mediaOverlaysHandleIpcMessage = exports.publicationHasMediaOverlays = void 0;
 const tslib_1 = require("tslib");
 const debug_ = require("debug");
 const util = require("util");
@@ -38,6 +38,7 @@ function publicationHasMediaOverlays(publication) {
     return false;
 }
 exports.publicationHasMediaOverlays = publicationHasMediaOverlays;
+let _captionsMode = false;
 let _mediaOverlaysClickEnabled = false;
 let _mediaOverlaysPlaybackRate = 1;
 let _currentAudioUrl;
@@ -808,6 +809,7 @@ function moHighlight(href, id) {
     const classActive = (_b = (_a = win.READIUM2.publication.Metadata) === null || _a === void 0 ? void 0 : _a.MediaOverlay) === null || _b === void 0 ? void 0 : _b.ActiveClass;
     const classActivePlayback = (_d = (_c = win.READIUM2.publication.Metadata) === null || _c === void 0 ? void 0 : _c.MediaOverlay) === null || _d === void 0 ? void 0 : _d.PlaybackActiveClass;
     const payload = {
+        captionsMode: _captionsMode,
         classActive: classActive ? classActive : undefined,
         classActivePlayback: classActivePlayback ? classActivePlayback : undefined,
         id,
@@ -1083,6 +1085,17 @@ function mediaOverlaysEscape() {
     mediaOverlaysNext(true);
 }
 exports.mediaOverlaysEscape = mediaOverlaysEscape;
+function mediaOverlaysEnableCaptionsMode(captionsMode) {
+    _captionsMode = captionsMode;
+    if (IS_DEV) {
+        debug("mediaOverlaysEnableCaptionsMode() - mediaOverlaysPause() + mediaOverlaysPlay()");
+    }
+    mediaOverlaysPause();
+    setTimeout(() => {
+        mediaOverlaysPlay(_mediaOverlaysPlaybackRate);
+    }, 300);
+}
+exports.mediaOverlaysEnableCaptionsMode = mediaOverlaysEnableCaptionsMode;
 function mediaOverlaysClickEnable(doEnable) {
     _mediaOverlaysClickEnabled = doEnable;
 }

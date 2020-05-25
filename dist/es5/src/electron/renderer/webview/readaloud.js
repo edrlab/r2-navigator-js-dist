@@ -28,7 +28,6 @@ function resetState() {
         _dialogState.domNext = undefined;
         _dialogState.domPrevious = undefined;
         _dialogState.domText = undefined;
-        _dialogState.domInfo = undefined;
         _dialogState.remove();
     }
     _dialogState = undefined;
@@ -340,12 +339,54 @@ function updateTTSInfo(ttsQueueItemPreview, charIndex, utteranceText) {
                 continue;
             }
             var ttsQItemMarkup = ttsQueueItemMarkup;
-            var ttsQItemMarkupAttributes = R2_DATA_ATTR_UTTERANCE_INDEX + "=\"" + ttsQItem.iGlobal + "\" class=\"" + styles_1.TTS_CLASS_UTTERANCE + "\"";
+            var isHeadingLevel1 = false;
+            var isHeadingLevel2 = false;
+            var isHeadingLevel3 = false;
+            var isHeadingLevel4 = false;
+            var isHeadingLevel5 = false;
+            var p = ttsQItem.item.parentElement;
+            while (p && p.tagName) {
+                var tagName = p.tagName.toLowerCase();
+                if (tagName === "h1") {
+                    isHeadingLevel1 = true;
+                    break;
+                }
+                else if (tagName === "h2") {
+                    isHeadingLevel2 = true;
+                    break;
+                }
+                else if (tagName === "h3") {
+                    isHeadingLevel3 = true;
+                    break;
+                }
+                else if (tagName === "h4") {
+                    isHeadingLevel4 = true;
+                    break;
+                }
+                else if (tagName === "h5") {
+                    isHeadingLevel5 = true;
+                    break;
+                }
+                p = p.parentNode;
+            }
+            var classes = styles_1.TTS_CLASS_UTTERANCE +
+                (isHeadingLevel1 ? " " + styles_1.TTS_CLASS_UTTERANCE_HEADING1 :
+                    (isHeadingLevel2 ? " " + styles_1.TTS_CLASS_UTTERANCE_HEADING2 :
+                        (isHeadingLevel3 ? " " + styles_1.TTS_CLASS_UTTERANCE_HEADING3 :
+                            (isHeadingLevel4 ? " " + styles_1.TTS_CLASS_UTTERANCE_HEADING4 :
+                                (isHeadingLevel5 ? " " + styles_1.TTS_CLASS_UTTERANCE_HEADING5 : "")))));
+            var ttsQItemMarkupAttributes = R2_DATA_ATTR_UTTERANCE_INDEX + "=\"" + ttsQItem.iGlobal + "\" class=\"" + classes + "\"";
             if (ttsQItem.iGlobal === ttsQueueItem.iGlobal) {
                 ttsQItemMarkupAttributes += " id=\"" + styles_1.TTS_ID_ACTIVE_UTTERANCE + "\" ";
             }
             else {
                 ttsQItemMarkup = dom_text_utils_1.getTtsQueueItemRefText(ttsQItem);
+            }
+            var imageMarkup = "";
+            if (ttsQItem.item.parentElement && ttsQItem.item.parentElement.tagName &&
+                ttsQItem.item.parentElement.tagName.toLowerCase() === "img" &&
+                ttsQItem.item.parentElement.src) {
+                imageMarkup = "<img src=\"" + ttsQItem.item.parentElement.src + "\" />";
             }
             if (ttsQItem.item.dir) {
                 ttsQItemMarkupAttributes += " dir=\"" + ttsQItem.item.dir + "\" ";
@@ -353,7 +394,7 @@ function updateTTSInfo(ttsQueueItemPreview, charIndex, utteranceText) {
             if (ttsQItem.item.lang) {
                 ttsQItemMarkupAttributes += " lang=\"" + ttsQItem.item.lang + "\" xml:lang=\"" + ttsQItem.item.lang + "\" ";
             }
-            fullMarkup += "<div " + ttsQItemMarkupAttributes + ">" + ttsQItemMarkup + "</div>";
+            fullMarkup += imageMarkup + "<div " + ttsQItemMarkupAttributes + ">" + ttsQItemMarkup + "</div>";
         }
         try {
             _dialogState.domText.insertAdjacentHTML("beforeend", fullMarkup);
@@ -369,11 +410,6 @@ function updateTTSInfo(ttsQueueItemPreview, charIndex, utteranceText) {
                 console.log(fullMarkup);
                 _dialogState.domText.innerHTML = "fullMarkup";
             }
-        }
-    }
-    if (!isWordBoundary) {
-        if (_dialogState.domInfo) {
-            _dialogState.domInfo.innerText = (ttsQueueItem.iGlobal + 1) + "/" + _dialogState.ttsQueueLength;
         }
     }
     scrollIntoViewSpokenTextDebounced(isWordBoundary ? styles_1.TTS_ID_ACTIVE_WORD : styles_1.TTS_ID_ACTIVE_UTTERANCE);
@@ -501,7 +537,7 @@ function startTTSSession(speed, ttsRootElement, ttsQueue, ttsQueueIndexStart, fo
             resetState();
         }, 50);
     }
-    var outerHTML = "<div id=\"" + styles_1.TTS_ID_CONTAINER + "\"\n        class=\"" + styles_1.CSS_CLASS_NO_FOCUS_OUTLINE + "\"\n        dir=\"ltr\"\n        lang=\"en\"\n        xml:lang=\"en\"\n        tabindex=\"0\" autofocus=\"autofocus\"></div>\n    <div id=\"" + styles_1.TTS_ID_INFO + "\"> </div>\n    <button id=\"" + styles_1.TTS_ID_PREVIOUS + "\" class=\"" + styles_1.TTS_NAV_BUTTON_CLASS + "\" title=\"previous\"><span>&#9668;</span></button>\n    <button id=\"" + styles_1.TTS_ID_NEXT + "\" class=\"" + styles_1.TTS_NAV_BUTTON_CLASS + "\" title=\"next\"><span>&#9658;</span></button>\n    <input id=\"" + styles_1.TTS_ID_SLIDER + "\" type=\"range\" min=\"0\" max=\"" + (ttsQueueLength - 1) + "\" value=\"0\"\n        " + (readium_css_1.isRTL() ? "dir=\"rtl\"" : "dir=\"ltr\"") + "  title=\"progress\"/>";
+    var outerHTML = "<div id=\"" + styles_1.TTS_ID_CONTAINER + "\"\n        class=\"" + styles_1.CSS_CLASS_NO_FOCUS_OUTLINE + " " + styles_1.TTS_CLASS_THEME1 + "\"\n        dir=\"ltr\"\n        lang=\"en\"\n        xml:lang=\"en\"\n        tabindex=\"0\" autofocus=\"autofocus\"></div>\n    <button id=\"" + styles_1.TTS_ID_PREVIOUS + "\" class=\"" + styles_1.TTS_NAV_BUTTON_CLASS + "\" title=\"previous\"><span>&#9668;</span></button>\n    <button id=\"" + styles_1.TTS_ID_NEXT + "\" class=\"" + styles_1.TTS_NAV_BUTTON_CLASS + "\" title=\"next\"><span>&#9658;</span></button>\n    <input id=\"" + styles_1.TTS_ID_SLIDER + "\" type=\"range\" min=\"0\" max=\"" + (ttsQueueLength - 1) + "\" value=\"0\"\n        " + (readium_css_1.isRTL() ? "dir=\"rtl\"" : "dir=\"ltr\"") + "  title=\"progress\"/>";
     var pop = new popup_dialog_1.PopupDialog(win.document, outerHTML, onDialogClosed, styles_1.TTS_POPUP_DIALOG_CLASS, true);
     pop.show(ttsQueueItemStart.item.parentElement);
     _dialogState = pop.dialog;
@@ -518,7 +554,6 @@ function startTTSSession(speed, ttsRootElement, ttsQueue, ttsQueueIndexStart, fo
     _dialogState.domPrevious = win.document.getElementById(styles_1.TTS_ID_PREVIOUS);
     _dialogState.domNext = win.document.getElementById(styles_1.TTS_ID_NEXT);
     _dialogState.domText = win.document.getElementById(styles_1.TTS_ID_CONTAINER);
-    _dialogState.domInfo = win.document.getElementById(styles_1.TTS_ID_INFO);
     _dialogState.ttsQueue = ttsQueue;
     _dialogState.ttsQueueLength = ttsQueueLength;
     if (_dialogState.domSlider) {

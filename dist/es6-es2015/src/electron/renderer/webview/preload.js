@@ -11,6 +11,7 @@ const selection_1 = require("../../common/selection");
 const styles_1 = require("../../common/styles");
 const animateProperty_1 = require("../common/animateProperty");
 const cssselector2_1 = require("../common/cssselector2");
+const dom_text_utils_1 = require("../common/dom-text-utils");
 const easings_1 = require("../common/easings");
 const popup_dialog_1 = require("../common/popup-dialog");
 const querystring_1 = require("../common/querystring");
@@ -1934,6 +1935,7 @@ if (!win.READIUM2.isAudio) {
         activeMoElements_.forEach((elem) => {
             elem.classList.remove(styles_1.R2_MO_CLASS_ACTIVE);
         });
+        let removeCaptionContainer = true;
         if (!payload.id) {
             win.document.documentElement.classList.remove(styles_1.R2_MO_CLASS_ACTIVE_PLAYBACK);
             win.document.documentElement.classList.remove(activeClassPlayback);
@@ -1943,6 +1945,69 @@ if (!win.READIUM2.isAudio) {
             const targetEl = win.document.getElementById(payload.id);
             if (targetEl) {
                 targetEl.classList.add(activeClass);
+                if (payload.captionsMode) {
+                    let text = targetEl.textContent;
+                    if (text) {
+                        text = dom_text_utils_1.normalizeText(text).trim();
+                        if (text) {
+                            removeCaptionContainer = false;
+                            const isUserBackground = styleAttr ?
+                                styleAttr.indexOf("--USER__backgroundColor") >= 0 : false;
+                            const isUserColor = styleAttr ?
+                                styleAttr.indexOf("--USER__textColor") >= 0 : false;
+                            const docStyle = win.getComputedStyle(win.document.documentElement);
+                            let containerStyle = "background-color: white; color: black;";
+                            if (isNight || isSepia) {
+                                const rsBackground = docStyle.getPropertyValue("--RS__backgroundColor");
+                                const rsColor = docStyle.getPropertyValue("--RS__textColor");
+                                containerStyle = `background-color: ${rsBackground}; color: ${rsColor};`;
+                            }
+                            else {
+                                if (isUserBackground || isUserColor) {
+                                    containerStyle = "";
+                                }
+                                if (isUserBackground) {
+                                    const usrBackground = docStyle.getPropertyValue("--USER__backgroundColor");
+                                    containerStyle += `background-color: ${usrBackground};`;
+                                }
+                                if (isUserColor) {
+                                    const usrColor = docStyle.getPropertyValue("--USER__textColor");
+                                    containerStyle += `color: ${usrColor};`;
+                                }
+                            }
+                            const isUserFontSize = styleAttr ?
+                                styleAttr.indexOf("--USER__fontSize") >= 0 : false;
+                            if (isUserFontSize) {
+                                const usrFontSize = docStyle.getPropertyValue("--USER__fontSize");
+                                containerStyle += `font-size: ${usrFontSize};`;
+                            }
+                            else {
+                                containerStyle += `font-size: 120%;`;
+                            }
+                            const isUserLineHeight = styleAttr ?
+                                styleAttr.indexOf("--USER__lineHeight") >= 0 : false;
+                            if (isUserLineHeight) {
+                                const usrLineHeight = docStyle.getPropertyValue("--USER__lineHeight");
+                                containerStyle += `line-height: ${usrLineHeight};`;
+                            }
+                            else {
+                                containerStyle += `line-height: 1.2;`;
+                            }
+                            const isUserFont = styleAttr ?
+                                styleAttr.indexOf("--USER__fontFamily") >= 0 : false;
+                            if (isUserFont) {
+                                const usrFont = docStyle.getPropertyValue("--USER__fontFamily");
+                                containerStyle += `font-family: ${usrFont};`;
+                            }
+                            const payloadCaptions = {
+                                containerStyle,
+                                text,
+                                textStyle: "font-size: 120%;",
+                            };
+                            electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_CAPTIONS, payloadCaptions);
+                        }
+                    }
+                }
                 win.READIUM2.locationHashOverride = targetEl;
                 scrollElementIntoView_(targetEl, false, true);
                 scrollToHashDebounced.clear();
@@ -1957,6 +2022,14 @@ if (!win.READIUM2.isAudio) {
                 }
             }
         }
+        if (removeCaptionContainer) {
+            const payloadCaptions = {
+                containerStyle: undefined,
+                text: undefined,
+                textStyle: undefined,
+            };
+            electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_CAPTIONS, payloadCaptions);
+        }
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_HIGHLIGHT_CREATE, (_event, payloadPing) => {
         if (payloadPing.highlightDefinitions &&
@@ -1968,20 +2041,14 @@ if (!win.READIUM2.isAudio) {
             }
         }
         const highlightDefinitions = !payloadPing.highlightDefinitions ?
-            [{ color: undefined, selectionInfo: undefined }] :
+            [{ color: undefined, drawType: undefined, selectionInfo: undefined }] :
             payloadPing.highlightDefinitions;
-        const highlights = [];
-        highlightDefinitions.forEach((highlightDefinition) => {
-            const selInfo = highlightDefinition.selectionInfo ? highlightDefinition.selectionInfo :
-                selection_2.getCurrentSelectionInfo(win, getCssSelector, exports.computeCFI);
-            if (selInfo) {
-                const highlight = highlight_1.createHighlight(win, selInfo, highlightDefinition.color, true);
-                highlights.push(highlight);
+        for (const highlightDefinition of highlightDefinitions) {
+            if (!highlightDefinition.selectionInfo) {
+                highlightDefinition.selectionInfo = selection_2.getCurrentSelectionInfo(win, getCssSelector, exports.computeCFI);
             }
-            else {
-                highlights.push(null);
-            }
-        });
+        }
+        const highlights = highlight_1.createHighlights(win, highlightDefinitions, true);
         const payloadPong = {
             highlightDefinitions: payloadPing.highlightDefinitions,
             highlights: highlights.length ? highlights : undefined,

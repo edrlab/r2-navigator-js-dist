@@ -1,4 +1,4 @@
-import { IColor, IHighlight } from "../../common/highlight";
+import { IColor, IHighlight, IHighlightDefinition } from "../../common/highlight";
 import { ISelectionInfo } from "../../common/selection";
 import { IReadiumElectronWebviewWindow } from "./state";
 export declare const ID_HIGHLIGHTS_CONTAINER = "R2_ID_HIGHLIGHTS_CONTAINER";
@@ -14,4 +14,5 @@ export declare const recreateAllHighlightsDebounced: ((win: IReadiumElectronWebv
     clear(): void;
 };
 export declare function recreateAllHighlights(win: IReadiumElectronWebviewWindow): void;
-export declare function createHighlight(win: IReadiumElectronWebviewWindow, selectionInfo: ISelectionInfo, color: IColor | undefined, pointerInteraction: boolean): IHighlight;
+export declare function createHighlights(win: IReadiumElectronWebviewWindow, highDefs: IHighlightDefinition[], pointerInteraction: boolean): Array<IHighlight | null>;
+export declare function createHighlight(win: IReadiumElectronWebviewWindow, selectionInfo: ISelectionInfo, color: IColor | undefined, pointerInteraction: boolean, drawType: number | undefined, bodyRect: DOMRect): [IHighlight, HTMLDivElement | null];

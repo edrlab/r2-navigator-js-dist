@@ -12,6 +12,7 @@ var selection_1 = require("../../common/selection");
 var styles_1 = require("../../common/styles");
 var animateProperty_1 = require("../common/animateProperty");
 var cssselector2_1 = require("../common/cssselector2");
+var dom_text_utils_1 = require("../common/dom-text-utils");
 var easings_1 = require("../common/easings");
 var popup_dialog_1 = require("../common/popup-dialog");
 var querystring_1 = require("../common/querystring");
@@ -2032,6 +2033,7 @@ if (!win.READIUM2.isAudio) {
         activeMoElements_.forEach(function (elem) {
             elem.classList.remove(styles_1.R2_MO_CLASS_ACTIVE);
         });
+        var removeCaptionContainer = true;
         if (!payload.id) {
             win.document.documentElement.classList.remove(styles_1.R2_MO_CLASS_ACTIVE_PLAYBACK);
             win.document.documentElement.classList.remove(activeClassPlayback);
@@ -2041,6 +2043,69 @@ if (!win.READIUM2.isAudio) {
             var targetEl = win.document.getElementById(payload.id);
             if (targetEl) {
                 targetEl.classList.add(activeClass);
+                if (payload.captionsMode) {
+                    var text = targetEl.textContent;
+                    if (text) {
+                        text = dom_text_utils_1.normalizeText(text).trim();
+                        if (text) {
+                            removeCaptionContainer = false;
+                            var isUserBackground = styleAttr ?
+                                styleAttr.indexOf("--USER__backgroundColor") >= 0 : false;
+                            var isUserColor = styleAttr ?
+                                styleAttr.indexOf("--USER__textColor") >= 0 : false;
+                            var docStyle = win.getComputedStyle(win.document.documentElement);
+                            var containerStyle = "background-color: white; color: black;";
+                            if (isNight || isSepia) {
+                                var rsBackground = docStyle.getPropertyValue("--RS__backgroundColor");
+                                var rsColor = docStyle.getPropertyValue("--RS__textColor");
+                                containerStyle = "background-color: " + rsBackground + "; color: " + rsColor + ";";
+                            }
+                            else {
+                                if (isUserBackground || isUserColor) {
+                                    containerStyle = "";
+                                }
+                                if (isUserBackground) {
+                                    var usrBackground = docStyle.getPropertyValue("--USER__backgroundColor");
+                                    containerStyle += "background-color: " + usrBackground + ";";
+                                }
+                                if (isUserColor) {
+                                    var usrColor = docStyle.getPropertyValue("--USER__textColor");
+                                    containerStyle += "color: " + usrColor + ";";
+                                }
+                            }
+                            var isUserFontSize = styleAttr ?
+                                styleAttr.indexOf("--USER__fontSize") >= 0 : false;
+                            if (isUserFontSize) {
+                                var usrFontSize = docStyle.getPropertyValue("--USER__fontSize");
+                                containerStyle += "font-size: " + usrFontSize + ";";
+                            }
+                            else {
+                                containerStyle += "font-size: 120%;";
+                            }
+                            var isUserLineHeight = styleAttr ?
+                                styleAttr.indexOf("--USER__lineHeight") >= 0 : false;
+                            if (isUserLineHeight) {
+                                var usrLineHeight = docStyle.getPropertyValue("--USER__lineHeight");
+                                containerStyle += "line-height: " + usrLineHeight + ";";
+                            }
+                            else {
+                                containerStyle += "line-height: 1.2;";
+                            }
+                            var isUserFont = styleAttr ?
+                                styleAttr.indexOf("--USER__fontFamily") >= 0 : false;
+                            if (isUserFont) {
+                                var usrFont = docStyle.getPropertyValue("--USER__fontFamily");
+                                containerStyle += "font-family: " + usrFont + ";";
+                            }
+                            var payloadCaptions = {
+                                containerStyle: containerStyle,
+                                text: text,
+                                textStyle: "font-size: 120%;",
+                            };
+                            electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_CAPTIONS, payloadCaptions);
+                        }
+                    }
+                }
                 win.READIUM2.locationHashOverride = targetEl;
                 scrollElementIntoView_(targetEl, false, true);
                 scrollToHashDebounced.clear();
@@ -2055,8 +2120,17 @@ if (!win.READIUM2.isAudio) {
                 }
             }
         }
+        if (removeCaptionContainer) {
+            var payloadCaptions = {
+                containerStyle: undefined,
+                text: undefined,
+                textStyle: undefined,
+            };
+            electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_CAPTIONS, payloadCaptions);
+        }
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_HIGHLIGHT_CREATE, function (_event, payloadPing) {
+        var e_9, _a;
         if (payloadPing.highlightDefinitions &&
             payloadPing.highlightDefinitions.length === 1 &&
             payloadPing.highlightDefinitions[0].selectionInfo) {
@@ -2066,20 +2140,24 @@ if (!win.READIUM2.isAudio) {
             }
         }
         var highlightDefinitions = !payloadPing.highlightDefinitions ?
-            [{ color: undefined, selectionInfo: undefined }] :
+            [{ color: undefined, drawType: undefined, selectionInfo: undefined }] :
             payloadPing.highlightDefinitions;
-        var highlights = [];
-        highlightDefinitions.forEach(function (highlightDefinition) {
-            var selInfo = highlightDefinition.selectionInfo ? highlightDefinition.selectionInfo :
-                selection_2.getCurrentSelectionInfo(win, getCssSelector, exports.computeCFI);
-            if (selInfo) {
-                var highlight = highlight_1.createHighlight(win, selInfo, highlightDefinition.color, true);
-                highlights.push(highlight);
+        try {
+            for (var highlightDefinitions_1 = tslib_1.__values(highlightDefinitions), highlightDefinitions_1_1 = highlightDefinitions_1.next(); !highlightDefinitions_1_1.done; highlightDefinitions_1_1 = highlightDefinitions_1.next()) {
+                var highlightDefinition = highlightDefinitions_1_1.value;
+                if (!highlightDefinition.selectionInfo) {
+                    highlightDefinition.selectionInfo = selection_2.getCurrentSelectionInfo(win, getCssSelector, exports.computeCFI);
+                }
             }
-            else {
-                highlights.push(null);
+        }
+        catch (e_9_1) { e_9 = { error: e_9_1 }; }
+        finally {
+            try {
+                if (highlightDefinitions_1_1 && !highlightDefinitions_1_1.done && (_a = highlightDefinitions_1.return)) _a.call(highlightDefinitions_1);
             }
-        });
+            finally { if (e_9) throw e_9.error; }
+        }
+        var highlights = highlight_1.createHighlights(win, highlightDefinitions, true);
         var payloadPong = {
             highlightDefinitions: payloadPing.highlightDefinitions,
             highlights: highlights.length ? highlights : undefined,

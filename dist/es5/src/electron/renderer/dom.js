@@ -6,6 +6,7 @@ var IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV ===
 var debug_ = require("debug");
 var electron_1 = require("electron");
 var events_1 = require("../common/events");
+var readium_css_settings_1 = require("../common/readium-css-settings");
 var sessions_1 = require("../common/sessions");
 var styles_1 = require("../common/styles");
 var url_params_1 = require("./common/url-params");
@@ -16,6 +17,11 @@ var readaloud_1 = require("./readaloud");
 var readium_css_1 = require("./readium-css");
 var soundtrack_1 = require("./soundtrack");
 var ELEMENT_ID_SLIDING_VIEWPORT = "r2_navigator_sliding_viewport";
+var ELEMENT_ID_CAPTIONS = "r2_navigator_captions_overlay";
+var ELEMENT_ID_READIUM_CSS_STYLE = "r2_navigator_readium_css";
+var captionsOverlayCssStyles = "\n    overflow: hidden;\n    overflow-y: auto;\n    display: flex;\n    justify-content: center;\n    position: absolute;\n    left: 0;\n    top: 0;\n    right: 0;\n    bottom: 0;\n    box-sizing: border-box;\n    border: 0;\n    margin: 0;\n    padding: 2em;\n    line-height: initial;\n    user-select: none;\n".replace(/\n/g, " ").replace(/\s\s+/g, " ").trim();
+var captionsOverlayParaCssStyles = "\n    margin: 0;\n    margin-top: auto;\n    margin-bottom: auto;\n    padding: 0;\n    max-width: 900px;\n    font-weight: bolder;\n    text-align: center;\n".replace(/\n/g, " ").replace(/\s\s+/g, " ").trim();
+var readiumCssStyle = "\n@font-face {\nfont-family: AccessibleDfA;\nfont-style: normal;\nfont-weight: normal;\nsrc: local(\"AccessibleDfA\"),\nurl(\"{RCSS_BASE_URL}fonts/AccessibleDfA.otf\") format(\"opentype\");\n}\n\n@font-face {\nfont-family: \"IA Writer Duospace\";\nfont-style: normal;\nfont-weight: normal;\nsrc: local(\"iAWriterDuospace-Regular\"),\nurl(\"{RCSS_BASE_URL}fonts/iAWriterDuospace-Regular.ttf\") format(\"truetype\");\n}\n";
 var debug = debug_("r2:navigator#electron/renderer/index");
 var win = window;
 function readiumCssApplyToWebview(loc, activeWebView, rcss) {
@@ -168,6 +174,46 @@ function createWebViewInternal(preloadScriptPath) {
             var payload = event.args[0];
             if (_keyUpEventHandler) {
                 _keyUpEventHandler(payload, payload.elementName, payload.elementAttributes);
+            }
+        }
+        else if (event.channel === events_1.R2_EVENT_CAPTIONS) {
+            var payload = event.args[0];
+            var captionElement = win.document.getElementById(ELEMENT_ID_CAPTIONS);
+            var rssStyleElement = win.document.getElementById(ELEMENT_ID_READIUM_CSS_STYLE);
+            var rootElement = win.document.getElementById(ELEMENT_ID_SLIDING_VIEWPORT);
+            if (payload.text && rootElement) {
+                if (!rssStyleElement) {
+                    var urlStr = win.READIUM2.publicationURL.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL) ?
+                        sessions_1.convertCustomSchemeToHttpUrl(win.READIUM2.publicationURL) :
+                        win.READIUM2.publicationURL;
+                    var rcssUrl = new URL(urlStr);
+                    rcssUrl.pathname = readium_css_settings_1.READIUM_CSS_URL_PATH + "/";
+                    rssStyleElement = win.document.createElement("style");
+                    rssStyleElement.setAttribute("id", ELEMENT_ID_READIUM_CSS_STYLE);
+                    var styleTxtNode = win.document.createTextNode(readiumCssStyle.replace(/{RCSS_BASE_URL}/g, rcssUrl.toString()));
+                    rssStyleElement.appendChild(styleTxtNode);
+                    win.document.head.appendChild(rssStyleElement);
+                }
+                if (!captionElement) {
+                    captionElement = win.document.createElement("div");
+                    captionElement.setAttribute("id", ELEMENT_ID_CAPTIONS);
+                    var para = win.document.createElement("p");
+                    captionElement.appendChild(para);
+                    rootElement.appendChild(captionElement);
+                }
+                captionElement.setAttribute("style", captionsOverlayCssStyles +
+                    (payload.containerStyle ? " " + payload.containerStyle : " "));
+                var p = captionElement.firstElementChild;
+                if (p) {
+                    p.setAttribute("style", captionsOverlayParaCssStyles +
+                        (payload.textStyle ? " " + payload.textStyle : " "));
+                    p.textContent = payload.text;
+                }
+            }
+            else {
+                if (captionElement && captionElement.parentNode) {
+                    captionElement.parentNode.removeChild(captionElement);
+                }
             }
         }
         else if (event.channel === events_1.R2_EVENT_CLIPBOARD_COPY) {

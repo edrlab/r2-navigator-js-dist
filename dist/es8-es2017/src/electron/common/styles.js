@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.audioCssStyles = exports.AUDIO_FORWARD_ID = exports.AUDIO_REWIND_ID = exports.AUDIO_NEXT_ID = exports.AUDIO_PREVIOUS_ID = exports.AUDIO_PLAYPAUSE_ID = exports.AUDIO_RATE_ID = exports.AUDIO_PERCENT_ID = exports.AUDIO_TIME_ID = exports.AUDIO_SLIDER_ID = exports.AUDIO_TITLE_ID = exports.AUDIO_COVER_ID = exports.AUDIO_CONTROLS_ID = exports.AUDIO_SECTION_ID = exports.AUDIO_BODY_ID = exports.AUDIO_ID = exports.AUDIO_PROGRESS_CLASS = exports.AUDIO_BUFFER_CANVAS_ID = exports.readPosCssStyles = exports.readPosCssStylesAttr4 = exports.readPosCssStylesAttr3 = exports.readPosCssStylesAttr2 = exports.readPosCssStylesAttr1 = exports.scrollBarCssStyles = exports.selectionCssStyles = exports.targetCssStyles = exports.focusCssStyles = exports.CSS_CLASS_NO_FOCUS_OUTLINE = exports.ROOT_CLASS_KEYBOARD_INTERACT = exports.visibilityMaskCssStyles = exports.ROOT_CLASS_INVISIBLE_MASK_REMOVED = exports.ROOT_CLASS_INVISIBLE_MASK = exports.ttsCssStyles = exports.TTS_POPUP_DIALOG_CLASS = exports.TTS_ID_INJECTED_PARENT = exports.TTS_CLASS_INJECTED_SUBSPAN = exports.TTS_CLASS_INJECTED_SPAN = exports.TTS_ID_SPEAKING_DOC_ELEMENT = exports.TTS_NAV_BUTTON_CLASS = exports.TTS_ID_INFO = exports.TTS_ID_CONTAINER = exports.TTS_CLASS_UTTERANCE = exports.TTS_ID_ACTIVE_UTTERANCE = exports.TTS_ID_ACTIVE_WORD = exports.TTS_ID_SLIDER = exports.TTS_ID_NEXT = exports.TTS_ID_PREVIOUS = exports.TTS_CLASS_IS_ACTIVE = exports.mediaOverlaysCssStyles = exports.R2_MO_CLASS_ACTIVE_PLAYBACK = exports.R2_MO_CLASS_ACTIVE = exports.footnotesCssStyles = exports.FOOTNOTE_FORCE_SHOW = exports.FOOTNOTES_CLOSE_BUTTON_CLASS = exports.FOOTNOTES_CONTAINER_CLASS = exports.POPUP_DIALOG_CLASS = exports.ROOT_CLASS_MATHJAX = exports.ROOT_CLASS_NO_FOOTNOTES = exports.ROOT_CLASS_REDUCE_MOTION = exports.LINK_TARGET_CLASS = exports.SKIP_LINK_ID = exports.ZERO_TRANSFORM_CLASS = exports.CLASS_PAGINATED = exports.WebViewSlotEnum = void 0;
+exports.audioCssStyles = exports.AUDIO_FORWARD_ID = exports.AUDIO_REWIND_ID = exports.AUDIO_NEXT_ID = exports.AUDIO_PREVIOUS_ID = exports.AUDIO_PLAYPAUSE_ID = exports.AUDIO_RATE_ID = exports.AUDIO_PERCENT_ID = exports.AUDIO_TIME_ID = exports.AUDIO_SLIDER_ID = exports.AUDIO_TITLE_ID = exports.AUDIO_COVER_ID = exports.AUDIO_CONTROLS_ID = exports.AUDIO_SECTION_ID = exports.AUDIO_BODY_ID = exports.AUDIO_ID = exports.AUDIO_PROGRESS_CLASS = exports.AUDIO_BUFFER_CANVAS_ID = exports.readPosCssStyles = exports.readPosCssStylesAttr4 = exports.readPosCssStylesAttr3 = exports.readPosCssStylesAttr2 = exports.readPosCssStylesAttr1 = exports.scrollBarCssStyles = exports.selectionCssStyles = exports.targetCssStyles = exports.focusCssStyles = exports.CSS_CLASS_NO_FOCUS_OUTLINE = exports.ROOT_CLASS_KEYBOARD_INTERACT = exports.visibilityMaskCssStyles = exports.ROOT_CLASS_INVISIBLE_MASK_REMOVED = exports.ROOT_CLASS_INVISIBLE_MASK = exports.ttsCssStyles = exports.TTS_POPUP_DIALOG_CLASS = exports.TTS_ID_INJECTED_PARENT = exports.TTS_CLASS_INJECTED_SUBSPAN = exports.TTS_CLASS_INJECTED_SPAN = exports.TTS_ID_SPEAKING_DOC_ELEMENT = exports.TTS_NAV_BUTTON_CLASS = exports.TTS_ID_CONTAINER = exports.TTS_CLASS_UTTERANCE_HEADING5 = exports.TTS_CLASS_UTTERANCE_HEADING4 = exports.TTS_CLASS_UTTERANCE_HEADING3 = exports.TTS_CLASS_UTTERANCE_HEADING2 = exports.TTS_CLASS_UTTERANCE_HEADING1 = exports.TTS_CLASS_UTTERANCE = exports.TTS_ID_ACTIVE_UTTERANCE = exports.TTS_ID_ACTIVE_WORD = exports.TTS_ID_SLIDER = exports.TTS_ID_NEXT = exports.TTS_ID_PREVIOUS = exports.TTS_CLASS_IS_ACTIVE = exports.TTS_CLASS_THEME1 = exports.mediaOverlaysCssStyles = exports.R2_MO_CLASS_ACTIVE_PLAYBACK = exports.R2_MO_CLASS_ACTIVE = exports.footnotesCssStyles = exports.FOOTNOTE_FORCE_SHOW = exports.FOOTNOTES_CLOSE_BUTTON_CLASS = exports.FOOTNOTES_CONTAINER_CLASS = exports.POPUP_DIALOG_CLASS = exports.ROOT_CLASS_MATHJAX = exports.ROOT_CLASS_NO_FOOTNOTES = exports.ROOT_CLASS_REDUCE_MOTION = exports.LINK_TARGET_CLASS = exports.SKIP_LINK_ID = exports.ZERO_TRANSFORM_CLASS = exports.CLASS_PAGINATED = exports.WebViewSlotEnum = void 0;
 var WebViewSlotEnum;
 (function (WebViewSlotEnum) {
     WebViewSlotEnum["center"] = "center";
@@ -143,6 +143,7 @@ exports.mediaOverlaysCssStyles = `
     color: black !important;
 }
 `;
+exports.TTS_CLASS_THEME1 = "r2-tts-theme1";
 exports.TTS_CLASS_IS_ACTIVE = "r2-tts-isPlaying";
 exports.TTS_ID_PREVIOUS = "r2-tts-previous";
 exports.TTS_ID_NEXT = "r2-tts-next";
@@ -150,8 +151,12 @@ exports.TTS_ID_SLIDER = "r2-tts-slider";
 exports.TTS_ID_ACTIVE_WORD = "r2-tts-active-word";
 exports.TTS_ID_ACTIVE_UTTERANCE = "r2-tts-active-utterance";
 exports.TTS_CLASS_UTTERANCE = "r2-tts-utterance";
+exports.TTS_CLASS_UTTERANCE_HEADING1 = "r2-tts-utterance-h1";
+exports.TTS_CLASS_UTTERANCE_HEADING2 = "r2-tts-utterance-h2";
+exports.TTS_CLASS_UTTERANCE_HEADING3 = "r2-tts-utterance-h3";
+exports.TTS_CLASS_UTTERANCE_HEADING4 = "r2-tts-utterance-h4";
+exports.TTS_CLASS_UTTERANCE_HEADING5 = "r2-tts-utterance-h5";
 exports.TTS_ID_CONTAINER = "r2-tts-txt";
-exports.TTS_ID_INFO = "r2-tts-info";
 exports.TTS_NAV_BUTTON_CLASS = "r2-tts-button";
 exports.TTS_ID_SPEAKING_DOC_ELEMENT = "r2-tts-speaking-el";
 exports.TTS_CLASS_INJECTED_SPAN = "r2-tts-speaking-txt";
@@ -198,9 +203,11 @@ exports.ttsCssStyles = `
     grid-row-end: 2;
 
     padding: 0;
-    padding-left: 4em;
-    padding-right: 4em;
     margin: 0;
+
+    max-width: 800px;
+    margin-right: auto;
+    margin-left: auto;
 
     hyphens: none !important;
     word-break: keep-all !important;
@@ -219,9 +226,22 @@ exports.ttsCssStyles = `
     border-top: 0;
 }
 
-:root[style] div#${exports.TTS_ID_CONTAINER} *,
-:root div#${exports.TTS_ID_CONTAINER} * {
+:root[style] div#${exports.TTS_ID_CONTAINER} > div,
+:root div#${exports.TTS_ID_CONTAINER} > div {
     font-size: 1.2rem !important;
+}
+:root[style] div#${exports.TTS_ID_CONTAINER} > img,
+:root div#${exports.TTS_ID_CONTAINER} > img {
+    display: block;
+    border: 3px solid #333333;
+    max-width: 50%;
+    margin-left: auto;
+    margin-right: auto;
+}
+:root[style] div#${exports.TTS_ID_CONTAINER} > img + div,
+:root div#${exports.TTS_ID_CONTAINER} > img + div {
+    text-align: center;
+    text-decoration: underline;
 }
 
 :root[style*="--USER__lineHeight"] div#${exports.TTS_ID_CONTAINER} {
@@ -230,7 +250,7 @@ exports.ttsCssStyles = `
 :root[style*="readium-night-on"] div#${exports.TTS_ID_CONTAINER} {
     color: #bbbbbb !important;
 }
-:root[style*="readium-sepia-on"] div#${exports.TTS_ID_CONTAINER}{
+:root[style*="readium-sepia-on"] div#${exports.TTS_ID_CONTAINER} {
     background: var(--RS__backgroundColor) !important;
     color: var(--RS__textColor) !important;
 }
@@ -239,21 +259,6 @@ exports.ttsCssStyles = `
 }
 :root[style*="--USER__textColor"] div#${exports.TTS_ID_CONTAINER} {
     color: var(--USER__textColor) !important;
-}
-:root[style] #${exports.TTS_ID_INFO},
-:root #${exports.TTS_ID_INFO} {
-    display: none;
-
-    padding: 0;
-    margin: 0;
-
-    grid-column-start: 2;
-    grid-column-end: 3;
-    grid-row-start: 2;
-    grid-row-end: 3;
-
-    font-family: Arial !important;
-    font-size: 90% !important;
 }
 
 :root[style] #${exports.TTS_ID_SLIDER},
@@ -415,6 +420,34 @@ exports.ttsCssStyles = `
 
     box-sizing: border-box;
     border: 1px solid transparent !important;
+
+    line-height: 1.5 !important;
+}
+
+:root[style] div#${exports.TTS_ID_CONTAINER} .${exports.TTS_CLASS_UTTERANCE_HEADING1},
+:root div#${exports.TTS_ID_CONTAINER} .${exports.TTS_CLASS_UTTERANCE_HEADING1} {
+    font-weight: bolder !important;
+    font-size: 1.5rem !important;
+}
+:root[style] div#${exports.TTS_ID_CONTAINER} .${exports.TTS_CLASS_UTTERANCE_HEADING2},
+:root div#${exports.TTS_ID_CONTAINER} .${exports.TTS_CLASS_UTTERANCE_HEADING2} {
+    font-weight: bolder !important;
+    font-size: 1.4rem !important;
+}
+:root[style] div#${exports.TTS_ID_CONTAINER} .${exports.TTS_CLASS_UTTERANCE_HEADING3},
+:root div#${exports.TTS_ID_CONTAINER} .${exports.TTS_CLASS_UTTERANCE_HEADING3} {
+    font-weight: bold !important;
+    font-size: 1.3rem !important;
+}
+:root[style] div#${exports.TTS_ID_CONTAINER} .${exports.TTS_CLASS_UTTERANCE_HEADING4},
+:root div#${exports.TTS_ID_CONTAINER} .${exports.TTS_CLASS_UTTERANCE_HEADING4} {
+    font-weight: bold !important;
+    font-size: 1.2rem !important;
+}
+:root[style] div#${exports.TTS_ID_CONTAINER} .${exports.TTS_CLASS_UTTERANCE_HEADING5},
+:root div#${exports.TTS_ID_CONTAINER} .${exports.TTS_CLASS_UTTERANCE_HEADING5} {
+    font-weight: bold !important;
+    font-size: 1.1rem !important;
 }
 
 :root[style] div#${exports.TTS_ID_ACTIVE_UTTERANCE},
@@ -464,6 +497,73 @@ exports.ttsCssStyles = `
 :root[style*="--USER__textColor"] span#${exports.TTS_ID_ACTIVE_WORD} {
     color: var(--USER__textColor) !important;
     outline-color: var(--USER__textColor);
+}
+
+:root div#${exports.TTS_ID_CONTAINER}.${exports.TTS_CLASS_THEME1},
+:root[style] div#${exports.TTS_ID_CONTAINER}.${exports.TTS_CLASS_THEME1} {
+
+    background-color: #f7f9f9 !important;
+    color: #333333 !important;
+}
+:root[style*="readium-night-on"] div#${exports.TTS_ID_CONTAINER}.${exports.TTS_CLASS_THEME1} {
+    background: #111111 !important;
+    color: #888888 !important;
+}
+:root[style*="readium-sepia-on"] div#${exports.TTS_ID_CONTAINER}.${exports.TTS_CLASS_THEME1} {
+    background: #fdf2e9 !important;
+    color: #333333 !important;
+}
+
+:root[style] div#${exports.TTS_ID_CONTAINER}.${exports.TTS_CLASS_THEME1} .${exports.TTS_CLASS_UTTERANCE},
+:root div#${exports.TTS_ID_CONTAINER}.${exports.TTS_CLASS_THEME1} .${exports.TTS_CLASS_UTTERANCE} {
+    background-color: transparent !important;
+}
+
+:root[style] div#${exports.TTS_ID_CONTAINER}.${exports.TTS_CLASS_THEME1} div#${exports.TTS_ID_ACTIVE_UTTERANCE},
+:root div#${exports.TTS_ID_CONTAINER}.${exports.TTS_CLASS_THEME1} div#${exports.TTS_ID_ACTIVE_UTTERANCE} {
+
+    border: 0 !important;
+    border-radius: 0px !important;
+
+    background-color: #ecf0f1 !important;
+    color: black !important;
+
+    /* box-shadow: 0px 0px 10px 0px #f2f3f4; */
+}
+:root[style*="readium-night-on"] div#${exports.TTS_ID_CONTAINER}.${exports.TTS_CLASS_THEME1} div#${exports.TTS_ID_ACTIVE_UTTERANCE} {
+    background-color: #222222 !important;
+    color: white !important;
+    /* box-shadow: 0px 0px 10px 0px #111100; */
+}
+:root[style*="readium-sepia-on"] div#${exports.TTS_ID_CONTAINER}.${exports.TTS_CLASS_THEME1} div#${exports.TTS_ID_ACTIVE_UTTERANCE} {
+    background-color: #fef9e7 !important;
+    color: black !important;
+    /* box-shadow: 0px 0px 10px 0px #fdebd0; */
+}
+
+:root[style] div#${exports.TTS_ID_CONTAINER}.${exports.TTS_CLASS_THEME1} div#${exports.TTS_ID_ACTIVE_UTTERANCE} span#${exports.TTS_ID_ACTIVE_WORD},
+:root div#${exports.TTS_ID_CONTAINER}.${exports.TTS_CLASS_THEME1} div#${exports.TTS_ID_ACTIVE_UTTERANCE} span#${exports.TTS_ID_ACTIVE_WORD} {
+    background-color: #f7dc6f !important;
+    color: black !important;
+
+    outline-color: #f7dc6f;
+    outline-style: solid;
+    outline-offset: unset;
+    outline-width: 4px;
+
+    text-decoration: none;
+}
+:root[style*="readium-night-on"] div#${exports.TTS_ID_CONTAINER}.${exports.TTS_CLASS_THEME1} div#${exports.TTS_ID_ACTIVE_UTTERANCE} span#${exports.TTS_ID_ACTIVE_WORD} {
+    background-color: #d4ac0d !important;
+    color: black !important;
+
+    outline-color: #d4ac0d;
+}
+:root[style*="readium-sepia-on"] div#${exports.TTS_ID_CONTAINER}.${exports.TTS_CLASS_THEME1} div#${exports.TTS_ID_ACTIVE_UTTERANCE} span#${exports.TTS_ID_ACTIVE_WORD} {
+    background-color: #f9e79f !important;
+    color: black !important;
+
+    outline-color: #f9e79f;
 }
 `;
 exports.ROOT_CLASS_INVISIBLE_MASK = "r2-visibility-mask-class";

@@ -136,7 +136,6 @@ function createOrderedRange(startNode, startOffset, endNode, endOffset) {
     range.setStart(startNode, startOffset);
     range.setEnd(endNode, endOffset);
     if (!range.collapsed) {
-        console.log(">>> createOrderedRange RANGE OK");
         return range;
     }
     console.log(">>> createOrderedRange COLLAPSED ... RANGE REVERSE?");

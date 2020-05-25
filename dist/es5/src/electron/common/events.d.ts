@@ -73,6 +73,7 @@ export interface IEventPayload_R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT {
     id: string | undefined;
     classActive: string | undefined;
     classActivePlayback: string | undefined;
+    captionsMode: boolean | undefined;
 }
 export declare const R2_EVENT_SHIFT_VIEW_X = "R2_EVENT_SHIFT_VIEW_X";
 export interface IEventPayload_R2_EVENT_SHIFT_VIEW_X {
@@ -111,6 +112,12 @@ export declare const R2_EVENT_TTS_IS_PLAYING = "R2_EVENT_TTS_IS_PLAYING";
 export declare const R2_EVENT_TTS_DOC_END = "R2_EVENT_TTS_DOC_END";
 export declare const R2_EVENT_TTS_DO_NEXT = "R2_EVENT_TTS_DO_NEXT";
 export declare const R2_EVENT_TTS_DO_PREVIOUS = "R2_EVENT_TTS_DO_PREVIOUS";
+export declare const R2_EVENT_CAPTIONS = "R2_EVENT_CAPTIONS";
+export interface IEventPayload_R2_EVENT_CAPTIONS {
+    text: string | undefined;
+    containerStyle: string | undefined;
+    textStyle: string | undefined;
+}
 export declare const R2_EVENT_HIGHLIGHT_CREATE = "R2_EVENT_HIGHLIGHT_CREATE";
 export interface IEventPayload_R2_EVENT_HIGHLIGHT_CREATE {
     highlightDefinitions: IHighlightDefinition[] | undefined;

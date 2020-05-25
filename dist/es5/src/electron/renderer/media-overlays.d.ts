@@ -16,6 +16,7 @@ export declare function mediaOverlaysResume(): void;
 export declare function mediaOverlaysPrevious(): void;
 export declare function mediaOverlaysNext(escape?: boolean): void;
 export declare function mediaOverlaysEscape(): void;
+export declare function mediaOverlaysEnableCaptionsMode(captionsMode: boolean): void;
 export declare function mediaOverlaysClickEnable(doEnable: boolean): void;
 export declare function mediaOverlaysPlaybackRate(speed: number): void;
 export declare function mediaOverlaysEnableSkippability(doEnable: boolean): void;

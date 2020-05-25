@@ -172,9 +172,30 @@ function generateTtsQueue(rootElement) {
         for (const childNode of element.childNodes) {
             switch (childNode.nodeType) {
                 case Node.ELEMENT_NODE:
-                    const isExcluded = childNode.matches("img, sup, sub, audio, video, source, button, canvas, del, dialog, embed, form, head, iframe, meter, noscript, object, s, script, select, style, textarea");
+                    const childElement = childNode;
+                    const isExcluded = childElement.matches("img, sup, sub, audio, video, source, button, canvas, del, dialog, embed, form, head, iframe, meter, noscript, object, s, script, select, style, textarea");
                     if (!isExcluded) {
-                        processElement(childNode);
+                        processElement(childElement);
+                    }
+                    else if (childElement.tagName
+                        && childElement.tagName.toLowerCase() === "img" &&
+                        childElement.src) {
+                        const altAttr = childElement.getAttribute("alt");
+                        if (altAttr) {
+                            const txt = altAttr.trim();
+                            if (txt) {
+                                const lang = getLanguage(childElement);
+                                const dir = undefined;
+                                ttsQueue.push({
+                                    combinedText: txt,
+                                    combinedTextSentences: undefined,
+                                    dir,
+                                    lang,
+                                    parentElement: childElement,
+                                    textNodes: [],
+                                });
+                            }
+                        }
                     }
                     break;
                 case Node.TEXT_NODE:
@@ -204,8 +225,16 @@ function generateTtsQueue(rootElement) {
         return "";
     }
     function finalizeTextNodes(ttsQueueItem) {
+        if (!ttsQueueItem.textNodes || !ttsQueueItem.textNodes.length) {
+            if (!ttsQueueItem.combinedText || !ttsQueueItem.combinedText.length) {
+                ttsQueueItem.combinedText = "";
+            }
+            ttsQueueItem.combinedTextSentences = undefined;
+            return;
+        }
         ttsQueueItem.combinedText = combineTextNodes(ttsQueueItem.textNodes).trim();
         try {
+            ttsQueueItem.combinedTextSentences = undefined;
             const sentences = sentence_splitter_1.split(ttsQueueItem.combinedText);
             ttsQueueItem.combinedTextSentences = [];
             for (const sentence of sentences) {

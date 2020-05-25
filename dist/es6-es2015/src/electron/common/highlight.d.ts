@@ -9,8 +9,11 @@ export interface IHighlight {
     selectionInfo: ISelectionInfo;
     color: IColor;
     pointerInteraction: boolean;
+    drawType?: number;
 }
 export interface IHighlightDefinition {
     selectionInfo: ISelectionInfo | undefined;
     color: IColor | undefined;
+    drawType?: number;
 }
+export declare function convertColorHexadecimalToRGBA(cssHex: string, alpha?: number): string | undefined;

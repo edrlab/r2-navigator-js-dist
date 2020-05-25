@@ -242,9 +242,30 @@ function generateTtsQueue(rootElement) {
                 var childNode = _c.value;
                 switch (childNode.nodeType) {
                     case Node.ELEMENT_NODE:
-                        var isExcluded = childNode.matches("img, sup, sub, audio, video, source, button, canvas, del, dialog, embed, form, head, iframe, meter, noscript, object, s, script, select, style, textarea");
+                        var childElement = childNode;
+                        var isExcluded = childElement.matches("img, sup, sub, audio, video, source, button, canvas, del, dialog, embed, form, head, iframe, meter, noscript, object, s, script, select, style, textarea");
                         if (!isExcluded) {
-                            processElement(childNode);
+                            processElement(childElement);
+                        }
+                        else if (childElement.tagName
+                            && childElement.tagName.toLowerCase() === "img" &&
+                            childElement.src) {
+                            var altAttr = childElement.getAttribute("alt");
+                            if (altAttr) {
+                                var txt = altAttr.trim();
+                                if (txt) {
+                                    var lang = getLanguage(childElement);
+                                    var dir = undefined;
+                                    ttsQueue.push({
+                                        combinedText: txt,
+                                        combinedTextSentences: undefined,
+                                        dir: dir,
+                                        lang: lang,
+                                        parentElement: childElement,
+                                        textNodes: [],
+                                    });
+                                }
+                            }
                         }
                         break;
                     case Node.TEXT_NODE:
@@ -294,8 +315,16 @@ function generateTtsQueue(rootElement) {
     }
     function finalizeTextNodes(ttsQueueItem) {
         var e_10, _a;
+        if (!ttsQueueItem.textNodes || !ttsQueueItem.textNodes.length) {
+            if (!ttsQueueItem.combinedText || !ttsQueueItem.combinedText.length) {
+                ttsQueueItem.combinedText = "";
+            }
+            ttsQueueItem.combinedTextSentences = undefined;
+            return;
+        }
         ttsQueueItem.combinedText = combineTextNodes(ttsQueueItem.textNodes).trim();
         try {
+            ttsQueueItem.combinedTextSentences = undefined;
             var sentences = sentence_splitter_1.split(ttsQueueItem.combinedText);
             ttsQueueItem.combinedTextSentences = [];
             try {
