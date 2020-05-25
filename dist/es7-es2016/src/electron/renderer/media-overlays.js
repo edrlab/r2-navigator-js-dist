@@ -1087,13 +1087,6 @@ function mediaOverlaysEscape() {
 exports.mediaOverlaysEscape = mediaOverlaysEscape;
 function mediaOverlaysEnableCaptionsMode(captionsMode) {
     _captionsMode = captionsMode;
-    if (IS_DEV) {
-        debug("mediaOverlaysEnableCaptionsMode() - mediaOverlaysPause() + mediaOverlaysPlay()");
-    }
-    mediaOverlaysPause();
-    setTimeout(() => {
-        mediaOverlaysPlay(_mediaOverlaysPlaybackRate);
-    }, 300);
 }
 exports.mediaOverlaysEnableCaptionsMode = mediaOverlaysEnableCaptionsMode;
 function mediaOverlaysClickEnable(doEnable) {
