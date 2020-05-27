@@ -370,34 +370,14 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
     var pubIsServedViaSpecialUrlProtocol = publicationURL.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://");
     var publicationURLHttp = pubIsServedViaSpecialUrlProtocol ?
         sessions_1.convertCustomSchemeToHttpUrl(publicationURL) : publicationURL;
-    var linkPath;
     var hrefToLoadHttpObj = new url_1.URL(hrefToLoadHttp);
     hrefToLoadHttpObj.hash = "";
     hrefToLoadHttpObj.search = "";
     var publicationURLHttpObj = new url_1.URL(publicationURLHttp);
     publicationURLHttpObj.hash = "";
     publicationURLHttpObj.search = "";
-    var iBreak = -1;
-    for (var i = 0; i < publicationURLHttpObj.pathname.length; i++) {
-        var c1 = publicationURLHttpObj.pathname[i];
-        if (i < hrefToLoadHttpObj.pathname.length) {
-            var c2 = hrefToLoadHttpObj.pathname[i];
-            if (c1 !== c2) {
-                iBreak = i;
-                break;
-            }
-        }
-        else {
-            break;
-        }
-    }
-    if (iBreak > 0) {
-        linkPath = hrefToLoadHttpObj.pathname.substr(iBreak);
-    }
-    if (!linkPath) {
-        debug("R2LOADLINK?? " + hrefToLoad + " ... " + publicationURL + " !!! " + hrefToLoadHttp + " ... " + publicationURLHttp);
-        return false;
-    }
+    var rootPath = publicationURLHttpObj.pathname.replace(/manifest\.json$/, "");
+    var linkPath = hrefToLoadHttpObj.pathname.replace(rootPath, "");
     linkPath = decodeURIComponent(linkPath);
     debug("R2LOADLINK: " + hrefToLoad + " ... " + publicationURL + " ==> " + linkPath);
     var pubLink = publication.Spine ? publication.Spine.find(function (spineLink) {
