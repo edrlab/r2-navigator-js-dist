@@ -1,6 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.convertColorHexadecimalToRGBA = void 0;
+exports.convertColorHexadecimalToRGBA = exports.HighlightDrawTypeStrikethrough = exports.HighlightDrawTypeUnderline = exports.HighlightDrawTypeBackground = void 0;
+exports.HighlightDrawTypeBackground = 0;
+exports.HighlightDrawTypeUnderline = 1;
+exports.HighlightDrawTypeStrikethrough = 2;
 function convertColorHexadecimalToRGBA(cssHex, alpha) {
     if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(cssHex)) {
         const hex = cssHex.substring(1);

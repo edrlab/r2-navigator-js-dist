@@ -1,8 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.wrapHighlight = exports.generateTtsQueue = exports.findTtsQueueItemIndex = exports.getTtsQueueItemRef = exports.getTtsQueueItemRefText = exports.getTtsQueueLength = exports.consoleLogTtsQueue = exports.consoleLogTtsQueueItem = exports.normalizeText = exports.getDirection = exports.getLanguage = void 0;
+exports.generateTtsQueue = exports.findTtsQueueItemIndex = exports.getTtsQueueItemRef = exports.getTtsQueueItemRefText = exports.getTtsQueueLength = exports.consoleLogTtsQueue = exports.consoleLogTtsQueueItem = exports.normalizeText = exports.normalizeHtmlText = exports.getDirection = exports.getLanguage = exports.combineTextNodes = void 0;
 const sentence_splitter_1 = require("sentence-splitter");
 const cssselector2_1 = require("../common/cssselector2");
+function combineTextNodes(textNodes, skipNormalize) {
+    if (textNodes && textNodes.length) {
+        let str = "";
+        for (const textNode of textNodes) {
+            if (textNode.nodeValue) {
+                str += (skipNormalize ? textNode.nodeValue : normalizeText(textNode.nodeValue));
+            }
+        }
+        return str;
+    }
+    return "";
+}
+exports.combineTextNodes = combineTextNodes;
 function getLanguage(el) {
     let currentElement = el;
     while (currentElement && currentElement.nodeType === Node.ELEMENT_NODE) {
@@ -33,8 +46,12 @@ function getDirection(el) {
     return undefined;
 }
 exports.getDirection = getDirection;
+function normalizeHtmlText(str) {
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+exports.normalizeHtmlText = normalizeHtmlText;
 function normalizeText(str) {
-    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, " ").replace(/\s\s+/g, " ");
+    return normalizeHtmlText(str).replace(/\n/g, " ").replace(/\s\s+/g, " ");
 }
 exports.normalizeText = normalizeText;
 function consoleLogTtsQueueItem(i) {
@@ -109,10 +126,41 @@ function getTtsQueueItemRef(items, index) {
     return undefined;
 }
 exports.getTtsQueueItemRef = getTtsQueueItemRef;
-function findTtsQueueItemIndex(ttsQueue, element, rootElem) {
+function findTtsQueueItemIndex(ttsQueue, element, startTextNode, startTextNodeOffset, rootElem) {
     let i = 0;
     for (const ttsQueueItem of ttsQueue) {
-        if (element === ttsQueueItem.parentElement ||
+        if (startTextNode && ttsQueueItem.textNodes) {
+            if (ttsQueueItem.textNodes.includes(startTextNode)) {
+                if (ttsQueueItem.combinedTextSentences &&
+                    ttsQueueItem.combinedTextSentencesRangeBegin &&
+                    ttsQueueItem.combinedTextSentencesRangeEnd) {
+                    let offset = 0;
+                    for (const txtNode of ttsQueueItem.textNodes) {
+                        if (!txtNode.nodeValue && txtNode.nodeValue !== "") {
+                            continue;
+                        }
+                        if (txtNode === startTextNode) {
+                            offset += startTextNodeOffset;
+                            break;
+                        }
+                        offset += txtNode.nodeValue.length;
+                    }
+                    let j = i - 1;
+                    for (const end of ttsQueueItem.combinedTextSentencesRangeEnd) {
+                        j++;
+                        if (end < offset) {
+                            continue;
+                        }
+                        return j;
+                    }
+                    return i;
+                }
+                else {
+                    return i;
+                }
+            }
+        }
+        else if (element === ttsQueueItem.parentElement ||
             (ttsQueueItem.parentElement !== element.ownerDocument.body &&
                 ttsQueueItem.parentElement !== rootElem &&
                 ttsQueueItem.parentElement.contains(element)) ||
@@ -129,7 +177,7 @@ function findTtsQueueItemIndex(ttsQueue, element, rootElem) {
     return -1;
 }
 exports.findTtsQueueItemIndex = findTtsQueueItemIndex;
-function generateTtsQueue(rootElement) {
+function generateTtsQueue(rootElement, splitSentences) {
     const ttsQueue = [];
     const elementStack = [];
     function processTextNode(textNode) {
@@ -150,6 +198,8 @@ function generateTtsQueue(rootElement) {
             current = {
                 combinedText: "",
                 combinedTextSentences: undefined,
+                combinedTextSentencesRangeBegin: undefined,
+                combinedTextSentencesRangeEnd: undefined,
                 dir,
                 lang,
                 parentElement,
@@ -189,6 +239,8 @@ function generateTtsQueue(rootElement) {
                                 ttsQueue.push({
                                     combinedText: txt,
                                     combinedTextSentences: undefined,
+                                    combinedTextSentencesRangeBegin: undefined,
+                                    combinedTextSentencesRangeEnd: undefined,
                                     dir,
                                     lang,
                                     parentElement: childElement,
@@ -212,18 +264,6 @@ function generateTtsQueue(rootElement) {
         }
     }
     processElement(rootElement);
-    function combineTextNodes(textNodes) {
-        if (textNodes && textNodes.length) {
-            let str = "";
-            for (const textNode of textNodes) {
-                if (textNode.nodeValue) {
-                    str += normalizeText(textNode.nodeValue);
-                }
-            }
-            return str;
-        }
-        return "";
-    }
     function finalizeTextNodes(ttsQueueItem) {
         if (!ttsQueueItem.textNodes || !ttsQueueItem.textNodes.length) {
             if (!ttsQueueItem.combinedText || !ttsQueueItem.combinedText.length) {
@@ -232,24 +272,48 @@ function generateTtsQueue(rootElement) {
             ttsQueueItem.combinedTextSentences = undefined;
             return;
         }
-        ttsQueueItem.combinedText = combineTextNodes(ttsQueueItem.textNodes).trim();
-        try {
-            ttsQueueItem.combinedTextSentences = undefined;
-            const sentences = sentence_splitter_1.split(ttsQueueItem.combinedText);
-            ttsQueueItem.combinedTextSentences = [];
-            for (const sentence of sentences) {
-                if (sentence.type === "Sentence") {
-                    ttsQueueItem.combinedTextSentences.push(sentence.raw);
+        ttsQueueItem.combinedText = combineTextNodes(ttsQueueItem.textNodes, true).replace(/[\r\n]/g, " ");
+        let skipSplitSentences = false;
+        let parent = ttsQueueItem.parentElement;
+        while (parent) {
+            if (parent.tagName) {
+                const tag = parent.tagName.toLowerCase();
+                if (tag === "pre" || tag === "code" ||
+                    tag === "video" || tag === "audio") {
+                    skipSplitSentences = true;
+                    break;
                 }
             }
-            if (ttsQueueItem.combinedTextSentences.length === 0 || ttsQueueItem.combinedTextSentences.length === 1) {
+            parent = parent.parentElement;
+        }
+        if (splitSentences && !skipSplitSentences) {
+            try {
+                const txt = ttsQueueItem.combinedText;
+                ttsQueueItem.combinedTextSentences = undefined;
+                const sentences = sentence_splitter_1.split(txt);
+                ttsQueueItem.combinedTextSentences = [];
+                ttsQueueItem.combinedTextSentencesRangeBegin = [];
+                ttsQueueItem.combinedTextSentencesRangeEnd = [];
+                for (const sentence of sentences) {
+                    if (sentence.type === "Sentence") {
+                        ttsQueueItem.combinedTextSentences.push(sentence.raw);
+                        ttsQueueItem.combinedTextSentencesRangeBegin.push(sentence.range[0]);
+                        ttsQueueItem.combinedTextSentencesRangeEnd.push(sentence.range[1]);
+                    }
+                }
+                if (ttsQueueItem.combinedTextSentences.length === 0 ||
+                    ttsQueueItem.combinedTextSentences.length === 1) {
+                    ttsQueueItem.combinedTextSentences = undefined;
+                }
+                else {
+                }
+            }
+            catch (err) {
+                console.log(err);
                 ttsQueueItem.combinedTextSentences = undefined;
             }
-            else {
-            }
         }
-        catch (err) {
-            console.log(err);
+        else {
             ttsQueueItem.combinedTextSentences = undefined;
         }
     }
@@ -259,47 +323,4 @@ function generateTtsQueue(rootElement) {
     return ttsQueue;
 }
 exports.generateTtsQueue = generateTtsQueue;
-function wrapHighlight(doHighlight, ttsQueueItemRef, cssClassParent, cssClassSpan, _cssClassSubSpan, word, _start, _end) {
-    if (typeof word !== "undefined") {
-        return;
-    }
-    const ttsQueueItem = ttsQueueItemRef.item;
-    if (ttsQueueItem.parentElement) {
-        if (doHighlight) {
-            if (!ttsQueueItem.parentElement.classList.contains(cssClassParent)) {
-                ttsQueueItem.parentElement.classList.add(cssClassParent);
-            }
-        }
-        else {
-            if (ttsQueueItem.parentElement.classList.contains(cssClassParent)) {
-                ttsQueueItem.parentElement.classList.remove(cssClassParent);
-            }
-        }
-    }
-    ttsQueueItem.textNodes.forEach((txtNode) => {
-        if (!txtNode.parentElement) {
-            return;
-        }
-        if (doHighlight) {
-            if (txtNode.parentElement.tagName.toLowerCase() !== "span" ||
-                !txtNode.parentElement.classList.contains(cssClassSpan)) {
-                const span = txtNode.ownerDocument.createElement("span");
-                span.setAttribute("class", cssClassSpan);
-                txtNode.parentElement.replaceChild(span, txtNode);
-                span.appendChild(txtNode);
-            }
-        }
-        else {
-            if (txtNode.parentElement.tagName.toLowerCase() === "span" &&
-                txtNode.parentElement.classList.contains(cssClassSpan)) {
-                const span = txtNode.parentElement;
-                span.removeChild(txtNode);
-                if (span.parentElement) {
-                    span.parentElement.replaceChild(txtNode, span);
-                }
-            }
-        }
-    });
-}
-exports.wrapHighlight = wrapHighlight;
 //# sourceMappingURL=dom-text-utils.js.map

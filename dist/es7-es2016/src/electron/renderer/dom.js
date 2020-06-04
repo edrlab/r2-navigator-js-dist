@@ -161,8 +161,11 @@ function createWebViewInternal(preloadScriptPath) {
             });
         }
         if (win.READIUM2) {
+            readaloud_1.ttsPlaybackRate(win.READIUM2.ttsPlaybackRate);
             readaloud_1.ttsClickEnable(win.READIUM2.ttsClickEnabled);
+            readaloud_1.ttsOverlayEnable(win.READIUM2.ttsOverlayEnabled);
         }
+        readaloud_1.checkTtsState(wv);
     });
     wv.addEventListener("ipc-message", (event) => {
         const webview = event.currentTarget;
@@ -338,6 +341,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
         publicationURL,
         sessionInfo,
         ttsClickEnabled: false,
+        ttsOverlayEnabled: false,
         ttsPlaybackRate: 1,
     };
     if (IS_DEV) {

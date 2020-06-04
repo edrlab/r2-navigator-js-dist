@@ -661,7 +661,7 @@ async function playMediaOverlaysForLink(link, textFragmentIDChain) {
         if (IS_DEV) {
             debug("playMediaOverlaysForLink() - navLeftOrRight()");
         }
-        _timeoutAutoNext = window.setTimeout(() => {
+        _timeoutAutoNext = win.setTimeout(() => {
             _timeoutAutoNext = undefined;
             mediaOverlaysStop(true);
             const rtl = readium_css_1.isRTL();

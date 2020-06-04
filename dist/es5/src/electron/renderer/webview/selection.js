@@ -276,7 +276,7 @@ exports.convertRange = convertRange;
 function convertRangeInfo(documant, rangeInfo) {
     var startElement = documant.querySelector(rangeInfo.startContainerElementCssSelector);
     if (!startElement) {
-        console.log("^^^ convertRangeInfo NO START ELEMENT CSS SELECTOR?!");
+        console.log("^^^ convertRangeInfo NO START ELEMENT CSS SELECTOR?!", rangeInfo.startContainerElementCssSelector);
         return undefined;
     }
     var startContainer = startElement;
@@ -293,7 +293,7 @@ function convertRangeInfo(documant, rangeInfo) {
     }
     var endElement = documant.querySelector(rangeInfo.endContainerElementCssSelector);
     if (!endElement) {
-        console.log("^^^ convertRangeInfo NO END ELEMENT CSS SELECTOR?!");
+        console.log("^^^ convertRangeInfo NO END ELEMENT CSS SELECTOR?!", rangeInfo.endContainerElementCssSelector);
         return undefined;
     }
     var endContainer = endElement;

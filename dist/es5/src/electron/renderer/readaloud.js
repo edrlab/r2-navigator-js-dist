@@ -1,71 +1,113 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ttsPlaybackRate = exports.ttsClickEnable = exports.ttsNext = exports.ttsPrevious = exports.ttsResume = exports.ttsStop = exports.ttsPause = exports.ttsPlay = exports.ttsListen = exports.TTSStateEnum = exports.ttsHandleIpcMessage = void 0;
+exports.ttsPlaybackRate = exports.ttsClickEnable = exports.ttsOverlayEnable = exports.ttsNext = exports.ttsPrevious = exports.ttsResume = exports.ttsStop = exports.ttsPause = exports.ttsPlay = exports.ttsListen = exports.TTSStateEnum = exports.ttsHandleIpcMessage = exports.playTtsOnReadingLocation = exports.checkTtsState = void 0;
 var tslib_1 = require("tslib");
 var events_1 = require("../common/events");
 var location_1 = require("./location");
 var readium_css_1 = require("./readium-css");
 var win = window;
 var _lastTTSWebView;
+var _lastTTSWebViewHref;
+var _ttsAutoPlayTimeout;
+function checkTtsState(wv) {
+    var _a;
+    var wasStopped = false;
+    if (_lastTTSWebView && _lastTTSWebViewHref) {
+        if (win.READIUM2.ttsClickEnabled ||
+            !win.READIUM2.getActiveWebViews().includes(_lastTTSWebView) ||
+            !win.READIUM2.getActiveWebViews().find(function (webview) { var _a; return ((_a = webview.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href) === _lastTTSWebViewHref; })) {
+            wasStopped = true;
+            setTimeout(function () {
+                win.speechSynthesis.cancel();
+            }, 0);
+            _lastTTSWebView = undefined;
+            _lastTTSWebViewHref = undefined;
+            if (_ttsListener) {
+                _ttsListener(TTSStateEnum.STOPPED);
+            }
+        }
+    }
+    if (wasStopped || win.READIUM2.ttsClickEnabled) {
+        if ((_a = wv.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href) {
+            if (_ttsAutoPlayTimeout) {
+                win.clearTimeout(_ttsAutoPlayTimeout);
+                _ttsAutoPlayTimeout = undefined;
+            }
+            _ttsAutoPlayTimeout = win.setTimeout(function () {
+                var _a;
+                _ttsAutoPlayTimeout = undefined;
+                if (!_lastTTSWebView && ((_a = wv.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href)) {
+                    _lastTTSWebView = wv;
+                    _lastTTSWebViewHref = wv.READIUM2.link.Href;
+                    playTtsOnReadingLocation(wv.READIUM2.link.Href);
+                }
+            }, 100);
+        }
+    }
+}
+exports.checkTtsState = checkTtsState;
+function playTtsOnReadingLocation(href) {
+    var activeWebView = win.READIUM2.getActiveWebViews().find(function (webview) {
+        var _a;
+        return ((_a = webview.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href) === href;
+    });
+    if (activeWebView) {
+        var done_1 = false;
+        var cb_1 = function (event) {
+            var _a;
+            if (event.channel === events_1.R2_EVENT_READING_LOCATION) {
+                var webview = event.currentTarget;
+                if (webview !== activeWebView) {
+                    console.log("Wrong navigator webview?!");
+                    return;
+                }
+                done_1 = true;
+                activeWebView.removeEventListener("ipc-message", cb_1);
+                if (((_a = activeWebView.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href) === href) {
+                    ttsPlay(win.READIUM2.ttsPlaybackRate);
+                }
+            }
+        };
+        setTimeout(function () {
+            if (done_1) {
+                return;
+            }
+            try {
+                activeWebView.removeEventListener("ipc-message", cb_1);
+            }
+            catch (err) {
+                console.log(err);
+            }
+        }, 1000);
+        activeWebView.addEventListener("ipc-message", cb_1);
+    }
+}
+exports.playTtsOnReadingLocation = playTtsOnReadingLocation;
 function ttsHandleIpcMessage(eventChannel, _eventArgs, eventCurrentTarget) {
+    var _a, _b;
     if (eventChannel === events_1.R2_EVENT_TTS_IS_PAUSED) {
         _lastTTSWebView = eventCurrentTarget;
+        _lastTTSWebViewHref = (_a = eventCurrentTarget.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href;
         if (_ttsListener) {
             _ttsListener(TTSStateEnum.PAUSED);
         }
     }
     else if (eventChannel === events_1.R2_EVENT_TTS_IS_STOPPED) {
         _lastTTSWebView = undefined;
+        _lastTTSWebViewHref = undefined;
         if (_ttsListener) {
             _ttsListener(TTSStateEnum.STOPPED);
         }
     }
     else if (eventChannel === events_1.R2_EVENT_TTS_IS_PLAYING) {
         _lastTTSWebView = eventCurrentTarget;
+        _lastTTSWebViewHref = (_b = eventCurrentTarget.READIUM2.link) === null || _b === void 0 ? void 0 : _b.Href;
         if (_ttsListener) {
             _ttsListener(TTSStateEnum.PLAYING);
         }
     }
     else if (eventChannel === events_1.R2_EVENT_TTS_DOC_END) {
-        var nextSpine_1 = location_1.navLeftOrRight(readium_css_1.isRTL(), true, true);
-        if (nextSpine_1) {
-            setTimeout(function () {
-                var activeWebView = win.READIUM2.getActiveWebViews().find(function (webview) {
-                    var _a;
-                    return ((_a = webview.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href) === nextSpine_1.Href;
-                });
-                if (activeWebView) {
-                    var done_1 = false;
-                    var cb_1 = function (event) {
-                        var _a;
-                        if (event.channel === events_1.R2_EVENT_READING_LOCATION) {
-                            var webview = event.currentTarget;
-                            if (webview !== activeWebView) {
-                                console.log("Wrong navigator webview?!");
-                                return;
-                            }
-                            done_1 = true;
-                            activeWebView.removeEventListener("ipc-message", cb_1);
-                            if (((_a = activeWebView.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href) === nextSpine_1.Href) {
-                                ttsPlay(win.READIUM2.ttsPlaybackRate);
-                            }
-                        }
-                    };
-                    setTimeout(function () {
-                        if (done_1) {
-                            return;
-                        }
-                        try {
-                            activeWebView.removeEventListener("ipc-message", cb_1);
-                        }
-                        catch (err) {
-                            console.log(err);
-                        }
-                    }, 1000);
-                    activeWebView.addEventListener("ipc-message", cb_1);
-                }
-            }, 200);
-        }
+        location_1.navLeftOrRight(readium_css_1.isRTL(), true, true);
     }
     else {
         return false;
@@ -86,6 +128,7 @@ function ttsListen(ttsListener) {
 exports.ttsListen = ttsListen;
 function ttsPlay(speed) {
     var _this = this;
+    var _a;
     if (win.READIUM2) {
         win.READIUM2.ttsPlaybackRate = speed;
     }
@@ -102,9 +145,11 @@ function ttsPlay(speed) {
         activeWebView = win.READIUM2.getFirstWebView();
     }
     _lastTTSWebView = activeWebView;
+    _lastTTSWebViewHref = undefined;
     if (!activeWebView) {
         return;
     }
+    _lastTTSWebViewHref = (_a = activeWebView.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href;
     var payload = {
         rootElement: "html > body",
         speed: speed,
@@ -168,6 +213,7 @@ function ttsStop() {
             return "continue";
         }
         _lastTTSWebView = undefined;
+        _lastTTSWebViewHref = undefined;
         setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
@@ -296,11 +342,11 @@ function ttsNext() {
     }
 }
 exports.ttsNext = ttsNext;
-function ttsClickEnable(doEnable) {
+function ttsOverlayEnable(doEnable) {
     var e_6, _a;
     var _this = this;
     if (win.READIUM2) {
-        win.READIUM2.ttsClickEnabled = doEnable;
+        win.READIUM2.ttsOverlayEnabled = doEnable;
     }
     var activeWebViews = win.READIUM2.getActiveWebViews();
     var _loop_6 = function (activeWebView) {
@@ -314,7 +360,7 @@ function ttsClickEnable(doEnable) {
                 setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
                     return tslib_1.__generator(this, function (_a) {
                         switch (_a.label) {
-                            case 0: return [4, activeWebView.send(events_1.R2_EVENT_TTS_CLICK_ENABLE, payload)];
+                            case 0: return [4, activeWebView.send(events_1.R2_EVENT_TTS_OVERLAY_ENABLE, payload)];
                             case 1:
                                 _a.sent();
                                 return [2];
@@ -339,26 +385,33 @@ function ttsClickEnable(doEnable) {
         finally { if (e_6) throw e_6.error; }
     }
 }
-exports.ttsClickEnable = ttsClickEnable;
-function ttsPlaybackRate(speed) {
+exports.ttsOverlayEnable = ttsOverlayEnable;
+function ttsClickEnable(doEnable) {
     var e_7, _a;
     var _this = this;
     if (win.READIUM2) {
-        win.READIUM2.ttsPlaybackRate = speed;
+        win.READIUM2.ttsClickEnabled = doEnable;
     }
     var activeWebViews = win.READIUM2.getActiveWebViews();
     var _loop_7 = function (activeWebView) {
-        var payload = {
-            speed: speed,
-        };
         setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+            var payload;
+            var _this = this;
             return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, activeWebView.send(events_1.R2_EVENT_TTS_PLAYBACK_RATE, payload)];
-                    case 1:
-                        _a.sent();
-                        return [2];
-                }
+                payload = {
+                    doEnable: doEnable,
+                };
+                setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                    return tslib_1.__generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0: return [4, activeWebView.send(events_1.R2_EVENT_TTS_CLICK_ENABLE, payload)];
+                            case 1:
+                                _a.sent();
+                                return [2];
+                        }
+                    });
+                }); }, 0);
+                return [2];
             });
         }); }, 0);
     };
@@ -374,6 +427,43 @@ function ttsPlaybackRate(speed) {
             if (activeWebViews_7_1 && !activeWebViews_7_1.done && (_a = activeWebViews_7.return)) _a.call(activeWebViews_7);
         }
         finally { if (e_7) throw e_7.error; }
+    }
+}
+exports.ttsClickEnable = ttsClickEnable;
+function ttsPlaybackRate(speed) {
+    var e_8, _a;
+    var _this = this;
+    if (win.READIUM2) {
+        win.READIUM2.ttsPlaybackRate = speed;
+    }
+    var activeWebViews = win.READIUM2.getActiveWebViews();
+    var _loop_8 = function (activeWebView) {
+        var payload = {
+            speed: speed,
+        };
+        setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+            return tslib_1.__generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4, activeWebView.send(events_1.R2_EVENT_TTS_PLAYBACK_RATE, payload)];
+                    case 1:
+                        _a.sent();
+                        return [2];
+                }
+            });
+        }); }, 0);
+    };
+    try {
+        for (var activeWebViews_8 = tslib_1.__values(activeWebViews), activeWebViews_8_1 = activeWebViews_8.next(); !activeWebViews_8_1.done; activeWebViews_8_1 = activeWebViews_8.next()) {
+            var activeWebView = activeWebViews_8_1.value;
+            _loop_8(activeWebView);
+        }
+    }
+    catch (e_8_1) { e_8 = { error: e_8_1 }; }
+    finally {
+        try {
+            if (activeWebViews_8_1 && !activeWebViews_8_1.done && (_a = activeWebViews_8.return)) _a.call(activeWebViews_8);
+        }
+        finally { if (e_8) throw e_8.error; }
     }
 }
 exports.ttsPlaybackRate = ttsPlaybackRate;

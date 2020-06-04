@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.audioCssStyles = exports.AUDIO_FORWARD_ID = exports.AUDIO_REWIND_ID = exports.AUDIO_NEXT_ID = exports.AUDIO_PREVIOUS_ID = exports.AUDIO_PLAYPAUSE_ID = exports.AUDIO_RATE_ID = exports.AUDIO_PERCENT_ID = exports.AUDIO_TIME_ID = exports.AUDIO_SLIDER_ID = exports.AUDIO_TITLE_ID = exports.AUDIO_COVER_ID = exports.AUDIO_CONTROLS_ID = exports.AUDIO_SECTION_ID = exports.AUDIO_BODY_ID = exports.AUDIO_ID = exports.AUDIO_PROGRESS_CLASS = exports.AUDIO_BUFFER_CANVAS_ID = exports.readPosCssStyles = exports.readPosCssStylesAttr4 = exports.readPosCssStylesAttr3 = exports.readPosCssStylesAttr2 = exports.readPosCssStylesAttr1 = exports.scrollBarCssStyles = exports.selectionCssStyles = exports.targetCssStyles = exports.focusCssStyles = exports.CSS_CLASS_NO_FOCUS_OUTLINE = exports.ROOT_CLASS_KEYBOARD_INTERACT = exports.visibilityMaskCssStyles = exports.ROOT_CLASS_INVISIBLE_MASK_REMOVED = exports.ROOT_CLASS_INVISIBLE_MASK = exports.ttsCssStyles = exports.TTS_POPUP_DIALOG_CLASS = exports.TTS_ID_INJECTED_PARENT = exports.TTS_CLASS_INJECTED_SUBSPAN = exports.TTS_CLASS_INJECTED_SPAN = exports.TTS_ID_SPEAKING_DOC_ELEMENT = exports.TTS_NAV_BUTTON_CLASS = exports.TTS_ID_CONTAINER = exports.TTS_CLASS_UTTERANCE_HEADING5 = exports.TTS_CLASS_UTTERANCE_HEADING4 = exports.TTS_CLASS_UTTERANCE_HEADING3 = exports.TTS_CLASS_UTTERANCE_HEADING2 = exports.TTS_CLASS_UTTERANCE_HEADING1 = exports.TTS_CLASS_UTTERANCE = exports.TTS_ID_ACTIVE_UTTERANCE = exports.TTS_ID_ACTIVE_WORD = exports.TTS_ID_SLIDER = exports.TTS_ID_NEXT = exports.TTS_ID_PREVIOUS = exports.TTS_CLASS_IS_ACTIVE = exports.TTS_CLASS_THEME1 = exports.mediaOverlaysCssStyles = exports.R2_MO_CLASS_ACTIVE_PLAYBACK = exports.R2_MO_CLASS_ACTIVE = exports.footnotesCssStyles = exports.FOOTNOTE_FORCE_SHOW = exports.FOOTNOTES_CLOSE_BUTTON_CLASS = exports.FOOTNOTES_CONTAINER_CLASS = exports.POPUP_DIALOG_CLASS = exports.ROOT_CLASS_MATHJAX = exports.ROOT_CLASS_NO_FOOTNOTES = exports.ROOT_CLASS_REDUCE_MOTION = exports.LINK_TARGET_CLASS = exports.SKIP_LINK_ID = exports.ZERO_TRANSFORM_CLASS = exports.CLASS_PAGINATED = exports.WebViewSlotEnum = void 0;
+exports.audioCssStyles = exports.AUDIO_FORWARD_ID = exports.AUDIO_REWIND_ID = exports.AUDIO_NEXT_ID = exports.AUDIO_PREVIOUS_ID = exports.AUDIO_PLAYPAUSE_ID = exports.AUDIO_RATE_ID = exports.AUDIO_PERCENT_ID = exports.AUDIO_TIME_ID = exports.AUDIO_SLIDER_ID = exports.AUDIO_TITLE_ID = exports.AUDIO_COVER_ID = exports.AUDIO_CONTROLS_ID = exports.AUDIO_SECTION_ID = exports.AUDIO_BODY_ID = exports.AUDIO_ID = exports.AUDIO_PROGRESS_CLASS = exports.AUDIO_BUFFER_CANVAS_ID = exports.readPosCssStyles = exports.readPosCssStylesAttr4 = exports.readPosCssStylesAttr3 = exports.readPosCssStylesAttr2 = exports.readPosCssStylesAttr1 = exports.scrollBarCssStyles = exports.selectionCssStyles = exports.targetCssStyles = exports.focusCssStyles = exports.CSS_CLASS_NO_FOCUS_OUTLINE = exports.ROOT_CLASS_KEYBOARD_INTERACT = exports.visibilityMaskCssStyles = exports.ROOT_CLASS_INVISIBLE_MASK_REMOVED = exports.ROOT_CLASS_INVISIBLE_MASK = exports.ttsCssStyles = exports.TTS_POPUP_DIALOG_CLASS = exports.TTS_ID_SPEAKING_DOC_ELEMENT = exports.TTS_NAV_BUTTON_CLASS = exports.TTS_ID_CONTAINER = exports.TTS_CLASS_UTTERANCE_HEADING5 = exports.TTS_CLASS_UTTERANCE_HEADING4 = exports.TTS_CLASS_UTTERANCE_HEADING3 = exports.TTS_CLASS_UTTERANCE_HEADING2 = exports.TTS_CLASS_UTTERANCE_HEADING1 = exports.TTS_CLASS_UTTERANCE = exports.TTS_ID_ACTIVE_UTTERANCE = exports.TTS_ID_ACTIVE_WORD = exports.TTS_ID_SLIDER = exports.TTS_ID_NEXT = exports.TTS_ID_PREVIOUS = exports.TTS_CLASS_IS_ACTIVE = exports.TTS_CLASS_THEME1 = exports.mediaOverlaysCssStyles = exports.R2_MO_CLASS_ACTIVE_PLAYBACK = exports.R2_MO_CLASS_ACTIVE = exports.footnotesCssStyles = exports.POPUP_DIALOG_CLASS_COLLAPSE = exports.POPUP_DIALOG_CLASS = exports.FOOTNOTE_FORCE_SHOW = exports.FOOTNOTES_CLOSE_BUTTON_CLASS = exports.FOOTNOTES_CONTAINER_CLASS = exports.ROOT_CLASS_NO_FOOTNOTES = exports.ROOT_CLASS_MATHJAX = exports.ROOT_CLASS_REDUCE_MOTION = exports.LINK_TARGET_CLASS = exports.SKIP_LINK_ID = exports.ZERO_TRANSFORM_CLASS = exports.CLASS_PAGINATED = exports.WebViewSlotEnum = void 0;
 var WebViewSlotEnum;
 (function (WebViewSlotEnum) {
     WebViewSlotEnum["center"] = "center";
@@ -12,12 +12,13 @@ exports.ZERO_TRANSFORM_CLASS = "r2-zeroTransform";
 exports.SKIP_LINK_ID = "r2-skip-link";
 exports.LINK_TARGET_CLASS = "r2-link-target";
 exports.ROOT_CLASS_REDUCE_MOTION = "r2-reduce-motion";
-exports.ROOT_CLASS_NO_FOOTNOTES = "r2-no-popup-foonotes";
 exports.ROOT_CLASS_MATHJAX = "r2-mathjax";
-exports.POPUP_DIALOG_CLASS = "r2-popup-dialog";
+exports.ROOT_CLASS_NO_FOOTNOTES = "r2-no-popup-foonotes";
 exports.FOOTNOTES_CONTAINER_CLASS = "r2-footnote-container";
 exports.FOOTNOTES_CLOSE_BUTTON_CLASS = "r2-footnote-close";
 exports.FOOTNOTE_FORCE_SHOW = "r2-footnote-force-show";
+exports.POPUP_DIALOG_CLASS = "r2-popup-dialog";
+exports.POPUP_DIALOG_CLASS_COLLAPSE = "r2-popup-dialog-collapse";
 exports.footnotesCssStyles = `
 @namespace epub "http://www.idpf.org/2007/ops";
 
@@ -34,12 +35,16 @@ exports.footnotesCssStyles = `
 }
 */
 
-:root[style] dialog#${exports.POPUP_DIALOG_CLASS}::backdrop,
-:root dialog#${exports.POPUP_DIALOG_CLASS}::backdrop {
+:root[style] dialog#${exports.POPUP_DIALOG_CLASS}:not(.${exports.POPUP_DIALOG_CLASS_COLLAPSE})::backdrop,
+:root dialog#${exports.POPUP_DIALOG_CLASS}:not(.${exports.POPUP_DIALOG_CLASS_COLLAPSE})::backdrop {
     background: rgba(0, 0, 0, 0.3) !important;
 }
-:root[style*="readium-night-on"] dialog#${exports.POPUP_DIALOG_CLASS}::backdrop {
+:root[style*="readium-night-on"] dialog#${exports.POPUP_DIALOG_CLASS}:not(.${exports.POPUP_DIALOG_CLASS_COLLAPSE})::backdrop {
     background: rgba(0, 0, 0, 0.65) !important;
+}
+:root[style] dialog#${exports.POPUP_DIALOG_CLASS}.${exports.POPUP_DIALOG_CLASS_COLLAPSE}::backdrop,
+:root dialog#${exports.POPUP_DIALOG_CLASS}.${exports.POPUP_DIALOG_CLASS_COLLAPSE}::backdrop {
+    background: transparent !important;
 }
 
 :root[style] dialog#${exports.POPUP_DIALOG_CLASS},
@@ -82,6 +87,13 @@ exports.footnotesCssStyles = `
 :root[style*="--USER__backgroundColor"] dialog#${exports.POPUP_DIALOG_CLASS} {
     background: var(--USER__backgroundColor) !important;
 }
+
+:root[style] dialog#${exports.POPUP_DIALOG_CLASS}.${exports.POPUP_DIALOG_CLASS_COLLAPSE},
+:root dialog#${exports.POPUP_DIALOG_CLASS}.${exports.POPUP_DIALOG_CLASS_COLLAPSE} {
+    top: auto;
+    height: 1px;
+}
+
 :root[style] .${exports.FOOTNOTES_CONTAINER_CLASS},
 :root .${exports.FOOTNOTES_CONTAINER_CLASS} {
     overflow: auto;
@@ -159,9 +171,6 @@ exports.TTS_CLASS_UTTERANCE_HEADING5 = "r2-tts-utterance-h5";
 exports.TTS_ID_CONTAINER = "r2-tts-txt";
 exports.TTS_NAV_BUTTON_CLASS = "r2-tts-button";
 exports.TTS_ID_SPEAKING_DOC_ELEMENT = "r2-tts-speaking-el";
-exports.TTS_CLASS_INJECTED_SPAN = "r2-tts-speaking-txt";
-exports.TTS_CLASS_INJECTED_SUBSPAN = "r2-tts-speaking-word";
-exports.TTS_ID_INJECTED_PARENT = "r2-tts-speaking-txt-parent";
 exports.TTS_POPUP_DIALOG_CLASS = "r2-tts-popup-dialog";
 exports.ttsCssStyles = `
 
@@ -365,48 +374,10 @@ exports.ttsCssStyles = `
 
 :root[style] .${exports.TTS_ID_SPEAKING_DOC_ELEMENT},
 :root .${exports.TTS_ID_SPEAKING_DOC_ELEMENT} {
-    /*
-    outline-color: silver;
+    outline-color: magenta;
     outline-style: solid;
     outline-width: 2px;
     outline-offset: 1px;
-    */
-}
-:root[style] .${exports.TTS_CLASS_INJECTED_SPAN},
-:root .${exports.TTS_CLASS_INJECTED_SPAN} {
-    color: black !important;
-    background: #FFFFCC !important;
-
-    /* text-decoration: underline; */
-
-    padding: 0;
-    margin: 0;
-}
-/*
-:root[style*="readium-night-on"] .${exports.TTS_CLASS_INJECTED_SPAN} {
-    color: white !important;
-    background: #333300 !important;
-}
-:root[style] .${exports.TTS_CLASS_INJECTED_SUBSPAN},
-:root .${exports.TTS_CLASS_INJECTED_SUBSPAN} {
-    text-decoration: underline;
-    padding: 0;
-    margin: 0;
-}
-*/
-:root[style] .${exports.TTS_ID_INJECTED_PARENT},
-:root .${exports.TTS_ID_INJECTED_PARENT} {
-    /*
-    outline-color: black;
-    outline-style: solid;
-    outline-width: 2px;
-    outline-offset: 1px;
-    */
-}
-:root[style*="readium-night-on"] .${exports.TTS_ID_INJECTED_PARENT} {
-    /*
-    outline-color: white !important;
-    */
 }
 
 :root[style] .${exports.TTS_CLASS_UTTERANCE},

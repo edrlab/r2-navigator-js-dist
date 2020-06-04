@@ -8,8 +8,9 @@ export interface IRect extends IRectSimple {
     bottom: number;
     right: number;
 }
-export declare function getClientRectsNoOverlap(range: Range, doNotMergeHorizontallyAlignedRects: boolean): IRect[];
-export declare function getClientRectsNoOverlap_(clientRects: ClientRectList | DOMRectList, doNotMergeHorizontallyAlignedRects: boolean): IRect[];
+export declare function getClientRectsNoOverlap(range: Range, doNotMergeHorizontallyAlignedRects: boolean, expand?: number): IRect[];
+export declare function getClientRectsNoOverlap_(clientRects: ClientRectList | DOMRectList, doNotMergeHorizontallyAlignedRects: boolean, expand?: number): IRect[];
+export declare function getClientRectsNoOverlap__(originalRects: IRect[], doNotMergeHorizontallyAlignedRects: boolean, expand?: number): IRect[];
 export declare function rectIntersect(rect1: IRect, rect2: IRect): IRect;
 export declare function rectSubtract(rect1: IRect, rect2: IRect): IRect[];
 export declare function rectContainsPoint(rect: IRect, x: number, y: number, tolerance: number): boolean;

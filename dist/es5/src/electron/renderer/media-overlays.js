@@ -792,7 +792,7 @@ function playMediaOverlaysForLink(link, textFragmentIDChain) {
                         if (IS_DEV) {
                             debug("playMediaOverlaysForLink() - navLeftOrRight()");
                         }
-                        _timeoutAutoNext = window.setTimeout(function () {
+                        _timeoutAutoNext = win.setTimeout(function () {
                             _timeoutAutoNext = undefined;
                             mediaOverlaysStop(true);
                             var rtl = readium_css_1.isRTL();

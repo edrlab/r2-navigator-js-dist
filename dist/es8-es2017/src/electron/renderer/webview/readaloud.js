@@ -4,12 +4,17 @@ exports.ttsPlayQueueIndex = exports.ttsPreviewAndEventuallyPlayQueueIndex = expo
 const debounce_1 = require("debounce");
 const electron_1 = require("electron");
 const events_1 = require("../../common/events");
+const highlight_1 = require("../../common/highlight");
 const styles_1 = require("../../common/styles");
 const animateProperty_1 = require("../common/animateProperty");
+const cssselector2_1 = require("../common/cssselector2");
 const dom_text_utils_1 = require("../common/dom-text-utils");
 const easings_1 = require("../common/easings");
 const popup_dialog_1 = require("../common/popup-dialog");
+const highlight_2 = require("./highlight");
 const readium_css_1 = require("./readium-css");
+const selection_1 = require("./selection");
+const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 const win = global.window;
 let _dialogState;
 function resetState() {
@@ -28,25 +33,26 @@ function resetState() {
         _dialogState.domNext = undefined;
         _dialogState.domPrevious = undefined;
         _dialogState.domText = undefined;
+        _dialogState.ttsOverlayEnabled = win.READIUM2.ttsOverlayEnabled;
         _dialogState.remove();
     }
     _dialogState = undefined;
     win.document.documentElement.classList.remove(styles_1.TTS_CLASS_IS_ACTIVE);
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_TTS_IS_STOPPED);
 }
-function ttsPlay(speed, focusScrollRaw, rootElem, startElem, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
+function ttsPlay(speed, focusScrollRaw, rootElem, startElem, startTextNode, startTextNodeOffset, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
     ttsStop();
     let rootEl = rootElem;
     if (!rootEl) {
         rootEl = win.document.body;
     }
-    const ttsQueue = dom_text_utils_1.generateTtsQueue(rootEl);
+    const ttsQueue = dom_text_utils_1.generateTtsQueue(rootEl, true);
     if (!ttsQueue.length) {
         return;
     }
     let ttsQueueIndex = -1;
     if (startElem) {
-        const idx = dom_text_utils_1.findTtsQueueItemIndex(ttsQueue, startElem, rootEl);
+        const idx = dom_text_utils_1.findTtsQueueItemIndex(ttsQueue, startElem, startTextNode, startTextNodeOffset, rootEl);
         if (idx >= 0) {
             ttsQueueIndex = idx;
         }
@@ -88,19 +94,23 @@ function ttsPause() {
             win.speechSynthesis.cancel();
         }, 0);
     }
-    win.document.documentElement.classList.add(styles_1.TTS_CLASS_IS_ACTIVE);
+    if (_dialogState && _dialogState.ttsOverlayEnabled) {
+        win.document.documentElement.classList.add(styles_1.TTS_CLASS_IS_ACTIVE);
+    }
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_TTS_IS_PAUSED);
 }
 exports.ttsPause = ttsPause;
 function ttsPlaybackRate(speed) {
     win.READIUM2.ttsPlaybackRate = speed;
-    ttsPause();
-    if (_dialogState && _dialogState.ttsUtterance) {
-        _dialogState.ttsUtterance.rate = speed;
+    if (_dialogState) {
+        ttsPause();
+        if (_dialogState.ttsUtterance) {
+            _dialogState.ttsUtterance.rate = speed;
+        }
+        setTimeout(() => {
+            ttsResume();
+        }, 60);
     }
-    setTimeout(() => {
-        ttsResume();
-    }, 60);
 }
 exports.ttsPlaybackRate = ttsPlaybackRate;
 let _resumableState;
@@ -115,7 +125,9 @@ function ttsResume() {
                 win.speechSynthesis.speak(_dialogState.ttsUtterance);
             }
         }, 0);
-        win.document.documentElement.classList.add(styles_1.TTS_CLASS_IS_ACTIVE);
+        if (_dialogState && _dialogState.ttsOverlayEnabled) {
+            win.document.documentElement.classList.add(styles_1.TTS_CLASS_IS_ACTIVE);
+        }
         electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_TTS_IS_PLAYING);
     }
     else if (_resumableState) {
@@ -196,24 +208,229 @@ function ttsPreviewAndEventuallyPlayQueueIndex(n) {
     ttsPlayQueueIndexDebounced(n);
 }
 exports.ttsPreviewAndEventuallyPlayQueueIndex = ttsPreviewAndEventuallyPlayQueueIndex;
-function highlights(doHighlight) {
-    if (!_dialogState) {
+const _getCssSelectorOptions = {
+    className: (_str) => {
+        return true;
+    },
+    idName: (_str) => {
+        return true;
+    },
+    tagName: (_str) => {
+        return true;
+    },
+};
+function getCssSelector(element) {
+    try {
+        return cssselector2_1.uniqueCssSelector(element, win.document, _getCssSelectorOptions);
+    }
+    catch (err) {
+        console.log("uniqueCssSelector:");
+        console.log(err);
+        return "";
+    }
+}
+let _ttsQueueItemHighlightsSentence;
+let _ttsQueueItemHighlightsWord;
+function wrapHighlightWord(ttsQueueItemRef, utteranceText, charIndex, charLength, word, start, end) {
+    if (_dialogState && _dialogState.ttsOverlayEnabled) {
         return;
     }
-    if (typeof _dialogState.FALSY_TO_DISABLE_HIGHLIGHTS === "undefined") {
+    if (_ttsQueueItemHighlightsWord) {
+        _ttsQueueItemHighlightsWord.forEach((highlight) => {
+            if (highlight) {
+                highlight_2.destroyHighlight(win.document, highlight.id);
+            }
+        });
+        _ttsQueueItemHighlightsWord = undefined;
+    }
+    const ttsQueueItem = ttsQueueItemRef.item;
+    let txtToCheck = ttsQueueItemRef.item.combinedText;
+    let charIndexAdjusted = charIndex;
+    if (ttsQueueItem.combinedTextSentences &&
+        ttsQueueItem.combinedTextSentencesRangeBegin &&
+        ttsQueueItem.combinedTextSentencesRangeEnd &&
+        ttsQueueItemRef.iSentence >= 0) {
+        const sentOffset = ttsQueueItem.combinedTextSentencesRangeBegin[ttsQueueItemRef.iSentence];
+        charIndexAdjusted += sentOffset;
+        txtToCheck = ttsQueueItem.combinedTextSentences[ttsQueueItemRef.iSentence];
+    }
+    if (IS_DEV) {
+        if (utteranceText !== txtToCheck) {
+            console.log("TTS utteranceText DIFF?? ", `[[${utteranceText}]]`, `[[${txtToCheck}]]`);
+        }
+        const ttsWord = utteranceText.substr(charIndex, charLength);
+        if (ttsWord !== word) {
+            console.log("TTS word DIFF?? ", `[[${ttsWord}]]`, `[[${word}]]`, `${charIndex}--${charLength}`, `${start}--${end - start}`);
+        }
+    }
+    let acc = 0;
+    let rangeStartNode;
+    let rangeStartOffset = -1;
+    let rangeEndNode;
+    let rangeEndOffset = -1;
+    const charIndexEnd = charIndexAdjusted + charLength;
+    for (const txtNode of ttsQueueItem.textNodes) {
+        if (!txtNode.nodeValue && txtNode.nodeValue !== "") {
+            continue;
+        }
+        const l = txtNode.nodeValue.length;
+        acc += l;
+        if (!rangeStartNode) {
+            if (charIndexAdjusted < acc) {
+                rangeStartNode = txtNode;
+                rangeStartOffset = l - (acc - charIndexAdjusted);
+            }
+        }
+        if (rangeStartNode && charIndexEnd <= acc) {
+            rangeEndNode = txtNode;
+            rangeEndOffset = l - (acc - charIndexEnd);
+            break;
+        }
+    }
+    if (rangeStartNode && rangeEndNode) {
+        const range = new Range();
+        range.setStart(rangeStartNode, rangeStartOffset);
+        range.setEnd(rangeEndNode, rangeEndOffset);
+        const rangeInfo = selection_1.convertRange(range, getCssSelector, (_node) => "");
+        if (!rangeInfo) {
+            return;
+        }
+        const highlightDefinitions = [
+            {
+                color: {
+                    blue: 0,
+                    green: 147,
+                    red: 255,
+                },
+                drawType: highlight_1.HighlightDrawTypeUnderline,
+                expand: 2,
+                selectionInfo: {
+                    cleanText: "",
+                    rangeInfo,
+                    rawText: "",
+                },
+            },
+        ];
+        _ttsQueueItemHighlightsWord = highlight_2.createHighlights(win, highlightDefinitions, false);
+    }
+}
+function wrapHighlight(doHighlight, ttsQueueItemRef) {
+    if (_dialogState && _dialogState.ttsOverlayEnabled) {
+        return;
+    }
+    if (_ttsQueueItemHighlightsWord) {
+        _ttsQueueItemHighlightsWord.forEach((highlight) => {
+            if (highlight) {
+                highlight_2.destroyHighlight(win.document, highlight.id);
+            }
+        });
+        _ttsQueueItemHighlightsWord = undefined;
+    }
+    if (_ttsQueueItemHighlightsSentence) {
+        _ttsQueueItemHighlightsSentence.forEach((highlight) => {
+            if (highlight) {
+                highlight_2.destroyHighlight(win.document, highlight.id);
+            }
+        });
+        _ttsQueueItemHighlightsSentence = undefined;
+    }
+    const ttsQueueItem = ttsQueueItemRef.item;
+    if (doHighlight &&
+        ttsQueueItem.parentElement &&
+        ttsQueueItem.textNodes && ttsQueueItem.textNodes.length) {
+        let range;
+        if (ttsQueueItem.combinedTextSentences &&
+            ttsQueueItem.combinedTextSentencesRangeBegin &&
+            ttsQueueItem.combinedTextSentencesRangeEnd &&
+            ttsQueueItemRef.iSentence >= 0) {
+            const sentBegin = ttsQueueItem.combinedTextSentencesRangeBegin[ttsQueueItemRef.iSentence];
+            const sentEnd = ttsQueueItem.combinedTextSentencesRangeEnd[ttsQueueItemRef.iSentence];
+            let acc = 0;
+            let rangeStartNode;
+            let rangeStartOffset = -1;
+            let rangeEndNode;
+            let rangeEndOffset = -1;
+            for (const txtNode of ttsQueueItemRef.item.textNodes) {
+                if (!txtNode.nodeValue && txtNode.nodeValue !== "") {
+                    continue;
+                }
+                const l = txtNode.nodeValue.length;
+                acc += l;
+                if (!rangeStartNode) {
+                    if (sentBegin < acc) {
+                        rangeStartNode = txtNode;
+                        rangeStartOffset = l - (acc - sentBegin);
+                    }
+                }
+                if (rangeStartNode && sentEnd <= acc) {
+                    rangeEndNode = txtNode;
+                    rangeEndOffset = l - (acc - sentEnd);
+                    break;
+                }
+            }
+            if (rangeStartNode && rangeEndNode) {
+                range = new Range();
+                range.setStart(rangeStartNode, rangeStartOffset);
+                range.setEnd(rangeEndNode, rangeEndOffset);
+            }
+        }
+        else {
+            range = new Range();
+            const firstTextNode = ttsQueueItem.textNodes[0];
+            if (!firstTextNode.nodeValue && firstTextNode.nodeValue !== "") {
+                return;
+            }
+            range.setStart(firstTextNode, 0);
+            const lastTextNode = ttsQueueItem.textNodes[ttsQueueItem.textNodes.length - 1];
+            if (!lastTextNode.nodeValue && lastTextNode.nodeValue !== "") {
+                return;
+            }
+            range.setEnd(lastTextNode, lastTextNode.nodeValue.length);
+        }
+        if (range) {
+            const rangeInfo = selection_1.convertRange(range, getCssSelector, (_node) => "");
+            if (!rangeInfo) {
+                return;
+            }
+            const highlightDefinitions = [
+                {
+                    color: {
+                        blue: 116,
+                        green: 248,
+                        red: 248,
+                    },
+                    drawType: highlight_1.HighlightDrawTypeBackground,
+                    expand: 4,
+                    selectionInfo: {
+                        cleanText: "",
+                        rangeInfo,
+                        rawText: "",
+                    },
+                },
+            ];
+            _ttsQueueItemHighlightsSentence = highlight_2.createHighlights(win, highlightDefinitions, false);
+        }
+    }
+}
+function highlights(doHighlight) {
+    if (_dialogState && _dialogState.ttsOverlayEnabled) {
+        return;
+    }
+    if (!_dialogState) {
         return;
     }
     if (doHighlight) {
         if (_dialogState.ttsQueueItem) {
-            dom_text_utils_1.wrapHighlight(true, _dialogState.ttsQueueItem, styles_1.TTS_ID_INJECTED_PARENT, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN, undefined, -1, -1);
+            wrapHighlight(true, _dialogState.ttsQueueItem);
         }
-        if (_dialogState.ttsRootElement) {
+        if (win.READIUM2.DEBUG_VISUALS &&
+            _dialogState.ttsRootElement) {
             _dialogState.ttsRootElement.classList.add(styles_1.TTS_ID_SPEAKING_DOC_ELEMENT);
         }
     }
     else {
         if (_dialogState.ttsQueueItem) {
-            dom_text_utils_1.wrapHighlight(false, _dialogState.ttsQueueItem, styles_1.TTS_ID_INJECTED_PARENT, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN, undefined, -1, -1);
+            wrapHighlight(false, _dialogState.ttsQueueItem);
         }
         if (_dialogState.ttsRootElement) {
             _dialogState.ttsRootElement.classList.remove(styles_1.TTS_ID_SPEAKING_DOC_ELEMENT);
@@ -259,18 +476,18 @@ function scrollIntoViewSpokenText(id) {
     }
 }
 const R2_DATA_ATTR_UTTERANCE_INDEX = "data-r2-tts-utterance-index";
-function updateTTSInfo(ttsQueueItemPreview, charIndex, utteranceText) {
+function updateTTSInfo(charIndex, charLength, utteranceText) {
     if (!_dialogState || !_dialogState.hasAttribute("open") || !_dialogState.domText ||
         !_dialogState.ttsQueue || !_dialogState.ttsQueueItem) {
         return undefined;
     }
-    const ttsQueueItem = ttsQueueItemPreview ? ttsQueueItemPreview : _dialogState.ttsQueueItem;
+    const ttsQueueItem = _dialogState.ttsQueueItem;
     if (!ttsQueueItem) {
         return undefined;
     }
     const isWordBoundary = charIndex >= 0 && utteranceText;
     if (!isWordBoundary && _dialogState.focusScrollRaw && ttsQueueItem.item.parentElement) {
-        _dialogState.focusScrollRaw(ttsQueueItem.item.parentElement, false);
+        _dialogState.focusScrollRaw(ttsQueueItem.item.parentElement, false, true);
     }
     const ttsQueueItemText = utteranceText ? utteranceText : dom_text_utils_1.getTtsQueueItemRefText(ttsQueueItem);
     let ttsQueueItemMarkup = ttsQueueItemText;
@@ -279,14 +496,22 @@ function updateTTSInfo(ttsQueueItemPreview, charIndex, utteranceText) {
         const right = utteranceText.slice(charIndex).search(/\s/);
         const word = right < 0 ? utteranceText.slice(start) : utteranceText.slice(start, right + charIndex);
         const end = start + word.length;
-        const prefix = `<span id="${styles_1.TTS_ID_ACTIVE_WORD}">`;
-        const suffix = "</span>";
-        const before = utteranceText.substr(0, start);
-        const after = utteranceText.substr(end);
-        const l = before.length + word.length + after.length;
-        ttsQueueItemMarkup = (l === utteranceText.length) ?
-            `${before}${prefix}${word}${suffix}${after}` : utteranceText;
-        dom_text_utils_1.wrapHighlight(true, ttsQueueItem, styles_1.TTS_ID_INJECTED_PARENT, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN, word, start, end);
+        if (_dialogState && _dialogState.ttsOverlayEnabled) {
+            const prefix = `<span id="${styles_1.TTS_ID_ACTIVE_WORD}">`;
+            const suffix = "</span>";
+            const before = utteranceText.substr(0, start);
+            const after = utteranceText.substr(end);
+            const l = before.length + word.length + after.length;
+            ttsQueueItemMarkup = (l === utteranceText.length) ?
+                `${dom_text_utils_1.normalizeHtmlText(before)}${prefix}${dom_text_utils_1.normalizeHtmlText(word)}${suffix}${dom_text_utils_1.normalizeHtmlText(after)}` :
+                dom_text_utils_1.normalizeHtmlText(utteranceText);
+        }
+        else {
+            wrapHighlightWord(ttsQueueItem, utteranceText, charIndex, charLength, word, start, end);
+        }
+    }
+    if (!(_dialogState && _dialogState.ttsOverlayEnabled)) {
+        return ttsQueueItemText;
     }
     let activeUtteranceElem = _dialogState.domText.ownerDocument ?
         _dialogState.domText.ownerDocument.getElementById(styles_1.TTS_ID_ACTIVE_UTTERANCE) :
@@ -305,7 +530,7 @@ function updateTTSInfo(ttsQueueItemPreview, charIndex, utteranceText) {
                     if (ttsQItem) {
                         const txt = dom_text_utils_1.getTtsQueueItemRefText(ttsQItem);
                         try {
-                            activeUtteranceElem.innerHTML = txt;
+                            activeUtteranceElem.innerHTML = dom_text_utils_1.normalizeHtmlText(txt);
                         }
                         catch (err) {
                             console.log(err);
@@ -380,7 +605,7 @@ function updateTTSInfo(ttsQueueItemPreview, charIndex, utteranceText) {
                 ttsQItemMarkupAttributes += ` id="${styles_1.TTS_ID_ACTIVE_UTTERANCE}" `;
             }
             else {
-                ttsQItemMarkup = dom_text_utils_1.getTtsQueueItemRefText(ttsQItem);
+                ttsQItemMarkup = dom_text_utils_1.normalizeHtmlText(dom_text_utils_1.getTtsQueueItemRefText(ttsQItem));
             }
             let imageMarkup = "";
             if (ttsQItem.item.parentElement && ttsQItem.item.parentElement.tagName &&
@@ -452,7 +677,7 @@ function ttsPlayQueueIndex(ttsQueueIndex) {
     }
     _dialogState.ttsQueueItem = ttsQueueItem;
     highlights(true);
-    const txtStr = updateTTSInfo(undefined, -1, undefined);
+    const txtStr = updateTTSInfo(-1, -1, undefined);
     if (!txtStr) {
         ttsStop();
         return;
@@ -479,7 +704,7 @@ function ttsPlayQueueIndex(ttsQueueIndex) {
         if (ev.name !== "word") {
             return;
         }
-        updateTTSInfo(undefined, ev.charIndex, utterance.text);
+        updateTTSInfo(ev.charIndex, ev.charLength, utterance.text);
     };
     utterance.onend = (_ev) => {
         if (utterance.r2_cancel) {
@@ -506,7 +731,9 @@ function ttsPlayQueueIndex(ttsQueueIndex) {
     setTimeout(() => {
         win.speechSynthesis.speak(utterance);
     }, 0);
-    win.document.documentElement.classList.add(styles_1.TTS_CLASS_IS_ACTIVE);
+    if (_dialogState && _dialogState.ttsOverlayEnabled) {
+        win.document.documentElement.classList.add(styles_1.TTS_CLASS_IS_ACTIVE);
+    }
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_TTS_IS_PLAYING);
 }
 exports.ttsPlayQueueIndex = ttsPlayQueueIndex;
@@ -526,8 +753,8 @@ function startTTSSession(speed, ttsRootElement, ttsQueue, ttsQueueIndexStart, fo
             if (_dialogState.ttsQueueItem && _dialogState.ttsQueueItem.item.parentElement) {
                 toScrollTo = _dialogState.ttsQueueItem.item.parentElement;
             }
-            if (toScrollTo) {
-                _dialogState.focusScrollRaw(toScrollTo, false);
+            if (toScrollTo && _dialogState.ttsOverlayEnabled) {
+                _dialogState.focusScrollRaw(toScrollTo, false, true);
             }
             else {
                 ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable(val);
@@ -538,21 +765,27 @@ function startTTSSession(speed, ttsRootElement, ttsQueue, ttsQueueIndexStart, fo
         }, 50);
     }
     const outerHTML = `<div id="${styles_1.TTS_ID_CONTAINER}"
-        class="${styles_1.CSS_CLASS_NO_FOCUS_OUTLINE} ${styles_1.TTS_CLASS_THEME1}"
-        dir="ltr"
-        lang="en"
-        xml:lang="en"
-        tabindex="0" autofocus="autofocus"></div>
-    <button id="${styles_1.TTS_ID_PREVIOUS}" class="${styles_1.TTS_NAV_BUTTON_CLASS}" title="previous"><span>&#9668;</span></button>
-    <button id="${styles_1.TTS_ID_NEXT}" class="${styles_1.TTS_NAV_BUTTON_CLASS}" title="next"><span>&#9658;</span></button>
-    <input id="${styles_1.TTS_ID_SLIDER}" type="range" min="0" max="${ttsQueueLength - 1}" value="0"
-        ${readium_css_1.isRTL() ? `dir="rtl"` : `dir="ltr"`}  title="progress"/>`;
-    const pop = new popup_dialog_1.PopupDialog(win.document, outerHTML, onDialogClosed, styles_1.TTS_POPUP_DIALOG_CLASS, true);
+    class="${styles_1.CSS_CLASS_NO_FOCUS_OUTLINE} ${styles_1.TTS_CLASS_THEME1}"
+    dir="ltr"
+    lang="en"
+    xml:lang="en"
+    tabindex="0" autofocus="autofocus"></div>
+${win.READIUM2.ttsOverlayEnabled ?
+        `
+<button id="${styles_1.TTS_ID_PREVIOUS}" class="${styles_1.TTS_NAV_BUTTON_CLASS}" title="previous"><span>&#9668;</span></button>
+<button id="${styles_1.TTS_ID_NEXT}" class="${styles_1.TTS_NAV_BUTTON_CLASS}" title="next"><span>&#9658;</span></button>
+<input id="${styles_1.TTS_ID_SLIDER}" type="range" min="0" max="${ttsQueueLength - 1}" value="0"
+    ${readium_css_1.isRTL() ? `dir="rtl"` : `dir="ltr"`}  title="progress"/>
+`
+        : ""}
+`;
+    const pop = new popup_dialog_1.PopupDialog(win.document, outerHTML, onDialogClosed, `${styles_1.TTS_POPUP_DIALOG_CLASS}${win.READIUM2.ttsOverlayEnabled ? "" : ` ${styles_1.POPUP_DIALOG_CLASS_COLLAPSE}`}`, true);
     pop.show(ttsQueueItemStart.item.parentElement);
     _dialogState = pop.dialog;
     if (!_dialogState) {
         return;
     }
+    _dialogState.ttsOverlayEnabled = win.READIUM2.ttsOverlayEnabled;
     _dialogState.focusScrollRaw = focusScrollRaw;
     _dialogState.ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable =
         ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable;

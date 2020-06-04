@@ -84,6 +84,10 @@ export declare const R2_EVENT_TTS_CLICK_ENABLE = "R2_EVENT_TTS_CLICK_ENABLE";
 export interface IEventPayload_R2_EVENT_TTS_CLICK_ENABLE {
     doEnable: boolean;
 }
+export declare const R2_EVENT_TTS_OVERLAY_ENABLE = "R2_EVENT_TTS_OVERLAY_ENABLE";
+export interface IEventPayload_R2_EVENT_TTS_OVERLAY_ENABLE {
+    doEnable: boolean;
+}
 export declare const R2_EVENT_AUDIO_DO_PLAY = "R2_EVENT_AUDIO_DO_PLAY";
 export declare const R2_EVENT_AUDIO_DO_PAUSE = "R2_EVENT_AUDIO_DO_PAUSE";
 export declare const R2_EVENT_AUDIO_TOGGLE_PLAY_PAUSE = "R2_EVENT_AUDIO_TOGGLE_PLAY_PAUSE";

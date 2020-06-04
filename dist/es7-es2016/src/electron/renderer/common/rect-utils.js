@@ -1,16 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.checkOverlaps = exports.removeContainedRects = exports.getRectOverlapY = exports.getRectOverlapX = exports.replaceOverlapingRects = exports.mergeTouchingRects = exports.rectsTouchOrOverlap = exports.getBoundingRect = exports.rectContains = exports.rectContainsPoint = exports.rectSubtract = exports.rectIntersect = exports.getClientRectsNoOverlap_ = exports.getClientRectsNoOverlap = void 0;
+exports.checkOverlaps = exports.removeContainedRects = exports.getRectOverlapY = exports.getRectOverlapX = exports.replaceOverlapingRects = exports.mergeTouchingRects = exports.rectsTouchOrOverlap = exports.getBoundingRect = exports.rectContains = exports.rectContainsPoint = exports.rectSubtract = exports.rectIntersect = exports.getClientRectsNoOverlap__ = exports.getClientRectsNoOverlap_ = exports.getClientRectsNoOverlap = void 0;
 const VERBOSE = false;
 const IS_DEV = VERBOSE &&
     (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
-function getClientRectsNoOverlap(range, doNotMergeHorizontallyAlignedRects) {
+function getClientRectsNoOverlap(range, doNotMergeHorizontallyAlignedRects, expand) {
     const rangeClientRects = range.getClientRects();
-    return getClientRectsNoOverlap_(rangeClientRects, doNotMergeHorizontallyAlignedRects);
+    return getClientRectsNoOverlap_(rangeClientRects, doNotMergeHorizontallyAlignedRects, expand);
 }
 exports.getClientRectsNoOverlap = getClientRectsNoOverlap;
-function getClientRectsNoOverlap_(clientRects, doNotMergeHorizontallyAlignedRects) {
-    const tolerance = 1;
+function getClientRectsNoOverlap_(clientRects, doNotMergeHorizontallyAlignedRects, expand) {
     const originalRects = [];
     for (const rangeClientRect of clientRects) {
         originalRects.push({
@@ -22,13 +21,32 @@ function getClientRectsNoOverlap_(clientRects, doNotMergeHorizontallyAlignedRect
             width: rangeClientRect.width,
         });
     }
+    return getClientRectsNoOverlap__(originalRects, doNotMergeHorizontallyAlignedRects, expand);
+}
+exports.getClientRectsNoOverlap_ = getClientRectsNoOverlap_;
+function getClientRectsNoOverlap__(originalRects, doNotMergeHorizontallyAlignedRects, expand) {
+    const ex = expand ? expand : 0;
+    if (ex) {
+        for (const rect of originalRects) {
+            rect.left -= ex;
+            rect.top -= ex;
+            rect.right += ex;
+            rect.bottom += ex;
+            rect.width += (2 * ex);
+            rect.height += (2 * ex);
+        }
+    }
+    const tolerance = 1;
     const mergedRects = mergeTouchingRects(originalRects, tolerance, doNotMergeHorizontallyAlignedRects);
     const noContainedRects = removeContainedRects(mergedRects, tolerance);
     const newRects = replaceOverlapingRects(noContainedRects);
     const minArea = 2 * 2;
     for (let j = newRects.length - 1; j >= 0; j--) {
         const rect = newRects[j];
-        const bigEnough = (rect.width * rect.height) > minArea;
+        let bigEnough = (rect.width * rect.height) > minArea;
+        if (bigEnough && ex && (rect.width <= ex || rect.height <= ex)) {
+            bigEnough = false;
+        }
         if (!bigEnough) {
             if (newRects.length > 1) {
                 if (IS_DEV) {
@@ -52,7 +70,7 @@ function getClientRectsNoOverlap_(clientRects, doNotMergeHorizontallyAlignedRect
     }
     return newRects;
 }
-exports.getClientRectsNoOverlap_ = getClientRectsNoOverlap_;
+exports.getClientRectsNoOverlap__ = getClientRectsNoOverlap__;
 function almostEqual(a, b, tolerance) {
     return Math.abs(a - b) <= tolerance;
 }

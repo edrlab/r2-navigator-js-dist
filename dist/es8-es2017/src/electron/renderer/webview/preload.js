@@ -60,6 +60,7 @@ win.READIUM2 = {
         userInteract: false,
     },
     ttsClickEnabled: false,
+    ttsOverlayEnabled: false,
     ttsPlaybackRate: 1,
     urlQueryParams: win.location.search ? querystring_1.getURLQueryParams(win.location.search) : undefined,
     webViewSlot: styles_1.WebViewSlotEnum.center,
@@ -319,12 +320,12 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, (_event, payload) => {
     if (delayScrollIntoView) {
         setTimeout(() => {
             debug("++++ scrollToHashRaw FROM DELAYED SCROLL_TO");
-            scrollToHashRaw();
+            scrollToHashRaw(false);
         }, 100);
     }
     else {
         debug("++++ scrollToHashRaw FROM SCROLL_TO");
-        scrollToHashRaw();
+        scrollToHashRaw(false);
     }
 });
 function resetLocationHashOverrideInfo() {
@@ -573,10 +574,7 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_PAGE_TURN, (_event, payload) => {
 });
 let _lastAnimState2;
 const animationTime2 = 400;
-function scrollElementIntoView(element, doFocus) {
-    scrollElementIntoView_(element, doFocus, false);
-}
-function scrollElementIntoView_(element, doFocus, animate) {
+function scrollElementIntoView(element, doFocus, animate) {
     if (win.READIUM2.DEBUG_VISUALS) {
         const existings = win.document.querySelectorAll(`*[${styles_1.readPosCssStylesAttr3}]`);
         existings.forEach((existing) => {
@@ -690,7 +688,7 @@ function scrollIntoView(element) {
         Math.min(Math.abs(scrollLeftPotentiallyExcessive), maxScrollShift);
     scrollElement.scrollLeft = scrollOffset;
 }
-const scrollToHashRaw = () => {
+const scrollToHashRaw = (animate) => {
     if (!win.document || !win.document.body || !win.document.documentElement) {
         return;
     }
@@ -702,13 +700,13 @@ const scrollToHashRaw = () => {
     debug("++++ scrollToHashRaw");
     const isPaged = readium_css_inject_1.isPaginated(win.document);
     if (win.READIUM2.locationHashOverride) {
-        scrollElementIntoView(win.READIUM2.locationHashOverride, true);
+        scrollElementIntoView(win.READIUM2.locationHashOverride, true, animate);
         notifyReadingLocationDebounced();
         return;
     }
     else if (win.READIUM2.hashElement) {
         win.READIUM2.locationHashOverride = win.READIUM2.hashElement;
-        scrollElementIntoView(win.READIUM2.hashElement, true);
+        scrollElementIntoView(win.READIUM2.hashElement, true, animate);
         notifyReadingLocationDebounced();
         return;
     }
@@ -782,7 +780,7 @@ const scrollToHashRaw = () => {
                     if (win.READIUM2.locationHashOverrideInfo) {
                         win.READIUM2.locationHashOverrideInfo.locations.cssSelector = gotoCssSelector;
                     }
-                    scrollElementIntoView(selected, true);
+                    scrollElementIntoView(selected, true, animate);
                     notifyReadingLocationDebounced();
                     return;
                 }
@@ -854,9 +852,9 @@ const scrollToHashRaw = () => {
     }
     notifyReadingLocationDebounced();
 };
-const scrollToHashDebounced = debounce_1.debounce(() => {
+const scrollToHashDebounced = debounce_1.debounce((animate) => {
     debug("++++ scrollToHashRaw FROM DEBOUNCED");
-    scrollToHashRaw();
+    scrollToHashRaw(animate);
 }, 100);
 let _ignoreScrollEvent = false;
 electron_1.ipcRenderer.on("R2_EVENT_HIDE", (_event, payload) => {
@@ -874,8 +872,8 @@ function showHideContentMask(doHide, isFixedLayout) {
         win.document.documentElement.classList.remove(styles_1.ROOT_CLASS_INVISIBLE_MASK);
     }
 }
-function focusScrollRaw(el, doFocus) {
-    scrollElementIntoView(el, doFocus);
+function focusScrollRaw(el, doFocus, animate) {
+    scrollElementIntoView(el, doFocus, animate);
     const blacklisted = checkBlacklisted(el);
     if (blacklisted) {
         return;
@@ -883,8 +881,8 @@ function focusScrollRaw(el, doFocus) {
     win.READIUM2.locationHashOverride = el;
     notifyReadingLocationDebounced();
 }
-const focusScrollDebounced = debounce_1.debounce((el, doFocus) => {
-    focusScrollRaw(el, doFocus);
+const focusScrollDebounced = debounce_1.debounce((el, doFocus, animate) => {
+    focusScrollRaw(el, doFocus, animate);
 }, 100);
 const handleFocusInDebounced = debounce_1.debounce((target, tabKeyDownEvent) => {
     handleFocusInRaw(target, tabKeyDownEvent);
@@ -893,7 +891,7 @@ function handleFocusInRaw(target, _tabKeyDownEvent) {
     if (!target || !win.document.body) {
         return;
     }
-    focusScrollRaw(target, false);
+    focusScrollRaw(target, false, false);
 }
 electron_1.ipcRenderer.on(events_1.R2_EVENT_READIUMCSS, (_event, payload) => {
     showHideContentMask(true, payload.isFixedLayout || win.READIUM2.isFixedLayout);
@@ -919,6 +917,7 @@ win.addEventListener("DOMContentLoaded", () => {
     }
     win.READIUM2.locationHashOverride = undefined;
     win.READIUM2.ttsClickEnabled = false;
+    win.READIUM2.ttsOverlayEnabled = false;
     let readiumcssJson;
     if (win.READIUM2.urlQueryParams) {
         const base64ReadiumCSS = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_CSS];
@@ -1082,7 +1081,7 @@ function loaded(forced) {
         if (!win.READIUM2.isFixedLayout) {
             showHideContentMask(false, win.READIUM2.isFixedLayout);
             debug("++++ scrollToHashDebounced FROM LOAD");
-            scrollToHashDebounced();
+            scrollToHashDebounced(false);
             if (win.document.body) {
                 const linkTxt = "__";
                 const focusLink = win.document.createElement("a");
@@ -1104,7 +1103,7 @@ function loaded(forced) {
                         }
                         const el = win.READIUM2.hashElement || win.READIUM2.locationHashOverride;
                         if (el) {
-                            focusScrollDebounced(el, true);
+                            focusScrollDebounced(el, true, false);
                         }
                     });
                 }, 200);
@@ -1172,7 +1171,7 @@ function loaded(forced) {
                     return;
                 }
                 win.document.body.tabbables = undefined;
-                scrollToHashDebounced();
+                scrollToHashDebounced(false);
             });
             resizeObserver.observe(win.document.body);
             setTimeout(() => {
@@ -1235,7 +1234,7 @@ function loaded(forced) {
             win.READIUM2.fxlViewportScale = wh.scale;
         }
         debug("++++ scrollToHashDebounced FROM RESIZE");
-        scrollToHashDebounced();
+        scrollToHashDebounced(false);
     };
     const onResizeDebounced = debounce_1.debounce(() => {
         onResizeRaw();
@@ -1276,14 +1275,19 @@ function loaded(forced) {
         const y = ev.clientY;
         processXYDebouncedImmediate(x, y, false, true);
         let element;
+        let textNode;
+        let textNodeOffset = -1;
         const range = win.document.caretRangeFromPoint(x, y);
         if (range) {
             const node = range.startContainer;
+            const offset = range.startOffset;
             if (node) {
                 if (node.nodeType === Node.ELEMENT_NODE) {
                     element = node;
                 }
                 else if (node.nodeType === Node.TEXT_NODE) {
+                    textNode = node;
+                    textNodeOffset = offset;
                     if (node.parentNode && node.parentNode.nodeType === Node.ELEMENT_NODE) {
                         element = node.parentNode;
                     }
@@ -1293,10 +1297,10 @@ function loaded(forced) {
         if (element && win.READIUM2.ttsClickEnabled) {
             if (element) {
                 if (ev.altKey) {
-                    readaloud_1.ttsPlay(win.READIUM2.ttsPlaybackRate, focusScrollRaw, element, undefined, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+                    readaloud_1.ttsPlay(win.READIUM2.ttsPlaybackRate, focusScrollRaw, element, undefined, undefined, -1, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
                     return;
                 }
-                readaloud_1.ttsPlay(win.READIUM2.ttsPlaybackRate, focusScrollRaw, element.ownerDocument.body, element, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+                readaloud_1.ttsPlay(win.READIUM2.ttsPlaybackRate, focusScrollRaw, element.ownerDocument.body, element, textNode, textNodeOffset, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
             }
         }
     }
@@ -1657,9 +1661,9 @@ exports.computeProgressionData = () => {
         percentRatio: progressionRatio,
     };
 };
-const _blacklistIdClassForCssSelectors = [styles_1.LINK_TARGET_CLASS, styles_1.CSS_CLASS_NO_FOCUS_OUTLINE, styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN, highlight_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA, styles_1.TTS_ID_INJECTED_PARENT, styles_1.TTS_ID_SPEAKING_DOC_ELEMENT, styles_1.ROOT_CLASS_KEYBOARD_INTERACT, styles_1.ROOT_CLASS_INVISIBLE_MASK, styles_1.ROOT_CLASS_INVISIBLE_MASK_REMOVED, styles_1.CLASS_PAGINATED, styles_1.ROOT_CLASS_NO_FOOTNOTES];
+const _blacklistIdClassForCssSelectors = [styles_1.LINK_TARGET_CLASS, styles_1.CSS_CLASS_NO_FOCUS_OUTLINE, styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, highlight_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA, styles_1.TTS_ID_SPEAKING_DOC_ELEMENT, styles_1.ROOT_CLASS_KEYBOARD_INTERACT, styles_1.ROOT_CLASS_INVISIBLE_MASK, styles_1.ROOT_CLASS_INVISIBLE_MASK_REMOVED, styles_1.CLASS_PAGINATED, styles_1.ROOT_CLASS_NO_FOOTNOTES];
 const _blacklistIdClassForCssSelectorsMathJax = ["mathjax", "ctxt", "mjx"];
-const _blacklistIdClassForCFI = [styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, styles_1.TTS_CLASS_INJECTED_SPAN, styles_1.TTS_CLASS_INJECTED_SUBSPAN, highlight_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA];
+const _blacklistIdClassForCFI = [styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, highlight_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA];
 const _blacklistIdClassForCFIMathJax = ["mathjax", "ctxt", "mjx"];
 exports.computeCFI = (node) => {
     if (node.nodeType !== Node.ELEMENT_NODE) {
@@ -1893,7 +1897,7 @@ if (!win.READIUM2.isAudio) {
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_PLAY, (_event, payload) => {
         const rootElement = win.document.querySelector(payload.rootElement);
         const startElement = payload.startElement ? win.document.querySelector(payload.startElement) : null;
-        readaloud_1.ttsPlay(payload.speed, focusScrollRaw, rootElement ? rootElement : undefined, startElement ? startElement : undefined, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+        readaloud_1.ttsPlay(payload.speed, focusScrollRaw, rootElement ? rootElement : undefined, startElement ? startElement : undefined, undefined, -1, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_STOP, (_event) => {
         readaloud_1.ttsStop();
@@ -1915,6 +1919,9 @@ if (!win.READIUM2.isAudio) {
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_CLICK_ENABLE, (_event, payload) => {
         win.READIUM2.ttsClickEnabled = payload.doEnable;
+    });
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_OVERLAY_ENABLE, (_event, payload) => {
+        win.READIUM2.ttsOverlayEnabled = payload.doEnable;
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT, (_event, payload) => {
         const styleAttr = win.document.documentElement.getAttribute("style");
@@ -2009,7 +2016,7 @@ if (!win.READIUM2.isAudio) {
                     }
                 }
                 win.READIUM2.locationHashOverride = targetEl;
-                scrollElementIntoView_(targetEl, false, true);
+                scrollElementIntoView(targetEl, false, true);
                 scrollToHashDebounced.clear();
                 notifyReadingLocationRaw(false, true);
                 if (win.READIUM2.DEBUG_VISUALS) {
@@ -2041,7 +2048,14 @@ if (!win.READIUM2.isAudio) {
             }
         }
         const highlightDefinitions = !payloadPing.highlightDefinitions ?
-            [{ color: undefined, drawType: undefined, selectionInfo: undefined }] :
+            [
+                {
+                    color: undefined,
+                    drawType: undefined,
+                    expand: undefined,
+                    selectionInfo: undefined,
+                },
+            ] :
             payloadPing.highlightDefinitions;
         for (const highlightDefinition of highlightDefinitions) {
             if (!highlightDefinition.selectionInfo) {

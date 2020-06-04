@@ -42,7 +42,7 @@ function popupFootNote(element, focusScrollRaw, href, ensureTwoPageSpreadWithOdd
     var val = ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable();
     function onDialogClosed(el) {
         if (el) {
-            focusScrollRaw(el, true);
+            focusScrollRaw(el, true, true);
         }
         else {
             ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable(val);

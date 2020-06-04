@@ -649,8 +649,8 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
                 (loadingSecondWebView ? "0" + loadingSecondWebView.Href : "0");
         });
     }
-    var webviewNeedsForcedRefresh = !isAudio &&
-        activeWebView && activeWebView.READIUM2.forceRefresh;
+    var webviewNeedsForcedRefresh = !isAudio && (win.READIUM2.ttsClickEnabled ||
+        activeWebView && activeWebView.READIUM2.forceRefresh);
     if (activeWebView) {
         activeWebView.READIUM2.forceRefresh = undefined;
     }

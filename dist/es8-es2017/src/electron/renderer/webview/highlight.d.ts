@@ -15,4 +15,4 @@ export declare const recreateAllHighlightsDebounced: ((win: IReadiumElectronWebv
 };
 export declare function recreateAllHighlights(win: IReadiumElectronWebviewWindow): void;
 export declare function createHighlights(win: IReadiumElectronWebviewWindow, highDefs: IHighlightDefinition[], pointerInteraction: boolean): Array<IHighlight | null>;
-export declare function createHighlight(win: IReadiumElectronWebviewWindow, selectionInfo: ISelectionInfo, color: IColor | undefined, pointerInteraction: boolean, drawType: number | undefined, bodyRect: DOMRect): [IHighlight, HTMLDivElement | null];
+export declare function createHighlight(win: IReadiumElectronWebviewWindow, selectionInfo: ISelectionInfo, color: IColor | undefined, pointerInteraction: boolean, drawType: number | undefined, expand: number | undefined, bodyRect: DOMRect): [IHighlight, HTMLDivElement | null];

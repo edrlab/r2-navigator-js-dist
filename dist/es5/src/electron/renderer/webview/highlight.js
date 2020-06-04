@@ -6,6 +6,7 @@ var crypto = require("crypto");
 var debounce_1 = require("debounce");
 var electron_1 = require("electron");
 var events_1 = require("../../common/events");
+var highlight_1 = require("../../common/highlight");
 var readium_css_inject_1 = require("../../common/readium-css-inject");
 var rect_utils_1 = require("../common/rect-utils");
 var readium_css_1 = require("./readium-css");
@@ -14,6 +15,7 @@ exports.ID_HIGHLIGHTS_CONTAINER = "R2_ID_HIGHLIGHTS_CONTAINER";
 exports.CLASS_HIGHLIGHT_CONTAINER = "R2_CLASS_HIGHLIGHT_CONTAINER";
 exports.CLASS_HIGHLIGHT_AREA = "R2_CLASS_HIGHLIGHT_AREA";
 exports.CLASS_HIGHLIGHT_BOUNDING_AREA = "R2_CLASS_HIGHLIGHT_BOUNDING_AREA";
+var IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 var USE_SVG = false;
 var USE_BLEND_MODE = true;
 var DEFAULT_BACKGROUND_COLOR_OPACITY = USE_BLEND_MODE ? 0.6 : 0.3;
@@ -84,7 +86,7 @@ function resetHighlightAreaStyle(win, highlightArea) {
                 }
             }
             else {
-                highlightArea.style.setProperty("background-color", highlight.drawType === 1 ? "transparent" :
+                highlightArea.style.setProperty("background-color", highlight.drawType === highlight_1.HighlightDrawTypeUnderline ? "transparent" :
                     (USE_BLEND_MODE ?
                         "rgb(" + highlight.color.red + ", " + highlight.color.green + ", " + highlight.color.blue + ")" :
                         "rgba(" + highlight.color.red + ", " + highlight.color.green + ", " + highlight.color.blue + ", " + opacity + ")"), "important");
@@ -121,7 +123,7 @@ function setHighlightAreaStyle(win, highlightAreas, highlight) {
                 }
             }
             else {
-                highlightArea.style.setProperty("background-color", highlight.drawType === 1 ? "transparent" :
+                highlightArea.style.setProperty("background-color", highlight.drawType === highlight_1.HighlightDrawTypeUnderline ? "transparent" :
                     (USE_BLEND_MODE ?
                         "rgb(" + highlight.color.red + ", " + highlight.color.green + ", " + highlight.color.blue + ")" :
                         "rgba(" + highlight.color.red + ", " + highlight.color.green + ", " + highlight.color.blue + ", " + opacity + ")"), "important");
@@ -397,7 +399,7 @@ function createHighlights(win, highDefs, pointerInteraction) {
                 highlights.push(null);
                 continue;
             }
-            var _b = tslib_1.__read(createHighlight(win, highDef.selectionInfo, highDef.color, pointerInteraction, highDef.drawType, bodyRect), 2), high = _b[0], div = _b[1];
+            var _b = tslib_1.__read(createHighlight(win, highDef.selectionInfo, highDef.color, pointerInteraction, highDef.drawType, highDef.expand, bodyRect), 2), high = _b[0], div = _b[1];
             highlights.push(high);
             if (div) {
                 docFrag.append(div);
@@ -416,16 +418,25 @@ function createHighlights(win, highDefs, pointerInteraction) {
     return highlights;
 }
 exports.createHighlights = createHighlights;
-function createHighlight(win, selectionInfo, color, pointerInteraction, drawType, bodyRect) {
-    var uniqueStr = "" + selectionInfo.rangeInfo.cfi + selectionInfo.rangeInfo.startContainerElementCssSelector + selectionInfo.rangeInfo.startContainerChildTextNodeIndex + selectionInfo.rangeInfo.startOffset + selectionInfo.rangeInfo.endContainerElementCssSelector + selectionInfo.rangeInfo.endContainerChildTextNodeIndex + selectionInfo.rangeInfo.endOffset;
-    var checkSum = crypto.createHash("sha256");
+function createHighlight(win, selectionInfo, color, pointerInteraction, drawType, expand, bodyRect) {
+    var uniqueStr = "" + selectionInfo.rangeInfo.startContainerElementCssSelector + selectionInfo.rangeInfo.startContainerChildTextNodeIndex + selectionInfo.rangeInfo.startOffset + selectionInfo.rangeInfo.endContainerElementCssSelector + selectionInfo.rangeInfo.endContainerChildTextNodeIndex + selectionInfo.rangeInfo.endOffset;
+    var checkSum = crypto.createHash("sha1");
     checkSum.update(uniqueStr);
-    var sha256Hex = checkSum.digest("hex");
-    var id = "R2_HIGHLIGHT_" + sha256Hex;
-    destroyHighlight(win.document, id);
+    var shaHex = checkSum.digest("hex");
+    var idBase = "R2_HIGHLIGHT_" + shaHex;
+    var id = idBase;
+    var idIdx = 0;
+    while (_highlights.find(function (h) { return h.id === id; }) ||
+        win.document.getElementById(id)) {
+        if (IS_DEV) {
+            console.log("HIGHLIGHT ID already exists, increment: " + id);
+        }
+        id = idBase + "_" + idIdx++;
+    }
     var highlight = {
         color: color ? color : DEFAULT_BACKGROUND_COLOR,
         drawType: drawType,
+        expand: expand,
         id: id,
         pointerInteraction: pointerInteraction,
         selectionInfo: selectionInfo,
@@ -461,10 +472,12 @@ function createHighlightDom(win, highlight, bodyRect) {
     var yOffset = paginated ? (-scrollElement.scrollTop) : bodyRect.top;
     var scale = 1 / ((win.READIUM2 && win.READIUM2.isFixedLayout) ? win.READIUM2.fxlViewportScale : 1);
     var useSVG = !win.READIUM2.DEBUG_VISUALS && USE_SVG;
-    var drawUnderline = highlight.drawType === 1 && !win.READIUM2.DEBUG_VISUALS;
-    var drawStrikeThrough = highlight.drawType === 2 && !win.READIUM2.DEBUG_VISUALS;
+    var drawUnderline = highlight.drawType === highlight_1.HighlightDrawTypeUnderline && !win.READIUM2.DEBUG_VISUALS;
+    var drawStrikeThrough = highlight.drawType === highlight_1.HighlightDrawTypeStrikethrough && !win.READIUM2.DEBUG_VISUALS;
     var doNotMergeHorizontallyAlignedRects = drawUnderline || drawStrikeThrough;
-    var clientRects = win.READIUM2.DEBUG_VISUALS ? range.getClientRects() : rect_utils_1.getClientRectsNoOverlap(range, doNotMergeHorizontallyAlignedRects);
+    var ex = highlight.expand ? highlight.expand : 0;
+    var rangeClientRects = range.getClientRects();
+    var clientRects = rect_utils_1.getClientRectsNoOverlap_(rangeClientRects, doNotMergeHorizontallyAlignedRects, ex);
     var highlightAreaSVGDocFrag;
     var roundedCorner = 3;
     var underlineThickness = 3;

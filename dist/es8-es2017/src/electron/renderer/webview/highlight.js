@@ -5,6 +5,7 @@ const crypto = require("crypto");
 const debounce_1 = require("debounce");
 const electron_1 = require("electron");
 const events_1 = require("../../common/events");
+const highlight_1 = require("../../common/highlight");
 const readium_css_inject_1 = require("../../common/readium-css-inject");
 const rect_utils_1 = require("../common/rect-utils");
 const readium_css_1 = require("./readium-css");
@@ -13,6 +14,7 @@ exports.ID_HIGHLIGHTS_CONTAINER = "R2_ID_HIGHLIGHTS_CONTAINER";
 exports.CLASS_HIGHLIGHT_CONTAINER = "R2_CLASS_HIGHLIGHT_CONTAINER";
 exports.CLASS_HIGHLIGHT_AREA = "R2_CLASS_HIGHLIGHT_AREA";
 exports.CLASS_HIGHLIGHT_BOUNDING_AREA = "R2_CLASS_HIGHLIGHT_BOUNDING_AREA";
+const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 const USE_SVG = false;
 const USE_BLEND_MODE = true;
 const DEFAULT_BACKGROUND_COLOR_OPACITY = USE_BLEND_MODE ? 0.6 : 0.3;
@@ -83,7 +85,7 @@ function resetHighlightAreaStyle(win, highlightArea) {
                 }
             }
             else {
-                highlightArea.style.setProperty("background-color", highlight.drawType === 1 ? "transparent" :
+                highlightArea.style.setProperty("background-color", highlight.drawType === highlight_1.HighlightDrawTypeUnderline ? "transparent" :
                     (USE_BLEND_MODE ?
                         `rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue})` :
                         `rgba(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}, ${opacity})`), "important");
@@ -117,7 +119,7 @@ function setHighlightAreaStyle(win, highlightAreas, highlight) {
             }
         }
         else {
-            highlightArea.style.setProperty("background-color", highlight.drawType === 1 ? "transparent" :
+            highlightArea.style.setProperty("background-color", highlight.drawType === highlight_1.HighlightDrawTypeUnderline ? "transparent" :
                 (USE_BLEND_MODE ?
                     `rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue})` :
                     `rgba(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}, ${opacity})`), "important");
@@ -371,7 +373,7 @@ function createHighlights(win, highDefs, pointerInteraction) {
             highlights.push(null);
             continue;
         }
-        const [high, div] = createHighlight(win, highDef.selectionInfo, highDef.color, pointerInteraction, highDef.drawType, bodyRect);
+        const [high, div] = createHighlight(win, highDef.selectionInfo, highDef.color, pointerInteraction, highDef.drawType, highDef.expand, bodyRect);
         highlights.push(high);
         if (div) {
             docFrag.append(div);
@@ -382,16 +384,25 @@ function createHighlights(win, highDefs, pointerInteraction) {
     return highlights;
 }
 exports.createHighlights = createHighlights;
-function createHighlight(win, selectionInfo, color, pointerInteraction, drawType, bodyRect) {
-    const uniqueStr = `${selectionInfo.rangeInfo.cfi}${selectionInfo.rangeInfo.startContainerElementCssSelector}${selectionInfo.rangeInfo.startContainerChildTextNodeIndex}${selectionInfo.rangeInfo.startOffset}${selectionInfo.rangeInfo.endContainerElementCssSelector}${selectionInfo.rangeInfo.endContainerChildTextNodeIndex}${selectionInfo.rangeInfo.endOffset}`;
-    const checkSum = crypto.createHash("sha256");
+function createHighlight(win, selectionInfo, color, pointerInteraction, drawType, expand, bodyRect) {
+    const uniqueStr = `${selectionInfo.rangeInfo.startContainerElementCssSelector}${selectionInfo.rangeInfo.startContainerChildTextNodeIndex}${selectionInfo.rangeInfo.startOffset}${selectionInfo.rangeInfo.endContainerElementCssSelector}${selectionInfo.rangeInfo.endContainerChildTextNodeIndex}${selectionInfo.rangeInfo.endOffset}`;
+    const checkSum = crypto.createHash("sha1");
     checkSum.update(uniqueStr);
-    const sha256Hex = checkSum.digest("hex");
-    const id = "R2_HIGHLIGHT_" + sha256Hex;
-    destroyHighlight(win.document, id);
+    const shaHex = checkSum.digest("hex");
+    const idBase = "R2_HIGHLIGHT_" + shaHex;
+    let id = idBase;
+    let idIdx = 0;
+    while (_highlights.find((h) => h.id === id) ||
+        win.document.getElementById(id)) {
+        if (IS_DEV) {
+            console.log("HIGHLIGHT ID already exists, increment: " + id);
+        }
+        id = `${idBase}_${idIdx++}`;
+    }
     const highlight = {
         color: color ? color : DEFAULT_BACKGROUND_COLOR,
         drawType,
+        expand,
         id,
         pointerInteraction,
         selectionInfo,
@@ -426,10 +437,12 @@ function createHighlightDom(win, highlight, bodyRect) {
     const yOffset = paginated ? (-scrollElement.scrollTop) : bodyRect.top;
     const scale = 1 / ((win.READIUM2 && win.READIUM2.isFixedLayout) ? win.READIUM2.fxlViewportScale : 1);
     const useSVG = !win.READIUM2.DEBUG_VISUALS && USE_SVG;
-    const drawUnderline = highlight.drawType === 1 && !win.READIUM2.DEBUG_VISUALS;
-    const drawStrikeThrough = highlight.drawType === 2 && !win.READIUM2.DEBUG_VISUALS;
+    const drawUnderline = highlight.drawType === highlight_1.HighlightDrawTypeUnderline && !win.READIUM2.DEBUG_VISUALS;
+    const drawStrikeThrough = highlight.drawType === highlight_1.HighlightDrawTypeStrikethrough && !win.READIUM2.DEBUG_VISUALS;
     const doNotMergeHorizontallyAlignedRects = drawUnderline || drawStrikeThrough;
-    const clientRects = win.READIUM2.DEBUG_VISUALS ? range.getClientRects() : rect_utils_1.getClientRectsNoOverlap(range, doNotMergeHorizontallyAlignedRects);
+    const ex = highlight.expand ? highlight.expand : 0;
+    const rangeClientRects = range.getClientRects();
+    const clientRects = rect_utils_1.getClientRectsNoOverlap_(rangeClientRects, doNotMergeHorizontallyAlignedRects, ex);
     let highlightAreaSVGDocFrag;
     const roundedCorner = 3;
     const underlineThickness = 3;
