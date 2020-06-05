@@ -43,11 +43,15 @@ function secureSessions(server) {
         if ((serverUrl && details.url.startsWith(serverUrl)) ||
             details.url.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
             callback({
+                cancel: false,
                 responseHeaders: Object.assign(Object.assign({}, details.responseHeaders), { "Content-Security-Policy": [`default-src 'self' 'unsafe-inline' 'unsafe-eval' data: http: https: ${sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL}: ${serverUrl}`] }),
             });
         }
         else {
-            callback({});
+            callback({
+                cancel: false,
+                responseHeaders: Object.assign({}, details.responseHeaders),
+            });
         }
     };
     const onBeforeSendHeadersCB = (details, callback) => {
@@ -63,10 +67,16 @@ function secureSessions(server) {
             if (header) {
                 details.requestHeaders[header.name] = header.value;
             }
-            callback({ cancel: false, requestHeaders: details.requestHeaders });
+            callback({
+                cancel: false,
+                requestHeaders: Object.assign({}, details.requestHeaders),
+            });
         }
         else {
-            callback({ cancel: false });
+            callback({
+                cancel: false,
+                requestHeaders: Object.assign({}, details.requestHeaders),
+            });
         }
     };
     const setCertificateVerifyProcCB = (req, callback) => {
