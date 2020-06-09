@@ -165,11 +165,13 @@ function setupAudioBook(_docTitle, audioPlaybackRate) {
             }
         }
     }
-    coverElement.addEventListener("mouseup", (ev) => {
-        if (ev.button === 0) {
-            togglePlayPause();
-        }
-    });
+    if (coverElement) {
+        coverElement.addEventListener("mouseup", (ev) => {
+            if (ev.button === 0) {
+                togglePlayPause();
+            }
+        });
+    }
     playPauseElement.addEventListener("click", () => {
         togglePlayPause();
     });
