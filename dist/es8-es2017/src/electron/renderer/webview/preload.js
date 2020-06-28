@@ -460,9 +460,10 @@ function onEventPageTurn(payload) {
     }
     if (!goPREVIOUS) {
         const maxScrollShift = readium_css_1.calculateMaxScrollShift().maxScrollShift;
+        const maxScrollShiftTolerated = maxScrollShift - 2;
         if (isPaged) {
-            if (readium_css_1.isVerticalWritingMode() && (Math.abs(scrollElement.scrollTop) < maxScrollShift) ||
-                !readium_css_1.isVerticalWritingMode() && (Math.abs(scrollElement.scrollLeft) < maxScrollShift)) {
+            if (readium_css_1.isVerticalWritingMode() && (Math.abs(scrollElement.scrollTop) < maxScrollShiftTolerated) ||
+                !readium_css_1.isVerticalWritingMode() && (Math.abs(scrollElement.scrollLeft) < maxScrollShiftTolerated)) {
                 const unit = readium_css_1.isVerticalWritingMode() ?
                     win.document.documentElement.offsetHeight :
                     win.document.documentElement.offsetWidth;
@@ -491,8 +492,8 @@ function onEventPageTurn(payload) {
             }
         }
         else {
-            if (readium_css_1.isVerticalWritingMode() && (Math.abs(scrollElement.scrollLeft) < maxScrollShift) ||
-                !readium_css_1.isVerticalWritingMode() && (Math.abs(scrollElement.scrollTop) < maxScrollShift)) {
+            if (readium_css_1.isVerticalWritingMode() && (Math.abs(scrollElement.scrollLeft) < maxScrollShiftTolerated) ||
+                !readium_css_1.isVerticalWritingMode() && (Math.abs(scrollElement.scrollTop) < maxScrollShiftTolerated)) {
                 const newVal = readium_css_1.isVerticalWritingMode() ?
                     (scrollElement.scrollLeft + (readium_css_1.isRTL() ? -1 : 1) * win.document.documentElement.clientWidth) :
                     (scrollElement.scrollTop + win.document.documentElement.clientHeight);
