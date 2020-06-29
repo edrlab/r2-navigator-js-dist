@@ -458,18 +458,34 @@ function onEventPageTurn(payload) {
         win.cancelAnimationFrame(_lastAnimState.id);
         _lastAnimState.object[_lastAnimState.property] = _lastAnimState.destVal;
     }
+    const CSS_PIXEL_TOLERANCE = 5;
     if (!goPREVIOUS) {
         const maxScrollShift = readium_css_1.calculateMaxScrollShift().maxScrollShift;
-        const maxScrollShiftTolerated = maxScrollShift - 2;
+        const maxScrollShiftTolerated = maxScrollShift - CSS_PIXEL_TOLERANCE;
         if (isPaged) {
-            if (readium_css_1.isVerticalWritingMode() && (Math.abs(scrollElement.scrollTop) < maxScrollShiftTolerated) ||
-                !readium_css_1.isVerticalWritingMode() && (Math.abs(scrollElement.scrollLeft) < maxScrollShiftTolerated)) {
-                const unit = readium_css_1.isVerticalWritingMode() ?
-                    win.document.documentElement.offsetHeight :
-                    win.document.documentElement.offsetWidth;
+            const unit = readium_css_1.isVerticalWritingMode() ?
+                win.document.documentElement.offsetHeight :
+                win.document.documentElement.offsetWidth;
+            let scrollElementOffset = Math.round(readium_css_1.isVerticalWritingMode() ?
+                scrollElement.scrollTop :
+                scrollElement.scrollLeft);
+            const isNegative = scrollElementOffset < 0;
+            const scrollElementOffsetAbs = Math.abs(scrollElementOffset);
+            const fractional = scrollElementOffsetAbs / unit;
+            const integral = Math.floor(fractional);
+            const decimal = fractional - integral;
+            const partial = decimal * unit;
+            if (partial <= CSS_PIXEL_TOLERANCE) {
+                scrollElementOffset = (isNegative ? -1 : 1) * integral * unit;
+            }
+            else if (partial >= (unit - CSS_PIXEL_TOLERANCE)) {
+                scrollElementOffset = (isNegative ? -1 : 1) * (integral + 1) * unit;
+            }
+            if (readium_css_1.isVerticalWritingMode() && (scrollElementOffsetAbs < maxScrollShiftTolerated) ||
+                !readium_css_1.isVerticalWritingMode() && (scrollElementOffsetAbs < maxScrollShiftTolerated)) {
                 const scrollOffsetPotentiallyExcessive_ = readium_css_1.isVerticalWritingMode() ?
-                    (scrollElement.scrollTop + unit) :
-                    (scrollElement.scrollLeft + (readium_css_1.isRTL() ? -1 : 1) * unit);
+                    (scrollElementOffset + unit) :
+                    (scrollElementOffset + (readium_css_1.isRTL() ? -1 : 1) * unit);
                 const nWholes = Math.floor(scrollOffsetPotentiallyExcessive_ / unit);
                 const scrollOffsetPotentiallyExcessive = nWholes * unit;
                 ensureTwoPageSpreadWithOddColumnsIsOffset(scrollOffsetPotentiallyExcessive, maxScrollShift);
@@ -516,14 +532,29 @@ function onEventPageTurn(payload) {
     }
     else if (goPREVIOUS) {
         if (isPaged) {
-            if (readium_css_1.isVerticalWritingMode() && (Math.abs(scrollElement.scrollTop) > 0) ||
-                !readium_css_1.isVerticalWritingMode() && (Math.abs(scrollElement.scrollLeft) > 0)) {
-                const unit = readium_css_1.isVerticalWritingMode() ?
-                    win.document.documentElement.offsetHeight :
-                    win.document.documentElement.offsetWidth;
+            const unit = readium_css_1.isVerticalWritingMode() ?
+                win.document.documentElement.offsetHeight :
+                win.document.documentElement.offsetWidth;
+            let scrollElementOffset = Math.round(readium_css_1.isVerticalWritingMode() ?
+                scrollElement.scrollTop :
+                scrollElement.scrollLeft);
+            const isNegative = scrollElementOffset < 0;
+            const scrollElementOffsetAbs = Math.abs(scrollElementOffset);
+            const fractional = scrollElementOffsetAbs / unit;
+            const integral = Math.floor(fractional);
+            const decimal = fractional - integral;
+            const partial = decimal * unit;
+            if (partial <= CSS_PIXEL_TOLERANCE) {
+                scrollElementOffset = (isNegative ? -1 : 1) * integral * unit;
+            }
+            else if (partial >= (unit - CSS_PIXEL_TOLERANCE)) {
+                scrollElementOffset = (isNegative ? -1 : 1) * (integral + 1) * unit;
+            }
+            if (readium_css_1.isVerticalWritingMode() && (scrollElementOffsetAbs > 0) ||
+                !readium_css_1.isVerticalWritingMode() && (scrollElementOffsetAbs > 0)) {
                 const scrollOffset_ = readium_css_1.isVerticalWritingMode() ?
-                    (scrollElement.scrollTop - unit) :
-                    (scrollElement.scrollLeft - (readium_css_1.isRTL() ? -1 : 1) * unit);
+                    (scrollElementOffset - unit) :
+                    (scrollElementOffset - (readium_css_1.isRTL() ? -1 : 1) * unit);
                 const nWholes = readium_css_1.isRTL() ? Math.floor(scrollOffset_ / unit) : Math.ceil(scrollOffset_ / unit);
                 const scrollOffset = nWholes * unit;
                 ensureTwoPageSpreadWithOddColumnsIsOffset(scrollOffset, 0);
