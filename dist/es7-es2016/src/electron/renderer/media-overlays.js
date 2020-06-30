@@ -819,6 +819,17 @@ function moHighlight(href, id) {
         if (href && ((_e = activeWebView.READIUM2.link) === null || _e === void 0 ? void 0 : _e.Href) !== href) {
             continue;
         }
+        if (href) {
+            if (id) {
+                _lastClickedNotification = {
+                    link: activeWebView.READIUM2.link,
+                    textFragmentIDChain: [id],
+                };
+            }
+            else {
+                _lastClickedNotification = undefined;
+            }
+        }
         setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
             yield activeWebView.send(events_1.R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT, payload);
         }), 0);
@@ -1004,6 +1015,9 @@ function mediaOverlaysPrevious() {
                 setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
                     yield playMediaOverlaysAudio(previousTextAudioPair, undefined, undefined);
                 }), 0);
+                if (_mediaOverlaysListener) {
+                    _mediaOverlaysListener(MediaOverlaysStateEnum.PLAYING);
+                }
             }
         }
     }
@@ -1065,6 +1079,9 @@ function mediaOverlaysNext(escape) {
                 setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
                     yield playMediaOverlaysAudio(nextTextAudioPair, undefined, undefined);
                 }), 0);
+                if (_mediaOverlaysListener) {
+                    _mediaOverlaysListener(MediaOverlaysStateEnum.PLAYING);
+                }
             }
         }
     }

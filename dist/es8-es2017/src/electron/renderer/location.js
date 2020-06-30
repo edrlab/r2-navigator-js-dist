@@ -46,6 +46,10 @@ function locationHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
             return true;
         }
         const payload = eventArgs[0];
+        const doNothing = payload.go === "" && payload.direction === "";
+        if (doNothing) {
+            return true;
+        }
         const goPREVIOUS = payload.go === "PREVIOUS";
         if (!activeWebView.READIUM2.link) {
             debug("WEBVIEW READIUM2_LINK ??!!");

@@ -972,6 +972,17 @@ function moHighlight(href, id) {
         if (href && ((_f = activeWebView.READIUM2.link) === null || _f === void 0 ? void 0 : _f.Href) !== href) {
             return "continue";
         }
+        if (href) {
+            if (id) {
+                _lastClickedNotification = {
+                    link: activeWebView.READIUM2.link,
+                    textFragmentIDChain: [id],
+                };
+            }
+            else {
+                _lastClickedNotification = undefined;
+            }
+        }
         setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
@@ -1203,6 +1214,9 @@ function mediaOverlaysPrevious() {
                         }
                     });
                 }); }, 0);
+                if (_mediaOverlaysListener) {
+                    _mediaOverlaysListener(MediaOverlaysStateEnum.PLAYING);
+                }
             }
         }
     }
@@ -1272,6 +1286,9 @@ function mediaOverlaysNext(escape) {
                         }
                     });
                 }); }, 0);
+                if (_mediaOverlaysListener) {
+                    _mediaOverlaysListener(MediaOverlaysStateEnum.PLAYING);
+                }
             }
         }
     }

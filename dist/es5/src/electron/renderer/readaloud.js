@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ttsPlaybackRate = exports.ttsClickEnable = exports.ttsOverlayEnable = exports.ttsNext = exports.ttsPrevious = exports.ttsResume = exports.ttsStop = exports.ttsPause = exports.ttsPlay = exports.ttsListen = exports.TTSStateEnum = exports.ttsHandleIpcMessage = exports.playTtsOnReadingLocation = exports.checkTtsState = void 0;
 var tslib_1 = require("tslib");
+var debounce_1 = require("debounce");
 var events_1 = require("../common/events");
 var location_1 = require("./location");
 var readium_css_1 = require("./readium-css");
@@ -10,7 +11,6 @@ var _lastTTSWebView;
 var _lastTTSWebViewHref;
 var _ttsAutoPlayTimeout;
 function checkTtsState(wv) {
-    var _a;
     var wasStopped = false;
     if (_lastTTSWebView && _lastTTSWebViewHref) {
         if (win.READIUM2.ttsClickEnabled ||
@@ -27,6 +27,12 @@ function checkTtsState(wv) {
             }
         }
     }
+    checkTtsStateDebounced(wasStopped, wv);
+}
+exports.checkTtsState = checkTtsState;
+var checkTtsStateDebounced = debounce_1.debounce(checkTtsStateRaw, 400);
+function checkTtsStateRaw(wasStopped, wv) {
+    var _a;
     if (wasStopped || win.READIUM2.ttsClickEnabled) {
         if ((_a = wv.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href) {
             if (_ttsAutoPlayTimeout) {
@@ -45,7 +51,6 @@ function checkTtsState(wv) {
         }
     }
 }
-exports.checkTtsState = checkTtsState;
 function playTtsOnReadingLocation(href) {
     var activeWebView = win.READIUM2.getActiveWebViews().find(function (webview) {
         var _a;
@@ -77,6 +82,13 @@ function playTtsOnReadingLocation(href) {
             }
             catch (err) {
                 console.log(err);
+            }
+            var activeWebView_ = win.READIUM2.getActiveWebViews().find(function (webview) {
+                var _a;
+                return ((_a = webview.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href) === href;
+            });
+            if (activeWebView_) {
+                ttsPlay(win.READIUM2.ttsPlaybackRate);
             }
         }, 1000);
         activeWebView.addEventListener("ipc-message", cb_1);

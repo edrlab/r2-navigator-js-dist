@@ -232,6 +232,11 @@ function createWebViewInternal(preloadScriptPath) {
                 clipboardInterceptor(payload);
             }
         }
+        else if (event.channel === events_1.R2_EVENT_PAGE_TURN_RES &&
+            event.args[0].go === "" &&
+            event.args[0].direction === "") {
+            readaloud_1.checkTtsState(wv);
+        }
         else if (!highlight_1.highlightsHandleIpcMessage(event.channel, event.args, webview) &&
             !readaloud_1.ttsHandleIpcMessage(event.channel, event.args, webview) &&
             !location_1.locationHandleIpcMessage(event.channel, event.args, webview) &&
