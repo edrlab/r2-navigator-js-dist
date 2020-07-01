@@ -303,6 +303,10 @@ function wrapHighlightWord(ttsQueueItemRef, utteranceText, charIndex, charLength
         var range = new Range();
         range.setStart(rangeStartNode, rangeStartOffset);
         range.setEnd(rangeEndNode, rangeEndOffset);
+        if (_dialogState && _dialogState.focusScrollRaw) {
+            var domRect = range.getBoundingClientRect();
+            _dialogState.focusScrollRaw(ttsQueueItemRef.item.parentElement, false, true, domRect);
+        }
         var rangeInfo = selection_1.convertRange(range, getCssSelector, function (_node) { return ""; });
         if (!rangeInfo) {
             return;
@@ -411,6 +415,10 @@ function wrapHighlight(doHighlight, ttsQueueItemRef) {
             range.setEnd(lastTextNode, lastTextNode.nodeValue.length);
         }
         if (range) {
+            if (_dialogState && _dialogState.focusScrollRaw) {
+                var domRect = range.getBoundingClientRect();
+                _dialogState.focusScrollRaw(ttsQueueItemRef.item.parentElement, false, true, domRect);
+            }
             var rangeInfo = selection_1.convertRange(range, getCssSelector, function (_node) { return ""; });
             if (!rangeInfo) {
                 return;
@@ -509,8 +517,11 @@ function updateTTSInfo(charIndex, charLength, utteranceText) {
         return undefined;
     }
     var isWordBoundary = charIndex >= 0 && utteranceText;
-    if (!isWordBoundary && _dialogState.focusScrollRaw && ttsQueueItem.item.parentElement) {
-        _dialogState.focusScrollRaw(ttsQueueItem.item.parentElement, false, true);
+    if (_dialogState.ttsOverlayEnabled &&
+        !isWordBoundary &&
+        _dialogState.focusScrollRaw &&
+        ttsQueueItem.item.parentElement) {
+        _dialogState.focusScrollRaw(ttsQueueItem.item.parentElement, false, true, undefined);
     }
     var ttsQueueItemText = utteranceText ? utteranceText : dom_text_utils_1.getTtsQueueItemRefText(ttsQueueItem);
     var ttsQueueItemMarkup = ttsQueueItemText;
@@ -768,7 +779,7 @@ function startTTSSession(speed, ttsRootElement, ttsQueue, ttsQueueIndexStart, fo
         return;
     }
     var ttsQueueLength = dom_text_utils_1.getTtsQueueLength(ttsQueue);
-    var val = ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable();
+    var val = win.READIUM2.ttsOverlayEnabled ? ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable() : undefined;
     function onDialogClosed(el) {
         ttsPause();
         if (_dialogState && _dialogState.focusScrollRaw) {
@@ -777,9 +788,9 @@ function startTTSSession(speed, ttsRootElement, ttsQueue, ttsQueueIndexStart, fo
                 toScrollTo = _dialogState.ttsQueueItem.item.parentElement;
             }
             if (toScrollTo && _dialogState.ttsOverlayEnabled) {
-                _dialogState.focusScrollRaw(toScrollTo, false, true);
+                _dialogState.focusScrollRaw(toScrollTo, false, true, undefined);
             }
-            else {
+            else if (typeof val !== "undefined") {
                 ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable(val);
             }
         }

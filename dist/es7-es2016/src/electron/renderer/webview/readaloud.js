@@ -291,6 +291,10 @@ function wrapHighlightWord(ttsQueueItemRef, utteranceText, charIndex, charLength
         const range = new Range();
         range.setStart(rangeStartNode, rangeStartOffset);
         range.setEnd(rangeEndNode, rangeEndOffset);
+        if (_dialogState && _dialogState.focusScrollRaw) {
+            const domRect = range.getBoundingClientRect();
+            _dialogState.focusScrollRaw(ttsQueueItemRef.item.parentElement, false, true, domRect);
+        }
         const rangeInfo = selection_1.convertRange(range, getCssSelector, (_node) => "");
         if (!rangeInfo) {
             return;
@@ -388,6 +392,10 @@ function wrapHighlight(doHighlight, ttsQueueItemRef) {
             range.setEnd(lastTextNode, lastTextNode.nodeValue.length);
         }
         if (range) {
+            if (_dialogState && _dialogState.focusScrollRaw) {
+                const domRect = range.getBoundingClientRect();
+                _dialogState.focusScrollRaw(ttsQueueItemRef.item.parentElement, false, true, domRect);
+            }
             const rangeInfo = selection_1.convertRange(range, getCssSelector, (_node) => "");
             if (!rangeInfo) {
                 return;
@@ -486,8 +494,11 @@ function updateTTSInfo(charIndex, charLength, utteranceText) {
         return undefined;
     }
     const isWordBoundary = charIndex >= 0 && utteranceText;
-    if (!isWordBoundary && _dialogState.focusScrollRaw && ttsQueueItem.item.parentElement) {
-        _dialogState.focusScrollRaw(ttsQueueItem.item.parentElement, false, true);
+    if (_dialogState.ttsOverlayEnabled &&
+        !isWordBoundary &&
+        _dialogState.focusScrollRaw &&
+        ttsQueueItem.item.parentElement) {
+        _dialogState.focusScrollRaw(ttsQueueItem.item.parentElement, false, true, undefined);
     }
     const ttsQueueItemText = utteranceText ? utteranceText : dom_text_utils_1.getTtsQueueItemRefText(ttsQueueItem);
     let ttsQueueItemMarkup = ttsQueueItemText;
@@ -745,7 +756,7 @@ function startTTSSession(speed, ttsRootElement, ttsQueue, ttsQueueIndexStart, fo
         return;
     }
     const ttsQueueLength = dom_text_utils_1.getTtsQueueLength(ttsQueue);
-    const val = ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable();
+    const val = win.READIUM2.ttsOverlayEnabled ? ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable() : undefined;
     function onDialogClosed(el) {
         ttsPause();
         if (_dialogState && _dialogState.focusScrollRaw) {
@@ -754,9 +765,9 @@ function startTTSSession(speed, ttsRootElement, ttsQueue, ttsQueueIndexStart, fo
                 toScrollTo = _dialogState.ttsQueueItem.item.parentElement;
             }
             if (toScrollTo && _dialogState.ttsOverlayEnabled) {
-                _dialogState.focusScrollRaw(toScrollTo, false, true);
+                _dialogState.focusScrollRaw(toScrollTo, false, true, undefined);
             }
-            else {
+            else if (typeof val !== "undefined") {
                 ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable(val);
             }
         }
