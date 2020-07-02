@@ -305,6 +305,14 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, function (_event, payload)
             delete win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_GOTO];
         }
     }
+    if (payload.gotoDomRange) {
+        win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_GOTO_DOM_RANGE] = payload.gotoDomRange;
+    }
+    else {
+        if (typeof win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_GOTO_DOM_RANGE] !== "undefined") {
+            delete win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_GOTO_DOM_RANGE];
+        }
+    }
     if (win.READIUM2.isFixedLayout) {
         win.READIUM2.locationHashOverride = win.document.body;
         resetLocationHashOverrideInfo();
@@ -654,7 +662,7 @@ function scrollElementIntoView(element, doFocus, animate, domRect) {
         return;
     }
     if (doFocus) {
-        if (!tabbable.isFocusable(element)) {
+        if (!domRect && !tabbable.isFocusable(element)) {
             var attr = element.getAttribute("tabindex");
             if (!attr) {
                 element.setAttribute("tabindex", "-1");
@@ -681,7 +689,9 @@ function scrollElementIntoView(element, doFocus, animate, domRect) {
             debug("ANIMATION TIMEOUT REMOVE");
             element.classList.remove(styles_1.LINK_TARGET_CLASS);
         }, 4500);
-        element.focus();
+        if (!domRect) {
+            element.focus();
+        }
     }
     setTimeout(function () {
         var isPaged = readium_css_inject_1.isPaginated(win.document);
@@ -830,10 +840,10 @@ var scrollToHashRaw = function (animate) {
             var gotoCssSelector = void 0;
             var gotoProgression = void 0;
             if (gto) {
-                var s = Buffer.from(gto, "base64").toString("utf8");
-                var js = JSON.parse(s);
-                gotoCssSelector = js.cssSelector;
-                gotoProgression = js.progression;
+                var locStr = Buffer.from(gto, "base64").toString("utf8");
+                var locObj = JSON.parse(locStr);
+                gotoCssSelector = locObj.cssSelector;
+                gotoProgression = locObj.progression;
             }
             if (gotoCssSelector) {
                 gotoCssSelector = gotoCssSelector.replace(/\+/g, " ");
@@ -851,7 +861,23 @@ var scrollToHashRaw = function (animate) {
                     if (win.READIUM2.locationHashOverrideInfo) {
                         win.READIUM2.locationHashOverrideInfo.locations.cssSelector = gotoCssSelector;
                     }
-                    scrollElementIntoView(selected, true, animate, undefined);
+                    var domRect = void 0;
+                    var gtoDomRange = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_GOTO_DOM_RANGE];
+                    if (gtoDomRange) {
+                        try {
+                            var rangeInfoStr = Buffer.from(gtoDomRange, "base64").toString("utf8");
+                            var rangeInfo = JSON.parse(rangeInfoStr);
+                            debug("rangeInfo", rangeInfo);
+                            var domRange = selection_2.convertRangeInfo(win.document, rangeInfo);
+                            if (domRange) {
+                                domRect = domRange.getBoundingClientRect();
+                            }
+                        }
+                        catch (err) {
+                            debug("gtoDomRange", err);
+                        }
+                    }
+                    scrollElementIntoView(selected, true, animate, domRect);
                     notifyReadingLocationDebounced();
                     return;
                 }

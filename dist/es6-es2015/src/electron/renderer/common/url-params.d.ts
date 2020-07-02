@@ -1,5 +1,6 @@
 export declare const URL_PARAM_PREVIOUS = "r2_PREV";
 export declare const URL_PARAM_GOTO = "r2_GOTO";
+export declare const URL_PARAM_GOTO_DOM_RANGE = "r2_GOTO_DOMRANGE";
 export declare const URL_PARAM_CSS = "r2_CSS";
 export declare const URL_PARAM_EPUBREADINGSYSTEM = "r2_ERS";
 export declare const URL_PARAM_DEBUG_VISUALS = "r2_DEBUG";

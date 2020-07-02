@@ -4,7 +4,7 @@ import { IAudioPlaybackInfo } from "../common/audiobook";
 import { IDocInfo } from "../common/document";
 import { IEventPayload_R2_EVENT_READIUMCSS } from "../common/events";
 import { IPaginationInfo } from "../common/pagination";
-import { ISelectionInfo } from "../common/selection";
+import { IRangeInfo, ISelectionInfo } from "../common/selection";
 import { WebViewSlotEnum } from "../common/styles";
 import { IReadiumElectronWebview } from "./webview/state";
 export declare function setWebViewStyle(wv: IReadiumElectronWebview, wvSlot: WebViewSlotEnum): void;
@@ -13,7 +13,7 @@ export declare function shiftWebview(webview: IReadiumElectronWebview, offset: n
 export declare function navLeftOrRight(left: boolean, spineNav?: boolean, ignorePageSpreadHandling?: boolean): Link | undefined;
 export declare function handleLink(href: string, previous: boolean | undefined, useGoto: boolean, rcss?: IEventPayload_R2_EVENT_READIUMCSS): void;
 export declare function handleLinkUrl(href: string, rcss?: IEventPayload_R2_EVENT_READIUMCSS): void;
-export declare function handleLinkLocator(location: Locator | undefined, rcss?: IEventPayload_R2_EVENT_READIUMCSS): void;
+export declare function handleLinkLocator(location: Locator | undefined, rcss?: IEventPayload_R2_EVENT_READIUMCSS, rangeInfo?: IRangeInfo): void;
 export declare function reloadContent(): void;
 export interface LocatorExtended {
     audioPlaybackInfo: IAudioPlaybackInfo | undefined;

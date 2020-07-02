@@ -273,7 +273,7 @@ function handleLinkUrl(href, rcss) {
     handleLink(href, undefined, false, rcss);
 }
 exports.handleLinkUrl = handleLinkUrl;
-function handleLinkLocator(location, rcss) {
+function handleLinkLocator(location, rcss, rangeInfo) {
     var publication = win.READIUM2.publication;
     var publicationURL = win.READIUM2.publicationURL;
     if (!publication || !publicationURL) {
@@ -318,8 +318,11 @@ function handleLinkLocator(location, rcss) {
         uri.search = "";
         var urlNoQueryParams = uri.toString();
         var hrefToLoad = urlNoQueryParams +
-            ((useGoto) ? ("?" + url_params_1.URL_PARAM_GOTO + "=" +
+            (useGoto ? ("?" + url_params_1.URL_PARAM_GOTO + "=" +
                 UrlUtils_1.encodeURIComponent_RFC3986(Buffer.from(JSON.stringify(linkToLoadGoto, null, "")).toString("base64"))) :
+                "") +
+            ((useGoto && rangeInfo) ? ("&" + url_params_1.URL_PARAM_GOTO_DOM_RANGE + "=" +
+                UrlUtils_1.encodeURIComponent_RFC3986(Buffer.from(JSON.stringify(rangeInfo, null, "")).toString("base64"))) :
                 "");
         debug("handleLinkLocator: " + hrefToLoad);
         handleLink(hrefToLoad, undefined, useGoto, rcss);
@@ -400,6 +403,7 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
             hrefToLoadHttpObjUri.search(function (data) {
                 data[url_params_1.URL_PARAM_PREVIOUS] = undefined;
                 data[url_params_1.URL_PARAM_GOTO] = undefined;
+                data[url_params_1.URL_PARAM_GOTO_DOM_RANGE] = undefined;
                 data[url_params_1.URL_PARAM_CSS] = undefined;
                 data[url_params_1.URL_PARAM_EPUBREADINGSYSTEM] = undefined;
                 data[url_params_1.URL_PARAM_DEBUG_VISUALS] = undefined;
@@ -612,6 +616,7 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
         hrefToLoadHttpUri.search(function (data) {
             data[url_params_1.URL_PARAM_PREVIOUS] = undefined;
             data[url_params_1.URL_PARAM_GOTO] = undefined;
+            data[url_params_1.URL_PARAM_GOTO_DOM_RANGE] = undefined;
             data[url_params_1.URL_PARAM_CSS] = undefined;
             data[url_params_1.URL_PARAM_EPUBREADINGSYSTEM] = undefined;
             data[url_params_1.URL_PARAM_DEBUG_VISUALS] = undefined;
@@ -631,6 +636,7 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
             }
             if (!useGoto) {
                 data[url_params_1.URL_PARAM_GOTO] = undefined;
+                data[url_params_1.URL_PARAM_GOTO_DOM_RANGE] = undefined;
             }
         });
         if (useGoto) {
@@ -664,10 +670,12 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
     if (!isAudio && !webviewNeedsHardRefresh && !webviewNeedsForcedRefresh &&
         activeWebView && activeWebView.READIUM2.link === pubLink) {
         var goto = useGoto ? hrefToLoadHttpUri.search(true)[url_params_1.URL_PARAM_GOTO] : undefined;
+        var gotoDomRange = useGoto ? hrefToLoadHttpUri.search(true)[url_params_1.URL_PARAM_GOTO_DOM_RANGE] : undefined;
         var hash = useGoto ? undefined : hrefToLoadHttpUri.fragment();
         debug("WEBVIEW ALREADY LOADED: " + pubLink.Href);
         var payload_2 = {
             goto: goto,
+            gotoDomRange: gotoDomRange,
             hash: hash,
             isSecondWebView: secondWebView ? true : false,
             previous: previous ? true : false,

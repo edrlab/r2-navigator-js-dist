@@ -28,6 +28,7 @@ export interface IEventPayload_R2_EVENT_DEBUG_VISUALS {
 export declare const R2_EVENT_SCROLLTO = "R2_EVENT_SCROLLTO";
 export interface IEventPayload_R2_EVENT_SCROLLTO {
     goto: string | undefined;
+    gotoDomRange: string | undefined;
     hash: string | undefined;
     previous: boolean;
     isSecondWebView: boolean;
