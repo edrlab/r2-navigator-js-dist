@@ -4,7 +4,7 @@ exports.computeCFI = exports.computeProgressionData = void 0;
 const debounce_1 = require("debounce");
 const debug_ = require("debug");
 const electron_1 = require("electron");
-const tabbable = require("tabbable");
+const tabbable_1 = require("tabbable");
 const events_1 = require("../../common/events");
 const readium_css_inject_1 = require("../../common/readium-css-inject");
 const selection_1 = require("../../common/selection");
@@ -649,7 +649,7 @@ function scrollElementIntoView(element, doFocus, animate, domRect) {
         return;
     }
     if (doFocus) {
-        if (!domRect && !tabbable.isFocusable(element)) {
+        if (!domRect && !tabbable_1.isFocusable(element)) {
             const attr = element.getAttribute("tabindex");
             if (!attr) {
                 element.setAttribute("tabindex", "-1");
@@ -675,7 +675,7 @@ function scrollElementIntoView(element, doFocus, animate, domRect) {
         element._timeoutTargetClass = setTimeout(() => {
             debug("ANIMATION TIMEOUT REMOVE");
             element.classList.remove(styles_1.LINK_TARGET_CLASS);
-        }, 4500);
+        }, 2000);
         if (!domRect) {
             element.focus();
         }

@@ -5,7 +5,7 @@ var tslib_1 = require("tslib");
 var debounce_1 = require("debounce");
 var debug_ = require("debug");
 var electron_1 = require("electron");
-var tabbable = require("tabbable");
+var tabbable_1 = require("tabbable");
 var events_1 = require("../../common/events");
 var readium_css_inject_1 = require("../../common/readium-css-inject");
 var selection_1 = require("../../common/selection");
@@ -662,7 +662,7 @@ function scrollElementIntoView(element, doFocus, animate, domRect) {
         return;
     }
     if (doFocus) {
-        if (!domRect && !tabbable.isFocusable(element)) {
+        if (!domRect && !tabbable_1.isFocusable(element)) {
             var attr = element.getAttribute("tabindex");
             if (!attr) {
                 element.setAttribute("tabindex", "-1");
@@ -688,7 +688,7 @@ function scrollElementIntoView(element, doFocus, animate, domRect) {
         element._timeoutTargetClass = setTimeout(function () {
             debug("ANIMATION TIMEOUT REMOVE");
             element.classList.remove(styles_1.LINK_TARGET_CLASS);
-        }, 4500);
+        }, 2000);
         if (!domRect) {
             element.focus();
         }

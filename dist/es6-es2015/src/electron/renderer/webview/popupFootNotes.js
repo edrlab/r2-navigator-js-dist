@@ -1,10 +1,25 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.popupFootNote = void 0;
+const sessions_1 = require("../../common/sessions");
 const styles_1 = require("../../common/styles");
 const popup_dialog_1 = require("../common/popup-dialog");
 function popupFootNote(element, focusScrollRaw, href, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
+    const url = new URL(href);
+    if (!url.hash) {
+        return false;
+    }
     const documant = element.ownerDocument;
+    let hrefSelf = documant.location.href;
+    if (hrefSelf.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
+        hrefSelf = sessions_1.convertCustomSchemeToHttpUrl(hrefSelf);
+    }
+    const urlSelf = new URL(hrefSelf);
+    if (urlSelf.protocol !== url.protocol ||
+        urlSelf.origin !== url.origin ||
+        urlSelf.pathname !== url.pathname) {
+        return false;
+    }
     if (!documant.documentElement ||
         documant.documentElement.classList.contains(styles_1.ROOT_CLASS_NO_FOOTNOTES)) {
         return false;
@@ -18,10 +33,6 @@ function popupFootNote(element, focusScrollRaw, href, ensureTwoPageSpreadWithOdd
     }
     const isNoteref = epubType.indexOf("noteref") >= 0;
     if (!isNoteref) {
-        return false;
-    }
-    const url = new URL(href);
-    if (!url.hash) {
         return false;
     }
     const targetElement = documant.querySelector(url.hash);
