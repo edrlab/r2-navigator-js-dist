@@ -579,6 +579,7 @@ function findDepthFirstTextAudioPair(textHref, mo, textFragmentIDChain) {
         }
         return undefined;
     }
+    const textFragmentIDChainOriginal = textFragmentIDChain;
     let frags = textFragmentIDChain;
     for (const child of mo.Children) {
         if (audiobook_1.DEBUG_AUDIO) {
@@ -619,7 +620,13 @@ function findDepthFirstTextAudioPair(textHref, mo, textFragmentIDChain) {
                 }
                 return match;
             }
+            else {
+                return match;
+            }
         }
+    }
+    if (textFragmentIDChainOriginal && !frags) {
+        return null;
     }
     return undefined;
 }
