@@ -17,7 +17,6 @@ const url_params_1 = require("./common/url-params");
 const epubReadingSystem_1 = require("./epubReadingSystem");
 const media_overlays_1 = require("./media-overlays");
 const readium_css_1 = require("./readium-css");
-const state_1 = require("./webview/state");
 const URI = require("urijs");
 const debug = debug_("r2:navigator#electron/renderer/location");
 const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
@@ -620,7 +619,7 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
     }
     const webviewNeedsHardRefresh = !isAudio &&
         (win.READIUM2.enableScreenReaderAccessibilityWebViewHardRefresh
-            && state_1.isScreenReaderMounted());
+            && win.READIUM2.isScreenReaderMounted);
     if (!isAudio && !webviewNeedsHardRefresh && !webviewNeedsForcedRefresh &&
         activeWebView && activeWebView.READIUM2.link === pubLink) {
         const goto = useGoto ? hrefToLoadHttpUri.search(true)[url_params_1.URL_PARAM_GOTO] : undefined;

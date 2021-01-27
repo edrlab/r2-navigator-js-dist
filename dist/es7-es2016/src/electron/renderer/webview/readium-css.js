@@ -5,12 +5,13 @@ const readium_css_inject_1 = require("../../common/readium-css-inject");
 const styles_1 = require("../../common/styles");
 const win = global.window;
 const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
-exports.getScrollingElement = (documant) => {
+const getScrollingElement = (documant) => {
     if (documant.scrollingElement) {
         return documant.scrollingElement;
     }
     return documant.body;
 };
+exports.getScrollingElement = getScrollingElement;
 const calculateDocumentColumnizedWidthAdjustedForTwoPageSpread = () => {
     if (!win || !win.document || !win.document.body || !win.document.documentElement) {
         return 0;
@@ -31,7 +32,7 @@ const calculateDocumentColumnizedWidthAdjustedForTwoPageSpread = () => {
     }
     return w;
 };
-exports.calculateMaxScrollShift = () => {
+const calculateMaxScrollShift = () => {
     if (!win || !win.document || !win.document.body || !win.document.documentElement) {
         return { maxScrollShift: 0, maxScrollShiftAdjusted: 0 };
     }
@@ -53,7 +54,8 @@ exports.calculateMaxScrollShift = () => {
             maxScrollShift));
     return { maxScrollShift, maxScrollShiftAdjusted };
 };
-exports.isTwoPageSpread = () => {
+exports.calculateMaxScrollShift = calculateMaxScrollShift;
+const isTwoPageSpread = () => {
     if (!win || !win.document || !win.document.documentElement) {
         return false;
     }
@@ -64,7 +66,8 @@ exports.isTwoPageSpread = () => {
     }
     return docColumnCount === 2;
 };
-exports.calculateTotalColumns = () => {
+exports.isTwoPageSpread = isTwoPageSpread;
+const calculateTotalColumns = () => {
     if (!win || !win.document || !win.document.body || !readium_css_inject_1.isPaginated(win.document)) {
         return 0;
     }
@@ -78,6 +81,7 @@ exports.calculateTotalColumns = () => {
     }
     return totalColumns;
 };
+exports.calculateTotalColumns = calculateTotalColumns;
 function calculateColumnDimension() {
     if (!win.document || !win.document.documentElement || !win.document.body || !readium_css_inject_1.isPaginated(win.document)) {
         return 0;
@@ -207,7 +211,7 @@ function checkHiddenFootNotes(documant) {
     });
 }
 exports.checkHiddenFootNotes = checkHiddenFootNotes;
-exports.readiumCSS = (documant, messageJson) => {
+const readiumCSS = (documant, messageJson) => {
     if (IS_DEV) {
         console.log("_____ readiumCssJson.urlRoot (readiumCSS()): ", messageJson.urlRoot);
     }
@@ -216,4 +220,5 @@ exports.readiumCSS = (documant, messageJson) => {
         checkHiddenFootNotes(documant);
     }
 };
+exports.readiumCSS = readiumCSS;
 //# sourceMappingURL=readium-css.js.map

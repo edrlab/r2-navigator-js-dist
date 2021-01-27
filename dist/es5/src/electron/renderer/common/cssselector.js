@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fullQualifiedSelector = void 0;
 var tslib_1 = require("tslib");
-exports.fullQualifiedSelector = function (node, justSelector) {
+var fullQualifiedSelector = function (node, justSelector) {
     if (node.nodeType !== Node.ELEMENT_NODE) {
         var lowerCaseName = (node.localName && node.localName.toLowerCase())
             || node.nodeName.toLowerCase();
@@ -10,6 +10,7 @@ exports.fullQualifiedSelector = function (node, justSelector) {
     }
     return cssPath(node, justSelector);
 };
+exports.fullQualifiedSelector = fullQualifiedSelector;
 var cssPath = function (node, optimized) {
     if (node.nodeType !== Node.ELEMENT_NODE) {
         return "";

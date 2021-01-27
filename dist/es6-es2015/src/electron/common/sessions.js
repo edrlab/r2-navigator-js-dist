@@ -4,7 +4,7 @@ exports.convertCustomSchemeToHttpUrl = exports.convertHttpUrlToCustomScheme = ex
 exports.R2_SESSION_WEBVIEW = "persist:readium2pubwebview";
 const UrlUtils_1 = require("r2-utils-js/dist/es6-es2015/src/_utils/http/UrlUtils");
 exports.READIUM2_ELECTRON_HTTP_PROTOCOL = "httpsr2";
-exports.convertHttpUrlToCustomScheme = (url) => {
+const convertHttpUrlToCustomScheme = (url) => {
     const matches = url.match(/(http[s]?):\/\/([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)(?::([0-9]+))?\/pub\/([^\/]+)(\/.*)?/);
     if (matches && matches.length > 1) {
         const idMatch = matches[4];
@@ -20,7 +20,8 @@ exports.convertHttpUrlToCustomScheme = (url) => {
     }
     return url;
 };
-exports.convertCustomSchemeToHttpUrl = (url) => {
+exports.convertHttpUrlToCustomScheme = convertHttpUrlToCustomScheme;
+const convertCustomSchemeToHttpUrl = (url) => {
     let url_ = url.replace(exports.READIUM2_ELECTRON_HTTP_PROTOCOL + "://", "");
     const matches = url_.match(/id([^\/]+)\/x(http[s]?)\/ip([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\/p([0-9]+)?(\/.*)?/);
     if (matches && matches.length > 1) {
@@ -36,4 +37,5 @@ exports.convertCustomSchemeToHttpUrl = (url) => {
     }
     return url;
 };
+exports.convertCustomSchemeToHttpUrl = convertCustomSchemeToHttpUrl;
 //# sourceMappingURL=sessions.js.map

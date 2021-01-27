@@ -5,12 +5,13 @@ var readium_css_inject_1 = require("../../common/readium-css-inject");
 var styles_1 = require("../../common/styles");
 var win = global.window;
 var IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
-exports.getScrollingElement = function (documant) {
+var getScrollingElement = function (documant) {
     if (documant.scrollingElement) {
         return documant.scrollingElement;
     }
     return documant.body;
 };
+exports.getScrollingElement = getScrollingElement;
 var calculateDocumentColumnizedWidthAdjustedForTwoPageSpread = function () {
     if (!win || !win.document || !win.document.body || !win.document.documentElement) {
         return 0;
@@ -31,7 +32,7 @@ var calculateDocumentColumnizedWidthAdjustedForTwoPageSpread = function () {
     }
     return w;
 };
-exports.calculateMaxScrollShift = function () {
+var calculateMaxScrollShift = function () {
     if (!win || !win.document || !win.document.body || !win.document.documentElement) {
         return { maxScrollShift: 0, maxScrollShiftAdjusted: 0 };
     }
@@ -53,7 +54,8 @@ exports.calculateMaxScrollShift = function () {
             maxScrollShift));
     return { maxScrollShift: maxScrollShift, maxScrollShiftAdjusted: maxScrollShiftAdjusted };
 };
-exports.isTwoPageSpread = function () {
+exports.calculateMaxScrollShift = calculateMaxScrollShift;
+var isTwoPageSpread = function () {
     if (!win || !win.document || !win.document.documentElement) {
         return false;
     }
@@ -64,7 +66,8 @@ exports.isTwoPageSpread = function () {
     }
     return docColumnCount === 2;
 };
-exports.calculateTotalColumns = function () {
+exports.isTwoPageSpread = isTwoPageSpread;
+var calculateTotalColumns = function () {
     if (!win || !win.document || !win.document.body || !readium_css_inject_1.isPaginated(win.document)) {
         return 0;
     }
@@ -78,6 +81,7 @@ exports.calculateTotalColumns = function () {
     }
     return totalColumns;
 };
+exports.calculateTotalColumns = calculateTotalColumns;
 function calculateColumnDimension() {
     if (!win.document || !win.document.documentElement || !win.document.body || !readium_css_inject_1.isPaginated(win.document)) {
         return 0;
@@ -207,7 +211,7 @@ function checkHiddenFootNotes(documant) {
     });
 }
 exports.checkHiddenFootNotes = checkHiddenFootNotes;
-exports.readiumCSS = function (documant, messageJson) {
+var readiumCSS = function (documant, messageJson) {
     if (IS_DEV) {
         console.log("_____ readiumCssJson.urlRoot (readiumCSS()): ", messageJson.urlRoot);
     }
@@ -216,4 +220,5 @@ exports.readiumCSS = function (documant, messageJson) {
         checkHiddenFootNotes(documant);
     }
 };
+exports.readiumCSS = readiumCSS;
 //# sourceMappingURL=readium-css.js.map

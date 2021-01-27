@@ -1655,7 +1655,7 @@ var processXYRaw = function (x, y, reverse, userInteract) {
 var processXYDebouncedImmediate = debounce_1.debounce(function (x, y, reverse, userInteract) {
     processXYRaw(x, y, reverse, userInteract);
 }, 300, true);
-exports.computeProgressionData = function () {
+var computeProgressionData = function () {
     var e_5, _a;
     var isPaged = readium_css_inject_1.isPaginated(win.document);
     var isTwoPage = readium_css_1.isTwoPageSpread();
@@ -1813,11 +1813,12 @@ exports.computeProgressionData = function () {
         percentRatio: progressionRatio,
     };
 };
+exports.computeProgressionData = computeProgressionData;
 var _blacklistIdClassForCssSelectors = [styles_1.LINK_TARGET_CLASS, styles_1.CSS_CLASS_NO_FOCUS_OUTLINE, styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, highlight_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA, styles_1.TTS_ID_SPEAKING_DOC_ELEMENT, styles_1.ROOT_CLASS_KEYBOARD_INTERACT, styles_1.ROOT_CLASS_INVISIBLE_MASK, styles_1.ROOT_CLASS_INVISIBLE_MASK_REMOVED, styles_1.CLASS_PAGINATED, styles_1.ROOT_CLASS_NO_FOOTNOTES];
 var _blacklistIdClassForCssSelectorsMathJax = ["mathjax", "ctxt", "mjx"];
 var _blacklistIdClassForCFI = [styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, highlight_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA];
 var _blacklistIdClassForCFIMathJax = ["mathjax", "ctxt", "mjx"];
-exports.computeCFI = function (node) {
+var computeCFI = function (node) {
     if (node.nodeType !== Node.ELEMENT_NODE) {
         return undefined;
     }
@@ -1853,6 +1854,7 @@ exports.computeCFI = function (node) {
     }
     return "/" + cfi;
 };
+exports.computeCFI = computeCFI;
 var _getCssSelectorOptions = {
     className: function (str) {
         var e_6, _a;

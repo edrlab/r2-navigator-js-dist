@@ -53,10 +53,10 @@ export interface IReadiumElectronBrowserWindowState {
     getFirstOrSecondWebView: () => IReadiumElectronWebview | undefined;
     getActiveWebViews: () => IReadiumElectronWebview[];
     enableScreenReaderAccessibilityWebViewHardRefresh: boolean;
+    isScreenReaderMounted: boolean;
 }
 export interface IWithReadiumElectronBrowserWindowState {
     READIUM2: IReadiumElectronBrowserWindowState;
 }
 export declare type TWindow = typeof window;
 export declare type IReadiumElectronBrowserWindow = TWindow & IWithReadiumElectronBrowserWindowState;
-export declare function isScreenReaderMounted(): boolean;

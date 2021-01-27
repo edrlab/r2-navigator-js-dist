@@ -18,7 +18,6 @@ var url_params_1 = require("./common/url-params");
 var epubReadingSystem_1 = require("./epubReadingSystem");
 var media_overlays_1 = require("./media-overlays");
 var readium_css_1 = require("./readium-css");
-var state_1 = require("./webview/state");
 var URI = require("urijs");
 var debug = debug_("r2:navigator#electron/renderer/location");
 var IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
@@ -666,7 +665,7 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
     }
     var webviewNeedsHardRefresh = !isAudio &&
         (win.READIUM2.enableScreenReaderAccessibilityWebViewHardRefresh
-            && state_1.isScreenReaderMounted());
+            && win.READIUM2.isScreenReaderMounted);
     if (!isAudio && !webviewNeedsHardRefresh && !webviewNeedsForcedRefresh &&
         activeWebView && activeWebView.READIUM2.link === pubLink) {
         var goto = useGoto ? hrefToLoadHttpUri.search(true)[url_params_1.URL_PARAM_GOTO] : undefined;
@@ -982,9 +981,9 @@ function isLocatorVisible(locator) {
                     try {
                         for (var activeWebViews_2 = tslib_1.__values(activeWebViews), activeWebViews_2_1 = activeWebViews_2.next(); !activeWebViews_2_1.done; activeWebViews_2_1 = activeWebViews_2.next()) {
                             var activeWebView = activeWebViews_2_1.value;
-                            var state_2 = _loop_1(activeWebView);
-                            if (typeof state_2 === "object")
-                                return state_2.value;
+                            var state_1 = _loop_1(activeWebView);
+                            if (typeof state_1 === "object")
+                                return state_1.value;
                         }
                     }
                     catch (e_3_1) { e_3 = { error: e_3_1 }; }

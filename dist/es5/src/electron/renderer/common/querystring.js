@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getURLQueryParams = void 0;
-exports.getURLQueryParams = function (search) {
+var getURLQueryParams = function (search) {
     var params = {};
     var query = search || window.location.search;
     if (query && query.length) {
@@ -16,4 +16,5 @@ exports.getURLQueryParams = function (search) {
     }
     return params;
 };
+exports.getURLQueryParams = getURLQueryParams;
 //# sourceMappingURL=querystring.js.map

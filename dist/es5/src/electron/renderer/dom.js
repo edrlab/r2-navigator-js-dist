@@ -5,6 +5,7 @@ var tslib_1 = require("tslib");
 var IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 var debug_ = require("debug");
 var electron_1 = require("electron");
+var context_menu_1 = require("../common/context-menu");
 var events_1 = require("../common/events");
 var readium_css_settings_1 = require("../common/readium-css-settings");
 var sessions_1 = require("../common/sessions");
@@ -24,6 +25,10 @@ var captionsOverlayParaCssStyles = "\n    margin: 0;\n    margin-top: auto;\n   
 var readiumCssStyle = "\n@font-face {\nfont-family: AccessibleDfA;\nfont-style: normal;\nfont-weight: normal;\nsrc: local(\"AccessibleDfA\"),\nurl(\"{RCSS_BASE_URL}fonts/AccessibleDfA.otf\") format(\"opentype\");\n}\n\n@font-face {\nfont-family: \"IA Writer Duospace\";\nfont-style: normal;\nfont-weight: normal;\nsrc: local(\"iAWriterDuospace-Regular\"),\nurl(\"{RCSS_BASE_URL}fonts/iAWriterDuospace-Regular.ttf\") format(\"truetype\");\n}\n";
 var debug = debug_("r2:navigator#electron/renderer/index");
 var win = window;
+electron_1.ipcRenderer.on("accessibility-support-changed", function (_e, accessibilitySupportEnabled) {
+    debug("accessibility-support-changed event received in WebView ", accessibilitySupportEnabled);
+    win.READIUM2.isScreenReaderMounted = accessibilitySupportEnabled;
+});
 function readiumCssApplyToWebview(loc, activeWebView, rcss) {
     var _this = this;
     var _a;
@@ -116,43 +121,7 @@ function createWebViewInternal(preloadScriptPath) {
     wv.addEventListener("dom-ready", function () {
         wv.clearHistory();
         if (IS_DEV) {
-            var wc_1 = electron_1.remote.webContents.fromId(wv.getWebContentsId());
-            wc_1.on("context-menu", function (_ev, params) {
-                var x = params.x, y = params.y;
-                var openDevToolsAndInspect = function () {
-                    var devToolsOpened = function () {
-                        wc_1.off("devtools-opened", devToolsOpened);
-                        wc_1.inspectElement(x, y);
-                        setTimeout(function () {
-                            if (wc_1.devToolsWebContents && wc_1.isDevToolsOpened()) {
-                                wc_1.devToolsWebContents.focus();
-                            }
-                        }, 500);
-                    };
-                    wc_1.on("devtools-opened", devToolsOpened);
-                    wc_1.openDevTools({ activate: true, mode: "detach" });
-                };
-                electron_1.remote.Menu.buildFromTemplate([{
-                        click: function () {
-                            var wasOpened = wc_1.isDevToolsOpened();
-                            if (!wasOpened) {
-                                openDevToolsAndInspect();
-                            }
-                            else {
-                                if (!wc_1.isDevToolsFocused()) {
-                                    wc_1.closeDevTools();
-                                    setImmediate(function () {
-                                        openDevToolsAndInspect();
-                                    });
-                                }
-                                else {
-                                    wc_1.inspectElement(x, y);
-                                }
-                            }
-                        },
-                        label: "Inspect element",
-                    }]).popup({ window: electron_1.remote.getCurrentWindow() });
-            });
+            electron_1.ipcRenderer.send(context_menu_1.CONTEXT_MENU_SETUP, wv.getWebContentsId());
         }
         if (win.READIUM2) {
             readaloud_1.ttsPlaybackRate(win.READIUM2.ttsPlaybackRate);
@@ -336,6 +305,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
             }
             return _webview2;
         },
+        isScreenReaderMounted: false,
         preloadScriptPath: preloadScriptPath,
         publication: publication,
         publicationURL: publicationURL,
@@ -344,6 +314,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
         ttsOverlayEnabled: false,
         ttsPlaybackRate: 1,
     };
+    electron_1.ipcRenderer.send("accessibility-support-changed");
     if (IS_DEV) {
         debug("||||||++||||| installNavigatorDOM: ", JSON.stringify(location));
         var debugVisualz = (window.localStorage &&

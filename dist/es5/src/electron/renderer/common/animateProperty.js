@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.animateProperty = void 0;
-exports.animateProperty = function (cAF, callback, property, duration, object, destVal, rAF, transition) {
+var animateProperty = function (cAF, callback, property, duration, object, destVal, rAF, transition) {
     var state = {
         animating: false,
         deltaVal: destVal - object[property],
@@ -47,4 +47,5 @@ exports.animateProperty = function (cAF, callback, property, duration, object, d
     state.id = rAF(animate);
     return state;
 };
+exports.animateProperty = animateProperty;
 //# sourceMappingURL=animateProperty.js.map

@@ -5,6 +5,7 @@ const tslib_1 = require("tslib");
 const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 const debug_ = require("debug");
 const electron_1 = require("electron");
+const context_menu_1 = require("../common/context-menu");
 const events_1 = require("../common/events");
 const readium_css_settings_1 = require("../common/readium-css-settings");
 const sessions_1 = require("../common/sessions");
@@ -64,6 +65,10 @@ url("{RCSS_BASE_URL}fonts/iAWriterDuospace-Regular.ttf") format("truetype");
 `;
 const debug = debug_("r2:navigator#electron/renderer/index");
 const win = window;
+electron_1.ipcRenderer.on("accessibility-support-changed", (_e, accessibilitySupportEnabled) => {
+    debug("accessibility-support-changed event received in WebView ", accessibilitySupportEnabled);
+    win.READIUM2.isScreenReaderMounted = accessibilitySupportEnabled;
+});
 function readiumCssApplyToWebview(loc, activeWebView, rcss) {
     var _a;
     const actualReadiumCss = readium_css_1.obtainReadiumCss(rcss);
@@ -122,43 +127,7 @@ function createWebViewInternal(preloadScriptPath) {
     wv.addEventListener("dom-ready", () => {
         wv.clearHistory();
         if (IS_DEV) {
-            const wc = electron_1.remote.webContents.fromId(wv.getWebContentsId());
-            wc.on("context-menu", (_ev, params) => {
-                const { x, y } = params;
-                const openDevToolsAndInspect = () => {
-                    const devToolsOpened = () => {
-                        wc.off("devtools-opened", devToolsOpened);
-                        wc.inspectElement(x, y);
-                        setTimeout(() => {
-                            if (wc.devToolsWebContents && wc.isDevToolsOpened()) {
-                                wc.devToolsWebContents.focus();
-                            }
-                        }, 500);
-                    };
-                    wc.on("devtools-opened", devToolsOpened);
-                    wc.openDevTools({ activate: true, mode: "detach" });
-                };
-                electron_1.remote.Menu.buildFromTemplate([{
-                        click: () => {
-                            const wasOpened = wc.isDevToolsOpened();
-                            if (!wasOpened) {
-                                openDevToolsAndInspect();
-                            }
-                            else {
-                                if (!wc.isDevToolsFocused()) {
-                                    wc.closeDevTools();
-                                    setImmediate(() => {
-                                        openDevToolsAndInspect();
-                                    });
-                                }
-                                else {
-                                    wc.inspectElement(x, y);
-                                }
-                            }
-                        },
-                        label: "Inspect element",
-                    }]).popup({ window: electron_1.remote.getCurrentWindow() });
-            });
+            electron_1.ipcRenderer.send(context_menu_1.CONTEXT_MENU_SETUP, wv.getWebContentsId());
         }
         if (win.READIUM2) {
             readaloud_1.ttsPlaybackRate(win.READIUM2.ttsPlaybackRate);
@@ -341,6 +310,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
             }
             return _webview2;
         },
+        isScreenReaderMounted: false,
         preloadScriptPath,
         publication,
         publicationURL,
@@ -349,6 +319,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
         ttsOverlayEnabled: false,
         ttsPlaybackRate: 1,
     };
+    electron_1.ipcRenderer.send("accessibility-support-changed");
     if (IS_DEV) {
         debug("||||||++||||| installNavigatorDOM: ", JSON.stringify(location));
         const debugVisualz = (window.localStorage &&

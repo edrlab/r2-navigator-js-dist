@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.registerProtocol = void 0;
 const electron_1 = require("electron");
 const sessions_1 = require("../../common/sessions");
-exports.registerProtocol = () => {
+const registerProtocol = () => {
     if (electron_1.webFrame.registerURLSchemeAsPrivileged) {
         electron_1.webFrame.registerURLSchemeAsPrivileged(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL, {
             allowServiceWorkers: false,
@@ -27,4 +27,5 @@ exports.registerProtocol = () => {
             }]);
     }
 };
+exports.registerProtocol = registerProtocol;
 //# sourceMappingURL=protocol.js.map

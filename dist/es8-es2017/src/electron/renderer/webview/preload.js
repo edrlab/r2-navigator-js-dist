@@ -1601,7 +1601,7 @@ const processXYRaw = (x, y, reverse, userInteract) => {
 const processXYDebouncedImmediate = debounce_1.debounce((x, y, reverse, userInteract) => {
     processXYRaw(x, y, reverse, userInteract);
 }, 300, true);
-exports.computeProgressionData = () => {
+const computeProgressionData = () => {
     const isPaged = readium_css_inject_1.isPaginated(win.document);
     const isTwoPage = readium_css_1.isTwoPageSpread();
     const { maxScrollShift, maxScrollShiftAdjusted } = readium_css_1.calculateMaxScrollShift();
@@ -1748,11 +1748,12 @@ exports.computeProgressionData = () => {
         percentRatio: progressionRatio,
     };
 };
+exports.computeProgressionData = computeProgressionData;
 const _blacklistIdClassForCssSelectors = [styles_1.LINK_TARGET_CLASS, styles_1.CSS_CLASS_NO_FOCUS_OUTLINE, styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, highlight_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA, styles_1.TTS_ID_SPEAKING_DOC_ELEMENT, styles_1.ROOT_CLASS_KEYBOARD_INTERACT, styles_1.ROOT_CLASS_INVISIBLE_MASK, styles_1.ROOT_CLASS_INVISIBLE_MASK_REMOVED, styles_1.CLASS_PAGINATED, styles_1.ROOT_CLASS_NO_FOOTNOTES];
 const _blacklistIdClassForCssSelectorsMathJax = ["mathjax", "ctxt", "mjx"];
 const _blacklistIdClassForCFI = [styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, highlight_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA];
 const _blacklistIdClassForCFIMathJax = ["mathjax", "ctxt", "mjx"];
-exports.computeCFI = (node) => {
+const computeCFI = (node) => {
     if (node.nodeType !== Node.ELEMENT_NODE) {
         return undefined;
     }
@@ -1788,6 +1789,7 @@ exports.computeCFI = (node) => {
     }
     return "/" + cfi;
 };
+exports.computeCFI = computeCFI;
 const _getCssSelectorOptions = {
     className: (str) => {
         if (_blacklistIdClassForCssSelectors.indexOf(str) >= 0) {
