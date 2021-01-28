@@ -21,6 +21,7 @@ const registerProtocol = () => {
                     corsEnabled: true,
                     secure: true,
                     standard: true,
+                    stream: true,
                     supportFetchAPI: true,
                 },
                 scheme: sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL,

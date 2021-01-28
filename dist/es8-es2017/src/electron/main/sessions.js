@@ -128,7 +128,7 @@ const streamProtocolHandler = async (req, callback) => {
     }
     const failure = (err) => {
         debug(err);
-        callback();
+        callback({});
     };
     const success = (response) => {
         const headers = {};
@@ -448,6 +448,7 @@ function initSessions() {
                     corsEnabled: true,
                     secure: true,
                     standard: true,
+                    stream: true,
                     supportFetchAPI: true,
                 },
                 scheme: sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL,
@@ -463,51 +464,19 @@ function initSessions() {
         }
         if (electron_1.session.defaultSession) {
             if (USE_STREAM_PROTOCOL_INSTEAD_OF_HTTP) {
-                electron_1.session.defaultSession.protocol.registerStreamProtocol(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL, streamProtocolHandler, (error) => {
-                    if (error) {
-                        debug("registerStreamProtocol ERROR (default session)");
-                        debug(error);
-                    }
-                    else {
-                        debug("registerStreamProtocol OKAY (default session)");
-                    }
-                });
+                electron_1.session.defaultSession.protocol.registerStreamProtocol(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL, streamProtocolHandler);
             }
             else {
-                electron_1.session.defaultSession.protocol.registerHttpProtocol(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL, httpProtocolHandler, (error) => {
-                    if (error) {
-                        debug("registerHttpProtocol ERROR (default session)");
-                        debug(error);
-                    }
-                    else {
-                        debug("registerHttpProtocol OKAY (default session)");
-                    }
-                });
+                electron_1.session.defaultSession.protocol.registerHttpProtocol(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL, httpProtocolHandler);
             }
         }
         const webViewSession = getWebViewSession();
         if (webViewSession) {
             if (USE_STREAM_PROTOCOL_INSTEAD_OF_HTTP) {
-                webViewSession.protocol.registerStreamProtocol(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL, streamProtocolHandler, (error) => {
-                    if (error) {
-                        debug("registerStreamProtocol ERROR (webview session)");
-                        debug(error);
-                    }
-                    else {
-                        debug("registerStreamProtocol OKAY (webview session)");
-                    }
-                });
+                webViewSession.protocol.registerStreamProtocol(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL, streamProtocolHandler);
             }
             else {
-                webViewSession.protocol.registerHttpProtocol(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL, httpProtocolHandler, (error) => {
-                    if (error) {
-                        debug("registerHttpProtocol ERROR (webview session)");
-                        debug(error);
-                    }
-                    else {
-                        debug("registerHttpProtocol OKAY (webview session)");
-                    }
-                });
+                webViewSession.protocol.registerHttpProtocol(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL, httpProtocolHandler);
             }
             webViewSession.setPermissionRequestHandler((wc, permission, callback) => {
                 debug("setPermissionRequestHandler");
