@@ -16,7 +16,7 @@ function throttle(fn, time) {
             args[_i] = arguments[_i];
         }
         if (!called) {
-            fn.apply(void 0, tslib_1.__spread(args));
+            fn.apply(void 0, tslib_1.__spreadArray([], tslib_1.__read(args)));
             called = true;
             setTimeout(function () {
                 called = false;

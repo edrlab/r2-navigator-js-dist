@@ -63,6 +63,7 @@ win.READIUM2 = {
     ttsClickEnabled: false,
     ttsOverlayEnabled: false,
     ttsPlaybackRate: 1,
+    ttsVoice: null,
     urlQueryParams: win.location.search ? querystring_1.getURLQueryParams(win.location.search) : undefined,
     webViewSlot: styles_1.WebViewSlotEnum.center,
 };
@@ -1397,10 +1398,10 @@ function loaded(forced) {
         if (element && win.READIUM2.ttsClickEnabled) {
             if (element) {
                 if (ev.altKey) {
-                    readaloud_1.ttsPlay(win.READIUM2.ttsPlaybackRate, focusScrollRaw, element, undefined, undefined, -1, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+                    readaloud_1.ttsPlay(win.READIUM2.ttsPlaybackRate, win.READIUM2.ttsVoice, focusScrollRaw, element, undefined, undefined, -1, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
                     return;
                 }
-                readaloud_1.ttsPlay(win.READIUM2.ttsPlaybackRate, focusScrollRaw, element.ownerDocument.body, element, textNode, textNodeOffset, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+                readaloud_1.ttsPlay(win.READIUM2.ttsPlaybackRate, win.READIUM2.ttsVoice, focusScrollRaw, element.ownerDocument.body, element, textNode, textNodeOffset, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
             }
         }
     }
@@ -2084,7 +2085,7 @@ if (!win.READIUM2.isAudio) {
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_PLAY, function (_event, payload) {
         var rootElement = win.document.querySelector(payload.rootElement);
         var startElement = payload.startElement ? win.document.querySelector(payload.startElement) : null;
-        readaloud_1.ttsPlay(payload.speed, focusScrollRaw, rootElement ? rootElement : undefined, startElement ? startElement : undefined, undefined, -1, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+        readaloud_1.ttsPlay(payload.speed, payload.voice, focusScrollRaw, rootElement ? rootElement : undefined, startElement ? startElement : undefined, undefined, -1, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_STOP, function (_event) {
         readaloud_1.ttsStop();
@@ -2103,6 +2104,9 @@ if (!win.READIUM2.isAudio) {
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_PLAYBACK_RATE, function (_event, payload) {
         readaloud_1.ttsPlaybackRate(payload.speed);
+    });
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_VOICE, function (_event, payload) {
+        readaloud_1.ttsVoice(payload.voice);
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_CLICK_ENABLE, function (_event, payload) {
         win.READIUM2.ttsClickEnabled = payload.doEnable;

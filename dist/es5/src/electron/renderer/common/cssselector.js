@@ -122,7 +122,7 @@ var _cssPathStep = function (node, optimized, isTargetNode) {
     var elementIndex = -1;
     var siblings = parent.children;
     var _loop_1 = function (i) {
-        var e_2, _a;
+        var e_2, _b;
         var sibling = siblings[i];
         if (sibling.nodeType !== Node.ELEMENT_NODE) {
             return "continue";
@@ -173,7 +173,7 @@ var _cssPathStep = function (node, optimized, isTargetNode) {
         catch (e_2_1) { e_2 = { error: e_2_1 }; }
         finally {
             try {
-                if (siblingClassNamesArray_1_1 && !siblingClassNamesArray_1_1.done && (_a = siblingClassNamesArray_1.return)) _a.call(siblingClassNamesArray_1);
+                if (siblingClassNamesArray_1_1 && !siblingClassNamesArray_1_1.done && (_b = siblingClassNamesArray_1.return)) _b.call(siblingClassNamesArray_1);
             }
             finally { if (e_2) throw e_2.error; }
         }

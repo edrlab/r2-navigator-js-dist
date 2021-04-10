@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ttsPlaybackRate = exports.ttsClickEnable = exports.ttsOverlayEnable = exports.ttsNext = exports.ttsPrevious = exports.ttsResume = exports.ttsStop = exports.ttsPause = exports.ttsPlay = exports.ttsListen = exports.TTSStateEnum = exports.ttsHandleIpcMessage = exports.playTtsOnReadingLocation = exports.checkTtsState = void 0;
+exports.ttsPlaybackRate = exports.ttsVoice = exports.ttsClickEnable = exports.ttsOverlayEnable = exports.ttsNext = exports.ttsPrevious = exports.ttsResume = exports.ttsStop = exports.ttsPause = exports.ttsPlay = exports.ttsListen = exports.TTSStateEnum = exports.ttsHandleIpcMessage = exports.playTtsOnReadingLocation = exports.checkTtsState = void 0;
 const debounce_1 = require("debounce");
 const events_1 = require("../common/events");
 const location_1 = require("./location");
@@ -68,7 +68,7 @@ function playTtsOnReadingLocation(href) {
                 done = true;
                 activeWebView.removeEventListener("ipc-message", cb);
                 if (((_a = activeWebView.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href) === href) {
-                    ttsPlay(win.READIUM2.ttsPlaybackRate);
+                    ttsPlay(win.READIUM2.ttsPlaybackRate, win.READIUM2.ttsVoice);
                 }
             }
         };
@@ -87,7 +87,7 @@ function playTtsOnReadingLocation(href) {
                 return ((_a = webview.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href) === href;
             });
             if (activeWebView_) {
-                ttsPlay(win.READIUM2.ttsPlaybackRate);
+                ttsPlay(win.READIUM2.ttsPlaybackRate, win.READIUM2.ttsVoice);
             }
         }, 1000);
         activeWebView.addEventListener("ipc-message", cb);
@@ -137,10 +137,11 @@ function ttsListen(ttsListener) {
     _ttsListener = ttsListener;
 }
 exports.ttsListen = ttsListen;
-function ttsPlay(speed) {
+function ttsPlay(speed, voice) {
     var _a;
     if (win.READIUM2) {
         win.READIUM2.ttsPlaybackRate = speed;
+        win.READIUM2.ttsVoice = voice;
     }
     let startElementCSSSelector;
     const loc = location_1.getCurrentReadingLocation();
@@ -164,6 +165,7 @@ function ttsPlay(speed) {
         rootElement: "html > body",
         speed,
         startElement: startElementCSSSelector,
+        voice,
     };
     setTimeout(async () => {
         if (activeWebView) {
@@ -268,6 +270,21 @@ function ttsClickEnable(doEnable) {
     }
 }
 exports.ttsClickEnable = ttsClickEnable;
+function ttsVoice(voice) {
+    if (win.READIUM2) {
+        win.READIUM2.ttsVoice = voice;
+    }
+    const activeWebViews = win.READIUM2.getActiveWebViews();
+    for (const activeWebView of activeWebViews) {
+        const payload = {
+            voice,
+        };
+        setTimeout(async () => {
+            await activeWebView.send(events_1.R2_EVENT_TTS_VOICE, payload);
+        }, 0);
+    }
+}
+exports.ttsVoice = ttsVoice;
 function ttsPlaybackRate(speed) {
     if (win.READIUM2) {
         win.READIUM2.ttsPlaybackRate = speed;

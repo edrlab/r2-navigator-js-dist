@@ -102,11 +102,16 @@ export declare const R2_EVENT_TTS_PLAYBACK_RATE = "R2_EVENT_TTS_PLAYBACK_RATE";
 export interface IEventPayload_R2_EVENT_TTS_PLAYBACK_RATE {
     speed: number;
 }
+export declare const R2_EVENT_TTS_VOICE = "R2_EVENT_TTS_VOICE";
+export interface IEventPayload_R2_EVENT_TTS_VOICE {
+    voice: SpeechSynthesisVoice | null;
+}
 export declare const R2_EVENT_TTS_DO_PLAY = "R2_EVENT_TTS_DO_PLAY";
 export interface IEventPayload_R2_EVENT_TTS_DO_PLAY {
     rootElement: string;
     startElement: string | undefined;
     speed: number;
+    voice: SpeechSynthesisVoice | null;
 }
 export declare const R2_EVENT_TTS_DO_PAUSE = "R2_EVENT_TTS_DO_PAUSE";
 export declare const R2_EVENT_TTS_DO_RESUME = "R2_EVENT_TTS_DO_RESUME";

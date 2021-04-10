@@ -1,6 +1,7 @@
-export declare function ttsPlay(speed: number, focusScrollRaw: (el: HTMLOrSVGElement, doFocus: boolean, animate: boolean, domRect: DOMRect | undefined) => void, rootElem: Element | undefined, startElem: Element | undefined, startTextNode: Node | undefined, startTextNodeOffset: number, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable: () => number, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable: (val: number) => void): void;
+export declare function ttsPlay(speed: number, voice: SpeechSynthesisVoice | null, focusScrollRaw: (el: HTMLOrSVGElement, doFocus: boolean, animate: boolean, domRect: DOMRect | undefined) => void, rootElem: Element | undefined, startElem: Element | undefined, startTextNode: Node | undefined, startTextNodeOffset: number, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable: () => number, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable: (val: number) => void): void;
 export declare function ttsStop(): void;
 export declare function ttsPause(): void;
+export declare function ttsVoice(voice: SpeechSynthesisVoice | null): void;
 export declare function ttsPlaybackRate(speed: number): void;
 export declare function ttsResume(): void;
 export declare function isTtsPlaying(): boolean;

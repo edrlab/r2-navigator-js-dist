@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ttsPlayQueueIndex = exports.ttsPreviewAndEventuallyPlayQueueIndex = exports.ttsPrevious = exports.ttsNext = exports.ttsQueueCurrentText = exports.ttsQueueCurrentIndex = exports.ttsQueueSize = exports.ttsPauseOrResume = exports.isTtsActive = exports.isTtsPlaying = exports.ttsResume = exports.ttsPlaybackRate = exports.ttsPause = exports.ttsStop = exports.ttsPlay = void 0;
+exports.ttsPlayQueueIndex = exports.ttsPreviewAndEventuallyPlayQueueIndex = exports.ttsPrevious = exports.ttsNext = exports.ttsQueueCurrentText = exports.ttsQueueCurrentIndex = exports.ttsQueueSize = exports.ttsPauseOrResume = exports.isTtsActive = exports.isTtsPlaying = exports.ttsResume = exports.ttsPlaybackRate = exports.ttsVoice = exports.ttsPause = exports.ttsStop = exports.ttsPlay = void 0;
 const debounce_1 = require("debounce");
 const electron_1 = require("electron");
 const events_1 = require("../../common/events");
@@ -40,7 +40,7 @@ function resetState() {
     win.document.documentElement.classList.remove(styles_1.TTS_CLASS_IS_ACTIVE);
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_TTS_IS_STOPPED);
 }
-function ttsPlay(speed, focusScrollRaw, rootElem, startElem, startTextNode, startTextNodeOffset, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
+function ttsPlay(speed, voice, focusScrollRaw, rootElem, startElem, startTextNode, startTextNodeOffset, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
     ttsStop();
     let rootEl = rootElem;
     if (!rootEl) {
@@ -61,7 +61,7 @@ function ttsPlay(speed, focusScrollRaw, rootElem, startElem, startTextNode, star
         ttsQueueIndex = 0;
     }
     setTimeout(() => {
-        startTTSSession(speed, rootEl, ttsQueue, ttsQueueIndex, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+        startTTSSession(speed, voice, rootEl, ttsQueue, ttsQueueIndex, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
     }, 100);
 }
 exports.ttsPlay = ttsPlay;
@@ -100,6 +100,18 @@ function ttsPause() {
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_TTS_IS_PAUSED);
 }
 exports.ttsPause = ttsPause;
+function ttsVoice(voice) {
+    win.READIUM2.ttsVoice = voice;
+    if (_dialogState) {
+        const resumableState = _resumableState;
+        ttsStop();
+        setTimeout(() => {
+            _resumableState = resumableState;
+            ttsResume();
+        }, 60);
+    }
+}
+exports.ttsVoice = ttsVoice;
 function ttsPlaybackRate(speed) {
     win.READIUM2.ttsPlaybackRate = speed;
     if (_dialogState) {
@@ -133,7 +145,7 @@ function ttsResume() {
     else if (_resumableState) {
         setTimeout(() => {
             if (_resumableState) {
-                startTTSSession(win.READIUM2.ttsPlaybackRate, _resumableState.ttsRootElement, _resumableState.ttsQueue, _resumableState.ttsQueueIndex, _resumableState.focusScrollRaw, _resumableState.ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, _resumableState.ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+                startTTSSession(win.READIUM2.ttsPlaybackRate, win.READIUM2.ttsVoice, _resumableState.ttsRootElement, _resumableState.ttsQueue, _resumableState.ttsQueueIndex, _resumableState.focusScrollRaw, _resumableState.ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, _resumableState.ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
             }
         }, 100);
     }
@@ -702,6 +714,9 @@ function ttsPlayQueueIndex(ttsQueueIndex) {
     if (win.READIUM2.ttsPlaybackRate >= 0.1 && win.READIUM2.ttsPlaybackRate <= 10) {
         utterance.rate = win.READIUM2.ttsPlaybackRate;
     }
+    utterance.voice = speechSynthesis.getVoices().find((voice) => {
+        return win.READIUM2.ttsVoice && (voice.name === win.READIUM2.ttsVoice.name && voice.lang === win.READIUM2.ttsVoice.lang && voice.voiceURI === win.READIUM2.ttsVoice.voiceURI && voice.default === win.READIUM2.ttsVoice.default && voice.localService === win.READIUM2.ttsVoice.localService);
+    }) || null;
     utterance.onboundary = (ev) => {
         if (utterance.r2_cancel) {
             return;
@@ -748,8 +763,9 @@ function ttsPlayQueueIndex(ttsQueueIndex) {
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_TTS_IS_PLAYING);
 }
 exports.ttsPlayQueueIndex = ttsPlayQueueIndex;
-function startTTSSession(speed, ttsRootElement, ttsQueue, ttsQueueIndexStart, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
+function startTTSSession(speed, voice, ttsRootElement, ttsQueue, ttsQueueIndexStart, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
     win.READIUM2.ttsPlaybackRate = speed;
+    win.READIUM2.ttsVoice = voice;
     const ttsQueueItemStart = dom_text_utils_1.getTtsQueueItemRef(ttsQueue, ttsQueueIndexStart);
     if (!ttsQueueItemStart) {
         ttsStop();

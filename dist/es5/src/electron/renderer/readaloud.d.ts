@@ -8,7 +8,7 @@ export declare enum TTSStateEnum {
     STOPPED = "STOPPED"
 }
 export declare function ttsListen(ttsListener: (ttsState: TTSStateEnum) => void): void;
-export declare function ttsPlay(speed: number): void;
+export declare function ttsPlay(speed: number, voice: SpeechSynthesisVoice | null): void;
 export declare function ttsPause(): void;
 export declare function ttsStop(): void;
 export declare function ttsResume(): void;
@@ -16,4 +16,5 @@ export declare function ttsPrevious(): void;
 export declare function ttsNext(): void;
 export declare function ttsOverlayEnable(doEnable: boolean): void;
 export declare function ttsClickEnable(doEnable: boolean): void;
+export declare function ttsVoice(voice: SpeechSynthesisVoice | null): void;
 export declare function ttsPlaybackRate(speed: number): void;

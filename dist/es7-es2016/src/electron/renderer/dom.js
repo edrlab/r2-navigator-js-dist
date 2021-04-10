@@ -130,6 +130,7 @@ function createWebViewInternal(preloadScriptPath) {
             electron_1.ipcRenderer.send(context_menu_1.CONTEXT_MENU_SETUP, wv.getWebContentsId());
         }
         if (win.READIUM2) {
+            readaloud_1.ttsVoice(win.READIUM2.ttsVoice);
             readaloud_1.ttsPlaybackRate(win.READIUM2.ttsPlaybackRate);
             readaloud_1.ttsClickEnable(win.READIUM2.ttsClickEnabled);
             readaloud_1.ttsOverlayEnable(win.READIUM2.ttsOverlayEnabled);
@@ -318,6 +319,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
         ttsClickEnabled: false,
         ttsOverlayEnabled: false,
         ttsPlaybackRate: 1,
+        ttsVoice: null,
     };
     electron_1.ipcRenderer.send("accessibility-support-changed");
     if (IS_DEV) {

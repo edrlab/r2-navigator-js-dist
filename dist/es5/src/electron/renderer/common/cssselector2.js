@@ -62,7 +62,7 @@ function bottomUpSearch(input, limit, fallback) {
     var i = 0;
     var _loop_1 = function () {
         var e_1, _a;
-        var level = maybe(id(current)) || maybe.apply(void 0, tslib_1.__spread(classNames(current))) ||
+        var level = maybe(id(current)) || maybe.apply(void 0, tslib_1.__spreadArray([], tslib_1.__read(classNames(current)))) ||
             maybe(tagName(current)) || [any()];
         var nth = index(current);
         if (limit === Limit.All) {
@@ -300,7 +300,7 @@ function optimize(path, input) {
                 _a.label = 1;
             case 1:
                 if (!(i < path.length - 1)) return [3, 5];
-                newPath = tslib_1.__spread(path);
+                newPath = tslib_1.__spreadArray([], tslib_1.__read(path));
                 newPath.splice(i, 1);
                 if (!(unique(newPath) && same(newPath, input))) return [3, 4];
                 return [4, newPath];

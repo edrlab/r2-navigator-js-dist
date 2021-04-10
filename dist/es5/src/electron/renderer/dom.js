@@ -124,6 +124,7 @@ function createWebViewInternal(preloadScriptPath) {
             electron_1.ipcRenderer.send(context_menu_1.CONTEXT_MENU_SETUP, wv.getWebContentsId());
         }
         if (win.READIUM2) {
+            readaloud_1.ttsVoice(win.READIUM2.ttsVoice);
             readaloud_1.ttsPlaybackRate(win.READIUM2.ttsPlaybackRate);
             readaloud_1.ttsClickEnable(win.READIUM2.ttsClickEnabled);
             readaloud_1.ttsOverlayEnable(win.READIUM2.ttsOverlayEnabled);
@@ -313,6 +314,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
         ttsClickEnabled: false,
         ttsOverlayEnabled: false,
         ttsPlaybackRate: 1,
+        ttsVoice: null,
     };
     electron_1.ipcRenderer.send("accessibility-support-changed");
     if (IS_DEV) {
@@ -338,8 +340,8 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
                         activeWebViews = win.READIUM2.getActiveWebViews();
                         _loop_1 = function (activeWebView) {
                             var payload;
-                            return tslib_1.__generator(this, function (_a) {
-                                switch (_a.label) {
+                            return tslib_1.__generator(this, function (_d) {
+                                switch (_d.label) {
                                     case 0:
                                         payload = { debugVisuals: debugVisuals };
                                         setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
@@ -361,8 +363,8 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
                                                 }, 100);
                                             })];
                                     case 1:
-                                        _a.sent();
-                                        _a.label = 2;
+                                        _d.sent();
+                                        _d.label = 2;
                                     case 2: return [2];
                                 }
                             });
