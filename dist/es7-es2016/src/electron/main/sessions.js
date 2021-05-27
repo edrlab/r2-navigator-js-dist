@@ -428,6 +428,7 @@ const transformerHttpBase = (publication, link, url, htmlStr, sessionInfo) => {
 <base href="${urlStr}" />
 `;
     let newStr = htmlStr.substr(0, iHead) + baseStr + htmlStr.substr(iHead);
+    newStr = newStr.replace(/<(audio|video)/g, "<$1 data-r2-crossorigin=\"true\" crossorigin=\"anonymous\" ");
     newStr = transformerHttpBaseIframes(publication, link, url, newStr, sessionInfo);
     return newStr;
 };

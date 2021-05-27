@@ -443,6 +443,7 @@ var transformerHttpBase = function (publication, link, url, htmlStr, sessionInfo
     var urlStr = url_.toString();
     var baseStr = "\n<base href=\"" + urlStr + "\" />\n";
     var newStr = htmlStr.substr(0, iHead) + baseStr + htmlStr.substr(iHead);
+    newStr = newStr.replace(/<(audio|video)/g, "<$1 data-r2-crossorigin=\"true\" crossorigin=\"anonymous\" ");
     newStr = transformerHttpBaseIframes(publication, link, url, newStr, sessionInfo);
     return newStr;
 };
