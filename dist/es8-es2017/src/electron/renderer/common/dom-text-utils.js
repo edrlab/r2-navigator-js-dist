@@ -211,6 +211,7 @@ function generateTtsQueue(rootElement, splitSentences) {
     }
     let first = true;
     function processElement(element) {
+        var _a, _b;
         if (element.nodeType !== Node.ELEMENT_NODE) {
             return;
         }
@@ -223,7 +224,7 @@ function generateTtsQueue(rootElement, splitSentences) {
             switch (childNode.nodeType) {
                 case Node.ELEMENT_NODE:
                     const childElement = childNode;
-                    const isExcluded = childElement.matches("img, sup, sub, audio, video, source, button, canvas, del, dialog, embed, form, head, iframe, meter, noscript, object, s, script, select, style, textarea");
+                    const isExcluded = childElement.matches("svg, img, sup, sub, audio, video, source, button, canvas, del, dialog, embed, form, head, iframe, meter, noscript, object, s, script, select, style, textarea");
                     if (!isExcluded) {
                         processElement(childElement);
                     }
@@ -246,6 +247,50 @@ function generateTtsQueue(rootElement, splitSentences) {
                                     parentElement: childElement,
                                     textNodes: [],
                                 });
+                            }
+                        }
+                    }
+                    else if (childElement.tagName
+                        && childElement.tagName.toLowerCase() === "svg") {
+                        const altAttr = childElement.getAttribute("aria-label");
+                        if (altAttr) {
+                            const txt = altAttr.trim();
+                            if (txt) {
+                                const lang = getLanguage(childElement);
+                                const dir = undefined;
+                                ttsQueue.push({
+                                    combinedText: txt,
+                                    combinedTextSentences: undefined,
+                                    combinedTextSentencesRangeBegin: undefined,
+                                    combinedTextSentencesRangeEnd: undefined,
+                                    dir,
+                                    lang,
+                                    parentElement: childElement,
+                                    textNodes: [],
+                                });
+                            }
+                        }
+                        else {
+                            const svgChildren = Array.from(childElement.children);
+                            for (const svgChild of svgChildren) {
+                                if (((_a = svgChild.tagName) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === "title") {
+                                    const txt = (_b = svgChild.textContent) === null || _b === void 0 ? void 0 : _b.trim();
+                                    if (txt) {
+                                        const lang = getLanguage(svgChild);
+                                        const dir = getDirection(svgChild);
+                                        ttsQueue.push({
+                                            combinedText: txt,
+                                            combinedTextSentences: undefined,
+                                            combinedTextSentencesRangeBegin: undefined,
+                                            combinedTextSentencesRangeEnd: undefined,
+                                            dir,
+                                            lang,
+                                            parentElement: childElement,
+                                            textNodes: [],
+                                        });
+                                    }
+                                    break;
+                                }
                             }
                         }
                     }

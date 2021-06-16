@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ttsPlaybackRate = exports.ttsVoice = exports.ttsClickEnable = exports.ttsOverlayEnable = exports.ttsNext = exports.ttsPrevious = exports.ttsResume = exports.ttsStop = exports.ttsPause = exports.ttsPlay = exports.ttsListen = exports.TTSStateEnum = exports.ttsHandleIpcMessage = exports.playTtsOnReadingLocation = exports.checkTtsState = void 0;
+exports.ttsSentenceDetectionEnable = exports.ttsPlaybackRate = exports.ttsVoice = exports.ttsClickEnable = exports.ttsOverlayEnable = exports.ttsNext = exports.ttsPrevious = exports.ttsResume = exports.ttsStop = exports.ttsPause = exports.ttsPlay = exports.ttsListen = exports.TTSStateEnum = exports.ttsHandleIpcMessage = exports.playTtsOnReadingLocation = exports.checkTtsState = void 0;
 var tslib_1 = require("tslib");
 var debounce_1 = require("debounce");
 var events_1 = require("../common/events");
@@ -288,18 +288,24 @@ function ttsResume() {
     }
 }
 exports.ttsResume = ttsResume;
-function ttsPrevious() {
+function ttsPrevious(skipSentences) {
     var e_4, _a;
     var _this = this;
+    if (skipSentences === void 0) { skipSentences = false; }
     var activeWebViews = win.READIUM2.getActiveWebViews();
     var _loop_4 = function (activeWebView) {
         if (_lastTTSWebView && _lastTTSWebView !== activeWebView) {
             return "continue";
         }
         setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+            var payload;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4, activeWebView.send(events_1.R2_EVENT_TTS_DO_PREVIOUS)];
+                    case 0:
+                        payload = {
+                            skipSentences: skipSentences,
+                        };
+                        return [4, activeWebView.send(events_1.R2_EVENT_TTS_DO_PREVIOUS, payload)];
                     case 1:
                         _a.sent();
                         return [2];
@@ -322,18 +328,24 @@ function ttsPrevious() {
     }
 }
 exports.ttsPrevious = ttsPrevious;
-function ttsNext() {
+function ttsNext(skipSentences) {
     var e_5, _a;
     var _this = this;
+    if (skipSentences === void 0) { skipSentences = false; }
     var activeWebViews = win.READIUM2.getActiveWebViews();
     var _loop_5 = function (activeWebView) {
         if (_lastTTSWebView && _lastTTSWebView !== activeWebView) {
             return "continue";
         }
         setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+            var payload;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4, activeWebView.send(events_1.R2_EVENT_TTS_DO_NEXT)];
+                    case 0:
+                        payload = {
+                            skipSentences: skipSentences,
+                        };
+                        return [4, activeWebView.send(events_1.R2_EVENT_TTS_DO_NEXT, payload)];
                     case 1:
                         _a.sent();
                         return [2];
@@ -518,4 +530,48 @@ function ttsPlaybackRate(speed) {
     }
 }
 exports.ttsPlaybackRate = ttsPlaybackRate;
+function ttsSentenceDetectionEnable(doEnable) {
+    var e_10, _a;
+    var _this = this;
+    if (win.READIUM2) {
+        win.READIUM2.ttsSentenceDetectionEnabled = doEnable;
+    }
+    var activeWebViews = win.READIUM2.getActiveWebViews();
+    var _loop_10 = function (activeWebView) {
+        setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+            var payload;
+            var _this = this;
+            return tslib_1.__generator(this, function (_a) {
+                payload = {
+                    doEnable: doEnable,
+                };
+                setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                    return tslib_1.__generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0: return [4, activeWebView.send(events_1.R2_EVENT_TTS_SENTENCE_DETECT_ENABLE, payload)];
+                            case 1:
+                                _a.sent();
+                                return [2];
+                        }
+                    });
+                }); }, 0);
+                return [2];
+            });
+        }); }, 0);
+    };
+    try {
+        for (var activeWebViews_10 = tslib_1.__values(activeWebViews), activeWebViews_10_1 = activeWebViews_10.next(); !activeWebViews_10_1.done; activeWebViews_10_1 = activeWebViews_10.next()) {
+            var activeWebView = activeWebViews_10_1.value;
+            _loop_10(activeWebView);
+        }
+    }
+    catch (e_10_1) { e_10 = { error: e_10_1 }; }
+    finally {
+        try {
+            if (activeWebViews_10_1 && !activeWebViews_10_1.done && (_a = activeWebViews_10.return)) _a.call(activeWebViews_10);
+        }
+        finally { if (e_10) throw e_10.error; }
+    }
+}
+exports.ttsSentenceDetectionEnable = ttsSentenceDetectionEnable;
 //# sourceMappingURL=readaloud.js.map

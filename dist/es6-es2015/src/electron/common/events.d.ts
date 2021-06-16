@@ -106,6 +106,10 @@ export declare const R2_EVENT_TTS_VOICE = "R2_EVENT_TTS_VOICE";
 export interface IEventPayload_R2_EVENT_TTS_VOICE {
     voice: SpeechSynthesisVoice | null;
 }
+export declare const R2_EVENT_TTS_SENTENCE_DETECT_ENABLE = "R2_EVENT_TTS_SENTENCE_DETECT_ENABLE";
+export interface IEventPayload_R2_EVENT_TTS_SENTENCE_DETECT_ENABLE {
+    doEnable: boolean;
+}
 export declare const R2_EVENT_TTS_DO_PLAY = "R2_EVENT_TTS_DO_PLAY";
 export interface IEventPayload_R2_EVENT_TTS_DO_PLAY {
     rootElement: string;
@@ -122,6 +126,9 @@ export declare const R2_EVENT_TTS_IS_PLAYING = "R2_EVENT_TTS_IS_PLAYING";
 export declare const R2_EVENT_TTS_DOC_END = "R2_EVENT_TTS_DOC_END";
 export declare const R2_EVENT_TTS_DO_NEXT = "R2_EVENT_TTS_DO_NEXT";
 export declare const R2_EVENT_TTS_DO_PREVIOUS = "R2_EVENT_TTS_DO_PREVIOUS";
+export interface IEventPayload_R2_EVENT_TTS_DO_NEXT_OR_PREVIOUS {
+    skipSentences: boolean | undefined;
+}
 export declare const R2_EVENT_CAPTIONS = "R2_EVENT_CAPTIONS";
 export interface IEventPayload_R2_EVENT_CAPTIONS {
     text: string | undefined;

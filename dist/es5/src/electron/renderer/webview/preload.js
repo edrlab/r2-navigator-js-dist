@@ -63,6 +63,7 @@ win.READIUM2 = {
     ttsClickEnabled: false,
     ttsOverlayEnabled: false,
     ttsPlaybackRate: 1,
+    ttsSentenceDetectionEnabled: true,
     ttsVoice: null,
     urlQueryParams: win.location.search ? querystring_1.getURLQueryParams(win.location.search) : undefined,
     webViewSlot: styles_1.WebViewSlotEnum.center,
@@ -1018,6 +1019,7 @@ win.addEventListener("DOMContentLoaded", function () {
     }
     win.READIUM2.locationHashOverride = undefined;
     win.READIUM2.ttsClickEnabled = false;
+    win.READIUM2.ttsSentenceDetectionEnabled = true;
     win.READIUM2.ttsOverlayEnabled = false;
     var readiumcssJson;
     if (win.READIUM2.urlQueryParams) {
@@ -2096,17 +2098,20 @@ if (!win.READIUM2.isAudio) {
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_RESUME, function (_event) {
         readaloud_1.ttsResume();
     });
-    electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_NEXT, function (_event) {
-        readaloud_1.ttsNext();
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_NEXT, function (_event, payload) {
+        readaloud_1.ttsNext(payload === null || payload === void 0 ? void 0 : payload.skipSentences);
     });
-    electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_PREVIOUS, function (_event) {
-        readaloud_1.ttsPrevious();
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_PREVIOUS, function (_event, payload) {
+        readaloud_1.ttsPrevious(payload === null || payload === void 0 ? void 0 : payload.skipSentences);
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_PLAYBACK_RATE, function (_event, payload) {
         readaloud_1.ttsPlaybackRate(payload.speed);
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_VOICE, function (_event, payload) {
         readaloud_1.ttsVoice(payload.voice);
+    });
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_SENTENCE_DETECT_ENABLE, function (_event, payload) {
+        win.READIUM2.ttsSentenceDetectionEnabled = payload.doEnable;
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_CLICK_ENABLE, function (_event, payload) {
         win.READIUM2.ttsClickEnabled = payload.doEnable;

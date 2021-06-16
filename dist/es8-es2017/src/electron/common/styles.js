@@ -241,15 +241,19 @@ exports.ttsCssStyles = `
     font-size: 1.2rem !important;
 }
 :root[style] div#${exports.TTS_ID_CONTAINER} > img,
-:root div#${exports.TTS_ID_CONTAINER} > img {
+:root div#${exports.TTS_ID_CONTAINER} > img,
+:root[style] div#${exports.TTS_ID_CONTAINER} > svg,
+:root div#${exports.TTS_ID_CONTAINER} > svg {
     display: block;
-    border: 3px solid #333333;
+    border: 3px solid transparent;
     max-width: 50%;
     margin-left: auto;
     margin-right: auto;
 }
 :root[style] div#${exports.TTS_ID_CONTAINER} > img + div,
-:root div#${exports.TTS_ID_CONTAINER} > img + div {
+:root div#${exports.TTS_ID_CONTAINER} > img + div,
+:root[style] div#${exports.TTS_ID_CONTAINER} > svg + div,
+:root div#${exports.TTS_ID_CONTAINER} > svg + div {
     text-align: center;
     text-decoration: underline;
 }

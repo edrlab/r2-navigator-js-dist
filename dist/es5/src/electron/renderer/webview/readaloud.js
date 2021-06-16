@@ -47,7 +47,8 @@ function ttsPlay(speed, voice, focusScrollRaw, rootElem, startElem, startTextNod
     if (!rootEl) {
         rootEl = win.document.body;
     }
-    var ttsQueue = dom_text_utils_1.generateTtsQueue(rootEl, true);
+    var splitSentences = win.READIUM2.ttsSentenceDetectionEnabled;
+    var ttsQueue = dom_text_utils_1.generateTtsQueue(rootEl, splitSentences);
     if (!ttsQueue.length) {
         return;
     }
@@ -194,9 +195,17 @@ function ttsQueueCurrentText() {
     return undefined;
 }
 exports.ttsQueueCurrentText = ttsQueueCurrentText;
-function ttsNext() {
+function ttsNext(skipSentences) {
+    if (skipSentences === void 0) { skipSentences = false; }
     if (_dialogState && _dialogState.ttsQueueItem) {
         var j = _dialogState.ttsQueueItem.iGlobal + 1;
+        if (skipSentences &&
+            _dialogState.ttsQueueItem.iSentence !== -1 &&
+            _dialogState.ttsQueueItem.item.combinedTextSentences) {
+            j = _dialogState.ttsQueueItem.iGlobal +
+                (_dialogState.ttsQueueItem.item.combinedTextSentences.length -
+                    _dialogState.ttsQueueItem.iSentence);
+        }
         if (j >= _dialogState.ttsQueueLength || j < 0) {
             return;
         }
@@ -205,9 +214,15 @@ function ttsNext() {
     }
 }
 exports.ttsNext = ttsNext;
-function ttsPrevious() {
+function ttsPrevious(skipSentences) {
+    if (skipSentences === void 0) { skipSentences = false; }
     if (_dialogState && _dialogState.ttsQueueItem) {
         var j = _dialogState.ttsQueueItem.iGlobal - 1;
+        if (skipSentences &&
+            _dialogState.ttsQueueItem.iSentence !== -1 &&
+            _dialogState.ttsQueueItem.item.combinedTextSentences) {
+            j = _dialogState.ttsQueueItem.iGlobal - _dialogState.ttsQueueItem.iSentence - 1;
+        }
         if (j >= _dialogState.ttsQueueLength || j < 0) {
             return;
         }
@@ -659,6 +674,10 @@ function updateTTSInfo(charIndex, charLength, utteranceText) {
                 ttsQItem.item.parentElement.src) {
                 imageMarkup = "<img src=\"" + ttsQItem.item.parentElement.src + "\" />";
             }
+            if (ttsQItem.item.parentElement && ttsQItem.item.parentElement.tagName &&
+                ttsQItem.item.parentElement.tagName.toLowerCase() === "svg") {
+                imageMarkup = ttsQItem.item.parentElement.outerHTML;
+            }
             if (ttsQItem.item.dir) {
                 ttsQItemMarkupAttributes += " dir=\"" + ttsQItem.item.dir + "\" ";
             }
@@ -845,22 +864,24 @@ function startTTSSession(speed, voice, ttsRootElement, ttsQueue, ttsQueueIndexSt
         });
     }
     if (_dialogState.domPrevious) {
-        _dialogState.domPrevious.addEventListener("click", function (_ev) {
+        _dialogState.domPrevious.addEventListener("click", function (ev) {
+            var skipSentences = ev.shiftKey && ev.altKey;
             if (readium_css_1.isRTL()) {
-                ttsNext();
+                ttsNext(skipSentences);
             }
             else {
-                ttsPrevious();
+                ttsPrevious(skipSentences);
             }
         });
     }
     if (_dialogState.domNext) {
-        _dialogState.domNext.addEventListener("click", function (_ev) {
+        _dialogState.domNext.addEventListener("click", function (ev) {
+            var skipSentences = ev.shiftKey && ev.altKey;
             if (!readium_css_1.isRTL()) {
-                ttsNext();
+                ttsNext(skipSentences);
             }
             else {
-                ttsPrevious();
+                ttsPrevious(skipSentences);
             }
         });
     }

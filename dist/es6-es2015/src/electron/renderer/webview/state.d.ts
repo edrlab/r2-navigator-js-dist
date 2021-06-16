@@ -15,6 +15,7 @@ export interface IReadiumElectronWebviewWindowState {
     fxlViewportScale: number;
     webViewSlot: WebViewSlotEnum;
     DEBUG_VISUALS: boolean;
+    ttsSentenceDetectionEnabled: boolean;
     ttsClickEnabled: boolean;
     ttsOverlayEnabled: boolean;
     ttsPlaybackRate: number;
@@ -40,6 +41,7 @@ export interface IReadiumElectronBrowserWindowState {
     domRootElement: HTMLElement;
     domSlidingViewport: HTMLElement;
     DEBUG_VISUALS: boolean;
+    ttsSentenceDetectionEnabled: boolean;
     ttsClickEnabled: boolean;
     ttsOverlayEnabled: boolean;
     ttsPlaybackRate: number;

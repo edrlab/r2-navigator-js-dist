@@ -127,6 +127,7 @@ function createWebViewInternal(preloadScriptPath) {
             readaloud_1.ttsVoice(win.READIUM2.ttsVoice);
             readaloud_1.ttsPlaybackRate(win.READIUM2.ttsPlaybackRate);
             readaloud_1.ttsClickEnable(win.READIUM2.ttsClickEnabled);
+            readaloud_1.ttsSentenceDetectionEnable(win.READIUM2.ttsSentenceDetectionEnabled);
             readaloud_1.ttsOverlayEnable(win.READIUM2.ttsOverlayEnabled);
         }
         readaloud_1.checkTtsState(wv);
@@ -314,6 +315,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
         ttsClickEnabled: false,
         ttsOverlayEnabled: false,
         ttsPlaybackRate: 1,
+        ttsSentenceDetectionEnabled: true,
         ttsVoice: null,
     };
     electron_1.ipcRenderer.send("accessibility-support-changed");
