@@ -4,6 +4,7 @@ export declare enum WebViewSlotEnum {
     right = "right"
 }
 export declare const CLASS_PAGINATED = "r2-css-paginated";
+export declare const HIDE_CURSOR_CLASS = "r2-hideCursor";
 export declare const ZERO_TRANSFORM_CLASS = "r2-zeroTransform";
 export declare const SKIP_LINK_ID = "r2-skip-link";
 export declare const LINK_TARGET_CLASS = "r2-link-target";

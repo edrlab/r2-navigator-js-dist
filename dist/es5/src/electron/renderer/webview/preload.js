@@ -1285,6 +1285,17 @@ function loaded(forced) {
             }, 700);
         }, 1000);
     }
+    var _mouseMoveTimeout;
+    win.document.documentElement.addEventListener("mousemove", function (_ev) {
+        if (_mouseMoveTimeout) {
+            win.clearTimeout(_mouseMoveTimeout);
+            _mouseMoveTimeout = undefined;
+        }
+        win.document.documentElement.classList.remove(styles_1.HIDE_CURSOR_CLASS);
+        _mouseMoveTimeout = win.setTimeout(function () {
+            win.document.documentElement.classList.add(styles_1.HIDE_CURSOR_CLASS);
+        }, 1000);
+    });
     win.document.addEventListener("click", function (ev) {
         var currentElement = ev.target;
         var href;
