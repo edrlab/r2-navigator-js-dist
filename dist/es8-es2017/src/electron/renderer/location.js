@@ -411,12 +411,18 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
     if (!webviewSpreadSwap) {
         if (webview1 && webview1.READIUM2.link && readium_css_1.isFixedLayout(webview1.READIUM2.link)) {
             setTimeout(async () => {
-                await webview1.send("R2_EVENT_HIDE", true);
+                const webview1_ = win.READIUM2.getFirstWebView();
+                if (webview1_ && webview1_.READIUM2.link && readium_css_1.isFixedLayout(webview1_.READIUM2.link)) {
+                    await webview1_.send("R2_EVENT_HIDE", true);
+                }
             }, 0);
         }
         if (webview2 && webview2.READIUM2.link && readium_css_1.isFixedLayout(webview2.READIUM2.link)) {
             setTimeout(async () => {
-                await webview2.send("R2_EVENT_HIDE", true);
+                const webview2_ = win.READIUM2.getSecondWebView(false);
+                if (webview2_ && webview2_.READIUM2.link && readium_css_1.isFixedLayout(webview2_.READIUM2.link)) {
+                    await webview2_.send("R2_EVENT_HIDE", true);
+                }
             }, 0);
         }
     }

@@ -443,24 +443,34 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
     if (!webviewSpreadSwap) {
         if (webview1 && webview1.READIUM2.link && readium_css_1.isFixedLayout(webview1.READIUM2.link)) {
             setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                var webview1_;
                 return tslib_1.__generator(this, function (_a) {
                     switch (_a.label) {
-                        case 0: return [4, webview1.send("R2_EVENT_HIDE", true)];
+                        case 0:
+                            webview1_ = win.READIUM2.getFirstWebView();
+                            if (!(webview1_ && webview1_.READIUM2.link && readium_css_1.isFixedLayout(webview1_.READIUM2.link))) return [3, 2];
+                            return [4, webview1_.send("R2_EVENT_HIDE", true)];
                         case 1:
                             _a.sent();
-                            return [2];
+                            _a.label = 2;
+                        case 2: return [2];
                     }
                 });
             }); }, 0);
         }
         if (webview2 && webview2.READIUM2.link && readium_css_1.isFixedLayout(webview2.READIUM2.link)) {
             setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                var webview2_;
                 return tslib_1.__generator(this, function (_a) {
                     switch (_a.label) {
-                        case 0: return [4, webview2.send("R2_EVENT_HIDE", true)];
+                        case 0:
+                            webview2_ = win.READIUM2.getSecondWebView(false);
+                            if (!(webview2_ && webview2_.READIUM2.link && readium_css_1.isFixedLayout(webview2_.READIUM2.link))) return [3, 2];
+                            return [4, webview2_.send("R2_EVENT_HIDE", true)];
                         case 1:
                             _a.sent();
-                            return [2];
+                            _a.label = 2;
+                        case 2: return [2];
                     }
                 });
             }); }, 0);

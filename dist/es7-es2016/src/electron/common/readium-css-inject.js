@@ -100,7 +100,7 @@ function readiumCSSSet(documant, messageJson, isVerticalWritingMode, isRTL) {
     }
     const docElement = documant.documentElement;
     if (messageJson.isFixedLayout) {
-        docElement.style.overflow = "hidden";
+        docElement.classList.add(styles_1.ROOT_CLASS_FIXED_LAYOUT);
         return;
     }
     const setCSS = messageJson.setCSS;
@@ -470,7 +470,7 @@ function configureFixedLayout(documant, isFixedLayout, fxlViewportWidth, fxlView
     }
     if (innerWidth && innerHeight && width && height && isFixedLayout
         && documant && documant.documentElement && documant.body) {
-        documant.documentElement.style.overflow = "hidden";
+        documant.documentElement.classList.add(styles_1.ROOT_CLASS_FIXED_LAYOUT);
         documant.body.style.width = width + "px";
         documant.body.style.height = height + "px";
         documant.body.style.overflow = "hidden";
