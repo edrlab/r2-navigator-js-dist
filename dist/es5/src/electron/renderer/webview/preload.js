@@ -91,6 +91,7 @@ win.prompt = function () {
     console.log.apply(win, args);
     return "";
 };
+var CSS_PIXEL_TOLERANCE = 5;
 function keyDownUpEventHandler(ev, keyDown) {
     var elementName = (ev.target && ev.target.nodeName) ?
         ev.target.nodeName : "";
@@ -491,7 +492,6 @@ function onEventPageTurn(payload) {
         win.cancelAnimationFrame(_lastAnimState.id);
         _lastAnimState.object[_lastAnimState.property] = _lastAnimState.destVal;
     }
-    var CSS_PIXEL_TOLERANCE = 5;
     if (!goPREVIOUS) {
         var maxScrollShift = readium_css_1.calculateMaxScrollShift().maxScrollShift;
         var maxScrollShiftTolerated = maxScrollShift - CSS_PIXEL_TOLERANCE;
@@ -1361,6 +1361,131 @@ function loaded(forced) {
             return;
         }
         onResizeDebounced();
+    });
+    var _wheelTimeStamp = -1;
+    var _wheelSpin = 0;
+    var wheelDebounced = function (ev) {
+        var now = (new Date()).getTime();
+        if (_wheelTimeStamp === -1) {
+            _wheelTimeStamp = now;
+        }
+        else {
+            var msDiff = now - _wheelTimeStamp;
+            if (msDiff < 500) {
+                return;
+            }
+        }
+        if (win.READIUM2.isAudio || win.READIUM2.isFixedLayout || !win.document.body) {
+            return;
+        }
+        if (!win.document || !win.document.documentElement) {
+            return;
+        }
+        var documant = win.document;
+        var isPaged = readium_css_inject_1.isPaginated(documant);
+        if (isPaged) {
+            return;
+        }
+        var delta = Math.abs(ev.deltaY);
+        _wheelSpin += delta;
+        if (_wheelSpin < 300) {
+            return;
+        }
+        _wheelSpin = 0;
+        _wheelTimeStamp = -1;
+        var scrollElement = readium_css_1.getScrollingElement(documant);
+        var goPREVIOUS = ev.deltaY < 0;
+        if (!goPREVIOUS) {
+            var maxScrollShift = readium_css_1.calculateMaxScrollShift().maxScrollShift;
+            var maxScrollShiftTolerated = maxScrollShift - CSS_PIXEL_TOLERANCE;
+            if (isPaged) {
+                var unit = readium_css_1.isVerticalWritingMode() ?
+                    win.document.documentElement.offsetHeight :
+                    win.document.documentElement.offsetWidth;
+                var scrollElementOffset = Math.round(readium_css_1.isVerticalWritingMode() ?
+                    scrollElement.scrollTop :
+                    scrollElement.scrollLeft);
+                var isNegative = scrollElementOffset < 0;
+                var scrollElementOffsetAbs = Math.abs(scrollElementOffset);
+                var fractional = scrollElementOffsetAbs / unit;
+                var integral = Math.floor(fractional);
+                var decimal = fractional - integral;
+                var partial = decimal * unit;
+                if (partial <= CSS_PIXEL_TOLERANCE) {
+                    scrollElementOffset = (isNegative ? -1 : 1) * integral * unit;
+                }
+                else if (partial >= (unit - CSS_PIXEL_TOLERANCE)) {
+                    scrollElementOffset = (isNegative ? -1 : 1) * (integral + 1) * unit;
+                }
+                if (readium_css_1.isVerticalWritingMode() && (scrollElementOffsetAbs >= maxScrollShiftTolerated) ||
+                    !readium_css_1.isVerticalWritingMode() && (scrollElementOffsetAbs >= maxScrollShiftTolerated)) {
+                    var payload = {
+                        direction: "LTR",
+                        go: "NEXT",
+                    };
+                    electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, payload);
+                    return;
+                }
+            }
+            else {
+                if (readium_css_1.isVerticalWritingMode() && (Math.abs(scrollElement.scrollLeft) >= maxScrollShiftTolerated) ||
+                    !readium_css_1.isVerticalWritingMode() && (Math.abs(scrollElement.scrollTop) >= maxScrollShiftTolerated)) {
+                    var payload = {
+                        direction: "LTR",
+                        go: "NEXT",
+                    };
+                    electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, payload);
+                    return;
+                }
+            }
+        }
+        else if (goPREVIOUS) {
+            if (isPaged) {
+                var unit = readium_css_1.isVerticalWritingMode() ?
+                    win.document.documentElement.offsetHeight :
+                    win.document.documentElement.offsetWidth;
+                var scrollElementOffset = Math.round(readium_css_1.isVerticalWritingMode() ?
+                    scrollElement.scrollTop :
+                    scrollElement.scrollLeft);
+                var isNegative = scrollElementOffset < 0;
+                var scrollElementOffsetAbs = Math.abs(scrollElementOffset);
+                var fractional = scrollElementOffsetAbs / unit;
+                var integral = Math.floor(fractional);
+                var decimal = fractional - integral;
+                var partial = decimal * unit;
+                if (partial <= CSS_PIXEL_TOLERANCE) {
+                    scrollElementOffset = (isNegative ? -1 : 1) * integral * unit;
+                }
+                else if (partial >= (unit - CSS_PIXEL_TOLERANCE)) {
+                    scrollElementOffset = (isNegative ? -1 : 1) * (integral + 1) * unit;
+                }
+                if (readium_css_1.isVerticalWritingMode() && (scrollElementOffsetAbs <= 0) ||
+                    !readium_css_1.isVerticalWritingMode() && (scrollElementOffsetAbs <= 0)) {
+                    var payload = {
+                        direction: "LTR",
+                        go: "PREVIOUS",
+                    };
+                    electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, payload);
+                    return;
+                }
+            }
+            else {
+                if (readium_css_1.isVerticalWritingMode() && (Math.abs(scrollElement.scrollLeft) <= 0) ||
+                    !readium_css_1.isVerticalWritingMode() && (Math.abs(scrollElement.scrollTop) <= 0)) {
+                    var payload = {
+                        direction: "LTR",
+                        go: "PREVIOUS",
+                    };
+                    electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, payload);
+                    return;
+                }
+            }
+        }
+    };
+    win.document.addEventListener("wheel", wheelDebounced);
+    win.document.addEventListener("scroll", function (_ev) {
+        _wheelSpin = 0;
+        _wheelTimeStamp = -1;
     });
     setTimeout(function () {
         win.addEventListener("scroll", function (_ev) {
