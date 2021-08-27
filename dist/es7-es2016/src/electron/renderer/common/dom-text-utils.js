@@ -58,7 +58,7 @@ function consoleLogTtsQueueItem(i) {
     console.log("<<----");
     console.log(i.dir);
     console.log(i.lang);
-    const cssSelector = cssselector2_1.uniqueCssSelector(i.parentElement, i.parentElement.ownerDocument);
+    const cssSelector = (0, cssselector2_1.uniqueCssSelector)(i.parentElement, i.parentElement.ownerDocument);
     console.log(cssSelector);
     console.log(i.parentElement.tagName);
     console.log(i.combinedText);
@@ -335,7 +335,7 @@ function generateTtsQueue(rootElement, splitSentences) {
             try {
                 const txt = ttsQueueItem.combinedText;
                 ttsQueueItem.combinedTextSentences = undefined;
-                const sentences = sentence_splitter_1.split(txt);
+                const sentences = (0, sentence_splitter_1.split)(txt);
                 ttsQueueItem.combinedTextSentences = [];
                 ttsQueueItem.combinedTextSentencesRangeBegin = [];
                 ttsQueueItem.combinedTextSentencesRangeEnd = [];

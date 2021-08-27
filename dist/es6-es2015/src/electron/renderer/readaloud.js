@@ -30,7 +30,7 @@ function checkTtsState(wv) {
     checkTtsStateDebounced(wasStopped, wv);
 }
 exports.checkTtsState = checkTtsState;
-const checkTtsStateDebounced = debounce_1.debounce(checkTtsStateRaw, 400);
+const checkTtsStateDebounced = (0, debounce_1.debounce)(checkTtsStateRaw, 400);
 function checkTtsStateRaw(wasStopped, wv) {
     var _a;
     if (wasStopped || win.READIUM2.ttsClickEnabled) {
@@ -119,7 +119,7 @@ function ttsHandleIpcMessage(eventChannel, _eventArgs, eventCurrentTarget) {
         }
     }
     else if (eventChannel === events_1.R2_EVENT_TTS_DOC_END) {
-        location_1.navLeftOrRight(readium_css_1.isRTL(), true, true);
+        (0, location_1.navLeftOrRight)((0, readium_css_1.isRTL)(), true, true);
     }
     else {
         return false;
@@ -145,7 +145,7 @@ function ttsPlay(speed, voice) {
         win.READIUM2.ttsVoice = voice;
     }
     let startElementCSSSelector;
-    const loc = location_1.getCurrentReadingLocation();
+    const loc = (0, location_1.getCurrentReadingLocation)();
     let activeWebView = win.READIUM2.getActiveWebViews().find((webview) => {
         var _a;
         return loc && loc.locator.href && loc.locator.href === ((_a = webview.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href);
@@ -168,7 +168,7 @@ function ttsPlay(speed, voice) {
         startElement: startElementCSSSelector,
         voice,
     };
-    setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+    setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
         if (activeWebView) {
             yield activeWebView.send(events_1.R2_EVENT_TTS_DO_PLAY, payload);
         }
@@ -181,7 +181,7 @@ function ttsPause() {
         if (_lastTTSWebView && _lastTTSWebView !== activeWebView) {
             continue;
         }
-        setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+        setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
             yield activeWebView.send(events_1.R2_EVENT_TTS_DO_PAUSE);
         }), 0);
     }
@@ -195,7 +195,7 @@ function ttsStop() {
         }
         _lastTTSWebView = undefined;
         _lastTTSWebViewHref = undefined;
-        setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+        setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
             yield activeWebView.send(events_1.R2_EVENT_TTS_DO_STOP);
         }), 0);
     }
@@ -207,7 +207,7 @@ function ttsResume() {
         if (_lastTTSWebView && _lastTTSWebView !== activeWebView) {
             continue;
         }
-        setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+        setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
             yield activeWebView.send(events_1.R2_EVENT_TTS_DO_RESUME);
         }), 0);
     }
@@ -219,7 +219,7 @@ function ttsPrevious(skipSentences = false) {
         if (_lastTTSWebView && _lastTTSWebView !== activeWebView) {
             continue;
         }
-        setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+        setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
             const payload = {
                 skipSentences,
             };
@@ -234,7 +234,7 @@ function ttsNext(skipSentences = false) {
         if (_lastTTSWebView && _lastTTSWebView !== activeWebView) {
             continue;
         }
-        setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+        setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
             const payload = {
                 skipSentences,
             };
@@ -249,11 +249,11 @@ function ttsOverlayEnable(doEnable) {
     }
     const activeWebViews = win.READIUM2.getActiveWebViews();
     for (const activeWebView of activeWebViews) {
-        setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+        setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
             const payload = {
                 doEnable,
             };
-            setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+            setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
                 yield activeWebView.send(events_1.R2_EVENT_TTS_OVERLAY_ENABLE, payload);
             }), 0);
         }), 0);
@@ -266,11 +266,11 @@ function ttsClickEnable(doEnable) {
     }
     const activeWebViews = win.READIUM2.getActiveWebViews();
     for (const activeWebView of activeWebViews) {
-        setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+        setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
             const payload = {
                 doEnable,
             };
-            setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+            setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
                 yield activeWebView.send(events_1.R2_EVENT_TTS_CLICK_ENABLE, payload);
             }), 0);
         }), 0);
@@ -286,7 +286,7 @@ function ttsVoice(voice) {
         const payload = {
             voice,
         };
-        setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+        setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
             yield activeWebView.send(events_1.R2_EVENT_TTS_VOICE, payload);
         }), 0);
     }
@@ -301,7 +301,7 @@ function ttsPlaybackRate(speed) {
         const payload = {
             speed,
         };
-        setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+        setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
             yield activeWebView.send(events_1.R2_EVENT_TTS_PLAYBACK_RATE, payload);
         }), 0);
     }
@@ -313,11 +313,11 @@ function ttsSentenceDetectionEnable(doEnable) {
     }
     const activeWebViews = win.READIUM2.getActiveWebViews();
     for (const activeWebView of activeWebViews) {
-        setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+        setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
             const payload = {
                 doEnable,
             };
-            setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+            setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
                 yield activeWebView.send(events_1.R2_EVENT_TTS_SENTENCE_DETECT_ENABLE, payload);
             }), 0);
         }), 0);

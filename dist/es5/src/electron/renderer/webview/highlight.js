@@ -102,7 +102,7 @@ function setHighlightAreaStyle(win, highlightAreas, highlight) {
     var opacity = ALT_BACKGROUND_COLOR_OPACITY;
     var useSVG = !win.READIUM2.DEBUG_VISUALS && USE_SVG;
     try {
-        for (var highlightAreas_1 = tslib_1.__values(highlightAreas), highlightAreas_1_1 = highlightAreas_1.next(); !highlightAreas_1_1.done; highlightAreas_1_1 = highlightAreas_1.next()) {
+        for (var highlightAreas_1 = (0, tslib_1.__values)(highlightAreas), highlightAreas_1_1 = highlightAreas_1.next(); !highlightAreas_1_1.done; highlightAreas_1_1 = highlightAreas_1.next()) {
             var highlightArea_ = highlightAreas_1_1.value;
             var highlightArea = highlightArea_;
             if (highlightArea.active) {
@@ -152,10 +152,10 @@ function processMouseEvent(win, ev) {
         }
     }
     var documant = win.document;
-    var scrollElement = readium_css_1.getScrollingElement(documant);
+    var scrollElement = (0, readium_css_1.getScrollingElement)(documant);
     var x = ev.clientX;
     var y = ev.clientY;
-    var paginated = readium_css_inject_1.isPaginated(documant);
+    var paginated = (0, readium_css_inject_1.isPaginated)(documant);
     var bodyRect = getBoundingClientRectOfDocumentBody(win);
     var xOffset = paginated ? (-scrollElement.scrollLeft) : bodyRect.left;
     var yOffset = paginated ? (-scrollElement.scrollTop) : bodyRect.top;
@@ -359,7 +359,7 @@ function recreateAllHighlightsRaw(win) {
     var bodyRect = getBoundingClientRectOfDocumentBody(win);
     var docFrag = documant.createDocumentFragment();
     try {
-        for (var _highlights_1 = tslib_1.__values(_highlights), _highlights_1_1 = _highlights_1.next(); !_highlights_1_1.done; _highlights_1_1 = _highlights_1.next()) {
+        for (var _highlights_1 = (0, tslib_1.__values)(_highlights), _highlights_1_1 = _highlights_1.next(); !_highlights_1_1.done; _highlights_1_1 = _highlights_1.next()) {
             var highlight = _highlights_1_1.value;
             var div = createHighlightDom(win, highlight, bodyRect);
             if (div) {
@@ -378,12 +378,12 @@ function recreateAllHighlightsRaw(win) {
     highlightsContainer.append(docFrag);
 }
 exports.recreateAllHighlightsRaw = recreateAllHighlightsRaw;
-exports.recreateAllHighlightsDebounced = debounce_1.debounce(function (win) {
+exports.recreateAllHighlightsDebounced = (0, debounce_1.debounce)(function (win) {
     recreateAllHighlightsRaw(win);
 }, 500);
 function recreateAllHighlights(win) {
     hideAllhighlights(win.document);
-    exports.recreateAllHighlightsDebounced(win);
+    (0, exports.recreateAllHighlightsDebounced)(win);
 }
 exports.recreateAllHighlights = recreateAllHighlights;
 function createHighlights(win, highDefs, pointerInteraction) {
@@ -393,13 +393,13 @@ function createHighlights(win, highDefs, pointerInteraction) {
     var bodyRect = getBoundingClientRectOfDocumentBody(win);
     var docFrag = documant.createDocumentFragment();
     try {
-        for (var highDefs_1 = tslib_1.__values(highDefs), highDefs_1_1 = highDefs_1.next(); !highDefs_1_1.done; highDefs_1_1 = highDefs_1.next()) {
+        for (var highDefs_1 = (0, tslib_1.__values)(highDefs), highDefs_1_1 = highDefs_1.next(); !highDefs_1_1.done; highDefs_1_1 = highDefs_1.next()) {
             var highDef = highDefs_1_1.value;
             if (!highDef.selectionInfo) {
                 highlights.push(null);
                 continue;
             }
-            var _b = tslib_1.__read(createHighlight(win, highDef.selectionInfo, highDef.color, pointerInteraction, highDef.drawType, highDef.expand, bodyRect), 2), high = _b[0], div = _b[1];
+            var _b = (0, tslib_1.__read)(createHighlight(win, highDef.selectionInfo, highDef.color, pointerInteraction, highDef.drawType, highDef.expand, bodyRect), 2), high = _b[0], div = _b[1];
             highlights.push(high);
             if (div) {
                 docFrag.append(div);
@@ -449,13 +449,13 @@ exports.createHighlight = createHighlight;
 function createHighlightDom(win, highlight, bodyRect) {
     var e_4, _a;
     var documant = win.document;
-    var scrollElement = readium_css_1.getScrollingElement(documant);
-    var range = selection_1.convertRangeInfo(documant, highlight.selectionInfo.rangeInfo);
+    var scrollElement = (0, readium_css_1.getScrollingElement)(documant);
+    var range = (0, selection_1.convertRangeInfo)(documant, highlight.selectionInfo.rangeInfo);
     if (!range) {
         return null;
     }
     var opacity = DEFAULT_BACKGROUND_COLOR_OPACITY;
-    var paginated = readium_css_inject_1.isPaginated(documant);
+    var paginated = (0, readium_css_inject_1.isPaginated)(documant);
     var highlightParent = documant.createElement("div");
     highlightParent.setAttribute("id", highlight.id);
     highlightParent.setAttribute("class", exports.CLASS_HIGHLIGHT_CONTAINER);
@@ -477,7 +477,7 @@ function createHighlightDom(win, highlight, bodyRect) {
     var doNotMergeHorizontallyAlignedRects = drawUnderline || drawStrikeThrough;
     var ex = highlight.expand ? highlight.expand : 0;
     var rangeClientRects = range.getClientRects();
-    var clientRects = rect_utils_1.getClientRectsNoOverlap_(rangeClientRects, doNotMergeHorizontallyAlignedRects, ex);
+    var clientRects = (0, rect_utils_1.getClientRectsNoOverlap_)(rangeClientRects, doNotMergeHorizontallyAlignedRects, ex);
     var highlightAreaSVGDocFrag;
     var roundedCorner = 3;
     var underlineThickness = 3;
@@ -508,7 +508,7 @@ function createHighlightDom(win, highlight, bodyRect) {
     highlightBounding.style.top = highlightBounding.rect.top * scale + "px";
     highlightParent.append(highlightBounding);
     try {
-        for (var clientRects_1 = tslib_1.__values(clientRects), clientRects_1_1 = clientRects_1.next(); !clientRects_1_1.done; clientRects_1_1 = clientRects_1.next()) {
+        for (var clientRects_1 = (0, tslib_1.__values)(clientRects), clientRects_1_1 = clientRects_1.next(); !clientRects_1_1.done; clientRects_1_1 = clientRects_1.next()) {
             var clientRect = clientRects_1_1.value;
             if (useSVG) {
                 var borderThickness = 0;

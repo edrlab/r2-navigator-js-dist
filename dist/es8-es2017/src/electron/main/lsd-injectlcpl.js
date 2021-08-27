@@ -16,7 +16,7 @@ async function lsdLcpUpdateInject(lcplStr, publication, publicationPath) {
     const zipEntryPath = isAudio ? "license.lcpl" : "META-INF/license.lcpl";
     let lcpl;
     try {
-        lcpl = serializable_1.TaJsonDeserialize(lcplJson, lcp_1.LCP);
+        lcpl = (0, serializable_1.TaJsonDeserialize)(lcplJson, lcp_1.LCP);
     }
     catch (erorz) {
         return Promise.reject(erorz);
@@ -27,7 +27,7 @@ async function lsdLcpUpdateInject(lcplStr, publication, publicationPath) {
     publication.LCP = lcpl;
     return new Promise(async (resolve, reject) => {
         const newPublicationPath = publicationPath + ".new";
-        zipInjector_1.injectBufferInZip(publicationPath, newPublicationPath, Buffer.from(lcplStr, "utf8"), zipEntryPath, (err) => {
+        (0, zipInjector_1.injectBufferInZip)(publicationPath, newPublicationPath, Buffer.from(lcplStr, "utf8"), zipEntryPath, (err) => {
             reject(err);
         }, () => {
             debug("EPUB license.lcpl injected.");

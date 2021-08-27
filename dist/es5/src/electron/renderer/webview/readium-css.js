@@ -16,9 +16,9 @@ var calculateDocumentColumnizedWidthAdjustedForTwoPageSpread = function () {
     if (!win || !win.document || !win.document.body || !win.document.documentElement) {
         return 0;
     }
-    var scrollElement = exports.getScrollingElement(win.document);
+    var scrollElement = (0, exports.getScrollingElement)(win.document);
     var w = scrollElement.scrollWidth;
-    var noChange = !readium_css_inject_1.isPaginated(win.document) || !exports.isTwoPageSpread() ||
+    var noChange = !(0, readium_css_inject_1.isPaginated)(win.document) || !(0, exports.isTwoPageSpread)() ||
         isVerticalWritingMode();
     if (!noChange) {
         var columnizedDocWidth = w;
@@ -36,8 +36,8 @@ var calculateMaxScrollShift = function () {
     if (!win || !win.document || !win.document.body || !win.document.documentElement) {
         return { maxScrollShift: 0, maxScrollShiftAdjusted: 0 };
     }
-    var isPaged = readium_css_inject_1.isPaginated(win.document);
-    var scrollElement = exports.getScrollingElement(win.document);
+    var isPaged = (0, readium_css_inject_1.isPaginated)(win.document);
+    var scrollElement = (0, exports.getScrollingElement)(win.document);
     var maxScrollShift = isPaged ?
         ((isVerticalWritingMode() ?
             (scrollElement.scrollHeight - win.document.documentElement.offsetHeight) :
@@ -68,10 +68,10 @@ var isTwoPageSpread = function () {
 };
 exports.isTwoPageSpread = isTwoPageSpread;
 var calculateTotalColumns = function () {
-    if (!win || !win.document || !win.document.body || !readium_css_inject_1.isPaginated(win.document)) {
+    if (!win || !win.document || !win.document.body || !(0, readium_css_inject_1.isPaginated)(win.document)) {
         return 0;
     }
-    var scrollElement = exports.getScrollingElement(win.document);
+    var scrollElement = (0, exports.getScrollingElement)(win.document);
     var totalColumns = 0;
     if (isVerticalWritingMode()) {
         totalColumns = Math.ceil(win.document.body.offsetWidth / scrollElement.scrollWidth);
@@ -83,10 +83,10 @@ var calculateTotalColumns = function () {
 };
 exports.calculateTotalColumns = calculateTotalColumns;
 function calculateColumnDimension() {
-    if (!win.document || !win.document.documentElement || !win.document.body || !readium_css_inject_1.isPaginated(win.document)) {
+    if (!win.document || !win.document.documentElement || !win.document.body || !(0, readium_css_inject_1.isPaginated)(win.document)) {
         return 0;
     }
-    var isTwoPage = exports.isTwoPageSpread();
+    var isTwoPage = (0, exports.isTwoPageSpread)();
     var columnDimension = 0;
     if (isVerticalWritingMode()) {
         columnDimension = win.document.documentElement.offsetHeight;
@@ -111,8 +111,8 @@ function computeVerticalRTL() {
     if (!win.document || !win.document.documentElement) {
         return;
     }
-    var rtl = readium_css_inject_1.isDocRTL(win.document);
-    var vertical = readium_css_inject_1.isDocVertical(win.document);
+    var rtl = (0, readium_css_inject_1.isDocRTL)(win.document);
+    var vertical = (0, readium_css_inject_1.isDocVertical)(win.document);
     var htmlStyle = win.getComputedStyle(win.document.documentElement);
     if (htmlStyle) {
         var prop = htmlStyle.getPropertyValue("writing-mode");
@@ -215,7 +215,7 @@ var readiumCSS = function (documant, messageJson) {
     if (IS_DEV) {
         console.log("_____ readiumCssJson.urlRoot (readiumCSS()): ", messageJson.urlRoot);
     }
-    readium_css_inject_1.readiumCSSSet(documant, messageJson, _isVerticalWritingMode, _isRTL);
+    (0, readium_css_inject_1.readiumCSSSet)(documant, messageJson, _isVerticalWritingMode, _isRTL);
     if ((messageJson && messageJson.setCSS && !messageJson.setCSS.noFootnotes)) {
         checkHiddenFootNotes(documant);
     }

@@ -29,7 +29,7 @@ function checkTtsState(wv) {
     checkTtsStateDebounced(wasStopped, wv);
 }
 exports.checkTtsState = checkTtsState;
-const checkTtsStateDebounced = debounce_1.debounce(checkTtsStateRaw, 400);
+const checkTtsStateDebounced = (0, debounce_1.debounce)(checkTtsStateRaw, 400);
 function checkTtsStateRaw(wasStopped, wv) {
     var _a;
     if (wasStopped || win.READIUM2.ttsClickEnabled) {
@@ -118,7 +118,7 @@ function ttsHandleIpcMessage(eventChannel, _eventArgs, eventCurrentTarget) {
         }
     }
     else if (eventChannel === events_1.R2_EVENT_TTS_DOC_END) {
-        location_1.navLeftOrRight(readium_css_1.isRTL(), true, true);
+        (0, location_1.navLeftOrRight)((0, readium_css_1.isRTL)(), true, true);
     }
     else {
         return false;
@@ -144,7 +144,7 @@ function ttsPlay(speed, voice) {
         win.READIUM2.ttsVoice = voice;
     }
     let startElementCSSSelector;
-    const loc = location_1.getCurrentReadingLocation();
+    const loc = (0, location_1.getCurrentReadingLocation)();
     let activeWebView = win.READIUM2.getActiveWebViews().find((webview) => {
         var _a;
         return loc && loc.locator.href && loc.locator.href === ((_a = webview.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href);

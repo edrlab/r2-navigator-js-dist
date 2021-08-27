@@ -6,7 +6,7 @@ const crypto = require("crypto");
 const debug_ = require("debug");
 const debug = debug_("r2:navigator#electron/main/lcp");
 function doTryLcpPass(publicationsServer, publicationFilePath, lcpPasses, isSha256Hex) {
-    return tslib_1.__awaiter(this, void 0, void 0, function* () {
+    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
         const publication = publicationsServer.cachedPublication(publicationFilePath);
         if (!publication || !publication.LCP) {
             return Promise.reject("no publication LCP data?! " + publicationFilePath);

@@ -102,7 +102,7 @@ function locationHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
     }
     else if (eventChannel === events_1.R2_EVENT_AUDIO_PLAYBACK_RATE) {
         const payload = eventArgs[0];
-        audiobook_2.setCurrentAudioPlaybackRate(payload.speed);
+        (0, audiobook_2.setCurrentAudioPlaybackRate)(payload.speed);
     }
     else {
         return false;
@@ -138,7 +138,7 @@ function navLeftOrRight(left, spineNav, ignorePageSpreadHandling) {
     if (!publication.Spine) {
         return undefined;
     }
-    const rtl = readium_css_1.isRTL();
+    const rtl = (0, readium_css_1.isRTL)();
     const goPREVIOUS = left ? !rtl : rtl;
     const loc = _lastSavedReadingLocation;
     let href = loc ? loc.locator.href : undefined;
@@ -197,10 +197,10 @@ function navLeftOrRight(left, spineNav, ignorePageSpreadHandling) {
                 electron_1.shell.beep();
             }
         }
-        media_overlays_1.mediaOverlaysInterrupt();
+        (0, media_overlays_1.mediaOverlaysInterrupt)();
     }
     else {
-        media_overlays_1.mediaOverlaysInterrupt();
+        (0, media_overlays_1.mediaOverlaysInterrupt)();
         const payload = {
             direction: rtl ? "RTL" : "LTR",
             go: goPREVIOUS ? "PREVIOUS" : "NEXT",
@@ -298,10 +298,10 @@ function handleLinkLocator(location, rcss, rangeInfo) {
         const urlNoQueryParams = uri.toString();
         const hrefToLoad = urlNoQueryParams +
             (useGoto ? ("?" + url_params_1.URL_PARAM_GOTO + "=" +
-                UrlUtils_1.encodeURIComponent_RFC3986(Buffer.from(JSON.stringify(linkToLoadGoto, null, "")).toString("base64"))) :
+                (0, UrlUtils_1.encodeURIComponent_RFC3986)(Buffer.from(JSON.stringify(linkToLoadGoto, null, "")).toString("base64"))) :
                 "") +
             ((useGoto && rangeInfo) ? ("&" + url_params_1.URL_PARAM_GOTO_DOM_RANGE + "=" +
-                UrlUtils_1.encodeURIComponent_RFC3986(Buffer.from(JSON.stringify(rangeInfo, null, "")).toString("base64"))) :
+                (0, UrlUtils_1.encodeURIComponent_RFC3986)(Buffer.from(JSON.stringify(rangeInfo, null, "")).toString("base64"))) :
                 "");
         debug(`handleLinkLocator: ${hrefToLoad}`);
         handleLink(hrefToLoad, undefined, useGoto, rcss);
@@ -336,14 +336,14 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
     if (!publication || !publicationURL) {
         return false;
     }
-    media_overlays_1.mediaOverlaysInterrupt();
+    (0, media_overlays_1.mediaOverlaysInterrupt)();
     let hrefToLoadHttp = hrefToLoad;
     if (hrefToLoadHttp.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
-        hrefToLoadHttp = sessions_1.convertCustomSchemeToHttpUrl(hrefToLoadHttp);
+        hrefToLoadHttp = (0, sessions_1.convertCustomSchemeToHttpUrl)(hrefToLoadHttp);
     }
     const pubIsServedViaSpecialUrlProtocol = publicationURL.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://");
     const publicationURLHttp = pubIsServedViaSpecialUrlProtocol ?
-        sessions_1.convertCustomSchemeToHttpUrl(publicationURL) : publicationURL;
+        (0, sessions_1.convertCustomSchemeToHttpUrl)(publicationURL) : publicationURL;
     const hrefToLoadHttpObj = new url_1.URL(hrefToLoadHttp);
     hrefToLoadHttpObj.hash = "";
     hrefToLoadHttpObj.search = "";
@@ -409,18 +409,18 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
         (webview2 && webview1 && webview1.READIUM2.link === pubLink) :
         (webview2 && webview2.READIUM2.link === pubLink);
     if (!webviewSpreadSwap) {
-        if (webview1 && webview1.READIUM2.link && readium_css_1.isFixedLayout(webview1.READIUM2.link)) {
+        if (webview1 && webview1.READIUM2.link && (0, readium_css_1.isFixedLayout)(webview1.READIUM2.link)) {
             setTimeout(async () => {
                 const webview1_ = win.READIUM2.getFirstWebView();
-                if (webview1_ && webview1_.READIUM2.link && readium_css_1.isFixedLayout(webview1_.READIUM2.link)) {
+                if (webview1_ && webview1_.READIUM2.link && (0, readium_css_1.isFixedLayout)(webview1_.READIUM2.link)) {
                     await webview1_.send("R2_EVENT_HIDE", true);
                 }
             }, 0);
         }
-        if (webview2 && webview2.READIUM2.link && readium_css_1.isFixedLayout(webview2.READIUM2.link)) {
+        if (webview2 && webview2.READIUM2.link && (0, readium_css_1.isFixedLayout)(webview2.READIUM2.link)) {
             setTimeout(async () => {
                 const webview2_ = win.READIUM2.getSecondWebView(false);
-                if (webview2_ && webview2_.READIUM2.link && readium_css_1.isFixedLayout(webview2_.READIUM2.link)) {
+                if (webview2_ && webview2_.READIUM2.link && (0, readium_css_1.isFixedLayout)(webview2_.READIUM2.link)) {
                     await webview2_.send("R2_EVENT_HIDE", true);
                 }
             }, 0);
@@ -432,7 +432,7 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
         (secondWebView ? win.READIUM2.getSecondWebView(true) : webview1);
     const actualReadiumCss = (activeWebView && activeWebView.READIUM2.readiumCss) ?
         activeWebView.READIUM2.readiumCss :
-        readium_css_1.obtainReadiumCss(rcss);
+        (0, readium_css_1.obtainReadiumCss)(rcss);
     if (activeWebView) {
         activeWebView.READIUM2.readiumCss = actualReadiumCss;
     }
@@ -454,14 +454,14 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
     const linkIndex = publication.Spine ? publication.Spine.indexOf(pubLink) : -1;
     if (publication.Spine &&
         linkIndex >= 0 &&
-        readium_css_1.isFixedLayout(pubLink)) {
-        const rtl = readium_css_1.isRTL();
+        (0, readium_css_1.isFixedLayout)(pubLink)) {
+        const rtl = (0, readium_css_1.isRTL)();
         const publicationSpreadNone = ((_b = (_a = publication.Metadata) === null || _a === void 0 ? void 0 : _a.Rendition) === null || _b === void 0 ? void 0 : _b.Spread) === metadata_properties_1.SpreadEnum.None;
         const slotOfFirstPageInSpread = rtl ? metadata_properties_1.PageEnum.Right : metadata_properties_1.PageEnum.Left;
         const slotOfSecondPageInSpread = slotOfFirstPageInSpread === metadata_properties_1.PageEnum.Right ? metadata_properties_1.PageEnum.Left : metadata_properties_1.PageEnum.Right;
         publication.Spine.forEach((spineLink, i) => {
             var _a, _b, _c, _d, _e;
-            if (!readium_css_1.isFixedLayout(spineLink)) {
+            if (!(0, readium_css_1.isFixedLayout)(spineLink)) {
                 spineLink.__notInSpread = true;
                 if (!spineLink.Properties) {
                     spineLink.Properties = new metadata_properties_1.Properties();
@@ -552,7 +552,7 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
     if (!secondWebView && !loadingSecondWebView && !webviewSpreadSwap) {
         win.READIUM2.destroySecondWebView();
     }
-    const rcssJson = readium_css_1.adjustReadiumCssJsonMessageForFixedLayout(activeWebView, actualReadiumCss);
+    const rcssJson = (0, readium_css_1.adjustReadiumCssJsonMessageForFixedLayout)(activeWebView, actualReadiumCss);
     const rcssJsonstr = JSON.stringify(rcssJson, null, "");
     const rcssJsonstrBase64 = Buffer.from(rcssJsonstr).toString("base64");
     const hrefToLoadHttpUri = new URI(hrefToLoadHttp);
@@ -601,7 +601,7 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
         if (useGoto) {
             hrefToLoadHttpUri.hash("").normalizeHash();
         }
-        const rersJson = epubReadingSystem_1.getEpubReadingSystemInfo();
+        const rersJson = (0, epubReadingSystem_1.getEpubReadingSystemInfo)();
         const rersJsonstr = JSON.stringify(rersJson, null, "");
         const rersJsonstrBase64 = Buffer.from(rersJsonstr).toString("base64");
         hrefToLoadHttpUri.search((data) => {
@@ -647,7 +647,7 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
             if (activeWebView.style.transform &&
                 activeWebView.style.transform !== "none") {
                 setTimeout(async () => {
-                    await activeWebView.send("R2_EVENT_HIDE", activeWebView.READIUM2.link ? readium_css_1.isFixedLayout(activeWebView.READIUM2.link) : null);
+                    await activeWebView.send("R2_EVENT_HIDE", activeWebView.READIUM2.link ? (0, readium_css_1.isFixedLayout)(activeWebView.READIUM2.link) : null);
                 }, 0);
                 setTimeout(async () => {
                     shiftWebview(activeWebView, 0, undefined);
@@ -678,7 +678,7 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
         }
         const uriStr = hrefToLoadHttpUri.toString();
         const uriStr_ = uriStr.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://") ? uriStr :
-            (pubIsServedViaSpecialUrlProtocol ? sessions_1.convertHttpUrlToCustomScheme(uriStr) : uriStr);
+            (pubIsServedViaSpecialUrlProtocol ? (0, sessions_1.convertHttpUrlToCustomScheme)(uriStr) : uriStr);
         if (isAudio) {
             if (IS_DEV) {
                 debug(`___HARD AUDIO___ WEBVIEW REFRESH: ${uriStr_}`);
@@ -715,7 +715,7 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
                         return map[entityName] ? map[entityName] : entityName;
                     });
                 }
-                const audioPlaybackRate = audiobook_2.getCurrentAudioPlaybackRate();
+                const audioPlaybackRate = (0, audiobook_2.getCurrentAudioPlaybackRate)();
                 if (rcssJson.setCSS) {
                     rcssJson.setCSS.paged = false;
                 }
@@ -973,7 +973,7 @@ ${coverLink ? `<img id="${styles_1.AUDIO_COVER_ID}" src="${coverLink.Href}" alt=
 </body>
 </html>`;
                 const contentType = "application/xhtml+xml";
-                htmlMarkup = readium_css_inject_1.readiumCssTransformHtml(htmlMarkup, rcssJson, contentType);
+                htmlMarkup = (0, readium_css_inject_1.readiumCssTransformHtml)(htmlMarkup, rcssJson, contentType);
                 const b64HTML = Buffer.from(htmlMarkup).toString("base64");
                 const dataUri = `data:${contentType};base64,${b64HTML}`;
                 newActiveWebView.setAttribute("src", dataUri);
@@ -1016,7 +1016,7 @@ ${coverLink ? `<img id="${styles_1.AUDIO_COVER_ID}" src="${coverLink.Href}" alt=
                 activeWebView.style.transform !== "none") {
                 if (webviewAlreadyHasContent) {
                     setTimeout(async () => {
-                        await activeWebView.send("R2_EVENT_HIDE", activeWebView.READIUM2.link ? readium_css_1.isFixedLayout(activeWebView.READIUM2.link) : null);
+                        await activeWebView.send("R2_EVENT_HIDE", activeWebView.READIUM2.link ? (0, readium_css_1.isFixedLayout)(activeWebView.READIUM2.link) : null);
                     }, 0);
                 }
                 setTimeout(() => {

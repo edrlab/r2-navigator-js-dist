@@ -12,7 +12,7 @@ function popupFootNote(element, focusScrollRaw, href, ensureTwoPageSpreadWithOdd
     const documant = element.ownerDocument;
     let hrefSelf = documant.location.href;
     if (hrefSelf.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
-        hrefSelf = sessions_1.convertCustomSchemeToHttpUrl(hrefSelf);
+        hrefSelf = (0, sessions_1.convertCustomSchemeToHttpUrl)(hrefSelf);
     }
     const urlSelf = new URL(hrefSelf);
     if (urlSelf.protocol !== url.protocol ||

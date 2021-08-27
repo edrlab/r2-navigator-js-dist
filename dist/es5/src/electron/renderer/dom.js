@@ -32,26 +32,26 @@ electron_1.ipcRenderer.on("accessibility-support-changed", function (_e, accessi
 function readiumCssApplyToWebview(loc, activeWebView, rcss) {
     var _this = this;
     var _a;
-    var actualReadiumCss = readium_css_1.obtainReadiumCss(rcss);
+    var actualReadiumCss = (0, readium_css_1.obtainReadiumCss)(rcss);
     activeWebView.READIUM2.readiumCss = actualReadiumCss;
-    var payloadRcss = readium_css_1.adjustReadiumCssJsonMessageForFixedLayout(activeWebView, actualReadiumCss);
+    var payloadRcss = (0, readium_css_1.adjustReadiumCssJsonMessageForFixedLayout)(activeWebView, actualReadiumCss);
     if (activeWebView.style.transform &&
         activeWebView.style.transform !== "none") {
-        setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
+        setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
+            return (0, tslib_1.__generator)(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4, activeWebView.send("R2_EVENT_HIDE", activeWebView.READIUM2.link ? readium_css_1.isFixedLayout(activeWebView.READIUM2.link) : null)];
+                    case 0: return [4, activeWebView.send("R2_EVENT_HIDE", activeWebView.READIUM2.link ? (0, readium_css_1.isFixedLayout)(activeWebView.READIUM2.link) : null)];
                     case 1:
                         _a.sent();
                         return [2];
                 }
             });
         }); }, 0);
-        setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
+        setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
+            return (0, tslib_1.__generator)(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        location_1.shiftWebview(activeWebView, 0, undefined);
+                        (0, location_1.shiftWebview)(activeWebView, 0, undefined);
                         return [4, activeWebView.send(events_1.R2_EVENT_READIUMCSS, payloadRcss)];
                     case 1:
                         _a.sent();
@@ -61,8 +61,8 @@ function readiumCssApplyToWebview(loc, activeWebView, rcss) {
         }); }, 10);
     }
     else {
-        setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
+        setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
+            return (0, tslib_1.__generator)(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4, activeWebView.send(events_1.R2_EVENT_READIUMCSS, payloadRcss)];
                     case 1:
@@ -75,16 +75,16 @@ function readiumCssApplyToWebview(loc, activeWebView, rcss) {
     if (loc && loc.locator.href === ((_a = activeWebView.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href)) {
         setTimeout(function () {
             debug("readiumCssOnOff -> handleLinkLocator");
-            location_1.handleLinkLocator(loc.locator, actualReadiumCss);
+            (0, location_1.handleLinkLocator)(loc.locator, actualReadiumCss);
         }, 60);
     }
 }
 function readiumCssOnOff(rcss) {
     var e_1, _a;
-    var loc = location_1.getCurrentReadingLocation();
+    var loc = (0, location_1.getCurrentReadingLocation)();
     var activeWebViews = win.READIUM2.getActiveWebViews();
     try {
-        for (var activeWebViews_1 = tslib_1.__values(activeWebViews), activeWebViews_1_1 = activeWebViews_1.next(); !activeWebViews_1_1.done; activeWebViews_1_1 = activeWebViews_1.next()) {
+        for (var activeWebViews_1 = (0, tslib_1.__values)(activeWebViews), activeWebViews_1_1 = activeWebViews_1.next(); !activeWebViews_1_1.done; activeWebViews_1_1 = activeWebViews_1.next()) {
             var activeWebView = activeWebViews_1_1.value;
             readiumCssApplyToWebview(loc, activeWebView, rcss);
         }
@@ -113,7 +113,7 @@ function createWebViewInternal(preloadScriptPath) {
     if (publicationURL_) {
         wv.setAttribute("httpreferrer", publicationURL_);
     }
-    location_1.setWebViewStyle(wv, styles_1.WebViewSlotEnum.center);
+    (0, location_1.setWebViewStyle)(wv, styles_1.WebViewSlotEnum.center);
     wv.setAttribute("preload", preloadScriptPath);
     setTimeout(function () {
         wv.removeAttribute("tabindex");
@@ -124,13 +124,13 @@ function createWebViewInternal(preloadScriptPath) {
             electron_1.ipcRenderer.send(context_menu_1.CONTEXT_MENU_SETUP, wv.getWebContentsId());
         }
         if (win.READIUM2) {
-            readaloud_1.ttsVoice(win.READIUM2.ttsVoice);
-            readaloud_1.ttsPlaybackRate(win.READIUM2.ttsPlaybackRate);
-            readaloud_1.ttsClickEnable(win.READIUM2.ttsClickEnabled);
-            readaloud_1.ttsSentenceDetectionEnable(win.READIUM2.ttsSentenceDetectionEnabled);
-            readaloud_1.ttsOverlayEnable(win.READIUM2.ttsOverlayEnabled);
+            (0, readaloud_1.ttsVoice)(win.READIUM2.ttsVoice);
+            (0, readaloud_1.ttsPlaybackRate)(win.READIUM2.ttsPlaybackRate);
+            (0, readaloud_1.ttsClickEnable)(win.READIUM2.ttsClickEnabled);
+            (0, readaloud_1.ttsSentenceDetectionEnable)(win.READIUM2.ttsSentenceDetectionEnabled);
+            (0, readaloud_1.ttsOverlayEnable)(win.READIUM2.ttsOverlayEnabled);
         }
-        readaloud_1.checkTtsState(wv);
+        (0, readaloud_1.checkTtsState)(wv);
     });
     wv.addEventListener("ipc-message", function (event) {
         var webview = event.currentTarget;
@@ -158,7 +158,7 @@ function createWebViewInternal(preloadScriptPath) {
             if (payload.text && rootElement) {
                 if (!rssStyleElement) {
                     var urlStr = win.READIUM2.publicationURL.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL) ?
-                        sessions_1.convertCustomSchemeToHttpUrl(win.READIUM2.publicationURL) :
+                        (0, sessions_1.convertCustomSchemeToHttpUrl)(win.READIUM2.publicationURL) :
                         win.READIUM2.publicationURL;
                     var rcssUrl = new URL(urlStr);
                     rcssUrl.pathname = readium_css_settings_1.READIUM_CSS_URL_PATH + "/";
@@ -200,13 +200,13 @@ function createWebViewInternal(preloadScriptPath) {
         else if (event.channel === events_1.R2_EVENT_PAGE_TURN_RES &&
             event.args[0].go === "" &&
             event.args[0].direction === "") {
-            readaloud_1.checkTtsState(wv);
+            (0, readaloud_1.checkTtsState)(wv);
         }
-        else if (!highlight_1.highlightsHandleIpcMessage(event.channel, event.args, webview) &&
-            !readaloud_1.ttsHandleIpcMessage(event.channel, event.args, webview) &&
-            !location_1.locationHandleIpcMessage(event.channel, event.args, webview) &&
-            !media_overlays_1.mediaOverlaysHandleIpcMessage(event.channel, event.args, webview) &&
-            !soundtrack_1.soundtrackHandleIpcMessage(event.channel, event.args, webview)) {
+        else if (!(0, highlight_1.highlightsHandleIpcMessage)(event.channel, event.args, webview) &&
+            !(0, readaloud_1.ttsHandleIpcMessage)(event.channel, event.args, webview) &&
+            !(0, location_1.locationHandleIpcMessage)(event.channel, event.args, webview) &&
+            !(0, media_overlays_1.mediaOverlaysHandleIpcMessage)(event.channel, event.args, webview) &&
+            !(0, soundtrack_1.soundtrackHandleIpcMessage)(event.channel, event.args, webview)) {
             debug("webview ipc-message");
             debug(event.channel);
         }
@@ -325,12 +325,12 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
             window.localStorage.getItem(url_params_1.URL_PARAM_DEBUG_VISUALS) === "true") ? true : false;
         debug("debugVisuals GET: ", debugVisualz);
         win.READIUM2.DEBUG_VISUALS = debugVisualz;
-        window.READIUM2.debug = function (debugVisuals) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+        window.READIUM2.debug = function (debugVisuals) { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
             var loc, activeWebViews, _loop_1, activeWebViews_2, activeWebViews_2_1, activeWebView, e_2_1;
             var e_2, _a;
             var _this = this;
             var _b;
-            return tslib_1.__generator(this, function (_c) {
+            return (0, tslib_1.__generator)(this, function (_c) {
                 switch (_c.label) {
                     case 0:
                         debug("debugVisuals SET: ", debugVisuals);
@@ -338,16 +338,16 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
                         if (window.localStorage) {
                             window.localStorage.setItem(url_params_1.URL_PARAM_DEBUG_VISUALS, debugVisuals ? "true" : "false");
                         }
-                        loc = location_1.getCurrentReadingLocation();
+                        loc = (0, location_1.getCurrentReadingLocation)();
                         activeWebViews = win.READIUM2.getActiveWebViews();
                         _loop_1 = function (activeWebView) {
                             var payload;
-                            return tslib_1.__generator(this, function (_d) {
+                            return (0, tslib_1.__generator)(this, function (_d) {
                                 switch (_d.label) {
                                     case 0:
                                         payload = { debugVisuals: debugVisuals };
-                                        setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-                                            return tslib_1.__generator(this, function (_a) {
+                                        setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
+                                            return (0, tslib_1.__generator)(this, function (_a) {
                                                 switch (_a.label) {
                                                     case 0: return [4, activeWebView.send(events_1.R2_EVENT_DEBUG_VISUALS, payload)];
                                                     case 1:
@@ -360,7 +360,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
                                         return [4, new Promise(function (res, _rej) {
                                                 setTimeout(function () {
                                                     debug("READIUM2.debug -> handleLinkLocator");
-                                                    location_1.handleLinkLocator(loc.locator, activeWebView.READIUM2.readiumCss);
+                                                    (0, location_1.handleLinkLocator)(loc.locator, activeWebView.READIUM2.readiumCss);
                                                     res();
                                                 }, 100);
                                             })];
@@ -374,7 +374,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
                         _c.label = 1;
                     case 1:
                         _c.trys.push([1, 6, 7, 8]);
-                        activeWebViews_2 = tslib_1.__values(activeWebViews), activeWebViews_2_1 = activeWebViews_2.next();
+                        activeWebViews_2 = (0, tslib_1.__values)(activeWebViews), activeWebViews_2_1 = activeWebViews_2.next();
                         _c.label = 2;
                     case 2:
                         if (!!activeWebViews_2_1.done) return [3, 5];
@@ -415,8 +415,8 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
                     }
                     var d = win.READIUM2.DEBUG_VISUALS;
                     var payload = { debugVisuals: d, cssSelector: cssSelector, cssClass: cssClass, cssStyles: cssStyles };
-                    setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-                        return tslib_1.__generator(this, function (_a) {
+                    setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
+                        return (0, tslib_1.__generator)(this, function (_a) {
                             switch (_a.label) {
                                 case 0: return [4, activeWebView.send(events_1.R2_EVENT_DEBUG_VISUALS, payload)];
                                 case 1:
@@ -427,7 +427,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
                     }); }, 0);
                 };
                 try {
-                    for (var activeWebViews_3 = tslib_1.__values(activeWebViews), activeWebViews_3_1 = activeWebViews_3.next(); !activeWebViews_3_1.done; activeWebViews_3_1 = activeWebViews_3.next()) {
+                    for (var activeWebViews_3 = (0, tslib_1.__values)(activeWebViews), activeWebViews_3_1 = activeWebViews_3.next(); !activeWebViews_3_1.done; activeWebViews_3_1 = activeWebViews_3.next()) {
                         var activeWebView = activeWebViews_3_1.value;
                         _loop_2(activeWebView);
                     }
@@ -445,7 +445,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
     createWebView();
     setTimeout(function () {
         debug("installNavigatorDOM -> handleLinkLocator");
-        location_1.handleLinkLocator(location, rcss);
+        (0, location_1.handleLinkLocator)(location, rcss);
     }, 100);
 }
 exports.installNavigatorDOM = installNavigatorDOM;

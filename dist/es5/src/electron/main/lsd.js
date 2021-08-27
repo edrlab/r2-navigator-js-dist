@@ -8,9 +8,9 @@ var renew_1 = require("r2-lcp-js/dist/es5/src/lsd/renew");
 var return_1 = require("r2-lcp-js/dist/es5/src/lsd/return");
 var debug = debug_("r2:navigator#electron/main/lsd");
 function doLsdReturn(publicationsServer, deviceIDManager, publicationFilePath) {
-    return tslib_1.__awaiter(this, void 0, void 0, function () {
+    return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
         var publication, returnResponseLsd, err_1;
-        return tslib_1.__generator(this, function (_a) {
+        return (0, tslib_1.__generator)(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     publication = publicationsServer.cachedPublication(publicationFilePath);
@@ -20,7 +20,7 @@ function doLsdReturn(publicationsServer, deviceIDManager, publicationFilePath) {
                     _a.label = 1;
                 case 1:
                     _a.trys.push([1, 3, , 4]);
-                    return [4, return_1.lsdReturn_(publication.LCP.LSD, deviceIDManager)];
+                    return [4, (0, return_1.lsdReturn_)(publication.LCP.LSD, deviceIDManager)];
                 case 2:
                     returnResponseLsd = _a.sent();
                     return [3, 4];
@@ -40,9 +40,9 @@ function doLsdReturn(publicationsServer, deviceIDManager, publicationFilePath) {
 }
 exports.doLsdReturn = doLsdReturn;
 function doLsdRenew(publicationsServer, deviceIDManager, publicationFilePath, endDateStr) {
-    return tslib_1.__awaiter(this, void 0, void 0, function () {
+    return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
         var publication, endDate, returnResponseLsd, err_2;
-        return tslib_1.__generator(this, function (_a) {
+        return (0, tslib_1.__generator)(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     publication = publicationsServer.cachedPublication(publicationFilePath);
@@ -53,7 +53,7 @@ function doLsdRenew(publicationsServer, deviceIDManager, publicationFilePath, en
                     _a.label = 1;
                 case 1:
                     _a.trys.push([1, 3, , 4]);
-                    return [4, renew_1.lsdRenew_(endDate, publication.LCP.LSD, deviceIDManager)];
+                    return [4, (0, renew_1.lsdRenew_)(endDate, publication.LCP.LSD, deviceIDManager)];
                 case 2:
                     returnResponseLsd = _a.sent();
                     return [3, 4];

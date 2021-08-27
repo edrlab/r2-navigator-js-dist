@@ -16,9 +16,9 @@ const calculateDocumentColumnizedWidthAdjustedForTwoPageSpread = () => {
     if (!win || !win.document || !win.document.body || !win.document.documentElement) {
         return 0;
     }
-    const scrollElement = exports.getScrollingElement(win.document);
+    const scrollElement = (0, exports.getScrollingElement)(win.document);
     let w = scrollElement.scrollWidth;
-    const noChange = !readium_css_inject_1.isPaginated(win.document) || !exports.isTwoPageSpread() ||
+    const noChange = !(0, readium_css_inject_1.isPaginated)(win.document) || !(0, exports.isTwoPageSpread)() ||
         isVerticalWritingMode();
     if (!noChange) {
         const columnizedDocWidth = w;
@@ -36,8 +36,8 @@ const calculateMaxScrollShift = () => {
     if (!win || !win.document || !win.document.body || !win.document.documentElement) {
         return { maxScrollShift: 0, maxScrollShiftAdjusted: 0 };
     }
-    const isPaged = readium_css_inject_1.isPaginated(win.document);
-    const scrollElement = exports.getScrollingElement(win.document);
+    const isPaged = (0, readium_css_inject_1.isPaginated)(win.document);
+    const scrollElement = (0, exports.getScrollingElement)(win.document);
     const maxScrollShift = isPaged ?
         ((isVerticalWritingMode() ?
             (scrollElement.scrollHeight - win.document.documentElement.offsetHeight) :
@@ -68,10 +68,10 @@ const isTwoPageSpread = () => {
 };
 exports.isTwoPageSpread = isTwoPageSpread;
 const calculateTotalColumns = () => {
-    if (!win || !win.document || !win.document.body || !readium_css_inject_1.isPaginated(win.document)) {
+    if (!win || !win.document || !win.document.body || !(0, readium_css_inject_1.isPaginated)(win.document)) {
         return 0;
     }
-    const scrollElement = exports.getScrollingElement(win.document);
+    const scrollElement = (0, exports.getScrollingElement)(win.document);
     let totalColumns = 0;
     if (isVerticalWritingMode()) {
         totalColumns = Math.ceil(win.document.body.offsetWidth / scrollElement.scrollWidth);
@@ -83,10 +83,10 @@ const calculateTotalColumns = () => {
 };
 exports.calculateTotalColumns = calculateTotalColumns;
 function calculateColumnDimension() {
-    if (!win.document || !win.document.documentElement || !win.document.body || !readium_css_inject_1.isPaginated(win.document)) {
+    if (!win.document || !win.document.documentElement || !win.document.body || !(0, readium_css_inject_1.isPaginated)(win.document)) {
         return 0;
     }
-    const isTwoPage = exports.isTwoPageSpread();
+    const isTwoPage = (0, exports.isTwoPageSpread)();
     let columnDimension = 0;
     if (isVerticalWritingMode()) {
         columnDimension = win.document.documentElement.offsetHeight;
@@ -111,8 +111,8 @@ function computeVerticalRTL() {
     if (!win.document || !win.document.documentElement) {
         return;
     }
-    let rtl = readium_css_inject_1.isDocRTL(win.document);
-    let vertical = readium_css_inject_1.isDocVertical(win.document);
+    let rtl = (0, readium_css_inject_1.isDocRTL)(win.document);
+    let vertical = (0, readium_css_inject_1.isDocVertical)(win.document);
     const htmlStyle = win.getComputedStyle(win.document.documentElement);
     if (htmlStyle) {
         let prop = htmlStyle.getPropertyValue("writing-mode");
@@ -215,7 +215,7 @@ const readiumCSS = (documant, messageJson) => {
     if (IS_DEV) {
         console.log("_____ readiumCssJson.urlRoot (readiumCSS()): ", messageJson.urlRoot);
     }
-    readium_css_inject_1.readiumCSSSet(documant, messageJson, _isVerticalWritingMode, _isRTL);
+    (0, readium_css_inject_1.readiumCSSSet)(documant, messageJson, _isVerticalWritingMode, _isRTL);
     if ((messageJson && messageJson.setCSS && !messageJson.setCSS.noFootnotes)) {
         checkHiddenFootNotes(documant);
     }

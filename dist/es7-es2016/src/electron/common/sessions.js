@@ -25,7 +25,7 @@ const convertCustomSchemeToHttpUrl = (url) => {
     let url_ = url.replace(exports.READIUM2_ELECTRON_HTTP_PROTOCOL + "://", "");
     const matches = url_.match(/id([^\/]+)\/x(http[s]?)\/ip([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\/p([0-9]+)?(\/.*)?/);
     if (matches && matches.length > 1) {
-        const pubID = UrlUtils_1.encodeURIComponent_RFC3986(matches[1].replace(/-/g, "=").replace(/\./g, "\/").replace(/(_[a-zA-Z])/g, (match) => {
+        const pubID = (0, UrlUtils_1.encodeURIComponent_RFC3986)(matches[1].replace(/-/g, "=").replace(/\./g, "\/").replace(/(_[a-zA-Z])/g, (match) => {
             const ret = match.substr(1).toUpperCase();
             return ret;
         }));

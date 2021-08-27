@@ -103,7 +103,7 @@ function locationHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
     }
     else if (eventChannel === events_1.R2_EVENT_AUDIO_PLAYBACK_RATE) {
         var payload = eventArgs[0];
-        audiobook_2.setCurrentAudioPlaybackRate(payload.speed);
+        (0, audiobook_2.setCurrentAudioPlaybackRate)(payload.speed);
     }
     else {
         return false;
@@ -140,7 +140,7 @@ function navLeftOrRight(left, spineNav, ignorePageSpreadHandling) {
     if (!publication.Spine) {
         return undefined;
     }
-    var rtl = readium_css_1.isRTL();
+    var rtl = (0, readium_css_1.isRTL)();
     var goPREVIOUS = left ? !rtl : rtl;
     var loc = _lastSavedReadingLocation;
     var href = loc ? loc.locator.href : undefined;
@@ -199,18 +199,18 @@ function navLeftOrRight(left, spineNav, ignorePageSpreadHandling) {
                 electron_1.shell.beep();
             }
         }
-        media_overlays_1.mediaOverlaysInterrupt();
+        (0, media_overlays_1.mediaOverlaysInterrupt)();
     }
     else {
-        media_overlays_1.mediaOverlaysInterrupt();
+        (0, media_overlays_1.mediaOverlaysInterrupt)();
         var payload_1 = {
             direction: rtl ? "RTL" : "LTR",
             go: goPREVIOUS ? "PREVIOUS" : "NEXT",
         };
         var activeWebView_1 = win.READIUM2.getFirstOrSecondWebView();
         if (activeWebView_1) {
-            setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-                return tslib_1.__generator(this, function (_a) {
+            setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
+                return (0, tslib_1.__generator)(this, function (_a) {
                     switch (_a.label) {
                         case 0: return [4, activeWebView_1.send(events_1.R2_EVENT_PAGE_TURN, payload_1)];
                         case 1:
@@ -244,9 +244,9 @@ function handleLink(href, previous, useGoto, rcss) {
             }
             else {
                 debug("External link: " + href);
-                (function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                (function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
                     var err_1;
-                    return tslib_1.__generator(this, function (_a) {
+                    return (0, tslib_1.__generator)(this, function (_a) {
                         switch (_a.label) {
                             case 0:
                                 _a.trys.push([0, 2, , 3]);
@@ -318,10 +318,10 @@ function handleLinkLocator(location, rcss, rangeInfo) {
         var urlNoQueryParams = uri.toString();
         var hrefToLoad = urlNoQueryParams +
             (useGoto ? ("?" + url_params_1.URL_PARAM_GOTO + "=" +
-                UrlUtils_1.encodeURIComponent_RFC3986(Buffer.from(JSON.stringify(linkToLoadGoto, null, "")).toString("base64"))) :
+                (0, UrlUtils_1.encodeURIComponent_RFC3986)(Buffer.from(JSON.stringify(linkToLoadGoto, null, "")).toString("base64"))) :
                 "") +
             ((useGoto && rangeInfo) ? ("&" + url_params_1.URL_PARAM_GOTO_DOM_RANGE + "=" +
-                UrlUtils_1.encodeURIComponent_RFC3986(Buffer.from(JSON.stringify(rangeInfo, null, "")).toString("base64"))) :
+                (0, UrlUtils_1.encodeURIComponent_RFC3986)(Buffer.from(JSON.stringify(rangeInfo, null, "")).toString("base64"))) :
                 "");
         debug("handleLinkLocator: " + hrefToLoad);
         handleLink(hrefToLoad, undefined, useGoto, rcss);
@@ -333,7 +333,7 @@ function reloadContent() {
     var e_1, _a;
     var activeWebViews = win.READIUM2.getActiveWebViews();
     try {
-        for (var activeWebViews_1 = tslib_1.__values(activeWebViews), activeWebViews_1_1 = activeWebViews_1.next(); !activeWebViews_1_1.done; activeWebViews_1_1 = activeWebViews_1.next()) {
+        for (var activeWebViews_1 = (0, tslib_1.__values)(activeWebViews), activeWebViews_1_1 = activeWebViews_1.next(); !activeWebViews_1_1.done; activeWebViews_1_1 = activeWebViews_1.next()) {
             var activeWebView = activeWebViews_1_1.value;
             reloadWebView(activeWebView);
         }
@@ -368,14 +368,14 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
     if (!publication || !publicationURL) {
         return false;
     }
-    media_overlays_1.mediaOverlaysInterrupt();
+    (0, media_overlays_1.mediaOverlaysInterrupt)();
     var hrefToLoadHttp = hrefToLoad;
     if (hrefToLoadHttp.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
-        hrefToLoadHttp = sessions_1.convertCustomSchemeToHttpUrl(hrefToLoadHttp);
+        hrefToLoadHttp = (0, sessions_1.convertCustomSchemeToHttpUrl)(hrefToLoadHttp);
     }
     var pubIsServedViaSpecialUrlProtocol = publicationURL.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://");
     var publicationURLHttp = pubIsServedViaSpecialUrlProtocol ?
-        sessions_1.convertCustomSchemeToHttpUrl(publicationURL) : publicationURL;
+        (0, sessions_1.convertCustomSchemeToHttpUrl)(publicationURL) : publicationURL;
     var hrefToLoadHttpObj = new url_1.URL(hrefToLoadHttp);
     hrefToLoadHttpObj.hash = "";
     hrefToLoadHttpObj.search = "";
@@ -441,14 +441,14 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
         (webview2 && webview1 && webview1.READIUM2.link === pubLink) :
         (webview2 && webview2.READIUM2.link === pubLink);
     if (!webviewSpreadSwap) {
-        if (webview1 && webview1.READIUM2.link && readium_css_1.isFixedLayout(webview1.READIUM2.link)) {
-            setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+        if (webview1 && webview1.READIUM2.link && (0, readium_css_1.isFixedLayout)(webview1.READIUM2.link)) {
+            setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
                 var webview1_;
-                return tslib_1.__generator(this, function (_a) {
+                return (0, tslib_1.__generator)(this, function (_a) {
                     switch (_a.label) {
                         case 0:
                             webview1_ = win.READIUM2.getFirstWebView();
-                            if (!(webview1_ && webview1_.READIUM2.link && readium_css_1.isFixedLayout(webview1_.READIUM2.link))) return [3, 2];
+                            if (!(webview1_ && webview1_.READIUM2.link && (0, readium_css_1.isFixedLayout)(webview1_.READIUM2.link))) return [3, 2];
                             return [4, webview1_.send("R2_EVENT_HIDE", true)];
                         case 1:
                             _a.sent();
@@ -458,14 +458,14 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
                 });
             }); }, 0);
         }
-        if (webview2 && webview2.READIUM2.link && readium_css_1.isFixedLayout(webview2.READIUM2.link)) {
-            setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+        if (webview2 && webview2.READIUM2.link && (0, readium_css_1.isFixedLayout)(webview2.READIUM2.link)) {
+            setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
                 var webview2_;
-                return tslib_1.__generator(this, function (_a) {
+                return (0, tslib_1.__generator)(this, function (_a) {
                     switch (_a.label) {
                         case 0:
                             webview2_ = win.READIUM2.getSecondWebView(false);
-                            if (!(webview2_ && webview2_.READIUM2.link && readium_css_1.isFixedLayout(webview2_.READIUM2.link))) return [3, 2];
+                            if (!(webview2_ && webview2_.READIUM2.link && (0, readium_css_1.isFixedLayout)(webview2_.READIUM2.link))) return [3, 2];
                             return [4, webview2_.send("R2_EVENT_HIDE", true)];
                         case 1:
                             _a.sent();
@@ -482,7 +482,7 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
         (secondWebView ? win.READIUM2.getSecondWebView(true) : webview1);
     var actualReadiumCss = (activeWebView && activeWebView.READIUM2.readiumCss) ?
         activeWebView.READIUM2.readiumCss :
-        readium_css_1.obtainReadiumCss(rcss);
+        (0, readium_css_1.obtainReadiumCss)(rcss);
     if (activeWebView) {
         activeWebView.READIUM2.readiumCss = actualReadiumCss;
     }
@@ -504,14 +504,14 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
     var linkIndex = publication.Spine ? publication.Spine.indexOf(pubLink) : -1;
     if (publication.Spine &&
         linkIndex >= 0 &&
-        readium_css_1.isFixedLayout(pubLink)) {
-        var rtl = readium_css_1.isRTL();
+        (0, readium_css_1.isFixedLayout)(pubLink)) {
+        var rtl = (0, readium_css_1.isRTL)();
         var publicationSpreadNone_1 = ((_b = (_a = publication.Metadata) === null || _a === void 0 ? void 0 : _a.Rendition) === null || _b === void 0 ? void 0 : _b.Spread) === metadata_properties_1.SpreadEnum.None;
         var slotOfFirstPageInSpread_1 = rtl ? metadata_properties_1.PageEnum.Right : metadata_properties_1.PageEnum.Left;
         var slotOfSecondPageInSpread_1 = slotOfFirstPageInSpread_1 === metadata_properties_1.PageEnum.Right ? metadata_properties_1.PageEnum.Left : metadata_properties_1.PageEnum.Right;
         publication.Spine.forEach(function (spineLink, i) {
             var _a, _b, _c, _d, _e;
-            if (!readium_css_1.isFixedLayout(spineLink)) {
+            if (!(0, readium_css_1.isFixedLayout)(spineLink)) {
                 spineLink.__notInSpread = true;
                 if (!spineLink.Properties) {
                     spineLink.Properties = new metadata_properties_1.Properties();
@@ -602,7 +602,7 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
     if (!secondWebView && !loadingSecondWebView && !webviewSpreadSwap) {
         win.READIUM2.destroySecondWebView();
     }
-    var rcssJson = readium_css_1.adjustReadiumCssJsonMessageForFixedLayout(activeWebView, actualReadiumCss);
+    var rcssJson = (0, readium_css_1.adjustReadiumCssJsonMessageForFixedLayout)(activeWebView, actualReadiumCss);
     var rcssJsonstr = JSON.stringify(rcssJson, null, "");
     var rcssJsonstrBase64 = Buffer.from(rcssJsonstr).toString("base64");
     var hrefToLoadHttpUri = new URI(hrefToLoadHttp);
@@ -651,7 +651,7 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
         if (useGoto) {
             hrefToLoadHttpUri.hash("").normalizeHash();
         }
-        var rersJson = epubReadingSystem_1.getEpubReadingSystemInfo();
+        var rersJson = (0, epubReadingSystem_1.getEpubReadingSystemInfo)();
         var rersJsonstr = JSON.stringify(rersJson, null, "");
         var rersJsonstrBase64_1 = Buffer.from(rersJsonstr).toString("base64");
         hrefToLoadHttpUri.search(function (data) {
@@ -696,18 +696,18 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
         if (activeWebView) {
             if (activeWebView.style.transform &&
                 activeWebView.style.transform !== "none") {
-                setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-                    return tslib_1.__generator(this, function (_a) {
+                setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
+                    return (0, tslib_1.__generator)(this, function (_a) {
                         switch (_a.label) {
-                            case 0: return [4, activeWebView.send("R2_EVENT_HIDE", activeWebView.READIUM2.link ? readium_css_1.isFixedLayout(activeWebView.READIUM2.link) : null)];
+                            case 0: return [4, activeWebView.send("R2_EVENT_HIDE", activeWebView.READIUM2.link ? (0, readium_css_1.isFixedLayout)(activeWebView.READIUM2.link) : null)];
                             case 1:
                                 _a.sent();
                                 return [2];
                         }
                     });
                 }); }, 0);
-                setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-                    return tslib_1.__generator(this, function (_a) {
+                setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
+                    return (0, tslib_1.__generator)(this, function (_a) {
                         switch (_a.label) {
                             case 0:
                                 shiftWebview(activeWebView, 0, undefined);
@@ -720,8 +720,8 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
                 }); }, 10);
             }
             else {
-                setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-                    return tslib_1.__generator(this, function (_a) {
+                setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
+                    return (0, tslib_1.__generator)(this, function (_a) {
                         switch (_a.label) {
                             case 0: return [4, activeWebView.send(events_1.R2_EVENT_SCROLLTO, payload_2)];
                             case 1:
@@ -750,7 +750,7 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
         }
         var uriStr = hrefToLoadHttpUri.toString();
         var uriStr_1 = uriStr.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://") ? uriStr :
-            (pubIsServedViaSpecialUrlProtocol ? sessions_1.convertHttpUrlToCustomScheme(uriStr) : uriStr);
+            (pubIsServedViaSpecialUrlProtocol ? (0, sessions_1.convertHttpUrlToCustomScheme)(uriStr) : uriStr);
         if (isAudio) {
             if (IS_DEV) {
                 debug("___HARD AUDIO___ WEBVIEW REFRESH: " + uriStr_1);
@@ -787,7 +787,7 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
                         return map_1[entityName] ? map_1[entityName] : entityName;
                     });
                 }
-                var audioPlaybackRate = audiobook_2.getCurrentAudioPlaybackRate();
+                var audioPlaybackRate = (0, audiobook_2.getCurrentAudioPlaybackRate)();
                 if (rcssJson.setCSS) {
                     rcssJson.setCSS.paged = false;
                 }
@@ -795,7 +795,7 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
                     "\n<canvas id=\"" + styles_1.AUDIO_BUFFER_CANVAS_ID + "\"> </canvas>\n    "
                     : "") + "\n\n    <!-- SVG credits (tweaked sizing and coloring): https://material.io/resources/icons/?style=round -->\n\n    <div id=\"" + styles_1.AUDIO_CONTROLS_ID + "\">\n        <button id=\"" + styles_1.AUDIO_PREVIOUS_ID + "\" title=\"previous\">\n            <svg xmlns=\"http://www.w3.org/2000/svg\"\n                viewBox=\"0 0 24 24\" width=\"48px\" height=\"48px\">\n                <path d=\"M7 6c.55 0 1 .45 1 1v10c0 .55-.45 1-1 1s-1-.45-1-1V7c0-.55.45-1 1-1zm3.66 6.82l5.77 4.07c.66.47 1.58-.01 1.58-.82V7.93c0-.81-.91-1.28-1.58-.82l-5.77 4.07c-.57.4-.57 1.24 0 1.64z\"/></svg>\n        </button>\n        <button id=\"" + styles_1.AUDIO_REWIND_ID + "\" title=\"rewind\">\n            <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" width=\"48px\" height=\"48px\">\n            <path d=\"M12 5V2.21c0-.45-.54-.67-.85-.35l-3.8 3.79c-.2.2-.2.51 0 .71l3.79 3.79c.32.31.86.09.86-.36V7c3.73 0 6.68 3.42 5.86 7.29-.47 2.27-2.31 4.1-4.57 4.57-3.57.75-6.75-1.7-7.23-5.01-.07-.48-.49-.85-.98-.85-.6 0-1.08.53-1 1.13.62 4.39 4.8 7.64 9.53 6.72 3.12-.61 5.63-3.12 6.24-6.24C20.84 9.48 16.94 5 12 5zm-2.44 8.49h.45c.21 0 .37-.05.48-.16s.16-.25.16-.43c0-.08-.01-.15-.04-.22s-.06-.12-.11-.17-.11-.09-.18-.11-.16-.04-.25-.04c-.08 0-.15.01-.22.03s-.13.05-.18.1-.09.09-.12.15-.05.13-.05.2h-.85c0-.18.04-.34.11-.48s.17-.27.3-.37.27-.18.44-.23.35-.08.54-.08c.21 0 .41.03.59.08s.33.13.46.23.23.23.3.38.11.33.11.53c0 .09-.01.18-.04.27s-.07.17-.13.25-.12.15-.2.22-.17.12-.28.17c.24.09.42.21.54.39s.18.38.18.61c0 .2-.04.38-.12.53s-.18.29-.32.39-.29.19-.48.24-.38.08-.6.08c-.18 0-.36-.02-.53-.07s-.33-.12-.46-.23-.25-.23-.33-.38-.12-.34-.12-.55h.85c0 .08.02.15.05.22s.07.12.13.17.12.09.2.11.16.04.25.04c.1 0 .19-.01.27-.04s.15-.07.2-.12.1-.11.13-.18.04-.15.04-.24c0-.11-.02-.21-.05-.29s-.08-.15-.14-.2-.13-.09-.22-.11-.18-.04-.29-.04h-.47v-.65zm5.74.75c0 .32-.03.6-.1.82s-.17.42-.29.57-.28.26-.45.33-.37.1-.59.1-.41-.03-.59-.1-.33-.18-.46-.33-.23-.34-.3-.57-.11-.5-.11-.82v-.74c0-.32.03-.6.1-.82s.17-.42.29-.57.28-.26.45-.33.37-.1.59-.1.41.03.59.1.33.18.46.33.23.34.3.57.11.5.11.82v.74zm-.85-.86c0-.19-.01-.35-.04-.48s-.07-.23-.12-.31-.11-.14-.19-.17-.16-.05-.25-.05-.18.02-.25.05-.14.09-.19.17-.09.18-.12.31-.04.29-.04.48v.97c0 .19.01.35.04.48s.07.24.12.32.11.14.19.17.16.05.25.05.18-.02.25-.05.14-.09.19-.17.09-.19.11-.32c.03-.13.04-.29.04-.48v-.97z\"/></svg>\n        </button>\n        <button id=\"" + styles_1.AUDIO_PLAYPAUSE_ID + "\" title=\"play / pause\">\n            <svg id=\"" + styles_1.AUDIO_PLAYPAUSE_ID + "_0\" xmlns=\"http://www.w3.org/2000/svg\"\n                viewBox=\"0 0 24 24\" width=\"60px\" height=\"60px\">\n                <path d=\"M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14c-.55 0-1-.45-1-1V9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1zm4 0c-.55 0-1-.45-1-1V9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1z\"/></svg>\n            <svg id=\"" + styles_1.AUDIO_PLAYPAUSE_ID + "_1\" xmlns=\"http://www.w3.org/2000/svg\"\n                viewBox=\"0 0 24 24\" width=\"60px\" height=\"60px\">\n                <path d=\"M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 13.5v-7c0-.41.47-.65.8-.4l4.67 3.5c.27.2.27.6 0 .8l-4.67 3.5c-.33.25-.8.01-.8-.4z\"/></svg>\n        </button>\n        <button id=\"" + styles_1.AUDIO_FORWARD_ID + "\" title=\"forward\">\n            <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" width=\"48px\" height=\"48px\">\n            <path d=\"M18.92 13c-.5 0-.91.37-.98.86-.48 3.37-3.77 5.84-7.42 4.96-2.25-.54-3.91-2.27-4.39-4.53C5.32 10.42 8.27 7 12 7v2.79c0 .45.54.67.85.35l3.79-3.79c.2-.2.2-.51 0-.71l-3.79-3.79c-.31-.31-.85-.09-.85.36V5c-4.94 0-8.84 4.48-7.84 9.6.6 3.11 2.9 5.5 5.99 6.19 4.83 1.08 9.15-2.2 9.77-6.67.09-.59-.4-1.12-1-1.12zm-8.38 2.22c-.06.05-.12.09-.2.12s-.17.04-.27.04c-.09 0-.17-.01-.25-.04s-.14-.06-.2-.11-.1-.1-.13-.17-.05-.14-.05-.22h-.85c0 .21.04.39.12.55s.19.28.33.38.29.18.46.23.35.07.53.07c.21 0 .41-.03.6-.08s.34-.14.48-.24.24-.24.32-.39.12-.33.12-.53c0-.23-.06-.44-.18-.61s-.3-.3-.54-.39c.1-.05.2-.1.28-.17s.15-.14.2-.22.1-.16.13-.25.04-.18.04-.27c0-.2-.04-.37-.11-.53s-.17-.28-.3-.38-.28-.18-.46-.23-.37-.08-.59-.08c-.19 0-.38.03-.54.08s-.32.13-.44.23-.23.22-.3.37-.11.3-.11.48h.85c0-.07.02-.14.05-.2s.07-.11.12-.15.11-.07.18-.1.14-.03.22-.03c.1 0 .18.01.25.04s.13.06.18.11.08.11.11.17.04.14.04.22c0 .18-.05.32-.16.43s-.26.16-.48.16h-.43v.66h.45c.11 0 .2.01.29.04s.16.06.22.11.11.12.14.2.05.18.05.29c0 .09-.01.17-.04.24s-.08.11-.13.17zm3.9-3.44c-.18-.07-.37-.1-.59-.1s-.41.03-.59.1-.33.18-.45.33-.23.34-.29.57-.1.5-.1.82v.74c0 .32.04.6.11.82s.17.42.3.57.28.26.46.33.37.1.59.1.41-.03.59-.1.33-.18.45-.33.22-.34.29-.57.1-.5.1-.82v-.74c0-.32-.04-.6-.11-.82s-.17-.42-.3-.57-.28-.26-.46-.33zm.01 2.57c0 .19-.01.35-.04.48s-.06.24-.11.32-.11.14-.19.17-.16.05-.25.05-.18-.02-.25-.05-.14-.09-.19-.17-.09-.19-.12-.32-.04-.29-.04-.48v-.97c0-.19.01-.35.04-.48s.06-.23.12-.31.11-.14.19-.17.16-.05.25-.05.18.02.25.05.14.09.19.17.09.18.12.31.04.29.04.48v.97z\"/></svg>\n        </button>\n        <button id=\"" + styles_1.AUDIO_NEXT_ID + "\" title=\"next\">\n        <svg xmlns=\"http://www.w3.org/2000/svg\"\n            viewBox=\"0 0 24 24\" width=\"48px\" height=\"48px\">\n            <path d=\"M7.58 16.89l5.77-4.07c.56-.4.56-1.24 0-1.63L7.58 7.11C6.91 6.65 6 7.12 6 7.93v8.14c0 .81.91 1.28 1.58.82zM16 7v10c0 .55.45 1 1 1s1-.45 1-1V7c0-.55-.45-1-1-1s-1 .45-1 1z\"/></svg>\n        </button>\n        <input id=\"" + styles_1.AUDIO_SLIDER_ID + "\" type=\"range\" min=\"0\" max=\"100\" value=\"0\" step=\"1\" title=\"progress\" />\n        <button id=\"" + styles_1.AUDIO_TIME_ID + "\" title=\"time information 1\">-</button>\n        <button id=\"" + styles_1.AUDIO_PERCENT_ID + "\" title=\"time information 2\">-</button>\n        <select id=\"" + styles_1.AUDIO_RATE_ID + "\" title=\"playback speed\">\n            <option value=\"2\">2x</option>\n            <option value=\"1.75\">1.75x</option>\n            <option value=\"1.5\">1.5x</option>\n            <option value=\"1.25\">1.25x</option>\n            <option value=\"1\">1x</option>\n            <option value=\"0.75\">0.75x</option>\n            <option value=\"0.5\">0.5x</option>\n            <option value=\"0.35\">0.35x</option>\n            <option value=\"0.25\">0.25x</option>\n        </select>\n    </div>\n</section>\n</body>\n</html>";
                 var contentType = "application/xhtml+xml";
-                htmlMarkup = readium_css_inject_1.readiumCssTransformHtml(htmlMarkup, rcssJson, contentType);
+                htmlMarkup = (0, readium_css_inject_1.readiumCssTransformHtml)(htmlMarkup, rcssJson, contentType);
                 var b64HTML = Buffer.from(htmlMarkup).toString("base64");
                 var dataUri = "data:" + contentType + ";base64," + b64HTML;
                 newActiveWebView.setAttribute("src", dataUri);
@@ -837,10 +837,10 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
             if (activeWebView.style.transform &&
                 activeWebView.style.transform !== "none") {
                 if (webviewAlreadyHasContent) {
-                    setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-                        return tslib_1.__generator(this, function (_a) {
+                    setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
+                        return (0, tslib_1.__generator)(this, function (_a) {
                             switch (_a.label) {
-                                case 0: return [4, activeWebView.send("R2_EVENT_HIDE", activeWebView.READIUM2.link ? readium_css_1.isFixedLayout(activeWebView.READIUM2.link) : null)];
+                                case 0: return [4, activeWebView.send("R2_EVENT_HIDE", activeWebView.READIUM2.link ? (0, readium_css_1.isFixedLayout)(activeWebView.READIUM2.link) : null)];
                                 case 1:
                                     _a.sent();
                                     return [2];
@@ -879,7 +879,7 @@ var _saveReadingLocation = function (docHref, locator) {
             var totalDuration = 0;
             var timePosition = void 0;
             try {
-                for (var _b = tslib_1.__values(publication.Spine), _c = _b.next(); !_c.done; _c = _b.next()) {
+                for (var _b = (0, tslib_1.__values)(publication.Spine), _c = _b.next(); !_c.done; _c = _b.next()) {
                     var spineItem = _c.value;
                     if (typeof spineItem.Duration !== "undefined") {
                         if (docHref === spineItem.Href) {
@@ -951,9 +951,9 @@ function setReadingLocationSaver(func) {
 }
 exports.setReadingLocationSaver = setReadingLocationSaver;
 function isLocatorVisible(locator) {
-    return tslib_1.__awaiter(this, void 0, void 0, function () {
+    return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
         var _this = this;
-        return tslib_1.__generator(this, function (_a) {
+        return (0, tslib_1.__generator)(this, function (_a) {
             return [2, new Promise(function (resolve, reject) {
                     var e_3, _a;
                     var _b;
@@ -976,8 +976,8 @@ function isLocatorVisible(locator) {
                         };
                         activeWebView.addEventListener("ipc-message", cb);
                         var payloadPing = { location: locator.locations, visible: false };
-                        setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-                            return tslib_1.__generator(this, function (_a) {
+                        setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
+                            return (0, tslib_1.__generator)(this, function (_a) {
                                 switch (_a.label) {
                                     case 0: return [4, activeWebView.send(events_1.R2_EVENT_LOCATOR_VISIBLE, payloadPing)];
                                     case 1:
@@ -989,7 +989,7 @@ function isLocatorVisible(locator) {
                         return { value: void 0 };
                     };
                     try {
-                        for (var activeWebViews_2 = tslib_1.__values(activeWebViews), activeWebViews_2_1 = activeWebViews_2.next(); !activeWebViews_2_1.done; activeWebViews_2_1 = activeWebViews_2.next()) {
+                        for (var activeWebViews_2 = (0, tslib_1.__values)(activeWebViews), activeWebViews_2_1 = activeWebViews_2.next(); !activeWebViews_2_1.done; activeWebViews_2_1 = activeWebViews_2.next()) {
                             var activeWebView = activeWebViews_2_1.value;
                             var state_1 = _loop_1(activeWebView);
                             if (typeof state_1 === "object")

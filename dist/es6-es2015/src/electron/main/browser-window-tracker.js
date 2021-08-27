@@ -86,7 +86,7 @@ const contextMenuSetup = (webContent, webContentID) => {
 };
 exports.contextMenuSetup = contextMenuSetup;
 electron_1.ipcMain.on(context_menu_1.CONTEXT_MENU_SETUP, (event, webContentID) => {
-    exports.contextMenuSetup(event.sender, webContentID);
+    (0, exports.contextMenuSetup)(event.sender, webContentID);
 });
 electron_1.app.on("web-contents-created", (_evt, wc) => {
     wc.on("will-attach-webview", (_event, webPreferences, params) => {

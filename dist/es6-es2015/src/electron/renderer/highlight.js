@@ -33,7 +33,7 @@ function highlightsRemoveAll(href) {
         if (((_a = activeWebView.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href) !== href) {
             continue;
         }
-        setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+        setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
             yield activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_REMOVE_ALL);
         }), 0);
     }
@@ -49,14 +49,14 @@ function highlightsRemove(href, highlightIDs) {
         const payload = {
             highlightIDs,
         };
-        setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+        setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
             yield activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_REMOVE, payload);
         }), 0);
     }
 }
 exports.highlightsRemove = highlightsRemove;
 function highlightsCreate(href, highlightDefinitions) {
-    return tslib_1.__awaiter(this, void 0, void 0, function* () {
+    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
         return new Promise((resolve, reject) => {
             var _a;
             const activeWebViews = win.READIUM2.getActiveWebViews();
@@ -86,7 +86,7 @@ function highlightsCreate(href, highlightDefinitions) {
                     highlightDefinitions,
                     highlights: undefined,
                 };
-                setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+                setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
                     yield activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_CREATE, payloadPing);
                 }), 0);
                 return;

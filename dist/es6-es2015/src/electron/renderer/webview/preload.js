@@ -64,7 +64,7 @@ win.READIUM2 = {
     ttsPlaybackRate: 1,
     ttsSentenceDetectionEnabled: true,
     ttsVoice: null,
-    urlQueryParams: win.location.search ? querystring_1.getURLQueryParams(win.location.search) : undefined,
+    urlQueryParams: win.location.search ? (0, querystring_1.getURLQueryParams)(win.location.search) : undefined,
     webViewSlot: styles_1.WebViewSlotEnum.center,
 };
 win.alert = (...args) => {
@@ -129,7 +129,7 @@ if (win.READIUM2.urlQueryParams) {
         }
     }
     if (readiumEpubReadingSystemJson) {
-        epubReadingSystem_1.setWindowNavigatorEpubReadingSystem(win, readiumEpubReadingSystemJson);
+        (0, epubReadingSystem_1.setWindowNavigatorEpubReadingSystem)(win, readiumEpubReadingSystemJson);
     }
     win.READIUM2.DEBUG_VISUALS = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_DEBUG_VISUALS] === "true";
     win.READIUM2.isClipboardIntercept = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_CLIPBOARD_INTERCEPT] === "true";
@@ -156,7 +156,7 @@ if (IS_DEV) {
             }
             if (payload.debugVisuals && payload.cssStyles && payload.cssStyles.length) {
                 const idSuffix = `debug_for_class_${payload.cssClass}`;
-                readium_css_inject_1.appendCSSInline(win.document, idSuffix, payload.cssStyles);
+                (0, readium_css_inject_1.appendCSSInline)(win.document, idSuffix, payload.cssStyles);
                 if (payload.cssSelector) {
                     const toHighlights = win.document.querySelectorAll(payload.cssSelector);
                     toHighlights.forEach((toHighlight) => {
@@ -207,8 +207,8 @@ function computeVisibility_(element, domRect) {
             return false;
         }
     }
-    const scrollElement = readium_css_1.getScrollingElement(win.document);
-    if (!readium_css_inject_1.isPaginated(win.document)) {
+    const scrollElement = (0, readium_css_1.getScrollingElement)(win.document);
+    if (!(0, readium_css_inject_1.isPaginated)(win.document)) {
         const rect = domRect || element.getBoundingClientRect();
         if (rect.top >= 0 &&
             rect.top <= win.document.documentElement.clientHeight) {
@@ -216,7 +216,7 @@ function computeVisibility_(element, domRect) {
         }
         return false;
     }
-    if (readium_css_1.isVerticalWritingMode()) {
+    if ((0, readium_css_1.isVerticalWritingMode)()) {
         return false;
     }
     const scrollLeftPotentiallyExcessive = getScrollOffsetIntoView(element, domRect);
@@ -268,8 +268,8 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, (_event, payload) => {
         return;
     }
     showHideContentMask(false, win.READIUM2.isFixedLayout);
-    selection_2.clearCurrentSelection(win);
-    popup_dialog_1.closePopupDialogs(win.document);
+    (0, selection_2.clearCurrentSelection)(win);
+    (0, popup_dialog_1.closePopupDialogs)(win.document);
     if (!win.READIUM2.urlQueryParams) {
         win.READIUM2.urlQueryParams = {};
     }
@@ -376,7 +376,7 @@ function elementCapturesKeyboardArrowKeys(target) {
     return false;
 }
 function ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable() {
-    const scrollElement = readium_css_1.getScrollingElement(win.document);
+    const scrollElement = (0, readium_css_1.getScrollingElement)(win.document);
     const val = scrollElement.scrollLeftExtra;
     if (val === 0) {
         return 0;
@@ -386,20 +386,20 @@ function ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable() {
     return val;
 }
 function ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable(scrollLeftExtra) {
-    const scrollElement = readium_css_1.getScrollingElement(win.document);
+    const scrollElement = (0, readium_css_1.getScrollingElement)(win.document);
     scrollElement.scrollLeftExtra = scrollLeftExtra;
     const scrollLeftExtraBackgroundColor = scrollElement.scrollLeftExtraBackgroundColor;
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_SHIFT_VIEW_X, {
         backgroundColor: scrollLeftExtraBackgroundColor ? scrollLeftExtraBackgroundColor : undefined,
-        offset: (readium_css_1.isRTL() ? 1 : -1) * scrollLeftExtra,
+        offset: ((0, readium_css_1.isRTL)() ? 1 : -1) * scrollLeftExtra,
     });
 }
 function ensureTwoPageSpreadWithOddColumnsIsOffset(scrollOffset, maxScrollShift) {
     if (!win || !win.document || !win.document.body || !win.document.documentElement) {
         return;
     }
-    const scrollElement = readium_css_1.getScrollingElement(win.document);
-    let dialogPopup = popup_dialog_1.isPopupDialogOpen(win.document);
+    const scrollElement = (0, readium_css_1.getScrollingElement)(win.document);
+    let dialogPopup = (0, popup_dialog_1.isPopupDialogOpen)(win.document);
     if (dialogPopup) {
         const diagEl = win.document.getElementById(styles_1.POPUP_DIALOG_CLASS);
         if (diagEl) {
@@ -410,9 +410,9 @@ function ensureTwoPageSpreadWithOddColumnsIsOffset(scrollOffset, maxScrollShift)
         }
     }
     const noChange = dialogPopup ||
-        !readium_css_inject_1.isPaginated(win.document) ||
-        !readium_css_1.isTwoPageSpread() ||
-        readium_css_1.isVerticalWritingMode() ||
+        !(0, readium_css_inject_1.isPaginated)(win.document) ||
+        !(0, readium_css_1.isTwoPageSpread)() ||
+        (0, readium_css_1.isVerticalWritingMode)() ||
         maxScrollShift <= 0 ||
         Math.abs(scrollOffset) <= maxScrollShift;
     if (noChange) {
@@ -437,7 +437,7 @@ function ensureTwoPageSpreadWithOddColumnsIsOffset(scrollOffset, maxScrollShift)
     scrollElement.scrollLeftExtraBackgroundColor = backgroundColor;
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_SHIFT_VIEW_X, {
         backgroundColor: backgroundColor ? backgroundColor : undefined,
-        offset: (readium_css_1.isRTL() ? 1 : -1) * extraOffset,
+        offset: ((0, readium_css_1.isRTL)() ? 1 : -1) * extraOffset,
     });
 }
 function onEventPageTurn(payload) {
@@ -461,8 +461,8 @@ function onEventPageTurn(payload) {
     if (leftRightKeyWasUsedInsideKeyboardCapture) {
         return;
     }
-    selection_2.clearCurrentSelection(win);
-    popup_dialog_1.closePopupDialogs(win.document);
+    (0, selection_2.clearCurrentSelection)(win);
+    (0, popup_dialog_1.closePopupDialogs)(win.document);
     if (win.READIUM2.isAudio || win.READIUM2.isFixedLayout || !win.document.body) {
         electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, payload);
         return;
@@ -470,9 +470,9 @@ function onEventPageTurn(payload) {
     if (!win.document || !win.document.documentElement) {
         return;
     }
-    const scrollElement = readium_css_1.getScrollingElement(win.document);
+    const scrollElement = (0, readium_css_1.getScrollingElement)(win.document);
     const reduceMotion = win.document.documentElement.classList.contains(styles_1.ROOT_CLASS_REDUCE_MOTION);
-    const isPaged = readium_css_inject_1.isPaginated(win.document);
+    const isPaged = (0, readium_css_inject_1.isPaginated)(win.document);
     const goPREVIOUS = payload.go === "PREVIOUS";
     const animationTime = 300;
     if (_lastAnimState && _lastAnimState.animating) {
@@ -480,13 +480,13 @@ function onEventPageTurn(payload) {
         _lastAnimState.object[_lastAnimState.property] = _lastAnimState.destVal;
     }
     if (!goPREVIOUS) {
-        const maxScrollShift = readium_css_1.calculateMaxScrollShift().maxScrollShift;
+        const maxScrollShift = (0, readium_css_1.calculateMaxScrollShift)().maxScrollShift;
         const maxScrollShiftTolerated = maxScrollShift - CSS_PIXEL_TOLERANCE;
         if (isPaged) {
-            const unit = readium_css_1.isVerticalWritingMode() ?
+            const unit = (0, readium_css_1.isVerticalWritingMode)() ?
                 win.document.documentElement.offsetHeight :
                 win.document.documentElement.offsetWidth;
-            let scrollElementOffset = Math.round(readium_css_1.isVerticalWritingMode() ?
+            let scrollElementOffset = Math.round((0, readium_css_1.isVerticalWritingMode)() ?
                 scrollElement.scrollTop :
                 scrollElement.scrollLeft);
             const isNegative = scrollElementOffset < 0;
@@ -501,25 +501,25 @@ function onEventPageTurn(payload) {
             else if (partial >= (unit - CSS_PIXEL_TOLERANCE)) {
                 scrollElementOffset = (isNegative ? -1 : 1) * (integral + 1) * unit;
             }
-            if (readium_css_1.isVerticalWritingMode() && (scrollElementOffsetAbs < maxScrollShiftTolerated) ||
-                !readium_css_1.isVerticalWritingMode() && (scrollElementOffsetAbs < maxScrollShiftTolerated)) {
-                const scrollOffsetPotentiallyExcessive_ = readium_css_1.isVerticalWritingMode() ?
+            if ((0, readium_css_1.isVerticalWritingMode)() && (scrollElementOffsetAbs < maxScrollShiftTolerated) ||
+                !(0, readium_css_1.isVerticalWritingMode)() && (scrollElementOffsetAbs < maxScrollShiftTolerated)) {
+                const scrollOffsetPotentiallyExcessive_ = (0, readium_css_1.isVerticalWritingMode)() ?
                     (scrollElementOffset + unit) :
-                    (scrollElementOffset + (readium_css_1.isRTL() ? -1 : 1) * unit);
+                    (scrollElementOffset + ((0, readium_css_1.isRTL)() ? -1 : 1) * unit);
                 const nWholes = Math.floor(scrollOffsetPotentiallyExcessive_ / unit);
                 const scrollOffsetPotentiallyExcessive = nWholes * unit;
                 ensureTwoPageSpreadWithOddColumnsIsOffset(scrollOffsetPotentiallyExcessive, maxScrollShift);
                 const scrollOffset = (scrollOffsetPotentiallyExcessive < 0 ? -1 : 1) *
                     Math.min(Math.abs(scrollOffsetPotentiallyExcessive), maxScrollShift);
                 const targetObj = scrollElement;
-                const targetProp = readium_css_1.isVerticalWritingMode() ? "scrollTop" : "scrollLeft";
+                const targetProp = (0, readium_css_1.isVerticalWritingMode)() ? "scrollTop" : "scrollLeft";
                 if (reduceMotion) {
                     _lastAnimState = undefined;
                     targetObj[targetProp] = scrollOffset;
                 }
                 else {
                     _ignoreScrollEvent = true;
-                    _lastAnimState = animateProperty_1.animateProperty(win.cancelAnimationFrame, (_cancelled) => {
+                    _lastAnimState = (0, animateProperty_1.animateProperty)(win.cancelAnimationFrame, (_cancelled) => {
                         _ignoreScrollEvent = false;
                         onScrollDebounced();
                     }, targetProp, animationTime, targetObj, scrollOffset, win.requestAnimationFrame, easings_1.easings.easeInOutQuad);
@@ -531,20 +531,20 @@ function onEventPageTurn(payload) {
             }
         }
         else {
-            if (readium_css_1.isVerticalWritingMode() && (Math.abs(scrollElement.scrollLeft) < maxScrollShiftTolerated) ||
-                !readium_css_1.isVerticalWritingMode() && (Math.abs(scrollElement.scrollTop) < maxScrollShiftTolerated)) {
-                const newVal = readium_css_1.isVerticalWritingMode() ?
-                    (scrollElement.scrollLeft + (readium_css_1.isRTL() ? -1 : 1) * win.document.documentElement.clientWidth) :
+            if ((0, readium_css_1.isVerticalWritingMode)() && (Math.abs(scrollElement.scrollLeft) < maxScrollShiftTolerated) ||
+                !(0, readium_css_1.isVerticalWritingMode)() && (Math.abs(scrollElement.scrollTop) < maxScrollShiftTolerated)) {
+                const newVal = (0, readium_css_1.isVerticalWritingMode)() ?
+                    (scrollElement.scrollLeft + ((0, readium_css_1.isRTL)() ? -1 : 1) * win.document.documentElement.clientWidth) :
                     (scrollElement.scrollTop + win.document.documentElement.clientHeight);
                 const targetObj = scrollElement;
-                const targetProp = readium_css_1.isVerticalWritingMode() ? "scrollLeft" : "scrollTop";
+                const targetProp = (0, readium_css_1.isVerticalWritingMode)() ? "scrollLeft" : "scrollTop";
                 if (reduceMotion) {
                     _lastAnimState = undefined;
                     targetObj[targetProp] = newVal;
                 }
                 else {
                     _ignoreScrollEvent = true;
-                    _lastAnimState = animateProperty_1.animateProperty(win.cancelAnimationFrame, (_cancelled) => {
+                    _lastAnimState = (0, animateProperty_1.animateProperty)(win.cancelAnimationFrame, (_cancelled) => {
                         _ignoreScrollEvent = false;
                         onScrollDebounced();
                     }, targetProp, animationTime, targetObj, newVal, win.requestAnimationFrame, easings_1.easings.easeInOutQuad);
@@ -558,10 +558,10 @@ function onEventPageTurn(payload) {
     }
     else if (goPREVIOUS) {
         if (isPaged) {
-            const unit = readium_css_1.isVerticalWritingMode() ?
+            const unit = (0, readium_css_1.isVerticalWritingMode)() ?
                 win.document.documentElement.offsetHeight :
                 win.document.documentElement.offsetWidth;
-            let scrollElementOffset = Math.round(readium_css_1.isVerticalWritingMode() ?
+            let scrollElementOffset = Math.round((0, readium_css_1.isVerticalWritingMode)() ?
                 scrollElement.scrollTop :
                 scrollElement.scrollLeft);
             const isNegative = scrollElementOffset < 0;
@@ -576,23 +576,23 @@ function onEventPageTurn(payload) {
             else if (partial >= (unit - CSS_PIXEL_TOLERANCE)) {
                 scrollElementOffset = (isNegative ? -1 : 1) * (integral + 1) * unit;
             }
-            if (readium_css_1.isVerticalWritingMode() && (scrollElementOffsetAbs > 0) ||
-                !readium_css_1.isVerticalWritingMode() && (scrollElementOffsetAbs > 0)) {
-                const scrollOffset_ = readium_css_1.isVerticalWritingMode() ?
+            if ((0, readium_css_1.isVerticalWritingMode)() && (scrollElementOffsetAbs > 0) ||
+                !(0, readium_css_1.isVerticalWritingMode)() && (scrollElementOffsetAbs > 0)) {
+                const scrollOffset_ = (0, readium_css_1.isVerticalWritingMode)() ?
                     (scrollElementOffset - unit) :
-                    (scrollElementOffset - (readium_css_1.isRTL() ? -1 : 1) * unit);
-                const nWholes = readium_css_1.isRTL() ? Math.floor(scrollOffset_ / unit) : Math.ceil(scrollOffset_ / unit);
+                    (scrollElementOffset - ((0, readium_css_1.isRTL)() ? -1 : 1) * unit);
+                const nWholes = (0, readium_css_1.isRTL)() ? Math.floor(scrollOffset_ / unit) : Math.ceil(scrollOffset_ / unit);
                 const scrollOffset = nWholes * unit;
                 ensureTwoPageSpreadWithOddColumnsIsOffset(scrollOffset, 0);
                 const targetObj = scrollElement;
-                const targetProp = readium_css_1.isVerticalWritingMode() ? "scrollTop" : "scrollLeft";
+                const targetProp = (0, readium_css_1.isVerticalWritingMode)() ? "scrollTop" : "scrollLeft";
                 if (reduceMotion) {
                     _lastAnimState = undefined;
                     targetObj[targetProp] = scrollOffset;
                 }
                 else {
                     _ignoreScrollEvent = true;
-                    _lastAnimState = animateProperty_1.animateProperty(win.cancelAnimationFrame, (_cancelled) => {
+                    _lastAnimState = (0, animateProperty_1.animateProperty)(win.cancelAnimationFrame, (_cancelled) => {
                         _ignoreScrollEvent = false;
                         onScrollDebounced();
                     }, targetProp, animationTime, targetObj, scrollOffset, win.requestAnimationFrame, easings_1.easings.easeInOutQuad);
@@ -604,20 +604,20 @@ function onEventPageTurn(payload) {
             }
         }
         else {
-            if (readium_css_1.isVerticalWritingMode() && (Math.abs(scrollElement.scrollLeft) > 0) ||
-                !readium_css_1.isVerticalWritingMode() && (Math.abs(scrollElement.scrollTop) > 0)) {
-                const newVal = readium_css_1.isVerticalWritingMode() ?
-                    (scrollElement.scrollLeft - (readium_css_1.isRTL() ? -1 : 1) * win.document.documentElement.clientWidth) :
+            if ((0, readium_css_1.isVerticalWritingMode)() && (Math.abs(scrollElement.scrollLeft) > 0) ||
+                !(0, readium_css_1.isVerticalWritingMode)() && (Math.abs(scrollElement.scrollTop) > 0)) {
+                const newVal = (0, readium_css_1.isVerticalWritingMode)() ?
+                    (scrollElement.scrollLeft - ((0, readium_css_1.isRTL)() ? -1 : 1) * win.document.documentElement.clientWidth) :
                     (scrollElement.scrollTop - win.document.documentElement.clientHeight);
                 const targetObj = scrollElement;
-                const targetProp = readium_css_1.isVerticalWritingMode() ? "scrollLeft" : "scrollTop";
+                const targetProp = (0, readium_css_1.isVerticalWritingMode)() ? "scrollLeft" : "scrollTop";
                 if (reduceMotion) {
                     _lastAnimState = undefined;
                     targetObj[targetProp] = newVal;
                 }
                 else {
                     _ignoreScrollEvent = true;
-                    _lastAnimState = animateProperty_1.animateProperty(win.cancelAnimationFrame, (_cancelled) => {
+                    _lastAnimState = (0, animateProperty_1.animateProperty)(win.cancelAnimationFrame, (_cancelled) => {
                         _ignoreScrollEvent = false;
                         onScrollDebounced();
                     }, targetProp, animationTime, targetObj, newVal, win.requestAnimationFrame, easings_1.easings.easeInOutQuad);
@@ -651,7 +651,7 @@ function scrollElementIntoView(element, doFocus, animate, domRect) {
         return;
     }
     if (doFocus) {
-        if (!domRect && !tabbable_1.isFocusable(element)) {
+        if (!domRect && !(0, tabbable_1.isFocusable)(element)) {
             const attr = element.getAttribute("tabindex");
             if (!attr) {
                 element.setAttribute("tabindex", "-1");
@@ -683,12 +683,12 @@ function scrollElementIntoView(element, doFocus, animate, domRect) {
         }
     }
     setTimeout(() => {
-        const isPaged = readium_css_inject_1.isPaginated(win.document);
+        const isPaged = (0, readium_css_inject_1.isPaginated)(win.document);
         if (isPaged) {
             scrollIntoView(element, domRect);
         }
         else {
-            const scrollElement = readium_css_1.getScrollingElement(win.document);
+            const scrollElement = (0, readium_css_1.getScrollingElement)(win.document);
             const rect = domRect || element.getBoundingClientRect();
             const scrollTopMax = scrollElement.scrollHeight - win.document.documentElement.clientHeight;
             let offset = scrollElement.scrollTop + (rect.top - (win.document.documentElement.clientHeight / 2));
@@ -716,7 +716,7 @@ function scrollElementIntoView(element, doFocus, animate, domRect) {
                 }
                 else {
                     _ignoreScrollEvent = true;
-                    _lastAnimState2 = animateProperty_1.animateProperty(win.cancelAnimationFrame, (_cancelled) => {
+                    _lastAnimState2 = (0, animateProperty_1.animateProperty)(win.cancelAnimationFrame, (_cancelled) => {
                         _ignoreScrollEvent = false;
                         onScrollDebounced();
                     }, targetProp, animationTime2, targetObj, offset, win.requestAnimationFrame, easings_1.easings.easeInOutQuad);
@@ -730,30 +730,30 @@ function scrollElementIntoView(element, doFocus, animate, domRect) {
 }
 function getScrollOffsetIntoView(element, domRect) {
     if (!win.document || !win.document.documentElement || !win.document.body ||
-        !readium_css_inject_1.isPaginated(win.document) || readium_css_1.isVerticalWritingMode()) {
+        !(0, readium_css_inject_1.isPaginated)(win.document) || (0, readium_css_1.isVerticalWritingMode)()) {
         return 0;
     }
-    const scrollElement = readium_css_1.getScrollingElement(win.document);
+    const scrollElement = (0, readium_css_1.getScrollingElement)(win.document);
     const rect = domRect || element.getBoundingClientRect();
-    const columnDimension = readium_css_1.calculateColumnDimension();
-    const isTwoPage = readium_css_1.isTwoPageSpread();
-    const fullOffset = (readium_css_1.isRTL() ?
+    const columnDimension = (0, readium_css_1.calculateColumnDimension)();
+    const isTwoPage = (0, readium_css_1.isTwoPageSpread)();
+    const fullOffset = ((0, readium_css_1.isRTL)() ?
         ((columnDimension * (isTwoPage ? 2 : 1)) - (rect.left + rect.width)) :
         rect.left) +
-        ((readium_css_1.isRTL() ? -1 : 1) * scrollElement.scrollLeft);
+        (((0, readium_css_1.isRTL)() ? -1 : 1) * scrollElement.scrollLeft);
     const columnIndex = Math.floor(fullOffset / columnDimension);
     const spreadIndex = isTwoPage ? Math.floor(columnIndex / 2) : columnIndex;
-    return (readium_css_1.isRTL() ? -1 : 1) *
+    return ((0, readium_css_1.isRTL)() ? -1 : 1) *
         (spreadIndex * (columnDimension * (isTwoPage ? 2 : 1)));
 }
 function scrollIntoView(element, domRect) {
-    if (!win.document || !win.document.documentElement || !win.document.body || !readium_css_inject_1.isPaginated(win.document)) {
+    if (!win.document || !win.document.documentElement || !win.document.body || !(0, readium_css_inject_1.isPaginated)(win.document)) {
         return;
     }
-    const maxScrollShift = readium_css_1.calculateMaxScrollShift().maxScrollShift;
+    const maxScrollShift = (0, readium_css_1.calculateMaxScrollShift)().maxScrollShift;
     const scrollLeftPotentiallyExcessive = getScrollOffsetIntoView(element, domRect);
     ensureTwoPageSpreadWithOddColumnsIsOffset(scrollLeftPotentiallyExcessive, maxScrollShift);
-    const scrollElement = readium_css_1.getScrollingElement(win.document);
+    const scrollElement = (0, readium_css_1.getScrollingElement)(win.document);
     const scrollOffset = (scrollLeftPotentiallyExcessive < 0 ? -1 : 1) *
         Math.min(Math.abs(scrollLeftPotentiallyExcessive), maxScrollShift);
     scrollElement.scrollLeft = scrollOffset;
@@ -762,13 +762,13 @@ const scrollToHashRaw = (animate) => {
     if (!win.document || !win.document.body || !win.document.documentElement) {
         return;
     }
-    highlight_1.recreateAllHighlights(win);
+    (0, highlight_1.recreateAllHighlights)(win);
     if (win.READIUM2.isFixedLayout) {
         debug("scrollToHashRaw skipped, FXL");
         return;
     }
     debug("++++ scrollToHashRaw");
-    const isPaged = readium_css_inject_1.isPaginated(win.document);
+    const isPaged = (0, readium_css_inject_1.isPaginated)(win.document);
     if (win.READIUM2.locationHashOverride) {
         scrollElementIntoView(win.READIUM2.locationHashOverride, true, animate, undefined);
         notifyReadingLocationDebounced();
@@ -781,29 +781,29 @@ const scrollToHashRaw = (animate) => {
         return;
     }
     else {
-        const scrollElement = readium_css_1.getScrollingElement(win.document);
+        const scrollElement = (0, readium_css_1.getScrollingElement)(win.document);
         if (win.READIUM2.urlQueryParams) {
             const previous = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_PREVIOUS];
             const isPreviousNavDirection = previous === "true";
             if (isPreviousNavDirection) {
-                const { maxScrollShift, maxScrollShiftAdjusted } = readium_css_1.calculateMaxScrollShift();
+                const { maxScrollShift, maxScrollShiftAdjusted } = (0, readium_css_1.calculateMaxScrollShift)();
                 _ignoreScrollEvent = true;
                 if (isPaged) {
-                    if (readium_css_1.isVerticalWritingMode()) {
+                    if ((0, readium_css_1.isVerticalWritingMode)()) {
                         scrollElement.scrollLeft = 0;
                         scrollElement.scrollTop = maxScrollShift;
                     }
                     else {
-                        const scrollLeftPotentiallyExcessive = (readium_css_1.isRTL() ? -1 : 1) * maxScrollShiftAdjusted;
+                        const scrollLeftPotentiallyExcessive = ((0, readium_css_1.isRTL)() ? -1 : 1) * maxScrollShiftAdjusted;
                         ensureTwoPageSpreadWithOddColumnsIsOffset(scrollLeftPotentiallyExcessive, maxScrollShift);
-                        const scrollLeft = (readium_css_1.isRTL() ? -1 : 1) * maxScrollShift;
+                        const scrollLeft = ((0, readium_css_1.isRTL)() ? -1 : 1) * maxScrollShift;
                         scrollElement.scrollLeft = scrollLeft;
                         scrollElement.scrollTop = 0;
                     }
                 }
                 else {
-                    if (readium_css_1.isVerticalWritingMode()) {
-                        scrollElement.scrollLeft = (readium_css_1.isRTL() ? -1 : 1) * maxScrollShift;
+                    if ((0, readium_css_1.isVerticalWritingMode)()) {
+                        scrollElement.scrollLeft = ((0, readium_css_1.isRTL)() ? -1 : 1) * maxScrollShift;
                         scrollElement.scrollTop = 0;
                     }
                     else {
@@ -857,7 +857,7 @@ const scrollToHashRaw = (animate) => {
                             const rangeInfoStr = Buffer.from(gtoDomRange, "base64").toString("utf8");
                             const rangeInfo = JSON.parse(rangeInfoStr);
                             debug("rangeInfo", rangeInfo);
-                            const domRange = selection_2.convertRangeInfo(win.document, rangeInfo);
+                            const domRange = (0, selection_2.convertRangeInfo)(win.document, rangeInfo);
                             if (domRange) {
                                 domRect = domRange.getBoundingClientRect();
                             }
@@ -872,23 +872,23 @@ const scrollToHashRaw = (animate) => {
                 }
             }
             else if (gotoProgression) {
-                const { maxScrollShift } = readium_css_1.calculateMaxScrollShift();
+                const { maxScrollShift } = (0, readium_css_1.calculateMaxScrollShift)();
                 if (isPaged) {
-                    const isTwoPage = readium_css_1.isTwoPageSpread();
-                    const nColumns = readium_css_1.calculateTotalColumns();
+                    const isTwoPage = (0, readium_css_1.isTwoPageSpread)();
+                    const nColumns = (0, readium_css_1.calculateTotalColumns)();
                     const nUnits = isTwoPage ? Math.ceil(nColumns / 2) : nColumns;
                     const unitIndex = Math.floor(gotoProgression * nUnits);
-                    const unit = readium_css_1.isVerticalWritingMode() ?
+                    const unit = (0, readium_css_1.isVerticalWritingMode)() ?
                         win.document.documentElement.offsetHeight :
                         win.document.documentElement.offsetWidth;
-                    const scrollOffsetPotentiallyExcessive = readium_css_1.isVerticalWritingMode() ?
+                    const scrollOffsetPotentiallyExcessive = (0, readium_css_1.isVerticalWritingMode)() ?
                         (unitIndex * unit) :
-                        ((readium_css_1.isRTL() ? -1 : 1) * unitIndex * unit);
+                        (((0, readium_css_1.isRTL)() ? -1 : 1) * unitIndex * unit);
                     ensureTwoPageSpreadWithOddColumnsIsOffset(scrollOffsetPotentiallyExcessive, maxScrollShift);
                     const scrollOffsetPaged = (scrollOffsetPotentiallyExcessive < 0 ? -1 : 1) *
                         Math.min(Math.abs(scrollOffsetPotentiallyExcessive), maxScrollShift);
                     _ignoreScrollEvent = true;
-                    if (readium_css_1.isVerticalWritingMode()) {
+                    if ((0, readium_css_1.isVerticalWritingMode)()) {
                         scrollElement.scrollTop = scrollOffsetPaged;
                     }
                     else {
@@ -907,7 +907,7 @@ const scrollToHashRaw = (animate) => {
                 }
                 const scrollOffset = gotoProgression * maxScrollShift;
                 _ignoreScrollEvent = true;
-                if (readium_css_1.isVerticalWritingMode()) {
+                if ((0, readium_css_1.isVerticalWritingMode)()) {
                     scrollElement.scrollLeft = scrollOffset;
                 }
                 else {
@@ -938,7 +938,7 @@ const scrollToHashRaw = (animate) => {
     }
     notifyReadingLocationDebounced();
 };
-const scrollToHashDebounced = debounce_1.debounce((animate) => {
+const scrollToHashDebounced = (0, debounce_1.debounce)((animate) => {
     debug("++++ scrollToHashRaw FROM DEBOUNCED");
     scrollToHashRaw(animate);
 }, 100);
@@ -970,10 +970,10 @@ function focusScrollRaw(el, doFocus, animate, domRect) {
     win.READIUM2.locationHashOverride = el;
     notifyReadingLocationDebounced();
 }
-const focusScrollDebounced = debounce_1.debounce((el, doFocus, animate, domRect) => {
+const focusScrollDebounced = (0, debounce_1.debounce)((el, doFocus, animate, domRect) => {
     focusScrollRaw(el, doFocus, animate, domRect);
 }, 100);
-const handleFocusInDebounced = debounce_1.debounce((target, tabKeyDownEvent) => {
+const handleFocusInDebounced = (0, debounce_1.debounce)((target, tabKeyDownEvent) => {
     handleFocusInRaw(target, tabKeyDownEvent);
 }, 100);
 function handleFocusInRaw(target, _tabKeyDownEvent) {
@@ -984,8 +984,8 @@ function handleFocusInRaw(target, _tabKeyDownEvent) {
 }
 electron_1.ipcRenderer.on(events_1.R2_EVENT_READIUMCSS, (_event, payload) => {
     showHideContentMask(true, payload.isFixedLayout || win.READIUM2.isFixedLayout);
-    readium_css_1.readiumCSS(win.document, payload);
-    highlight_1.recreateAllHighlights(win);
+    (0, readium_css_1.readiumCSS)(win.document, payload);
+    (0, highlight_1.recreateAllHighlights)(win);
     showHideContentMask(false, payload.isFixedLayout || win.READIUM2.isFixedLayout);
 });
 let _docTitle;
@@ -1026,21 +1026,21 @@ win.addEventListener("DOMContentLoaded", () => {
         }
     }
     if (win.READIUM2.isAudio) {
-        audiobook_1.setupAudioBook(_docTitle, undefined);
+        (0, audiobook_1.setupAudioBook)(_docTitle, undefined);
     }
     if (readiumcssJson) {
         win.READIUM2.isFixedLayout = (typeof readiumcssJson.isFixedLayout !== "undefined") ?
             readiumcssJson.isFixedLayout : false;
     }
     if (!win.READIUM2.isFixedLayout && !win.READIUM2.isAudio) {
-        const scrollElement = readium_css_1.getScrollingElement(win.document);
+        const scrollElement = (0, readium_css_1.getScrollingElement)(win.document);
         if (!scrollElement.classList.contains(styles_1.ZERO_TRANSFORM_CLASS)) {
             scrollElement.classList.add(styles_1.ZERO_TRANSFORM_CLASS);
         }
     }
     const w = (readiumcssJson && readiumcssJson.fixedLayoutWebViewWidth) || win.innerWidth;
     const h = (readiumcssJson && readiumcssJson.fixedLayoutWebViewHeight) || win.innerHeight;
-    const wh = readium_css_inject_1.configureFixedLayout(win.document, win.READIUM2.isFixedLayout, win.READIUM2.fxlViewportWidth, win.READIUM2.fxlViewportHeight, w, h, win.READIUM2.webViewSlot);
+    const wh = (0, readium_css_inject_1.configureFixedLayout)(win.document, win.READIUM2.isFixedLayout, win.READIUM2.fxlViewportWidth, win.READIUM2.fxlViewportHeight, w, h, win.READIUM2.webViewSlot);
     if (wh) {
         win.READIUM2.fxlViewportWidth = wh.width;
         win.READIUM2.fxlViewportHeight = wh.height;
@@ -1050,23 +1050,23 @@ win.addEventListener("DOMContentLoaded", () => {
     if (alreadedInjected) {
         debug(">>>>> ReadiumCSS already injected by streamer");
     }
-    readium_css_1.computeVerticalRTL();
+    (0, readium_css_1.computeVerticalRTL)();
     if (readiumcssJson) {
-        if (readium_css_1.isVerticalWritingMode() ||
+        if ((0, readium_css_1.isVerticalWritingMode)() ||
             !alreadedInjected) {
             debug(">>>>>> ReadiumCSS inject again");
-            readium_css_1.readiumCSS(win.document, readiumcssJson);
+            (0, readium_css_1.readiumCSS)(win.document, readiumcssJson);
         }
     }
     if (!win.READIUM2.isFixedLayout) {
         if (!alreadedInjected) {
-            readium_css_inject_1.injectDefaultCSS(win.document);
+            (0, readium_css_inject_1.injectDefaultCSS)(win.document);
             if (IS_DEV) {
-                readium_css_inject_1.injectReadPosCSS(win.document);
+                (0, readium_css_inject_1.injectReadPosCSS)(win.document);
             }
         }
         if (alreadedInjected) {
-            readium_css_1.checkHiddenFootNotes(win.document);
+            (0, readium_css_1.checkHiddenFootNotes)(win.document);
         }
     }
     setTimeout(() => {
@@ -1146,10 +1146,10 @@ const onScrollRaw = () => {
         debug("onScrollRaw VISIBLE SKIP");
         return;
     }
-    const x = (readium_css_1.isRTL() ? win.document.documentElement.offsetWidth - 1 : 0);
+    const x = ((0, readium_css_1.isRTL)() ? win.document.documentElement.offsetWidth - 1 : 0);
     processXYRaw(x, 0, false);
 };
-const onScrollDebounced = debounce_1.debounce(() => {
+const onScrollDebounced = (0, debounce_1.debounce)(() => {
     onScrollRaw();
 }, 300);
 let _loaded = false;
@@ -1226,7 +1226,7 @@ function loaded(forced) {
         return;
     }
     win.document.body.addEventListener("focusin", (ev) => {
-        if (popup_dialog_1.isPopupDialogOpen(win.document)) {
+        if ((0, popup_dialog_1.isPopupDialogOpen)(win.document)) {
             return;
         }
         if (ev.target) {
@@ -1310,7 +1310,7 @@ function loaded(forced) {
         }
         ev.preventDefault();
         ev.stopPropagation();
-        const done = popupFootNotes_1.popupFootNote(currentElement, focusScrollRaw, hrefStr, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+        const done = (0, popupFootNotes_1.popupFootNote)(currentElement, focusScrollRaw, hrefStr, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
         if (!done) {
             focusScrollDebounced.clear();
             processXYDebouncedImmediate.clear();
@@ -1328,7 +1328,7 @@ function loaded(forced) {
         return false;
     }, true);
     const onResizeRaw = () => {
-        const wh = readium_css_inject_1.configureFixedLayout(win.document, win.READIUM2.isFixedLayout, win.READIUM2.fxlViewportWidth, win.READIUM2.fxlViewportHeight, win.innerWidth, win.innerHeight, win.READIUM2.webViewSlot);
+        const wh = (0, readium_css_inject_1.configureFixedLayout)(win.document, win.READIUM2.isFixedLayout, win.READIUM2.fxlViewportWidth, win.READIUM2.fxlViewportHeight, win.innerWidth, win.innerHeight, win.READIUM2.webViewSlot);
         if (wh) {
             win.READIUM2.fxlViewportWidth = wh.width;
             win.READIUM2.fxlViewportHeight = wh.height;
@@ -1337,7 +1337,7 @@ function loaded(forced) {
         debug("++++ scrollToHashDebounced FROM RESIZE");
         scrollToHashDebounced(false);
     };
-    const onResizeDebounced = debounce_1.debounce(() => {
+    const onResizeDebounced = (0, debounce_1.debounce)(() => {
         onResizeRaw();
     }, 200);
     let _firstWindowResize = true;
@@ -1369,7 +1369,7 @@ function loaded(forced) {
             return;
         }
         const documant = win.document;
-        const isPaged = readium_css_inject_1.isPaginated(documant);
+        const isPaged = (0, readium_css_inject_1.isPaginated)(documant);
         if (isPaged) {
             return;
         }
@@ -1380,16 +1380,16 @@ function loaded(forced) {
         }
         _wheelSpin = 0;
         _wheelTimeStamp = -1;
-        const scrollElement = readium_css_1.getScrollingElement(documant);
+        const scrollElement = (0, readium_css_1.getScrollingElement)(documant);
         const goPREVIOUS = ev.deltaY < 0;
         if (!goPREVIOUS) {
-            const maxScrollShift = readium_css_1.calculateMaxScrollShift().maxScrollShift;
+            const maxScrollShift = (0, readium_css_1.calculateMaxScrollShift)().maxScrollShift;
             const maxScrollShiftTolerated = maxScrollShift - CSS_PIXEL_TOLERANCE;
             if (isPaged) {
-                const unit = readium_css_1.isVerticalWritingMode() ?
+                const unit = (0, readium_css_1.isVerticalWritingMode)() ?
                     win.document.documentElement.offsetHeight :
                     win.document.documentElement.offsetWidth;
-                let scrollElementOffset = Math.round(readium_css_1.isVerticalWritingMode() ?
+                let scrollElementOffset = Math.round((0, readium_css_1.isVerticalWritingMode)() ?
                     scrollElement.scrollTop :
                     scrollElement.scrollLeft);
                 const isNegative = scrollElementOffset < 0;
@@ -1404,8 +1404,8 @@ function loaded(forced) {
                 else if (partial >= (unit - CSS_PIXEL_TOLERANCE)) {
                     scrollElementOffset = (isNegative ? -1 : 1) * (integral + 1) * unit;
                 }
-                if (readium_css_1.isVerticalWritingMode() && (scrollElementOffsetAbs >= maxScrollShiftTolerated) ||
-                    !readium_css_1.isVerticalWritingMode() && (scrollElementOffsetAbs >= maxScrollShiftTolerated)) {
+                if ((0, readium_css_1.isVerticalWritingMode)() && (scrollElementOffsetAbs >= maxScrollShiftTolerated) ||
+                    !(0, readium_css_1.isVerticalWritingMode)() && (scrollElementOffsetAbs >= maxScrollShiftTolerated)) {
                     const payload = {
                         direction: "LTR",
                         go: "NEXT",
@@ -1415,8 +1415,8 @@ function loaded(forced) {
                 }
             }
             else {
-                if (readium_css_1.isVerticalWritingMode() && (Math.abs(scrollElement.scrollLeft) >= maxScrollShiftTolerated) ||
-                    !readium_css_1.isVerticalWritingMode() && (Math.abs(scrollElement.scrollTop) >= maxScrollShiftTolerated)) {
+                if ((0, readium_css_1.isVerticalWritingMode)() && (Math.abs(scrollElement.scrollLeft) >= maxScrollShiftTolerated) ||
+                    !(0, readium_css_1.isVerticalWritingMode)() && (Math.abs(scrollElement.scrollTop) >= maxScrollShiftTolerated)) {
                     const payload = {
                         direction: "LTR",
                         go: "NEXT",
@@ -1428,10 +1428,10 @@ function loaded(forced) {
         }
         else if (goPREVIOUS) {
             if (isPaged) {
-                const unit = readium_css_1.isVerticalWritingMode() ?
+                const unit = (0, readium_css_1.isVerticalWritingMode)() ?
                     win.document.documentElement.offsetHeight :
                     win.document.documentElement.offsetWidth;
-                let scrollElementOffset = Math.round(readium_css_1.isVerticalWritingMode() ?
+                let scrollElementOffset = Math.round((0, readium_css_1.isVerticalWritingMode)() ?
                     scrollElement.scrollTop :
                     scrollElement.scrollLeft);
                 const isNegative = scrollElementOffset < 0;
@@ -1446,8 +1446,8 @@ function loaded(forced) {
                 else if (partial >= (unit - CSS_PIXEL_TOLERANCE)) {
                     scrollElementOffset = (isNegative ? -1 : 1) * (integral + 1) * unit;
                 }
-                if (readium_css_1.isVerticalWritingMode() && (scrollElementOffsetAbs <= 0) ||
-                    !readium_css_1.isVerticalWritingMode() && (scrollElementOffsetAbs <= 0)) {
+                if ((0, readium_css_1.isVerticalWritingMode)() && (scrollElementOffsetAbs <= 0) ||
+                    !(0, readium_css_1.isVerticalWritingMode)() && (scrollElementOffsetAbs <= 0)) {
                     const payload = {
                         direction: "LTR",
                         go: "PREVIOUS",
@@ -1457,8 +1457,8 @@ function loaded(forced) {
                 }
             }
             else {
-                if (readium_css_1.isVerticalWritingMode() && (Math.abs(scrollElement.scrollLeft) <= 0) ||
-                    !readium_css_1.isVerticalWritingMode() && (Math.abs(scrollElement.scrollTop) <= 0)) {
+                if ((0, readium_css_1.isVerticalWritingMode)() && (Math.abs(scrollElement.scrollLeft) <= 0) ||
+                    !(0, readium_css_1.isVerticalWritingMode)() && (Math.abs(scrollElement.scrollTop) <= 0)) {
                     const payload = {
                         direction: "LTR",
                         go: "PREVIOUS",
@@ -1494,7 +1494,7 @@ function loaded(forced) {
         });
     }, 200);
     function handleMouseEvent(ev) {
-        if (popup_dialog_1.isPopupDialogOpen(win.document)) {
+        if ((0, popup_dialog_1.isPopupDialogOpen)(win.document)) {
             return;
         }
         const x = ev.clientX;
@@ -1523,10 +1523,10 @@ function loaded(forced) {
         if (element && win.READIUM2.ttsClickEnabled) {
             if (element) {
                 if (ev.altKey) {
-                    readaloud_1.ttsPlay(win.READIUM2.ttsPlaybackRate, win.READIUM2.ttsVoice, focusScrollRaw, element, undefined, undefined, -1, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+                    (0, readaloud_1.ttsPlay)(win.READIUM2.ttsPlaybackRate, win.READIUM2.ttsVoice, focusScrollRaw, element, undefined, undefined, -1, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
                     return;
                 }
-                readaloud_1.ttsPlay(win.READIUM2.ttsPlaybackRate, win.READIUM2.ttsVoice, focusScrollRaw, element.ownerDocument.body, element, textNode, textNodeOffset, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+                (0, readaloud_1.ttsPlay)(win.READIUM2.ttsPlaybackRate, win.READIUM2.ttsVoice, focusScrollRaw, element.ownerDocument.body, element, textNode, textNodeOffset, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
             }
         }
     }
@@ -1648,7 +1648,7 @@ function findFirstVisibleElement(rootElement) {
     return undefined;
 }
 const processXYRaw = (x, y, reverse, userInteract) => {
-    if (popup_dialog_1.isPopupDialogOpen(win.document)) {
+    if ((0, popup_dialog_1.isPopupDialogOpen)(win.document)) {
         return;
     }
     let element;
@@ -1737,31 +1737,31 @@ const processXYRaw = (x, y, reverse, userInteract) => {
         }
     }
 };
-const processXYDebouncedImmediate = debounce_1.debounce((x, y, reverse, userInteract) => {
+const processXYDebouncedImmediate = (0, debounce_1.debounce)((x, y, reverse, userInteract) => {
     processXYRaw(x, y, reverse, userInteract);
 }, 300, true);
 const computeProgressionData = () => {
-    const isPaged = readium_css_inject_1.isPaginated(win.document);
-    const isTwoPage = readium_css_1.isTwoPageSpread();
-    const { maxScrollShift, maxScrollShiftAdjusted } = readium_css_1.calculateMaxScrollShift();
-    const totalColumns = readium_css_1.calculateTotalColumns();
+    const isPaged = (0, readium_css_inject_1.isPaginated)(win.document);
+    const isTwoPage = (0, readium_css_1.isTwoPageSpread)();
+    const { maxScrollShift, maxScrollShiftAdjusted } = (0, readium_css_1.calculateMaxScrollShift)();
+    const totalColumns = (0, readium_css_1.calculateTotalColumns)();
     let progressionRatio = 0;
     let currentColumn = 0;
-    const scrollElement = readium_css_1.getScrollingElement(win.document);
+    const scrollElement = (0, readium_css_1.getScrollingElement)(win.document);
     let extraShift = 0;
     if (isPaged) {
         if (maxScrollShift > 0) {
-            if (readium_css_1.isVerticalWritingMode()) {
+            if ((0, readium_css_1.isVerticalWritingMode)()) {
                 progressionRatio = scrollElement.scrollTop / maxScrollShift;
             }
             else {
                 extraShift = scrollElement.scrollLeftExtra;
                 if (extraShift) {
-                    progressionRatio = (((readium_css_1.isRTL() ? -1 : 1) * scrollElement.scrollLeft) + extraShift) /
+                    progressionRatio = ((((0, readium_css_1.isRTL)() ? -1 : 1) * scrollElement.scrollLeft) + extraShift) /
                         maxScrollShiftAdjusted;
                 }
                 else {
-                    progressionRatio = ((readium_css_1.isRTL() ? -1 : 1) * scrollElement.scrollLeft) / maxScrollShift;
+                    progressionRatio = (((0, readium_css_1.isRTL)() ? -1 : 1) * scrollElement.scrollLeft) / maxScrollShift;
                 }
             }
         }
@@ -1771,8 +1771,8 @@ const computeProgressionData = () => {
     }
     else {
         if (maxScrollShift > 0) {
-            if (readium_css_1.isVerticalWritingMode()) {
-                progressionRatio = ((readium_css_1.isRTL() ? -1 : 1) * scrollElement.scrollLeft) / maxScrollShift;
+            if ((0, readium_css_1.isVerticalWritingMode)()) {
+                progressionRatio = (((0, readium_css_1.isRTL)() ? -1 : 1) * scrollElement.scrollLeft) / maxScrollShift;
             }
             else {
                 progressionRatio = scrollElement.scrollTop / maxScrollShift;
@@ -1786,22 +1786,22 @@ const computeProgressionData = () => {
             const visible = computeVisibility_(element, undefined);
             if (visible) {
                 const curCol = extraShift ? (currentColumn - 1) : currentColumn;
-                const columnDimension = readium_css_1.calculateColumnDimension();
-                if (readium_css_1.isVerticalWritingMode()) {
+                const columnDimension = (0, readium_css_1.calculateColumnDimension)();
+                if ((0, readium_css_1.isVerticalWritingMode)()) {
                     const rect = element.getBoundingClientRect();
                     offset = (curCol * scrollElement.scrollWidth) + rect.left +
                         (rect.top >= columnDimension ? scrollElement.scrollWidth : 0);
                 }
                 else {
                     const boundingRect = element.getBoundingClientRect();
-                    const clientRects = rect_utils_1.getClientRectsNoOverlap_(element.getClientRects(), false);
+                    const clientRects = (0, rect_utils_1.getClientRectsNoOverlap_)(element.getClientRects(), false);
                     let rectangle;
                     for (const rect of clientRects) {
                         if (!rectangle) {
                             rectangle = rect;
                             continue;
                         }
-                        if (readium_css_1.isRTL()) {
+                        if ((0, readium_css_1.isRTL)()) {
                             if ((rect.left + rect.width) > (columnDimension * (isTwoPage ? 2 : 1))) {
                                 continue;
                             }
@@ -1842,7 +1842,7 @@ const computeProgressionData = () => {
                     }
                     offset = (curCol * scrollElement.scrollHeight) + rectangle.top;
                     if (isTwoPage) {
-                        if (readium_css_1.isRTL()) {
+                        if ((0, readium_css_1.isRTL)()) {
                             if (rectangle.left < columnDimension) {
                                 offset += scrollElement.scrollHeight;
                             }
@@ -1854,7 +1854,7 @@ const computeProgressionData = () => {
                         }
                     }
                 }
-                const totalDocumentDimension = ((readium_css_1.isVerticalWritingMode() ? scrollElement.scrollWidth :
+                const totalDocumentDimension = (((0, readium_css_1.isVerticalWritingMode)() ? scrollElement.scrollWidth :
                     scrollElement.scrollHeight) * totalColumns);
                 progressionRatio = offset / totalDocumentDimension;
                 currentColumn = totalColumns * progressionRatio;
@@ -1863,14 +1863,14 @@ const computeProgressionData = () => {
         }
         else {
             const rect = element.getBoundingClientRect();
-            if (readium_css_1.isVerticalWritingMode()) {
-                offset = ((readium_css_1.isRTL() ? -1 : 1) * scrollElement.scrollLeft) + rect.left + (readium_css_1.isRTL() ? rect.width : 0);
+            if ((0, readium_css_1.isVerticalWritingMode)()) {
+                offset = (((0, readium_css_1.isRTL)() ? -1 : 1) * scrollElement.scrollLeft) + rect.left + ((0, readium_css_1.isRTL)() ? rect.width : 0);
             }
             else {
                 offset = scrollElement.scrollTop + rect.top;
             }
             progressionRatio = offset /
-                (readium_css_1.isVerticalWritingMode() ? scrollElement.scrollWidth : scrollElement.scrollHeight);
+                ((0, readium_css_1.isVerticalWritingMode)() ? scrollElement.scrollWidth : scrollElement.scrollHeight);
         }
     }
     let spreadIndex = 0;
@@ -1974,7 +1974,7 @@ const _getCssSelectorOptions = {
 };
 function getCssSelector(element) {
     try {
-        return cssselector2_1.uniqueCssSelector(element, win.document, _getCssSelectorOptions);
+        return (0, cssselector2_1.uniqueCssSelector)(element, win.document, _getCssSelectorOptions);
     }
     catch (err) {
         debug("uniqueCssSelector:");
@@ -2044,18 +2044,18 @@ const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays) => {
     }
     let progressionData;
     let cssSelector = getCssSelector(win.READIUM2.locationHashOverride);
-    let cfi = exports.computeCFI(win.READIUM2.locationHashOverride);
+    let cfi = (0, exports.computeCFI)(win.READIUM2.locationHashOverride);
     let progression = 0;
     if (win.READIUM2.isFixedLayout) {
         progression = 1;
     }
     else {
-        progressionData = exports.computeProgressionData();
+        progressionData = (0, exports.computeProgressionData)();
         progression = progressionData.percentRatio;
     }
     const pinfo = (progressionData && progressionData.paginationInfo) ?
         progressionData.paginationInfo : undefined;
-    const selInfo = selection_2.getCurrentSelectionInfo(win, getCssSelector, exports.computeCFI);
+    const selInfo = (0, selection_2.getCurrentSelectionInfo)(win, getCssSelector, exports.computeCFI);
     if (selInfo) {
         cssSelector = selInfo.rangeInfo.startContainerElementCssSelector;
         cfi = selInfo.rangeInfo.startContainerElementCFI;
@@ -2070,7 +2070,7 @@ const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays) => {
         selectionIsNew =
             !win.READIUM2.locationHashOverrideInfo ||
                 !win.READIUM2.locationHashOverrideInfo.selectionInfo ||
-                !selection_1.sameSelections(win.READIUM2.locationHashOverrideInfo.selectionInfo, selInfo);
+                !(0, selection_1.sameSelections)(win.READIUM2.locationHashOverrideInfo.selectionInfo, selInfo);
     }
     const epubPage = findPrecedingAncestorSiblingEpubPageBreak(win.READIUM2.locationHashOverride);
     const secondWebViewHref = win.READIUM2.urlQueryParams &&
@@ -2083,8 +2083,8 @@ const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays) => {
         audioPlaybackInfo: undefined,
         docInfo: {
             isFixedLayout: win.READIUM2.isFixedLayout,
-            isRightToLeft: readium_css_1.isRTL(),
-            isVerticalWritingMode: readium_css_1.isVerticalWritingMode(),
+            isRightToLeft: (0, readium_css_1.isRTL)(),
+            isVerticalWritingMode: (0, readium_css_1.isVerticalWritingMode)(),
         },
         epubPage,
         href: "",
@@ -2115,38 +2115,38 @@ const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays) => {
         win.READIUM2.locationHashOverride.setAttribute(styles_1.readPosCssStylesAttr4, "notifyReadingLocationRaw");
     }
 };
-const notifyReadingLocationDebounced = debounce_1.debounce((userInteract, ignoreMediaOverlays) => {
+const notifyReadingLocationDebounced = (0, debounce_1.debounce)((userInteract, ignoreMediaOverlays) => {
     notifyReadingLocationRaw(userInteract, ignoreMediaOverlays);
 }, 250);
-const notifyReadingLocationDebouncedImmediate = debounce_1.debounce((userInteract, ignoreMediaOverlays) => {
+const notifyReadingLocationDebouncedImmediate = (0, debounce_1.debounce)((userInteract, ignoreMediaOverlays) => {
     notifyReadingLocationRaw(userInteract, ignoreMediaOverlays);
 }, 250, true);
 if (!win.READIUM2.isAudio) {
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_PLAY, (_event, payload) => {
         const rootElement = win.document.querySelector(payload.rootElement);
         const startElement = payload.startElement ? win.document.querySelector(payload.startElement) : null;
-        readaloud_1.ttsPlay(payload.speed, payload.voice, focusScrollRaw, rootElement ? rootElement : undefined, startElement ? startElement : undefined, undefined, -1, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+        (0, readaloud_1.ttsPlay)(payload.speed, payload.voice, focusScrollRaw, rootElement ? rootElement : undefined, startElement ? startElement : undefined, undefined, -1, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_STOP, (_event) => {
-        readaloud_1.ttsStop();
+        (0, readaloud_1.ttsStop)();
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_PAUSE, (_event) => {
-        readaloud_1.ttsPause();
+        (0, readaloud_1.ttsPause)();
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_RESUME, (_event) => {
-        readaloud_1.ttsResume();
+        (0, readaloud_1.ttsResume)();
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_NEXT, (_event, payload) => {
-        readaloud_1.ttsNext(payload === null || payload === void 0 ? void 0 : payload.skipSentences);
+        (0, readaloud_1.ttsNext)(payload === null || payload === void 0 ? void 0 : payload.skipSentences);
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_PREVIOUS, (_event, payload) => {
-        readaloud_1.ttsPrevious(payload === null || payload === void 0 ? void 0 : payload.skipSentences);
+        (0, readaloud_1.ttsPrevious)(payload === null || payload === void 0 ? void 0 : payload.skipSentences);
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_PLAYBACK_RATE, (_event, payload) => {
-        readaloud_1.ttsPlaybackRate(payload.speed);
+        (0, readaloud_1.ttsPlaybackRate)(payload.speed);
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_VOICE, (_event, payload) => {
-        readaloud_1.ttsVoice(payload.voice);
+        (0, readaloud_1.ttsVoice)(payload.voice);
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_SENTENCE_DETECT_ENABLE, (_event, payload) => {
         win.READIUM2.ttsSentenceDetectionEnabled = payload.doEnable;
@@ -2189,7 +2189,7 @@ if (!win.READIUM2.isAudio) {
                 if (payload.captionsMode) {
                     let text = targetEl.textContent;
                     if (text) {
-                        text = dom_text_utils_1.normalizeText(text).trim();
+                        text = (0, dom_text_utils_1.normalizeText)(text).trim();
                         if (text) {
                             removeCaptionContainer = false;
                             const isUserBackground = styleAttr ?
@@ -2293,10 +2293,10 @@ if (!win.READIUM2.isAudio) {
             payloadPing.highlightDefinitions;
         for (const highlightDefinition of highlightDefinitions) {
             if (!highlightDefinition.selectionInfo) {
-                highlightDefinition.selectionInfo = selection_2.getCurrentSelectionInfo(win, getCssSelector, exports.computeCFI);
+                highlightDefinition.selectionInfo = (0, selection_2.getCurrentSelectionInfo)(win, getCssSelector, exports.computeCFI);
             }
         }
-        const highlights = highlight_1.createHighlights(win, highlightDefinitions, true);
+        const highlights = (0, highlight_1.createHighlights)(win, highlightDefinitions, true);
         const payloadPong = {
             highlightDefinitions: payloadPing.highlightDefinitions,
             highlights: highlights.length ? highlights : undefined,
@@ -2305,11 +2305,11 @@ if (!win.READIUM2.isAudio) {
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_HIGHLIGHT_REMOVE, (_event, payload) => {
         payload.highlightIDs.forEach((highlightID) => {
-            highlight_1.destroyHighlight(win.document, highlightID);
+            (0, highlight_1.destroyHighlight)(win.document, highlightID);
         });
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_HIGHLIGHT_REMOVE_ALL, (_event) => {
-        highlight_1.destroyAllhighlights(win.document);
+        (0, highlight_1.destroyAllhighlights)(win.document);
     });
 }
 //# sourceMappingURL=preload.js.map

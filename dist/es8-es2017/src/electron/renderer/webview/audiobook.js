@@ -235,7 +235,7 @@ function setupAudioBook(_docTitle, audioPlaybackRate) {
     const notifyPlaybackLocationThrottled = throttle(() => {
         notifyPlaybackLocation();
     }, 1000);
-    const progressDebounced = debounce_1.debounce((progress) => {
+    const progressDebounced = (0, debounce_1.debounce)((progress) => {
         if (progress) {
             win.document.documentElement.classList.add(styles_1.AUDIO_PROGRESS_CLASS);
         }

@@ -120,7 +120,7 @@ exports.secureSessions = secureSessions;
 let _customUrlProtocolSchemeHandlerWasCalled = false;
 const streamProtocolHandler = async (req, callback) => {
     _customUrlProtocolSchemeHandlerWasCalled = true;
-    const url = sessions_1.convertCustomSchemeToHttpUrl(req.url);
+    const url = (0, sessions_1.convertCustomSchemeToHttpUrl)(req.url);
     const u = new URL(url);
     let ref = u.origin;
     if (req.referrer && req.referrer.trim()) {
@@ -202,7 +202,7 @@ const streamProtocolHandler = async (req, callback) => {
 };
 const httpProtocolHandler = (req, callback) => {
     _customUrlProtocolSchemeHandlerWasCalled = true;
-    const url = sessions_1.convertCustomSchemeToHttpUrl(req.url);
+    const url = (0, sessions_1.convertCustomSchemeToHttpUrl)(req.url);
     callback({
         method: req.method,
         session: getWebViewSession(),
@@ -233,10 +233,10 @@ const transformerAudioVideo = (_publication, link, url, htmlStr, _sessionInfo) =
     if (link && link.TypeLink) {
         mediaType = link.TypeLink;
     }
-    const documant = dom_1.parseDOM(htmlStrToParse, mediaType);
+    const documant = (0, dom_1.parseDOM)(htmlStrToParse, mediaType);
     let urlHttp = url;
     if (urlHttp.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
-        urlHttp = sessions_1.convertCustomSchemeToHttpUrl(urlHttp);
+        urlHttp = (0, sessions_1.convertCustomSchemeToHttpUrl)(urlHttp);
     }
     const url_ = new URL(urlHttp);
     url_.search = "";
@@ -286,7 +286,7 @@ const transformerAudioVideo = (_publication, link, url, htmlStr, _sessionInfo) =
         }
     };
     processTree(documant.body);
-    const serialized = dom_1.serializeDOM(documant);
+    const serialized = (0, dom_1.serializeDOM)(documant);
     const prefix = htmlStr.substr(0, iHtmlStart);
     const iHtmlStart_ = serialized.indexOf("<html");
     if (iHtmlStart_ < 0) {
@@ -320,10 +320,10 @@ const transformerHttpBaseIframes = (_publication, link, url, htmlStr, _sessionIn
     if (link && link.TypeLink) {
         mediaType = link.TypeLink;
     }
-    const documant = dom_1.parseDOM(htmlStrToParse, mediaType);
+    const documant = (0, dom_1.parseDOM)(htmlStrToParse, mediaType);
     let urlHttp = url;
     if (!urlHttp.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
-        urlHttp = sessions_1.convertHttpUrlToCustomScheme(urlHttp);
+        urlHttp = (0, sessions_1.convertHttpUrlToCustomScheme)(urlHttp);
     }
     const url_ = new URL(urlHttp);
     const r2CSS = url_.searchParams.get(url_params_1.URL_PARAM_CSS);
@@ -392,7 +392,7 @@ const transformerHttpBaseIframes = (_publication, link, url, htmlStr, _sessionIn
         }
     };
     processTree(documant.body);
-    const serialized = dom_1.serializeDOM(documant);
+    const serialized = (0, dom_1.serializeDOM)(documant);
     const prefix = htmlStr.substr(0, iHtmlStart);
     const iHtmlStart_ = serialized.indexOf("<html");
     if (iHtmlStart_ < 0) {
@@ -415,7 +415,7 @@ const transformerHttpBase = (publication, link, url, htmlStr, sessionInfo) => {
     }
     let urlHttp = url;
     if (urlHttp.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
-        urlHttp = sessions_1.convertCustomSchemeToHttpUrl(urlHttp);
+        urlHttp = (0, sessions_1.convertCustomSchemeToHttpUrl)(urlHttp);
     }
     const url_ = new URL(urlHttp);
     url_.search = "";

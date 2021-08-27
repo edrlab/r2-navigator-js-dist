@@ -48,13 +48,13 @@ function ttsPlay(speed, voice, focusScrollRaw, rootElem, startElem, startTextNod
         rootEl = win.document.body;
     }
     var splitSentences = win.READIUM2.ttsSentenceDetectionEnabled;
-    var ttsQueue = dom_text_utils_1.generateTtsQueue(rootEl, splitSentences);
+    var ttsQueue = (0, dom_text_utils_1.generateTtsQueue)(rootEl, splitSentences);
     if (!ttsQueue.length) {
         return;
     }
     var ttsQueueIndex = -1;
     if (startElem) {
-        var idx = dom_text_utils_1.findTtsQueueItemIndex(ttsQueue, startElem, startTextNode, startTextNodeOffset, rootEl);
+        var idx = (0, dom_text_utils_1.findTtsQueueItemIndex)(ttsQueue, startElem, startTextNode, startTextNodeOffset, rootEl);
         if (idx >= 0) {
             ttsQueueIndex = idx;
         }
@@ -176,7 +176,7 @@ function ttsPauseOrResume() {
 exports.ttsPauseOrResume = ttsPauseOrResume;
 function ttsQueueSize() {
     if (_dialogState && _dialogState.ttsQueue) {
-        dom_text_utils_1.getTtsQueueLength(_dialogState.ttsQueue);
+        (0, dom_text_utils_1.getTtsQueueLength)(_dialogState.ttsQueue);
     }
     return -1;
 }
@@ -190,7 +190,7 @@ function ttsQueueCurrentIndex() {
 exports.ttsQueueCurrentIndex = ttsQueueCurrentIndex;
 function ttsQueueCurrentText() {
     if (_dialogState && _dialogState.ttsQueueItem) {
-        return dom_text_utils_1.getTtsQueueItemRefText(_dialogState.ttsQueueItem);
+        return (0, dom_text_utils_1.getTtsQueueItemRefText)(_dialogState.ttsQueueItem);
     }
     return undefined;
 }
@@ -249,7 +249,7 @@ var _getCssSelectorOptions = {
 };
 function getCssSelector(element) {
     try {
-        return cssselector2_1.uniqueCssSelector(element, win.document, _getCssSelectorOptions);
+        return (0, cssselector2_1.uniqueCssSelector)(element, win.document, _getCssSelectorOptions);
     }
     catch (err) {
         console.log("uniqueCssSelector:");
@@ -267,7 +267,7 @@ function wrapHighlightWord(ttsQueueItemRef, utteranceText, charIndex, charLength
     if (_ttsQueueItemHighlightsWord) {
         _ttsQueueItemHighlightsWord.forEach(function (highlight) {
             if (highlight) {
-                highlight_2.destroyHighlight(win.document, highlight.id);
+                (0, highlight_2.destroyHighlight)(win.document, highlight.id);
             }
         });
         _ttsQueueItemHighlightsWord = undefined;
@@ -299,7 +299,7 @@ function wrapHighlightWord(ttsQueueItemRef, utteranceText, charIndex, charLength
     var rangeEndOffset = -1;
     var charIndexEnd = charIndexAdjusted + charLength;
     try {
-        for (var _b = tslib_1.__values(ttsQueueItem.textNodes), _c = _b.next(); !_c.done; _c = _b.next()) {
+        for (var _b = (0, tslib_1.__values)(ttsQueueItem.textNodes), _c = _b.next(); !_c.done; _c = _b.next()) {
             var txtNode = _c.value;
             if (!txtNode.nodeValue && txtNode.nodeValue !== "") {
                 continue;
@@ -334,7 +334,7 @@ function wrapHighlightWord(ttsQueueItemRef, utteranceText, charIndex, charLength
             var domRect = range.getBoundingClientRect();
             _dialogState.focusScrollRaw(ttsQueueItemRef.item.parentElement, false, true, domRect);
         }
-        var rangeInfo = selection_1.convertRange(range, getCssSelector, function (_node) { return ""; });
+        var rangeInfo = (0, selection_1.convertRange)(range, getCssSelector, function (_node) { return ""; });
         if (!rangeInfo) {
             return;
         }
@@ -354,7 +354,7 @@ function wrapHighlightWord(ttsQueueItemRef, utteranceText, charIndex, charLength
                 },
             },
         ];
-        _ttsQueueItemHighlightsWord = highlight_2.createHighlights(win, highlightDefinitions, false);
+        _ttsQueueItemHighlightsWord = (0, highlight_2.createHighlights)(win, highlightDefinitions, false);
     }
 }
 function wrapHighlight(doHighlight, ttsQueueItemRef) {
@@ -365,7 +365,7 @@ function wrapHighlight(doHighlight, ttsQueueItemRef) {
     if (_ttsQueueItemHighlightsWord) {
         _ttsQueueItemHighlightsWord.forEach(function (highlight) {
             if (highlight) {
-                highlight_2.destroyHighlight(win.document, highlight.id);
+                (0, highlight_2.destroyHighlight)(win.document, highlight.id);
             }
         });
         _ttsQueueItemHighlightsWord = undefined;
@@ -373,7 +373,7 @@ function wrapHighlight(doHighlight, ttsQueueItemRef) {
     if (_ttsQueueItemHighlightsSentence) {
         _ttsQueueItemHighlightsSentence.forEach(function (highlight) {
             if (highlight) {
-                highlight_2.destroyHighlight(win.document, highlight.id);
+                (0, highlight_2.destroyHighlight)(win.document, highlight.id);
             }
         });
         _ttsQueueItemHighlightsSentence = undefined;
@@ -395,7 +395,7 @@ function wrapHighlight(doHighlight, ttsQueueItemRef) {
             var rangeEndNode = void 0;
             var rangeEndOffset = -1;
             try {
-                for (var _b = tslib_1.__values(ttsQueueItemRef.item.textNodes), _c = _b.next(); !_c.done; _c = _b.next()) {
+                for (var _b = (0, tslib_1.__values)(ttsQueueItemRef.item.textNodes), _c = _b.next(); !_c.done; _c = _b.next()) {
                     var txtNode = _c.value;
                     if (!txtNode.nodeValue && txtNode.nodeValue !== "") {
                         continue;
@@ -446,7 +446,7 @@ function wrapHighlight(doHighlight, ttsQueueItemRef) {
                 var domRect = range.getBoundingClientRect();
                 _dialogState.focusScrollRaw(ttsQueueItemRef.item.parentElement, false, true, domRect);
             }
-            var rangeInfo = selection_1.convertRange(range, getCssSelector, function (_node) { return ""; });
+            var rangeInfo = (0, selection_1.convertRange)(range, getCssSelector, function (_node) { return ""; });
             if (!rangeInfo) {
                 return;
             }
@@ -466,7 +466,7 @@ function wrapHighlight(doHighlight, ttsQueueItemRef) {
                     },
                 },
             ];
-            _ttsQueueItemHighlightsSentence = highlight_2.createHighlights(win, highlightDefinitions, false);
+            _ttsQueueItemHighlightsSentence = (0, highlight_2.createHighlights)(win, highlightDefinitions, false);
         }
     }
 }
@@ -497,7 +497,7 @@ function highlights(doHighlight) {
 }
 var _lastAnimState;
 var animationTime = 400;
-var scrollIntoViewSpokenTextDebounced = debounce_1.debounce(function (id) {
+var scrollIntoViewSpokenTextDebounced = (0, debounce_1.debounce)(function (id) {
     scrollIntoViewSpokenText(id);
 }, 200);
 function scrollIntoViewSpokenText(id) {
@@ -529,7 +529,7 @@ function scrollIntoViewSpokenText(id) {
             targetObj[targetProp] = offset;
         }
         else {
-            _lastAnimState = animateProperty_1.animateProperty(win.cancelAnimationFrame, undefined, targetProp, animationTime, targetObj, offset, win.requestAnimationFrame, easings_1.easings.easeInOutQuad);
+            _lastAnimState = (0, animateProperty_1.animateProperty)(win.cancelAnimationFrame, undefined, targetProp, animationTime, targetObj, offset, win.requestAnimationFrame, easings_1.easings.easeInOutQuad);
         }
     }
 }
@@ -550,7 +550,7 @@ function updateTTSInfo(charIndex, charLength, utteranceText) {
         ttsQueueItem.item.parentElement) {
         _dialogState.focusScrollRaw(ttsQueueItem.item.parentElement, false, true, undefined);
     }
-    var ttsQueueItemText = utteranceText ? utteranceText : dom_text_utils_1.getTtsQueueItemRefText(ttsQueueItem);
+    var ttsQueueItemText = utteranceText ? utteranceText : (0, dom_text_utils_1.getTtsQueueItemRefText)(ttsQueueItem);
     var ttsQueueItemMarkup = ttsQueueItemText;
     if (charIndex >= 0 && utteranceText) {
         var start = utteranceText.slice(0, charIndex + 1).search(/\S+$/);
@@ -564,8 +564,8 @@ function updateTTSInfo(charIndex, charLength, utteranceText) {
             var after = utteranceText.substr(end);
             var l = before.length + word.length + after.length;
             ttsQueueItemMarkup = (l === utteranceText.length) ?
-                "" + dom_text_utils_1.normalizeHtmlText(before) + prefix + dom_text_utils_1.normalizeHtmlText(word) + suffix + dom_text_utils_1.normalizeHtmlText(after) :
-                dom_text_utils_1.normalizeHtmlText(utteranceText);
+                "" + (0, dom_text_utils_1.normalizeHtmlText)(before) + prefix + (0, dom_text_utils_1.normalizeHtmlText)(word) + suffix + (0, dom_text_utils_1.normalizeHtmlText)(after) :
+                (0, dom_text_utils_1.normalizeHtmlText)(utteranceText);
         }
         else {
             wrapHighlightWord(ttsQueueItem, utteranceText, charIndex, charLength, word, start, end);
@@ -587,11 +587,11 @@ function updateTTSInfo(charIndex, charLength, utteranceText) {
             if (activeWordElem) {
                 var index = parseInt(indexStr, 10);
                 if (!isNaN(index)) {
-                    var ttsQItem = dom_text_utils_1.getTtsQueueItemRef(_dialogState.ttsQueue, index);
+                    var ttsQItem = (0, dom_text_utils_1.getTtsQueueItemRef)(_dialogState.ttsQueue, index);
                     if (ttsQItem) {
-                        var txt = dom_text_utils_1.getTtsQueueItemRefText(ttsQItem);
+                        var txt = (0, dom_text_utils_1.getTtsQueueItemRefText)(ttsQItem);
                         try {
-                            activeUtteranceElem.innerHTML = dom_text_utils_1.normalizeHtmlText(txt);
+                            activeUtteranceElem.innerHTML = (0, dom_text_utils_1.normalizeHtmlText)(txt);
                         }
                         catch (err) {
                             console.log(err);
@@ -620,7 +620,7 @@ function updateTTSInfo(charIndex, charLength, utteranceText) {
     else {
         var fullMarkup = "";
         for (var i = 0; i < _dialogState.ttsQueueLength; i++) {
-            var ttsQItem = dom_text_utils_1.getTtsQueueItemRef(_dialogState.ttsQueue, i);
+            var ttsQItem = (0, dom_text_utils_1.getTtsQueueItemRef)(_dialogState.ttsQueue, i);
             if (!ttsQItem) {
                 continue;
             }
@@ -666,7 +666,7 @@ function updateTTSInfo(charIndex, charLength, utteranceText) {
                 ttsQItemMarkupAttributes += " id=\"" + styles_1.TTS_ID_ACTIVE_UTTERANCE + "\" ";
             }
             else {
-                ttsQItemMarkup = dom_text_utils_1.normalizeHtmlText(dom_text_utils_1.getTtsQueueItemRefText(ttsQItem));
+                ttsQItemMarkup = (0, dom_text_utils_1.normalizeHtmlText)((0, dom_text_utils_1.getTtsQueueItemRefText)(ttsQItem));
             }
             var imageMarkup = "";
             if (ttsQItem.item.parentElement && ttsQItem.item.parentElement.tagName &&
@@ -705,7 +705,7 @@ function updateTTSInfo(charIndex, charLength, utteranceText) {
     scrollIntoViewSpokenTextDebounced(isWordBoundary ? styles_1.TTS_ID_ACTIVE_WORD : styles_1.TTS_ID_ACTIVE_UTTERANCE);
     return ttsQueueItemText;
 }
-var ttsPlayQueueIndexDebounced = debounce_1.debounce(function (ttsQueueIndex) {
+var ttsPlayQueueIndexDebounced = (0, debounce_1.debounce)(function (ttsQueueIndex) {
     ttsPlayQueueIndex(ttsQueueIndex);
 }, 150);
 function ttsPlayQueueIndex(ttsQueueIndex) {
@@ -735,7 +735,7 @@ function ttsPlayQueueIndex(ttsQueueIndex) {
         }, 400);
         return;
     }
-    var ttsQueueItem = dom_text_utils_1.getTtsQueueItemRef(_dialogState.ttsQueue, ttsQueueIndex);
+    var ttsQueueItem = (0, dom_text_utils_1.getTtsQueueItemRef)(_dialogState.ttsQueue, ttsQueueIndex);
     if (!ttsQueueItem) {
         ttsStop();
         return;
@@ -808,12 +808,12 @@ exports.ttsPlayQueueIndex = ttsPlayQueueIndex;
 function startTTSSession(speed, voice, ttsRootElement, ttsQueue, ttsQueueIndexStart, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
     win.READIUM2.ttsPlaybackRate = speed;
     win.READIUM2.ttsVoice = voice;
-    var ttsQueueItemStart = dom_text_utils_1.getTtsQueueItemRef(ttsQueue, ttsQueueIndexStart);
+    var ttsQueueItemStart = (0, dom_text_utils_1.getTtsQueueItemRef)(ttsQueue, ttsQueueIndexStart);
     if (!ttsQueueItemStart) {
         ttsStop();
         return;
     }
-    var ttsQueueLength = dom_text_utils_1.getTtsQueueLength(ttsQueue);
+    var ttsQueueLength = (0, dom_text_utils_1.getTtsQueueLength)(ttsQueue);
     var val = win.READIUM2.ttsOverlayEnabled ? ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable() : undefined;
     function onDialogClosed(el) {
         ttsPause();
@@ -834,7 +834,7 @@ function startTTSSession(speed, voice, ttsRootElement, ttsQueue, ttsQueueIndexSt
         }, 50);
     }
     var outerHTML = "<div id=\"" + styles_1.TTS_ID_CONTAINER + "\"\n    class=\"" + styles_1.CSS_CLASS_NO_FOCUS_OUTLINE + " " + styles_1.TTS_CLASS_THEME1 + "\"\n    dir=\"ltr\"\n    lang=\"en\"\n    xml:lang=\"en\"\n    tabindex=\"0\" autofocus=\"autofocus\"></div>\n" + (win.READIUM2.ttsOverlayEnabled ?
-        "\n<button id=\"" + styles_1.TTS_ID_PREVIOUS + "\" class=\"" + styles_1.TTS_NAV_BUTTON_CLASS + "\" title=\"previous\"><span>&#9668;</span></button>\n<button id=\"" + styles_1.TTS_ID_NEXT + "\" class=\"" + styles_1.TTS_NAV_BUTTON_CLASS + "\" title=\"next\"><span>&#9658;</span></button>\n<input id=\"" + styles_1.TTS_ID_SLIDER + "\" type=\"range\" min=\"0\" max=\"" + (ttsQueueLength - 1) + "\" value=\"0\"\n    " + (readium_css_1.isRTL() ? "dir=\"rtl\"" : "dir=\"ltr\"") + "  title=\"progress\"/>\n"
+        "\n<button id=\"" + styles_1.TTS_ID_PREVIOUS + "\" class=\"" + styles_1.TTS_NAV_BUTTON_CLASS + "\" title=\"previous\"><span>&#9668;</span></button>\n<button id=\"" + styles_1.TTS_ID_NEXT + "\" class=\"" + styles_1.TTS_NAV_BUTTON_CLASS + "\" title=\"next\"><span>&#9658;</span></button>\n<input id=\"" + styles_1.TTS_ID_SLIDER + "\" type=\"range\" min=\"0\" max=\"" + (ttsQueueLength - 1) + "\" value=\"0\"\n    " + ((0, readium_css_1.isRTL)() ? "dir=\"rtl\"" : "dir=\"ltr\"") + "  title=\"progress\"/>\n"
         : "") + "\n";
     var pop = new popup_dialog_1.PopupDialog(win.document, outerHTML, onDialogClosed, "" + styles_1.TTS_POPUP_DIALOG_CLASS + (win.READIUM2.ttsOverlayEnabled ? "" : " " + styles_1.POPUP_DIALOG_CLASS_COLLAPSE), true);
     pop.show(ttsQueueItemStart.item.parentElement);
@@ -866,7 +866,7 @@ function startTTSSession(speed, voice, ttsRootElement, ttsQueue, ttsQueueIndexSt
     if (_dialogState.domPrevious) {
         _dialogState.domPrevious.addEventListener("click", function (ev) {
             var skipSentences = ev.shiftKey && ev.altKey;
-            if (readium_css_1.isRTL()) {
+            if ((0, readium_css_1.isRTL)()) {
                 ttsNext(skipSentences);
             }
             else {
@@ -877,7 +877,7 @@ function startTTSSession(speed, voice, ttsRootElement, ttsQueue, ttsQueueIndexSt
     if (_dialogState.domNext) {
         _dialogState.domNext.addEventListener("click", function (ev) {
             var skipSentences = ev.shiftKey && ev.altKey;
-            if (!readium_css_1.isRTL()) {
+            if (!(0, readium_css_1.isRTL)()) {
                 ttsNext(skipSentences);
             }
             else {
@@ -892,7 +892,7 @@ function startTTSSession(speed, voice, ttsRootElement, ttsQueue, ttsQueueIndexSt
                 if (indexStr) {
                     var index = parseInt(indexStr, 10);
                     if (!isNaN(index)) {
-                        var ttsQItem = dom_text_utils_1.getTtsQueueItemRef(_dialogState.ttsQueue, index);
+                        var ttsQItem = (0, dom_text_utils_1.getTtsQueueItemRef)(_dialogState.ttsQueue, index);
                         if (ttsQItem) {
                             if (ttsQItem.iGlobal !== _dialogState.ttsQueueItem.iGlobal) {
                                 ttsPause();

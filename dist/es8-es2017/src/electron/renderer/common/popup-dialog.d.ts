@@ -1,5 +1,7 @@
-export interface IHTMLDialogElementWithPopup extends HTMLDialogElement {
+export interface IHTMLDialogElementWithPopup extends HTMLElement {
     popDialog: PopupDialog | undefined;
+    close: () => void;
+    showModal: () => void;
 }
 export declare function isPopupDialogOpen(documant: Document): boolean;
 export declare function closePopupDialogs(documant: Document): void;

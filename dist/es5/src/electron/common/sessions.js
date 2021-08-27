@@ -25,7 +25,7 @@ var convertCustomSchemeToHttpUrl = function (url) {
     var url_ = url.replace(exports.READIUM2_ELECTRON_HTTP_PROTOCOL + "://", "");
     var matches = url_.match(/id([^\/]+)\/x(http[s]?)\/ip([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\/p([0-9]+)?(\/.*)?/);
     if (matches && matches.length > 1) {
-        var pubID = UrlUtils_1.encodeURIComponent_RFC3986(matches[1].replace(/-/g, "=").replace(/\./g, "\/").replace(/(_[a-zA-Z])/g, function (match) {
+        var pubID = (0, UrlUtils_1.encodeURIComponent_RFC3986)(matches[1].replace(/-/g, "=").replace(/\./g, "\/").replace(/(_[a-zA-Z])/g, function (match) {
             var ret = match.substr(1).toUpperCase();
             return ret;
         }));

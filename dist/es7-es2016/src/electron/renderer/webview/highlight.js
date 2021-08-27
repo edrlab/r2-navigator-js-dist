@@ -140,10 +140,10 @@ function processMouseEvent(win, ev) {
         }
     }
     const documant = win.document;
-    const scrollElement = readium_css_1.getScrollingElement(documant);
+    const scrollElement = (0, readium_css_1.getScrollingElement)(documant);
     const x = ev.clientX;
     const y = ev.clientY;
-    const paginated = readium_css_inject_1.isPaginated(documant);
+    const paginated = (0, readium_css_inject_1.isPaginated)(documant);
     const bodyRect = getBoundingClientRectOfDocumentBody(win);
     const xOffset = paginated ? (-scrollElement.scrollLeft) : bodyRect.left;
     const yOffset = paginated ? (-scrollElement.scrollTop) : bodyRect.top;
@@ -355,12 +355,12 @@ function recreateAllHighlightsRaw(win) {
     highlightsContainer.append(docFrag);
 }
 exports.recreateAllHighlightsRaw = recreateAllHighlightsRaw;
-exports.recreateAllHighlightsDebounced = debounce_1.debounce((win) => {
+exports.recreateAllHighlightsDebounced = (0, debounce_1.debounce)((win) => {
     recreateAllHighlightsRaw(win);
 }, 500);
 function recreateAllHighlights(win) {
     hideAllhighlights(win.document);
-    exports.recreateAllHighlightsDebounced(win);
+    (0, exports.recreateAllHighlightsDebounced)(win);
 }
 exports.recreateAllHighlights = recreateAllHighlights;
 function createHighlights(win, highDefs, pointerInteraction) {
@@ -414,13 +414,13 @@ function createHighlight(win, selectionInfo, color, pointerInteraction, drawType
 exports.createHighlight = createHighlight;
 function createHighlightDom(win, highlight, bodyRect) {
     const documant = win.document;
-    const scrollElement = readium_css_1.getScrollingElement(documant);
-    const range = selection_1.convertRangeInfo(documant, highlight.selectionInfo.rangeInfo);
+    const scrollElement = (0, readium_css_1.getScrollingElement)(documant);
+    const range = (0, selection_1.convertRangeInfo)(documant, highlight.selectionInfo.rangeInfo);
     if (!range) {
         return null;
     }
     const opacity = DEFAULT_BACKGROUND_COLOR_OPACITY;
-    const paginated = readium_css_inject_1.isPaginated(documant);
+    const paginated = (0, readium_css_inject_1.isPaginated)(documant);
     const highlightParent = documant.createElement("div");
     highlightParent.setAttribute("id", highlight.id);
     highlightParent.setAttribute("class", exports.CLASS_HIGHLIGHT_CONTAINER);
@@ -442,7 +442,7 @@ function createHighlightDom(win, highlight, bodyRect) {
     const doNotMergeHorizontallyAlignedRects = drawUnderline || drawStrikeThrough;
     const ex = highlight.expand ? highlight.expand : 0;
     const rangeClientRects = range.getClientRects();
-    const clientRects = rect_utils_1.getClientRectsNoOverlap_(rangeClientRects, doNotMergeHorizontallyAlignedRects, ex);
+    const clientRects = (0, rect_utils_1.getClientRectsNoOverlap_)(rangeClientRects, doNotMergeHorizontallyAlignedRects, ex);
     let highlightAreaSVGDocFrag;
     const roundedCorner = 3;
     const underlineThickness = 3;

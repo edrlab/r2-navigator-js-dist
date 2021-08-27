@@ -125,7 +125,7 @@ async function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
     }
     let publicationURL = win.READIUM2.publicationURL;
     if (publicationURL.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
-        publicationURL = sessions_1.convertCustomSchemeToHttpUrl(publicationURL);
+        publicationURL = (0, sessions_1.convertCustomSchemeToHttpUrl)(publicationURL);
     }
     const urlObjFull = new URL(moTextAudioPair.Audio, publicationURL);
     const urlFull = urlObjFull.toString();
@@ -671,8 +671,8 @@ async function playMediaOverlaysForLink(link, textFragmentIDChain) {
         _timeoutAutoNext = win.setTimeout(() => {
             _timeoutAutoNext = undefined;
             mediaOverlaysStop(true);
-            const rtl = readium_css_1.isRTL();
-            location_1.navLeftOrRight(rtl, true, true);
+            const rtl = (0, readium_css_1.isRTL)();
+            (0, location_1.navLeftOrRight)(rtl, true, true);
         }, 600);
         if (_mediaOverlaysListener) {
             _mediaOverlaysListener(MediaOverlaysStateEnum.PLAYING);
@@ -682,7 +682,7 @@ async function playMediaOverlaysForLink(link, textFragmentIDChain) {
     if (!link.MediaOverlays || !link.MediaOverlays.initialized) {
         let publicationURL = win.READIUM2.publicationURL;
         if (publicationURL.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
-            publicationURL = sessions_1.convertCustomSchemeToHttpUrl(publicationURL);
+            publicationURL = (0, sessions_1.convertCustomSchemeToHttpUrl)(publicationURL);
         }
         const moUrlObjFull = new URL(moUrl, publicationURL);
         const moUrlFull = moUrlObjFull.toString();
@@ -708,7 +708,7 @@ async function playMediaOverlaysForLink(link, textFragmentIDChain) {
         if (!moJson) {
             return;
         }
-        link.MediaOverlays = serializable_1.TaJsonDeserialize(moJson, media_overlay_1.MediaOverlayNode);
+        link.MediaOverlays = (0, serializable_1.TaJsonDeserialize)(moJson, media_overlay_1.MediaOverlayNode);
         link.MediaOverlays.initialized = true;
         if (IS_DEV) {
             debug(util.inspect(link.MediaOverlays, { showHidden: false, depth: 1000, colors: true, customInspect: true }));
@@ -982,8 +982,8 @@ function mediaOverlaysPrevious() {
                 debug("mediaOverlaysPrevious() - navLeftOrRight()");
             }
             mediaOverlaysStop(true);
-            const rtl = readium_css_1.isRTL();
-            location_1.navLeftOrRight(!rtl, true, true);
+            const rtl = (0, readium_css_1.isRTL)();
+            (0, location_1.navLeftOrRight)(!rtl, true, true);
         }
         else {
             let switchDoc = false;
@@ -1006,7 +1006,7 @@ function mediaOverlaysPrevious() {
                     debug("mediaOverlaysPrevious() - handleLinkUrl()");
                 }
                 const activeWebView = win.READIUM2.getFirstOrSecondWebView();
-                location_1.handleLinkUrl(urlFull, activeWebView ? activeWebView.READIUM2.readiumCss : undefined);
+                (0, location_1.handleLinkUrl)(urlFull, activeWebView ? activeWebView.READIUM2.readiumCss : undefined);
             }
             else {
                 if (IS_DEV) {
@@ -1026,8 +1026,8 @@ function mediaOverlaysPrevious() {
             debug("mediaOverlaysPrevious() - navLeftOrRight() 2");
         }
         mediaOverlaysStop(true);
-        const rtl = readium_css_1.isRTL();
-        location_1.navLeftOrRight(!rtl, true, true);
+        const rtl = (0, readium_css_1.isRTL)();
+        (0, location_1.navLeftOrRight)(!rtl, true, true);
     }
 }
 exports.mediaOverlaysPrevious = mediaOverlaysPrevious;
@@ -1046,8 +1046,8 @@ function mediaOverlaysNext(escape) {
                 debug("mediaOverlaysNext() - navLeftOrRight()");
             }
             mediaOverlaysStop(true);
-            const rtl = readium_css_1.isRTL();
-            location_1.navLeftOrRight(rtl, true, true);
+            const rtl = (0, readium_css_1.isRTL)();
+            (0, location_1.navLeftOrRight)(rtl, true, true);
         }
         else {
             let switchDoc = false;
@@ -1070,7 +1070,7 @@ function mediaOverlaysNext(escape) {
                     debug("mediaOverlaysNext() - handleLinkUrl()");
                 }
                 const activeWebView = win.READIUM2.getFirstOrSecondWebView();
-                location_1.handleLinkUrl(urlFull, activeWebView ? activeWebView.READIUM2.readiumCss : undefined);
+                (0, location_1.handleLinkUrl)(urlFull, activeWebView ? activeWebView.READIUM2.readiumCss : undefined);
             }
             else {
                 if (IS_DEV) {
@@ -1090,8 +1090,8 @@ function mediaOverlaysNext(escape) {
             debug("mediaOverlaysNext() - navLeftOrRight() 2");
         }
         mediaOverlaysStop(true);
-        const rtl = readium_css_1.isRTL();
-        location_1.navLeftOrRight(rtl, true, true);
+        const rtl = (0, readium_css_1.isRTL)();
+        (0, location_1.navLeftOrRight)(rtl, true, true);
     }
 }
 exports.mediaOverlaysNext = mediaOverlaysNext;

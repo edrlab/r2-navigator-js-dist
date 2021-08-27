@@ -88,7 +88,7 @@ function readiumCSSSet(documant, messageJson, isVerticalWritingMode, isRTL) {
             if (baseUrl) {
                 let u = baseUrl;
                 if (baseUrl.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
-                    u = sessions_1.convertCustomSchemeToHttpUrl(baseUrl);
+                    u = (0, sessions_1.convertCustomSchemeToHttpUrl)(baseUrl);
                 }
                 u = u.replace(/\/pub\/.*/, "");
                 messageJson.urlRoot = u;
@@ -268,25 +268,25 @@ function readiumCSSSet(documant, messageJson, isVerticalWritingMode, isRTL) {
             docElement.style.removeProperty("--USER__fontFamily");
         }
     }
-    if (setCSS.fontSize) {
+    if (setCSS.fontSize && setCSS.fontSize.trim() !== "0" && setCSS.fontSize.trim() !== "100%") {
         docElement.style.setProperty("--USER__fontSize", setCSS.fontSize);
     }
     else {
         docElement.style.removeProperty("--USER__fontSize");
     }
-    if (setCSS.lineHeight) {
+    if (setCSS.lineHeight && setCSS.lineHeight.trim() !== "0") {
         docElement.style.setProperty("--USER__lineHeight", setCSS.lineHeight);
     }
     else {
         docElement.style.removeProperty("--USER__lineHeight");
     }
-    if (setCSS.typeScale) {
+    if (setCSS.typeScale && setCSS.typeScale.trim() !== "0") {
         docElement.style.setProperty("--USER__typeScale", setCSS.typeScale);
     }
     else {
         docElement.style.removeProperty("--USER__typeScale");
     }
-    if (setCSS.paraSpacing) {
+    if (setCSS.paraSpacing && setCSS.paraSpacing.trim() !== "0") {
         docElement.style.setProperty("--USER__paraSpacing", setCSS.paraSpacing);
     }
     else {
@@ -320,13 +320,13 @@ function readiumCSSSet(documant, messageJson, isVerticalWritingMode, isRTL) {
         else {
             docElement.style.removeProperty("--USER__bodyHyphens");
         }
-        if (setCSS.wordSpacing) {
+        if (setCSS.wordSpacing && setCSS.wordSpacing.trim() !== "0") {
             docElement.style.setProperty("--USER__wordSpacing", setCSS.wordSpacing);
         }
         else {
             docElement.style.removeProperty("--USER__wordSpacing");
         }
-        if (setCSS.letterSpacing) {
+        if (setCSS.letterSpacing && setCSS.letterSpacing.trim() !== "0") {
             docElement.style.setProperty("--USER__letterSpacing", setCSS.letterSpacing);
         }
         else {
@@ -340,7 +340,7 @@ function readiumCSSSet(documant, messageJson, isVerticalWritingMode, isRTL) {
         else {
             docElement.style.removeProperty("--USER__colCount");
         }
-        if (setCSS.paraIndent) {
+        if (setCSS.paraIndent && setCSS.paraIndent.trim() !== "0") {
             docElement.style.setProperty("--USER__paraIndent", setCSS.paraIndent);
         }
         else {
@@ -356,7 +356,7 @@ function readiumCSSSet(documant, messageJson, isVerticalWritingMode, isRTL) {
     else if (!isRTL) {
         docElement.style.removeProperty("--USER__ligatures");
     }
-    if (setCSS.pageMargins) {
+    if (setCSS.pageMargins && setCSS.pageMargins.trim() !== "0") {
         docElement.style.setProperty("--USER__pageMargins", setCSS.pageMargins);
     }
     else {
@@ -626,7 +626,7 @@ function readiumCssTransformHtml(htmlStr, readiumcssJson, mediaType) {
     }
     const parseableChunk = htmlStr.substr(iHtmlStart, iBodyEnd - iHtmlStart + 1);
     const htmlStrToParse = `<?xml version="1.0" encoding="utf-8"?>${parseableChunk}TXT</body></html>`;
-    const documant = dom_1.parseDOM(htmlStrToParse, mediaType);
+    const documant = (0, dom_1.parseDOM)(htmlStrToParse, mediaType);
     documant.documentElement.setAttribute("data-readiumcss-injected", "yes");
     documant.documentElement.classList.add(styles_1.ROOT_CLASS_INVISIBLE_MASK);
     documant.documentElement.classList.remove(styles_1.ROOT_CLASS_INVISIBLE_MASK_REMOVED);
@@ -642,7 +642,7 @@ function readiumCssTransformHtml(htmlStr, readiumcssJson, mediaType) {
     if (IS_DEV) {
         injectReadPosCSS(documant);
     }
-    const serialized = dom_1.serializeDOM(documant);
+    const serialized = (0, dom_1.serializeDOM)(documant);
     const prefix = htmlStr.substr(0, iHtmlStart);
     const suffix = htmlStr.substr(iBodyEnd + 1);
     const iHtmlStart_ = serialized.indexOf("<html");

@@ -53,7 +53,7 @@ let _mediaOverlayTextId;
 let _mediaOverlayTextHref;
 let _mediaOverlayActive = false;
 function playMediaOverlays(textHref, rootMo, textFragmentIDChain) {
-    return tslib_1.__awaiter(this, void 0, void 0, function* () {
+    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
         if (IS_DEV) {
             debug("playMediaOverlays()");
         }
@@ -89,7 +89,7 @@ function playMediaOverlays(textHref, rootMo, textFragmentIDChain) {
         }
     });
 }
-const ontimeupdate = (ev) => tslib_1.__awaiter(void 0, void 0, void 0, function* () {
+const ontimeupdate = (ev) => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
     const currentAudioElement = ev.currentTarget;
     if (_currentAudioEnd && currentAudioElement.currentTime >= (_currentAudioEnd - 0.05)) {
         if (IS_DEV) {
@@ -115,7 +115,7 @@ const ensureOnTimeUpdate = (remove) => {
     }
 };
 function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
-    return tslib_1.__awaiter(this, void 0, void 0, function* () {
+    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
         if (IS_DEV) {
             debug("playMediaOverlaysAudio()");
         }
@@ -129,7 +129,7 @@ function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
         }
         let publicationURL = win.READIUM2.publicationURL;
         if (publicationURL.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
-            publicationURL = sessions_1.convertCustomSchemeToHttpUrl(publicationURL);
+            publicationURL = (0, sessions_1.convertCustomSchemeToHttpUrl)(publicationURL);
         }
         const urlObjFull = new URL(moTextAudioPair.Audio, publicationURL);
         const urlFull = urlObjFull.toString();
@@ -172,7 +172,7 @@ function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
         if (IS_DEV) {
             debug(`${urlFull} => [${_currentAudioBegin}-${_currentAudioEnd}]`);
         }
-        const playClip = (initial) => tslib_1.__awaiter(this, void 0, void 0, function* () {
+        const playClip = (initial) => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
             if (!_currentAudioElement) {
                 return;
             }
@@ -191,7 +191,7 @@ function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
                     if (IS_DEV) {
                         debug("playMediaOverlaysAudio() - playClip() - ontimeupdateSeeked");
                     }
-                    const ontimeupdateSeeked = (ev) => tslib_1.__awaiter(this, void 0, void 0, function* () {
+                    const ontimeupdateSeeked = (ev) => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
                         const currentAudioElement = ev.currentTarget;
                         currentAudioElement.removeEventListener("timeupdate", ontimeupdateSeeked);
                         if (IS_DEV) {
@@ -379,18 +379,18 @@ function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
                         + ev.currentTarget.src.substr(ev.currentTarget.src.lastIndexOf("/")));
                 });
             }
-            const oncanplaythrough = (ev) => tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const oncanplaythrough = (ev) => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
                 const currentAudioElement = ev.currentTarget;
                 currentAudioElement.removeEventListener("canplaythrough", oncanplaythrough);
                 debug("oncanplaythrough");
                 yield playClip(true);
             });
             _currentAudioElement.addEventListener("canplaythrough", oncanplaythrough);
-            const onpause = (_ev) => tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const onpause = (_ev) => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
                 debug("onpause");
             });
             _currentAudioElement.addEventListener("pause", onpause);
-            const onplay = (_ev) => tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const onplay = (_ev) => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
                 debug("onplay");
             });
             _currentAudioElement.addEventListener("play", onplay);
@@ -639,7 +639,7 @@ function ensureKillAutoNextTimeout() {
 }
 function playMediaOverlaysForLink(link, textFragmentIDChain) {
     var _a;
-    return tslib_1.__awaiter(this, void 0, void 0, function* () {
+    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
         if (IS_DEV) {
             debug("playMediaOverlaysForLink()");
             debug(link.Href);
@@ -677,8 +677,8 @@ function playMediaOverlaysForLink(link, textFragmentIDChain) {
             _timeoutAutoNext = win.setTimeout(() => {
                 _timeoutAutoNext = undefined;
                 mediaOverlaysStop(true);
-                const rtl = readium_css_1.isRTL();
-                location_1.navLeftOrRight(rtl, true, true);
+                const rtl = (0, readium_css_1.isRTL)();
+                (0, location_1.navLeftOrRight)(rtl, true, true);
             }, 600);
             if (_mediaOverlaysListener) {
                 _mediaOverlaysListener(MediaOverlaysStateEnum.PLAYING);
@@ -688,7 +688,7 @@ function playMediaOverlaysForLink(link, textFragmentIDChain) {
         if (!link.MediaOverlays || !link.MediaOverlays.initialized) {
             let publicationURL = win.READIUM2.publicationURL;
             if (publicationURL.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
-                publicationURL = sessions_1.convertCustomSchemeToHttpUrl(publicationURL);
+                publicationURL = (0, sessions_1.convertCustomSchemeToHttpUrl)(publicationURL);
             }
             const moUrlObjFull = new URL(moUrl, publicationURL);
             const moUrlFull = moUrlObjFull.toString();
@@ -714,7 +714,7 @@ function playMediaOverlaysForLink(link, textFragmentIDChain) {
             if (!moJson) {
                 return;
             }
-            link.MediaOverlays = serializable_1.TaJsonDeserialize(moJson, media_overlay_1.MediaOverlayNode);
+            link.MediaOverlays = (0, serializable_1.TaJsonDeserialize)(moJson, media_overlay_1.MediaOverlayNode);
             link.MediaOverlays.initialized = true;
             if (IS_DEV) {
                 debug(util.inspect(link.MediaOverlays, { showHidden: false, depth: 1000, colors: true, customInspect: true }));
@@ -755,7 +755,7 @@ function mediaOverlaysHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarg
                 if (IS_DEV) {
                     debug("playMediaOverlaysForLink");
                 }
-                setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+                setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
                     if (activeWebView.READIUM2.link) {
                         yield playMediaOverlaysForLink(activeWebView.READIUM2.link, payload.textFragmentIDChain);
                     }
@@ -837,7 +837,7 @@ function moHighlight(href, id) {
                 _lastClickedNotification = undefined;
             }
         }
-        setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+        setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
             yield activeWebView.send(events_1.R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT, payload);
         }), 0);
     }
@@ -878,7 +878,7 @@ function mediaOverlaysPlay(speed) {
         else {
             activeWebView = win.READIUM2.getFirstWebView();
         }
-        setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+        setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
             if (activeWebView && activeWebView.READIUM2.link) {
                 yield playMediaOverlaysForLink(activeWebView.READIUM2.link, textFragmentIDChain);
             }
@@ -954,7 +954,7 @@ function mediaOverlaysResume() {
         }
         ensureOnTimeUpdate(false);
         if (_currentAudioElement) {
-            setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+            setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
                 if (_currentAudioElement) {
                     _currentAudioElement.playbackRate = _mediaOverlaysPlaybackRate;
                     yield _currentAudioElement.play();
@@ -989,8 +989,8 @@ function mediaOverlaysPrevious() {
                 debug("mediaOverlaysPrevious() - navLeftOrRight()");
             }
             mediaOverlaysStop(true);
-            const rtl = readium_css_1.isRTL();
-            location_1.navLeftOrRight(!rtl, true, true);
+            const rtl = (0, readium_css_1.isRTL)();
+            (0, location_1.navLeftOrRight)(!rtl, true, true);
         }
         else {
             let switchDoc = false;
@@ -1013,13 +1013,13 @@ function mediaOverlaysPrevious() {
                     debug("mediaOverlaysPrevious() - handleLinkUrl()");
                 }
                 const activeWebView = win.READIUM2.getFirstOrSecondWebView();
-                location_1.handleLinkUrl(urlFull, activeWebView ? activeWebView.READIUM2.readiumCss : undefined);
+                (0, location_1.handleLinkUrl)(urlFull, activeWebView ? activeWebView.READIUM2.readiumCss : undefined);
             }
             else {
                 if (IS_DEV) {
                     debug("mediaOverlaysPrevious() - playMediaOverlaysAudio()");
                 }
-                setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+                setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
                     yield playMediaOverlaysAudio(previousTextAudioPair, undefined, undefined);
                 }), 0);
                 if (_mediaOverlaysListener) {
@@ -1033,8 +1033,8 @@ function mediaOverlaysPrevious() {
             debug("mediaOverlaysPrevious() - navLeftOrRight() 2");
         }
         mediaOverlaysStop(true);
-        const rtl = readium_css_1.isRTL();
-        location_1.navLeftOrRight(!rtl, true, true);
+        const rtl = (0, readium_css_1.isRTL)();
+        (0, location_1.navLeftOrRight)(!rtl, true, true);
     }
 }
 exports.mediaOverlaysPrevious = mediaOverlaysPrevious;
@@ -1053,8 +1053,8 @@ function mediaOverlaysNext(escape) {
                 debug("mediaOverlaysNext() - navLeftOrRight()");
             }
             mediaOverlaysStop(true);
-            const rtl = readium_css_1.isRTL();
-            location_1.navLeftOrRight(rtl, true, true);
+            const rtl = (0, readium_css_1.isRTL)();
+            (0, location_1.navLeftOrRight)(rtl, true, true);
         }
         else {
             let switchDoc = false;
@@ -1077,13 +1077,13 @@ function mediaOverlaysNext(escape) {
                     debug("mediaOverlaysNext() - handleLinkUrl()");
                 }
                 const activeWebView = win.READIUM2.getFirstOrSecondWebView();
-                location_1.handleLinkUrl(urlFull, activeWebView ? activeWebView.READIUM2.readiumCss : undefined);
+                (0, location_1.handleLinkUrl)(urlFull, activeWebView ? activeWebView.READIUM2.readiumCss : undefined);
             }
             else {
                 if (IS_DEV) {
                     debug("mediaOverlaysNext() - playMediaOverlaysAudio()");
                 }
-                setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+                setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
                     yield playMediaOverlaysAudio(nextTextAudioPair, undefined, undefined);
                 }), 0);
                 if (_mediaOverlaysListener) {
@@ -1097,8 +1097,8 @@ function mediaOverlaysNext(escape) {
             debug("mediaOverlaysNext() - navLeftOrRight() 2");
         }
         mediaOverlaysStop(true);
-        const rtl = readium_css_1.isRTL();
-        location_1.navLeftOrRight(rtl, true, true);
+        const rtl = (0, readium_css_1.isRTL)();
+        (0, location_1.navLeftOrRight)(rtl, true, true);
     }
 }
 exports.mediaOverlaysNext = mediaOverlaysNext;

@@ -9,7 +9,7 @@ export interface IRect extends IRectSimple {
     right: number;
 }
 export declare function getClientRectsNoOverlap(range: Range, doNotMergeHorizontallyAlignedRects: boolean, expand?: number): IRect[];
-export declare function getClientRectsNoOverlap_(clientRects: ClientRectList | DOMRectList, doNotMergeHorizontallyAlignedRects: boolean, expand?: number): IRect[];
+export declare function getClientRectsNoOverlap_(clientRects: DOMRectList, doNotMergeHorizontallyAlignedRects: boolean, expand?: number): IRect[];
 export declare function getClientRectsNoOverlap__(originalRects: IRect[], doNotMergeHorizontallyAlignedRects: boolean, expand?: number): IRect[];
 export declare function rectIntersect(rect1: IRect, rect2: IRect): IRect;
 export declare function rectSubtract(rect1: IRect, rect2: IRect): IRect[];

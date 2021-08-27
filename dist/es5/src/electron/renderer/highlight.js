@@ -35,8 +35,8 @@ function highlightsRemoveAll(href) {
         if (((_b = activeWebView.READIUM2.link) === null || _b === void 0 ? void 0 : _b.Href) !== href) {
             return "continue";
         }
-        setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
+        setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
+            return (0, tslib_1.__generator)(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4, activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_REMOVE_ALL)];
                     case 1:
@@ -47,7 +47,7 @@ function highlightsRemoveAll(href) {
         }); }, 0);
     };
     try {
-        for (var activeWebViews_1 = tslib_1.__values(activeWebViews), activeWebViews_1_1 = activeWebViews_1.next(); !activeWebViews_1_1.done; activeWebViews_1_1 = activeWebViews_1.next()) {
+        for (var activeWebViews_1 = (0, tslib_1.__values)(activeWebViews), activeWebViews_1_1 = activeWebViews_1.next(); !activeWebViews_1_1.done; activeWebViews_1_1 = activeWebViews_1.next()) {
             var activeWebView = activeWebViews_1_1.value;
             _loop_1(activeWebView);
         }
@@ -73,8 +73,8 @@ function highlightsRemove(href, highlightIDs) {
         var payload = {
             highlightIDs: highlightIDs,
         };
-        setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
+        setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
+            return (0, tslib_1.__generator)(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4, activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_REMOVE, payload)];
                     case 1:
@@ -85,7 +85,7 @@ function highlightsRemove(href, highlightIDs) {
         }); }, 0);
     };
     try {
-        for (var activeWebViews_2 = tslib_1.__values(activeWebViews), activeWebViews_2_1 = activeWebViews_2.next(); !activeWebViews_2_1.done; activeWebViews_2_1 = activeWebViews_2.next()) {
+        for (var activeWebViews_2 = (0, tslib_1.__values)(activeWebViews), activeWebViews_2_1 = activeWebViews_2.next(); !activeWebViews_2_1.done; activeWebViews_2_1 = activeWebViews_2.next()) {
             var activeWebView = activeWebViews_2_1.value;
             _loop_2(activeWebView);
         }
@@ -100,9 +100,9 @@ function highlightsRemove(href, highlightIDs) {
 }
 exports.highlightsRemove = highlightsRemove;
 function highlightsCreate(href, highlightDefinitions) {
-    return tslib_1.__awaiter(this, void 0, void 0, function () {
+    return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
         var _this = this;
-        return tslib_1.__generator(this, function (_a) {
+        return (0, tslib_1.__generator)(this, function (_a) {
             return [2, new Promise(function (resolve, reject) {
                     var e_3, _a;
                     var _b;
@@ -133,8 +133,8 @@ function highlightsCreate(href, highlightDefinitions) {
                             highlightDefinitions: highlightDefinitions,
                             highlights: undefined,
                         };
-                        setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-                            return tslib_1.__generator(this, function (_a) {
+                        setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
+                            return (0, tslib_1.__generator)(this, function (_a) {
                                 switch (_a.label) {
                                     case 0: return [4, activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_CREATE, payloadPing)];
                                     case 1:
@@ -146,7 +146,7 @@ function highlightsCreate(href, highlightDefinitions) {
                         return { value: void 0 };
                     };
                     try {
-                        for (var activeWebViews_3 = tslib_1.__values(activeWebViews), activeWebViews_3_1 = activeWebViews_3.next(); !activeWebViews_3_1.done; activeWebViews_3_1 = activeWebViews_3.next()) {
+                        for (var activeWebViews_3 = (0, tslib_1.__values)(activeWebViews), activeWebViews_3_1 = activeWebViews_3.next(); !activeWebViews_3_1.done; activeWebViews_3_1 = activeWebViews_3.next()) {
                             var activeWebView = activeWebViews_3_1.value;
                             var state_1 = _loop_3(activeWebView);
                             if (typeof state_1 === "object")

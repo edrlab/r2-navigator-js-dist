@@ -13,7 +13,7 @@ async function doLsdReturn(publicationsServer, deviceIDManager, publicationFileP
     }
     let returnResponseLsd;
     try {
-        returnResponseLsd = await return_1.lsdReturn_(publication.LCP.LSD, deviceIDManager);
+        returnResponseLsd = await (0, return_1.lsdReturn_)(publication.LCP.LSD, deviceIDManager);
     }
     catch (err) {
         debug(err);
@@ -34,7 +34,7 @@ async function doLsdRenew(publicationsServer, deviceIDManager, publicationFilePa
     const endDate = endDateStr ? moment(endDateStr).toDate() : undefined;
     let returnResponseLsd;
     try {
-        returnResponseLsd = await renew_1.lsdRenew_(endDate, publication.LCP.LSD, deviceIDManager);
+        returnResponseLsd = await (0, renew_1.lsdRenew_)(endDate, publication.LCP.LSD, deviceIDManager);
     }
     catch (err) {
         debug(err);

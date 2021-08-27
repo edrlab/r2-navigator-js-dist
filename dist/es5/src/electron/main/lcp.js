@@ -6,9 +6,9 @@ var crypto = require("crypto");
 var debug_ = require("debug");
 var debug = debug_("r2:navigator#electron/main/lcp");
 function doTryLcpPass(publicationsServer, publicationFilePath, lcpPasses, isSha256Hex) {
-    return tslib_1.__awaiter(this, void 0, void 0, function () {
+    return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
         var publication, passesSha256Hex, err_1;
-        return tslib_1.__generator(this, function (_a) {
+        return (0, tslib_1.__generator)(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     publication = publicationsServer.cachedPublication(publicationFilePath);

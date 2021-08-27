@@ -9,7 +9,7 @@ function audioPlay() {
     if (!activeWebView) {
         return;
     }
-    setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+    setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
         yield activeWebView.send(events_1.R2_EVENT_AUDIO_DO_PLAY);
     }), 0);
 }
@@ -19,7 +19,7 @@ function audioPause() {
     if (!activeWebView) {
         return;
     }
-    setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+    setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
         yield activeWebView.send(events_1.R2_EVENT_AUDIO_DO_PAUSE);
     }), 0);
 }
@@ -29,7 +29,7 @@ function audioTogglePlayPause() {
     if (!activeWebView) {
         return;
     }
-    setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+    setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
         yield activeWebView.send(events_1.R2_EVENT_AUDIO_TOGGLE_PLAY_PAUSE);
     }), 0);
 }
@@ -39,7 +39,7 @@ function audioRewind() {
     if (!activeWebView) {
         return;
     }
-    setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+    setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
         yield activeWebView.send(events_1.R2_EVENT_AUDIO_REWIND);
     }), 0);
 }
@@ -49,7 +49,7 @@ function audioForward() {
     if (!activeWebView) {
         return;
     }
-    setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+    setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
         yield activeWebView.send(events_1.R2_EVENT_AUDIO_FORWARD);
     }), 0);
 }

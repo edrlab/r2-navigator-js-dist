@@ -10,8 +10,8 @@ function audioPlay() {
     if (!activeWebView) {
         return;
     }
-    setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-        return tslib_1.__generator(this, function (_a) {
+    setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
+        return (0, tslib_1.__generator)(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4, activeWebView.send(events_1.R2_EVENT_AUDIO_DO_PLAY)];
                 case 1:
@@ -28,8 +28,8 @@ function audioPause() {
     if (!activeWebView) {
         return;
     }
-    setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-        return tslib_1.__generator(this, function (_a) {
+    setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
+        return (0, tslib_1.__generator)(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4, activeWebView.send(events_1.R2_EVENT_AUDIO_DO_PAUSE)];
                 case 1:
@@ -46,8 +46,8 @@ function audioTogglePlayPause() {
     if (!activeWebView) {
         return;
     }
-    setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-        return tslib_1.__generator(this, function (_a) {
+    setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
+        return (0, tslib_1.__generator)(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4, activeWebView.send(events_1.R2_EVENT_AUDIO_TOGGLE_PLAY_PAUSE)];
                 case 1:
@@ -64,8 +64,8 @@ function audioRewind() {
     if (!activeWebView) {
         return;
     }
-    setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-        return tslib_1.__generator(this, function (_a) {
+    setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
+        return (0, tslib_1.__generator)(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4, activeWebView.send(events_1.R2_EVENT_AUDIO_REWIND)];
                 case 1:
@@ -82,8 +82,8 @@ function audioForward() {
     if (!activeWebView) {
         return;
     }
-    setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-        return tslib_1.__generator(this, function (_a) {
+    setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
+        return (0, tslib_1.__generator)(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4, activeWebView.send(events_1.R2_EVENT_AUDIO_FORWARD)];
                 case 1:

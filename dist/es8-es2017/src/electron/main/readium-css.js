@@ -74,7 +74,7 @@ function setupReadiumCSS(server, folderPath, readiumCssGetter) {
             if (link && link.TypeLink) {
                 mediaType = link.TypeLink;
             }
-            return readium_css_inject_1.readiumCssTransformHtml(str, readiumcssJson, mediaType);
+            return (0, readium_css_inject_1.readiumCssTransformHtml)(str, readiumcssJson, mediaType);
         }
         else {
             return str;

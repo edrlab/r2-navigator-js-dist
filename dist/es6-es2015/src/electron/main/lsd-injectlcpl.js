@@ -9,7 +9,7 @@ const serializable_1 = require("r2-lcp-js/dist/es6-es2015/src/serializable");
 const zipInjector_1 = require("r2-utils-js/dist/es6-es2015/src/_utils/zip/zipInjector");
 const debug = debug_("r2:navigator#electron/main/lsd-injectlcpl");
 function lsdLcpUpdateInject(lcplStr, publication, publicationPath) {
-    return tslib_1.__awaiter(this, void 0, void 0, function* () {
+    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
         const lcplJson = global.JSON.parse(lcplStr);
         debug(lcplJson);
         const isAudio = publication.Metadata &&
@@ -18,7 +18,7 @@ function lsdLcpUpdateInject(lcplStr, publication, publicationPath) {
         const zipEntryPath = isAudio ? "license.lcpl" : "META-INF/license.lcpl";
         let lcpl;
         try {
-            lcpl = serializable_1.TaJsonDeserialize(lcplJson, lcp_1.LCP);
+            lcpl = (0, serializable_1.TaJsonDeserialize)(lcplJson, lcp_1.LCP);
         }
         catch (erorz) {
             return Promise.reject(erorz);
@@ -27,9 +27,9 @@ function lsdLcpUpdateInject(lcplStr, publication, publicationPath) {
         lcpl.JsonSource = lcplStr;
         lcpl.init();
         publication.LCP = lcpl;
-        return new Promise((resolve, reject) => tslib_1.__awaiter(this, void 0, void 0, function* () {
+        return new Promise((resolve, reject) => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
             const newPublicationPath = publicationPath + ".new";
-            zipInjector_1.injectBufferInZip(publicationPath, newPublicationPath, Buffer.from(lcplStr, "utf8"), zipEntryPath, (err) => {
+            (0, zipInjector_1.injectBufferInZip)(publicationPath, newPublicationPath, Buffer.from(lcplStr, "utf8"), zipEntryPath, (err) => {
                 reject(err);
             }, () => {
                 debug("EPUB license.lcpl injected.");

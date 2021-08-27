@@ -1,6 +1,6 @@
 {
   "name": "r2-navigator-js",
-  "version": "1.8.1",
+  "version": "1.8.2",
   "description": "Readium 2 'navigator' for NodeJS (TypeScript)",
   "keywords": [
     "readium",
@@ -21,8 +21,8 @@
     "ECMAScript 8"
   ],
   "engines": {
-    "node": ">=6",
-    "npm": ">=3",
+    "node": ">=12",
+    "npm": ">=6",
     "yarn": ">=1.0"
   },
   "repository": {
@@ -51,7 +51,7 @@
     "debug": "^4.3.2",
     "express": "^4.17.1",
     "moment": "^2.29.1",
-    "r2-lcp-js": "^1.0.31",
+    "r2-lcp-js": "^1.0.32",
     "r2-shared-js": "^1.0.52",
     "r2-streamer-js": "^1.0.35",
     "r2-utils-js": "^1.0.26",
@@ -85,7 +85,7 @@
     "rimraf": "^3.0.2",
     "tslint": "^5.20.1",
     "tslint-language-service": "^0.9.9",
-    "typescript": "^4.3.5"
+    "typescript": "^4.4.2"
   },
   "files": [
     "LICENSE",

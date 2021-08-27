@@ -158,7 +158,7 @@ function setupAudioBook(_docTitle, audioPlaybackRate) {
                     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, payload);
                 }
                 else {
-                    setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+                    setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
                         yield audioElement.play();
                     }), 0);
                 }
@@ -236,7 +236,7 @@ function setupAudioBook(_docTitle, audioPlaybackRate) {
     const notifyPlaybackLocationThrottled = throttle(() => {
         notifyPlaybackLocation();
     }, 1000);
-    const progressDebounced = debounce_1.debounce((progress) => {
+    const progressDebounced = (0, debounce_1.debounce)((progress) => {
         if (progress) {
             win.document.documentElement.classList.add(styles_1.AUDIO_PROGRESS_CLASS);
         }
@@ -273,13 +273,13 @@ function setupAudioBook(_docTitle, audioPlaybackRate) {
     audioElement.addEventListener("timeupdate", () => {
         notifyPlaybackLocationThrottled();
     });
-    electron_1.ipcRenderer.on(events_1.R2_EVENT_AUDIO_DO_PLAY, (_event) => tslib_1.__awaiter(this, void 0, void 0, function* () {
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_AUDIO_DO_PLAY, (_event) => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
         yield audioElement.play();
     }));
     electron_1.ipcRenderer.on(events_1.R2_EVENT_AUDIO_DO_PAUSE, (_event) => {
         audioElement.pause();
     });
-    electron_1.ipcRenderer.on(events_1.R2_EVENT_AUDIO_DO_PLAY, (_event) => tslib_1.__awaiter(this, void 0, void 0, function* () {
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_AUDIO_DO_PLAY, (_event) => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
         yield audioElement.play();
     }));
     electron_1.ipcRenderer.on(events_1.R2_EVENT_AUDIO_TOGGLE_PLAY_PAUSE, (_event) => {
