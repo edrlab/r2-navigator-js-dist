@@ -65,6 +65,47 @@ url("{RCSS_BASE_URL}fonts/iAWriterDuospace-Regular.ttf") format("truetype");
 `;
 const debug = debug_("r2:navigator#electron/renderer/index");
 const win = window;
+let _resizeSkip = 0;
+let _resizeWebviewsNeedReset = true;
+let _resizeTimeout;
+win.addEventListener("resize", () => {
+    if (_resizeSkip > 0) {
+        debug("Window resize (TOP), SKIP ...", _resizeSkip);
+        return;
+    }
+    if (_resizeWebviewsNeedReset) {
+        _resizeWebviewsNeedReset = false;
+        debug("Window resize (TOP), IMMEDIATE");
+        const activeWebViews = win.READIUM2.getActiveWebViews();
+        for (const activeWebView of activeWebViews) {
+            const wvSlot = activeWebView.getAttribute("data-wv-slot");
+            if (wvSlot) {
+                (0, location_1.setWebViewStyle)(activeWebView, wvSlot);
+            }
+        }
+    }
+    if (_resizeTimeout) {
+        clearTimeout(_resizeTimeout);
+    }
+    _resizeTimeout = win.setTimeout(() => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
+        debug("Window resize (TOP), DEFERRED");
+        _resizeTimeout = undefined;
+        _resizeWebviewsNeedReset = true;
+        const activeWebViews = win.READIUM2.getActiveWebViews();
+        _resizeSkip = activeWebViews.length;
+        for (const activeWebView of activeWebViews) {
+            const wvSlot = activeWebView.getAttribute("data-wv-slot");
+            if (wvSlot) {
+                try {
+                    yield activeWebView.send("R2_EVENT_WINDOW_RESIZE");
+                }
+                catch (e) {
+                    debug(e);
+                }
+            }
+        }
+    }), 1000);
+});
 electron_1.ipcRenderer.on("accessibility-support-changed", (_e, accessibilitySupportEnabled) => {
     debug("accessibility-support-changed event received in WebView ", accessibilitySupportEnabled);
     win.READIUM2.isScreenReaderMounted = accessibilitySupportEnabled;
@@ -75,10 +116,9 @@ function readiumCssApplyToWebview(loc, activeWebView, rcss) {
     activeWebView.READIUM2.readiumCss = actualReadiumCss;
     const payloadRcss = (0, readium_css_1.adjustReadiumCssJsonMessageForFixedLayout)(activeWebView, actualReadiumCss);
     if (activeWebView.style.transform &&
-        activeWebView.style.transform !== "none") {
-        setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
-            yield activeWebView.send("R2_EVENT_HIDE", activeWebView.READIUM2.link ? (0, readium_css_1.isFixedLayout)(activeWebView.READIUM2.link) : null);
-        }), 0);
+        activeWebView.style.transform !== "none" &&
+        !activeWebView.hasAttribute("data-wv-fxl")) {
+        activeWebView.style.opacity = "0";
         setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
             (0, location_1.shiftWebview)(activeWebView, 0, undefined);
             yield activeWebView.send(events_1.R2_EVENT_READIUMCSS, payloadRcss);
@@ -144,7 +184,20 @@ function createWebViewInternal(preloadScriptPath) {
             console.log("Wrong navigator webview?!");
             return;
         }
-        if (event.channel === events_1.R2_EVENT_WEBVIEW_KEYDOWN) {
+        if (event.channel === "R2_EVENT_SHOW") {
+            webview.style.opacity = "1";
+        }
+        else if (event.channel === events_1.R2_EVENT_FXL_CONFIGURE) {
+            const payload = event.args[0];
+            if (payload.fxl) {
+                (0, location_1.setWebViewStyle)(webview, styles_1.WebViewSlotEnum.center, payload.fxl);
+            }
+            else {
+                (0, location_1.setWebViewStyle)(webview, styles_1.WebViewSlotEnum.center, null);
+            }
+            _resizeSkip--;
+        }
+        else if (event.channel === events_1.R2_EVENT_WEBVIEW_KEYDOWN) {
             const payload = event.args[0];
             if (_keyDownEventHandler) {
                 _keyDownEventHandler(payload, payload.elementName, payload.elementAttributes);

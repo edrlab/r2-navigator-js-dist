@@ -1,6 +1,7 @@
 import { Locator, LocatorLocations } from "r2-shared-js/dist/es8-es2017/src/models/locator";
 import { IAudioPlaybackInfo } from "./audiobook";
 import { IDocInfo } from "./document";
+import { IwidthHeight } from "./fxl";
 import { IHighlight, IHighlightDefinition } from "./highlight";
 import { IPaginationInfo } from "./pagination";
 import { IReadiumCSS } from "./readium-css-settings";
@@ -38,6 +39,10 @@ export declare const R2_EVENT_PAGE_TURN_RES = "R2_EVENT_PAGE_TURN_RES";
 export interface IEventPayload_R2_EVENT_PAGE_TURN {
     direction: string;
     go: string;
+}
+export declare const R2_EVENT_FXL_CONFIGURE = "R2_EVENT_FXL_CONFIGURE";
+export interface IEventPayload_R2_EVENT_FXL_CONFIGURE {
+    fxl: IwidthHeight | null;
 }
 export declare const R2_EVENT_READING_LOCATION = "R2_EVENT_READING_LOCATION";
 export interface IEventPayload_R2_EVENT_READING_LOCATION extends Locator {

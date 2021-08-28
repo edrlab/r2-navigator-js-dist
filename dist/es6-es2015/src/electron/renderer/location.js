@@ -22,14 +22,34 @@ const URI = require("urijs");
 const debug = debug_("r2:navigator#electron/renderer/location");
 const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 const win = window;
-const webviewStyleCommon = "display: flex; margin: 0; padding: 0; box-sizing: border-box; position: absolute;";
-const webviewStyleLeft = webviewStyleCommon + "left: 0; width: 50%; bottom: 0; top: 0;";
-const webviewStyleRight = webviewStyleCommon + "left: 50%; right: 0; bottom: 0; top: 0;";
-const webviewStyleCenter = webviewStyleCommon + "left: 0; right: 0; bottom: 0; top: 0;";
-function setWebViewStyle(wv, wvSlot) {
-    wv.setAttribute("style", wvSlot === styles_1.WebViewSlotEnum.center ? webviewStyleCenter :
-        (wvSlot === styles_1.WebViewSlotEnum.left ? webviewStyleLeft :
-            webviewStyleRight));
+const webviewStyleCommon = "display: flex; border: 0; margin: 0; padding: 0; box-sizing: border-box; position: absolute; ";
+const webviewStyleLeft = "opacity: 0; " + webviewStyleCommon + "left: 0; width: 50%; bottom: 0; top: 0;";
+const webviewStyleRight = "opacity: 0; " + webviewStyleCommon + "left: 50%; right: 0; bottom: 0; top: 0;";
+const webviewStyleCenter = "opacity: 0; " + webviewStyleCommon + "left: 0; right: 0; bottom: 0; top: 0;";
+const webviewStyleLeft_ = "opacity: 1; " + webviewStyleCommon + "left: 0; top: 0;";
+const webviewStyleRight_ = "opacity: 1; " + webviewStyleCommon + "left: 50%; top: 0;";
+const webviewStyleCenter_ = "opacity: 1; " + webviewStyleCommon + "left: 0; top: 0;";
+function setWebViewStyle(wv, wvSlot, fxl) {
+    if (fxl) {
+        let wvSlot_ = wv.getAttribute("data-wv-slot");
+        if (!wvSlot_) {
+            wvSlot_ = wvSlot;
+        }
+        const cxx = ` width:${fxl.width}px; height:${fxl.height}px; transform-origin: 0 0; transform: translate(${fxl.tx}px, ${fxl.ty}px) scale(${fxl.scale});`;
+        wv.setAttribute("style", wvSlot_ === styles_1.WebViewSlotEnum.center ? webviewStyleCenter_ + cxx :
+            (wvSlot_ === styles_1.WebViewSlotEnum.left ? webviewStyleLeft_ + cxx :
+                webviewStyleRight_ + cxx));
+        wv.setAttribute("data-wv-fxl", JSON.stringify(fxl).replace(/{/g, "").replace(/}/g, "").replace(/"/g, ""));
+    }
+    else {
+        wv.setAttribute("style", wvSlot === styles_1.WebViewSlotEnum.center ? webviewStyleCenter :
+            (wvSlot === styles_1.WebViewSlotEnum.left ? webviewStyleLeft :
+                webviewStyleRight));
+        wv.removeAttribute("data-wv-fxl");
+        wv.setAttribute("data-wv-slot", wvSlot === styles_1.WebViewSlotEnum.center ? "center" :
+            (wvSlot === styles_1.WebViewSlotEnum.left ? "left" :
+                "right"));
+    }
 }
 exports.setWebViewStyle = setWebViewStyle;
 function locationHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
@@ -91,7 +111,7 @@ function locationHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
         const payload = eventArgs[0];
         debug(`locationHandleIpcMessage R2_EVENT_LINK: ${payload.url}`);
         let href = payload.url;
-        if (!/^http[s]?:\/\//.test(href) &&
+        if (!/^(https?|thoriumhttps):\/\//.test(href) &&
             !href.startsWith((sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) &&
             activeWebView.READIUM2.link) {
             const sourceUrl = new url_1.URL(activeWebView.READIUM2.link.Href, win.READIUM2.publicationURL);
@@ -409,24 +429,6 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
     const webviewSpreadSwap = secondWebView ?
         (webview2 && webview1 && webview1.READIUM2.link === pubLink) :
         (webview2 && webview2.READIUM2.link === pubLink);
-    if (!webviewSpreadSwap) {
-        if (webview1 && webview1.READIUM2.link && (0, readium_css_1.isFixedLayout)(webview1.READIUM2.link)) {
-            setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
-                const webview1_ = win.READIUM2.getFirstWebView();
-                if (webview1_ && webview1_.READIUM2.link && (0, readium_css_1.isFixedLayout)(webview1_.READIUM2.link)) {
-                    yield webview1_.send("R2_EVENT_HIDE", true);
-                }
-            }), 0);
-        }
-        if (webview2 && webview2.READIUM2.link && (0, readium_css_1.isFixedLayout)(webview2.READIUM2.link)) {
-            setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
-                const webview2_ = win.READIUM2.getSecondWebView(false);
-                if (webview2_ && webview2_.READIUM2.link && (0, readium_css_1.isFixedLayout)(webview2_.READIUM2.link)) {
-                    yield webview2_.send("R2_EVENT_HIDE", true);
-                }
-            }), 0);
-        }
-    }
     const secondWebViewWasJustCreated = secondWebView && !webviewSpreadSwap && !webview2;
     const activeWebView = webviewSpreadSwap ?
         (secondWebView ? webview1 : win.READIUM2.getSecondWebView(true)) :
@@ -628,7 +630,7 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
         (win.READIUM2.enableScreenReaderAccessibilityWebViewHardRefresh
             && win.READIUM2.isScreenReaderMounted);
     if (!isAudio && !webviewNeedsHardRefresh && !webviewNeedsForcedRefresh &&
-        activeWebView && activeWebView.READIUM2.link === pubLink) {
+        activeWebView && activeWebView.READIUM2.link === pubLink && !(0, readium_css_1.isFixedLayout)(pubLink)) {
         const goto = useGoto ? hrefToLoadHttpUri.search(true)[url_params_1.URL_PARAM_GOTO] : undefined;
         const gotoDomRange = useGoto ? hrefToLoadHttpUri.search(true)[url_params_1.URL_PARAM_GOTO_DOM_RANGE] : undefined;
         const hash = useGoto ? undefined : hrefToLoadHttpUri.fragment();
@@ -646,10 +648,9 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
         }
         if (activeWebView) {
             if (activeWebView.style.transform &&
-                activeWebView.style.transform !== "none") {
-                setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
-                    yield activeWebView.send("R2_EVENT_HIDE", activeWebView.READIUM2.link ? (0, readium_css_1.isFixedLayout)(activeWebView.READIUM2.link) : null);
-                }), 0);
+                activeWebView.style.transform !== "none" &&
+                !activeWebView.hasAttribute("data-wv-fxl")) {
+                activeWebView.style.opacity = "0";
                 setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
                     shiftWebview(activeWebView, 0, undefined);
                     yield activeWebView.send(events_1.R2_EVENT_SCROLLTO, payload);
@@ -1014,11 +1015,10 @@ ${coverLink ? `<img id="${styles_1.AUDIO_COVER_ID}" src="${coverLink.Href}" alt=
                 && activeWebView.READIUM2.link !== null;
             activeWebView.READIUM2.link = pubLink;
             if (activeWebView.style.transform &&
-                activeWebView.style.transform !== "none") {
+                activeWebView.style.transform !== "none" &&
+                !activeWebView.hasAttribute("data-wv-fxl")) {
                 if (webviewAlreadyHasContent) {
-                    setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
-                        yield activeWebView.send("R2_EVENT_HIDE", activeWebView.READIUM2.link ? (0, readium_css_1.isFixedLayout)(activeWebView.READIUM2.link) : null);
-                    }), 0);
+                    activeWebView.style.opacity = "0";
                 }
                 setTimeout(() => {
                     shiftWebview(activeWebView, 0, undefined);

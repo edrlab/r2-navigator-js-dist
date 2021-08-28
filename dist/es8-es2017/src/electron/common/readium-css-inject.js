@@ -501,8 +501,6 @@ function configureFixedLayout(documant, isFixedLayout, fxlViewportWidth, fxlView
             wh.tx = tx;
             wh.ty = ty;
         }
-        documant.documentElement.style.transformOrigin = "0 0";
-        documant.documentElement.style.transform = `translate(${tx}px, ${ty}px) scale(${ratio})`;
     }
     return wh;
 }

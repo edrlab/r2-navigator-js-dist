@@ -763,10 +763,6 @@ const scrollToHashRaw = (animate) => {
         return;
     }
     (0, highlight_1.recreateAllHighlights)(win);
-    if (win.READIUM2.isFixedLayout) {
-        debug("scrollToHashRaw skipped, FXL");
-        return;
-    }
     debug("++++ scrollToHashRaw");
     const isPaged = (0, readium_css_inject_1.isPaginated)(win.document);
     if (win.READIUM2.locationHashOverride) {
@@ -943,15 +939,13 @@ const scrollToHashDebounced = (0, debounce_1.debounce)((animate) => {
     scrollToHashRaw(animate);
 }, 100);
 let _ignoreScrollEvent = false;
-electron_1.ipcRenderer.on("R2_EVENT_HIDE", (_event, payload) => {
-    showHideContentMask(true, payload);
-});
 function showHideContentMask(doHide, isFixedLayout) {
     if (doHide) {
         win.document.documentElement.classList.add(styles_1.ROOT_CLASS_INVISIBLE_MASK);
         win.document.documentElement.classList.remove(styles_1.ROOT_CLASS_INVISIBLE_MASK_REMOVED);
     }
     else {
+        electron_1.ipcRenderer.sendToHost("R2_EVENT_SHOW", null);
         if (isFixedLayout) {
             win.document.documentElement.classList.add(styles_1.ROOT_CLASS_INVISIBLE_MASK_REMOVED);
         }
@@ -1045,6 +1039,16 @@ win.addEventListener("DOMContentLoaded", () => {
         win.READIUM2.fxlViewportWidth = wh.width;
         win.READIUM2.fxlViewportHeight = wh.height;
         win.READIUM2.fxlViewportScale = wh.scale;
+        const payload = {
+            fxl: wh,
+        };
+        electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_FXL_CONFIGURE, payload);
+    }
+    else {
+        const payload = {
+            fxl: null,
+        };
+        electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_FXL_CONFIGURE, payload);
     }
     const alreadedInjected = win.document.documentElement.hasAttribute("data-readiumcss-injected");
     if (alreadedInjected) {
@@ -1327,12 +1331,32 @@ function loaded(forced) {
         }
         return false;
     }, true);
-    const onResizeRaw = () => {
+    electron_1.ipcRenderer.on("R2_EVENT_WINDOW_RESIZE", (_event) => {
+        if (!win.READIUM2.isFixedLayout) {
+            debug("R2_EVENT_WINDOW_RESIZE skipped, !FXL");
+            return;
+        }
         const wh = (0, readium_css_inject_1.configureFixedLayout)(win.document, win.READIUM2.isFixedLayout, win.READIUM2.fxlViewportWidth, win.READIUM2.fxlViewportHeight, win.innerWidth, win.innerHeight, win.READIUM2.webViewSlot);
         if (wh) {
             win.READIUM2.fxlViewportWidth = wh.width;
             win.READIUM2.fxlViewportHeight = wh.height;
             win.READIUM2.fxlViewportScale = wh.scale;
+            const payload = {
+                fxl: wh,
+            };
+            electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_FXL_CONFIGURE, payload);
+        }
+        else {
+            const payload = {
+                fxl: null,
+            };
+            electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_FXL_CONFIGURE, payload);
+        }
+    });
+    const onResizeRaw = () => {
+        if (win.READIUM2.isFixedLayout) {
+            debug("scrollToHashRaw skipped, FXL");
+            return;
         }
         debug("++++ scrollToHashDebounced FROM RESIZE");
         scrollToHashDebounced(false);
@@ -1343,7 +1367,7 @@ function loaded(forced) {
     let _firstWindowResize = true;
     win.addEventListener("resize", () => {
         if (_firstWindowResize) {
-            debug("Window resize, SKIP FIRST");
+            debug("Window resize (WEBVIEW), SKIP FIRST");
             _firstWindowResize = false;
             return;
         }

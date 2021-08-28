@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.popupFootNote = void 0;
-const sessions_1 = require("../../common/sessions");
 const styles_1 = require("../../common/styles");
 const popup_dialog_1 = require("../common/popup-dialog");
 function popupFootNote(element, focusScrollRaw, href, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
@@ -10,10 +9,7 @@ function popupFootNote(element, focusScrollRaw, href, ensureTwoPageSpreadWithOdd
         return false;
     }
     const documant = element.ownerDocument;
-    let hrefSelf = documant.location.href;
-    if (hrefSelf.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
-        hrefSelf = (0, sessions_1.convertCustomSchemeToHttpUrl)(hrefSelf);
-    }
+    const hrefSelf = documant.location.href;
     const urlSelf = new URL(hrefSelf);
     if (urlSelf.protocol !== url.protocol ||
         urlSelf.origin !== url.origin ||

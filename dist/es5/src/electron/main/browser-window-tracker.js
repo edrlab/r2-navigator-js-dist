@@ -1,13 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.contextMenuSetup = exports.trackBrowserWindow = exports.THORIUM_READIUM2_ELECTRON_HTTP_PROTOCOL = void 0;
+exports.contextMenuSetup = exports.trackBrowserWindow = void 0;
 var debug_ = require("debug");
 var electron_1 = require("electron");
 var context_menu_1 = require("../common/context-menu");
 var events_1 = require("../common/events");
+var sessions_1 = require("../common/sessions");
 var debug = debug_("r2:navigator#electron/main/browser-window-tracker");
 var _electronBrowserWindows;
-exports.THORIUM_READIUM2_ELECTRON_HTTP_PROTOCOL = "thoriumhttps";
 function trackBrowserWindow(win, _serverURL) {
     if (!_electronBrowserWindows) {
         _electronBrowserWindows = [];
@@ -115,7 +115,9 @@ electron_1.app.on("web-contents-created", function (_evt, wc) {
                 debug("webview.getWebContents().on('will-navigate'");
                 debug(url);
                 event.preventDefault();
-                if (!url || !url.startsWith(exports.THORIUM_READIUM2_ELECTRON_HTTP_PROTOCOL)) {
+                if (!url ||
+                    (!url.startsWith("thoriumhttps") &&
+                        !url.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL))) {
                     debug("'will-navigate' SKIPPED.");
                     return;
                 }

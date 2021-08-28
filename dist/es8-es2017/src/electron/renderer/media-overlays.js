@@ -7,7 +7,6 @@ const serializable_1 = require("r2-lcp-js/dist/es8-es2017/src/serializable");
 const media_overlay_1 = require("r2-shared-js/dist/es8-es2017/src/models/media-overlay");
 const audiobook_1 = require("../common/audiobook");
 const events_1 = require("../common/events");
-const sessions_1 = require("../common/sessions");
 const location_1 = require("./location");
 const readium_css_1 = require("./readium-css");
 const debug = debug_("r2:navigator#electron/renderer/media-overlays");
@@ -123,10 +122,7 @@ async function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
     if (!moTextAudioPair.Audio) {
         return;
     }
-    let publicationURL = win.READIUM2.publicationURL;
-    if (publicationURL.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
-        publicationURL = (0, sessions_1.convertCustomSchemeToHttpUrl)(publicationURL);
-    }
+    const publicationURL = win.READIUM2.publicationURL;
     const urlObjFull = new URL(moTextAudioPair.Audio, publicationURL);
     const urlFull = urlObjFull.toString();
     const urlObjNoQuery = new URL(urlFull);
@@ -680,10 +676,7 @@ async function playMediaOverlaysForLink(link, textFragmentIDChain) {
         return;
     }
     if (!link.MediaOverlays || !link.MediaOverlays.initialized) {
-        let publicationURL = win.READIUM2.publicationURL;
-        if (publicationURL.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
-            publicationURL = (0, sessions_1.convertCustomSchemeToHttpUrl)(publicationURL);
-        }
+        const publicationURL = win.READIUM2.publicationURL;
         const moUrlObjFull = new URL(moUrl, publicationURL);
         const moUrlFull = moUrlObjFull.toString();
         let response;

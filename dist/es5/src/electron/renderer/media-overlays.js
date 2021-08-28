@@ -8,7 +8,6 @@ var serializable_1 = require("r2-lcp-js/dist/es5/src/serializable");
 var media_overlay_1 = require("r2-shared-js/dist/es5/src/models/media-overlay");
 var audiobook_1 = require("../common/audiobook");
 var events_1 = require("../common/events");
-var sessions_1 = require("../common/sessions");
 var location_1 = require("./location");
 var readium_css_1 = require("./readium-css");
 var debug = debug_("r2:navigator#electron/renderer/media-overlays");
@@ -157,9 +156,6 @@ function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
                         return [2];
                     }
                     publicationURL = win.READIUM2.publicationURL;
-                    if (publicationURL.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
-                        publicationURL = (0, sessions_1.convertCustomSchemeToHttpUrl)(publicationURL);
-                    }
                     urlObjFull = new URL(moTextAudioPair.Audio, publicationURL);
                     urlFull = urlObjFull.toString();
                     urlObjNoQuery = new URL(urlFull);
@@ -812,9 +808,6 @@ function playMediaOverlaysForLink(link, textFragmentIDChain) {
                     }
                     if (!(!link.MediaOverlays || !link.MediaOverlays.initialized)) return [3, 9];
                     publicationURL = win.READIUM2.publicationURL;
-                    if (publicationURL.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
-                        publicationURL = (0, sessions_1.convertCustomSchemeToHttpUrl)(publicationURL);
-                    }
                     moUrlObjFull = new URL(moUrl, publicationURL);
                     moUrlFull = moUrlObjFull.toString();
                     response = void 0;
