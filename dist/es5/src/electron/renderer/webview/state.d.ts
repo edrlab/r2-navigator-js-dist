@@ -13,6 +13,7 @@ export interface IReadiumElectronWebviewWindowState {
     fxlViewportWidth: number;
     fxlViewportHeight: number;
     fxlViewportScale: number;
+    fxlZoomPercent: number;
     webViewSlot: WebViewSlotEnum;
     DEBUG_VISUALS: boolean;
     ttsSentenceDetectionEnabled: boolean;
@@ -46,6 +47,7 @@ export interface IReadiumElectronBrowserWindowState {
     ttsOverlayEnabled: boolean;
     ttsPlaybackRate: number;
     ttsVoice: SpeechSynthesisVoice | null;
+    fixedLayoutZoomPercent: number;
     clipboardInterceptor: ((data: IEventPayload_R2_EVENT_CLIPBOARD_COPY) => void) | undefined;
     preloadScriptPath: string;
     getFirstWebView: () => IReadiumElectronWebview | undefined;

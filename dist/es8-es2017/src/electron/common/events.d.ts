@@ -17,6 +17,7 @@ export interface IEventPayload_R2_EVENT_READIUMCSS {
     isFixedLayout?: boolean;
     fixedLayoutWebViewWidth?: number;
     fixedLayoutWebViewHeight?: number;
+    fixedLayoutZoomPercent?: number;
     urlRoot?: string;
 }
 export declare const R2_EVENT_DEBUG_VISUALS = "R2_EVENT_DEBUG_VISUALS";

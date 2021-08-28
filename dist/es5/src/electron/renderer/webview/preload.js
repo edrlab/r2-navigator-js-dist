@@ -37,6 +37,7 @@ win.READIUM2 = {
     fxlViewportHeight: 0,
     fxlViewportScale: 1,
     fxlViewportWidth: 0,
+    fxlZoomPercent: 0,
     hashElement: null,
     isAudio: false,
     isClipboardIntercept: false,
@@ -1047,7 +1048,8 @@ win.addEventListener("DOMContentLoaded", function () {
     }
     var w = (readiumcssJson && readiumcssJson.fixedLayoutWebViewWidth) || win.innerWidth;
     var h = (readiumcssJson && readiumcssJson.fixedLayoutWebViewHeight) || win.innerHeight;
-    var wh = (0, readium_css_inject_1.configureFixedLayout)(win.document, win.READIUM2.isFixedLayout, win.READIUM2.fxlViewportWidth, win.READIUM2.fxlViewportHeight, w, h, win.READIUM2.webViewSlot);
+    win.READIUM2.fxlZoomPercent = (readiumcssJson && readiumcssJson.fixedLayoutZoomPercent) || 0;
+    var wh = (0, readium_css_inject_1.configureFixedLayout)(win.document, win.READIUM2.isFixedLayout, win.READIUM2.fxlViewportWidth, win.READIUM2.fxlViewportHeight, w, h, win.READIUM2.webViewSlot, win.READIUM2.fxlZoomPercent);
     if (wh) {
         win.READIUM2.fxlViewportWidth = wh.width;
         win.READIUM2.fxlViewportHeight = wh.height;
@@ -1344,12 +1346,14 @@ function loaded(forced) {
         }
         return false;
     }, true);
-    electron_1.ipcRenderer.on("R2_EVENT_WINDOW_RESIZE", function (_event) {
+    electron_1.ipcRenderer.on("R2_EVENT_WINDOW_RESIZE", function (_event, zoomPercent) {
+        debug("R2_EVENT_WINDOW_RESIZE zoomPercent " + zoomPercent);
+        win.READIUM2.fxlZoomPercent = zoomPercent;
         if (!win.READIUM2.isFixedLayout) {
             debug("R2_EVENT_WINDOW_RESIZE skipped, !FXL");
             return;
         }
-        var wh = (0, readium_css_inject_1.configureFixedLayout)(win.document, win.READIUM2.isFixedLayout, win.READIUM2.fxlViewportWidth, win.READIUM2.fxlViewportHeight, win.innerWidth, win.innerHeight, win.READIUM2.webViewSlot);
+        var wh = (0, readium_css_inject_1.configureFixedLayout)(win.document, win.READIUM2.isFixedLayout, win.READIUM2.fxlViewportWidth, win.READIUM2.fxlViewportHeight, win.innerWidth, win.innerHeight, win.READIUM2.webViewSlot, win.READIUM2.fxlZoomPercent);
         if (wh) {
             win.READIUM2.fxlViewportWidth = wh.width;
             win.READIUM2.fxlViewportHeight = wh.height;

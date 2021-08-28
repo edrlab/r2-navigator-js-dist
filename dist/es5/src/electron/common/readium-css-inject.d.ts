@@ -6,7 +6,7 @@ export declare function isDocVertical(documant: Document): boolean;
 export declare function isDocRTL(documant: Document): boolean;
 export declare function isPaginated(documant: Document): boolean;
 export declare function readiumCSSSet(documant: Document, messageJson: IEventPayload_R2_EVENT_READIUMCSS, isVerticalWritingMode: boolean, isRTL: boolean): void;
-export declare function configureFixedLayout(documant: Document, isFixedLayout: boolean, fxlViewportWidth: number, fxlViewportHeight: number, innerWidth: number, innerHeight: number, wvSlot: WebViewSlotEnum): IwidthHeight | undefined;
+export declare function configureFixedLayout(documant: Document, isFixedLayout: boolean, fxlViewportWidth: number, fxlViewportHeight: number, innerWidth: number, innerHeight: number, wvSlot: WebViewSlotEnum, zoomPercent: number): IwidthHeight | undefined;
 export declare function ensureHead(documant: Document): void;
 export declare function appendCSSInline(documant: Document, id: string, css: string): void;
 export declare function appendCSS(documant: Document, mod: string, urlRoot: string): void;

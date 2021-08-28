@@ -26,20 +26,32 @@ const webviewStyleCommon = "display: flex; border: 0; margin: 0; padding: 0; box
 const webviewStyleLeft = "opacity: 0; " + webviewStyleCommon + "left: 0; width: 50%; bottom: 0; top: 0;";
 const webviewStyleRight = "opacity: 0; " + webviewStyleCommon + "left: 50%; right: 0; bottom: 0; top: 0;";
 const webviewStyleCenter = "opacity: 0; " + webviewStyleCommon + "left: 0; right: 0; bottom: 0; top: 0;";
-const webviewStyleLeft_ = "opacity: 1; " + webviewStyleCommon + "left: 0; top: 0;";
-const webviewStyleRight_ = "opacity: 1; " + webviewStyleCommon + "left: 50%; top: 0;";
-const webviewStyleCenter_ = "opacity: 1; " + webviewStyleCommon + "left: 0; top: 0;";
+const webviewStyleLeft_ = "opacity: 1; " + webviewStyleCommon +
+    "left: 0; top: calc(0 - max(var(--R2_FXL_Y_SHIFT), var(--R2_FXL_Y_SHIFT_)));";
+const webviewStyleRight_ = "opacity: 1; " + webviewStyleCommon +
+    "left: calc(50% - var(--R2_FXL_X_SHIFT));" +
+    "top: calc(0 - max(var(--R2_FXL_Y_SHIFT), var(--R2_FXL_Y_SHIFT_)));";
+const webviewStyleCenter_ = "opacity: 1; " + webviewStyleCommon +
+    "left: 0; top: calc(0 - var(--R2_FXL_Y_SHIFT));";
 function setWebViewStyle(wv, wvSlot, fxl) {
+    const v = fxl ? JSON.stringify(fxl).replace(/{/g, "").replace(/}/g, "").replace(/"/g, "") : "NO FXL";
+    debug("setWebViewStyle fxl: " + v);
     if (fxl) {
         let wvSlot_ = wv.getAttribute("data-wv-slot");
         if (!wvSlot_) {
             wvSlot_ = wvSlot;
         }
-        const cxx = ` width:${fxl.width}px; height:${fxl.height}px; transform-origin: 0 0; transform: translate(${fxl.tx}px, ${fxl.ty}px) scale(${fxl.scale});`;
+        const tx = fxl.tx >= 0 ? fxl.tx : 0;
+        if (wvSlot_ === styles_1.WebViewSlotEnum.left || wvSlot_ === styles_1.WebViewSlotEnum.center) {
+            win.document.documentElement.style.setProperty("--R2_FXL_X_SHIFT", fxl.tx >= 0 ? "0px" : `${fxl.tx}px`);
+        }
+        const ty = fxl.ty >= 0 ? fxl.ty : 0;
+        win.document.documentElement.style.setProperty((wvSlot_ === styles_1.WebViewSlotEnum.left || wvSlot_ === styles_1.WebViewSlotEnum.center) ? "--R2_FXL_Y_SHIFT" : "--R2_FXL_Y_SHIFT_", fxl.ty >= 0 ? "0px" : `${fxl.ty}px`);
+        const cxx = ` width:${fxl.width}px; height:${fxl.height}px; transform-origin: 0 0; transform: translate(${tx}px, ${ty}px) scale(${fxl.scale});`;
         wv.setAttribute("style", wvSlot_ === styles_1.WebViewSlotEnum.center ? webviewStyleCenter_ + cxx :
             (wvSlot_ === styles_1.WebViewSlotEnum.left ? webviewStyleLeft_ + cxx :
                 webviewStyleRight_ + cxx));
-        wv.setAttribute("data-wv-fxl", JSON.stringify(fxl).replace(/{/g, "").replace(/}/g, "").replace(/"/g, ""));
+        wv.setAttribute("data-wv-fxl", v);
     }
     else {
         wv.setAttribute("style", wvSlot === styles_1.WebViewSlotEnum.center ? webviewStyleCenter :
@@ -424,6 +436,11 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
         debug(`CANNOT LOAD LINK ${hrefToLoad} ... ${publicationURL} ==> ${linkPath}`);
         return false;
     }
+    if (!secondWebView) {
+        win.document.documentElement.style.setProperty("--R2_FXL_X_SHIFT", "0px");
+        win.document.documentElement.style.setProperty("--R2_FXL_Y_SHIFT", "0px");
+        win.document.documentElement.style.setProperty("--R2_FXL_Y_SHIFT_", "0px");
+    }
     const webview1 = win.READIUM2.getFirstWebView();
     const webview2 = win.READIUM2.getSecondWebView(false);
     const webviewSpreadSwap = secondWebView ?
@@ -519,6 +536,7 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
                 }
             }
             if (activeWebView) {
+                debug("loadLink LEFT ... setWebViewStyle");
                 setWebViewStyle(activeWebView, styles_1.WebViewSlotEnum.left);
             }
         }
@@ -542,12 +560,14 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
                 }
             }
             if (activeWebView) {
+                debug("loadLink RIGHT ... setWebViewStyle");
                 setWebViewStyle(activeWebView, styles_1.WebViewSlotEnum.right);
             }
         }
         else {
             webViewSlot = styles_1.WebViewSlotEnum.center;
             if (activeWebView) {
+                debug("loadLink CENTER ... setWebViewStyle");
                 setWebViewStyle(activeWebView, styles_1.WebViewSlotEnum.center);
             }
         }

@@ -378,22 +378,17 @@ function ttsOverlayEnable(doEnable) {
     var _loop_6 = function (activeWebView) {
         setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
             var payload;
-            var _this = this;
             return (0, tslib_1.__generator)(this, function (_a) {
-                payload = {
-                    doEnable: doEnable,
-                };
-                setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
-                    return (0, tslib_1.__generator)(this, function (_a) {
-                        switch (_a.label) {
-                            case 0: return [4, activeWebView.send(events_1.R2_EVENT_TTS_OVERLAY_ENABLE, payload)];
-                            case 1:
-                                _a.sent();
-                                return [2];
-                        }
-                    });
-                }); }, 0);
-                return [2];
+                switch (_a.label) {
+                    case 0:
+                        payload = {
+                            doEnable: doEnable,
+                        };
+                        return [4, activeWebView.send(events_1.R2_EVENT_TTS_OVERLAY_ENABLE, payload)];
+                    case 1:
+                        _a.sent();
+                        return [2];
+                }
             });
         }); }, 0);
     };
@@ -422,22 +417,17 @@ function ttsClickEnable(doEnable) {
     var _loop_7 = function (activeWebView) {
         setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
             var payload;
-            var _this = this;
             return (0, tslib_1.__generator)(this, function (_a) {
-                payload = {
-                    doEnable: doEnable,
-                };
-                setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
-                    return (0, tslib_1.__generator)(this, function (_a) {
-                        switch (_a.label) {
-                            case 0: return [4, activeWebView.send(events_1.R2_EVENT_TTS_CLICK_ENABLE, payload)];
-                            case 1:
-                                _a.sent();
-                                return [2];
-                        }
-                    });
-                }); }, 0);
-                return [2];
+                switch (_a.label) {
+                    case 0:
+                        payload = {
+                            doEnable: doEnable,
+                        };
+                        return [4, activeWebView.send(events_1.R2_EVENT_TTS_CLICK_ENABLE, payload)];
+                    case 1:
+                        _a.sent();
+                        return [2];
+                }
             });
         }); }, 0);
     };
@@ -540,22 +530,17 @@ function ttsSentenceDetectionEnable(doEnable) {
     var _loop_10 = function (activeWebView) {
         setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
             var payload;
-            var _this = this;
             return (0, tslib_1.__generator)(this, function (_a) {
-                payload = {
-                    doEnable: doEnable,
-                };
-                setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
-                    return (0, tslib_1.__generator)(this, function (_a) {
-                        switch (_a.label) {
-                            case 0: return [4, activeWebView.send(events_1.R2_EVENT_TTS_SENTENCE_DETECT_ENABLE, payload)];
-                            case 1:
-                                _a.sent();
-                                return [2];
-                        }
-                    });
-                }); }, 0);
-                return [2];
+                switch (_a.label) {
+                    case 0:
+                        payload = {
+                            doEnable: doEnable,
+                        };
+                        return [4, activeWebView.send(events_1.R2_EVENT_TTS_SENTENCE_DETECT_ENABLE, payload)];
+                    case 1:
+                        _a.sent();
+                        return [2];
+                }
             });
         }); }, 0);
     };

@@ -51,6 +51,7 @@ function adjustReadiumCssJsonMessageForFixedLayout(webview, rcss) {
         return {
             fixedLayoutWebViewHeight: webview.clientHeight,
             fixedLayoutWebViewWidth: webview.clientWidth,
+            fixedLayoutZoomPercent: win.READIUM2.fixedLayoutZoomPercent,
             isFixedLayout: true,
             setCSS: undefined,
         };

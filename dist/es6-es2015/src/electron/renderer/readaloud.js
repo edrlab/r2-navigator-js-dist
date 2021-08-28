@@ -253,9 +253,7 @@ function ttsOverlayEnable(doEnable) {
             const payload = {
                 doEnable,
             };
-            setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
-                yield activeWebView.send(events_1.R2_EVENT_TTS_OVERLAY_ENABLE, payload);
-            }), 0);
+            yield activeWebView.send(events_1.R2_EVENT_TTS_OVERLAY_ENABLE, payload);
         }), 0);
     }
 }
@@ -270,9 +268,7 @@ function ttsClickEnable(doEnable) {
             const payload = {
                 doEnable,
             };
-            setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
-                yield activeWebView.send(events_1.R2_EVENT_TTS_CLICK_ENABLE, payload);
-            }), 0);
+            yield activeWebView.send(events_1.R2_EVENT_TTS_CLICK_ENABLE, payload);
         }), 0);
     }
 }
@@ -317,9 +313,7 @@ function ttsSentenceDetectionEnable(doEnable) {
             const payload = {
                 doEnable,
             };
-            setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
-                yield activeWebView.send(events_1.R2_EVENT_TTS_SENTENCE_DETECT_ENABLE, payload);
-            }), 0);
+            yield activeWebView.send(events_1.R2_EVENT_TTS_SENTENCE_DETECT_ENABLE, payload);
         }), 0);
     }
 }

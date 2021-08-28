@@ -376,10 +376,11 @@ function readiumCSSSet(documant, messageJson, isVerticalWritingMode, isRTL) {
     }
 }
 exports.readiumCSSSet = readiumCSSSet;
-function configureFixedLayout(documant, isFixedLayout, fxlViewportWidth, fxlViewportHeight, innerWidth, innerHeight, wvSlot) {
+function configureFixedLayout(documant, isFixedLayout, fxlViewportWidth, fxlViewportHeight, innerWidth, innerHeight, wvSlot, zoomPercent) {
     if (!documant || !documant.head || !documant.body) {
         return undefined;
     }
+    debug("configureFixedLayout zoomPercent ", zoomPercent);
     let wh;
     let width = fxlViewportWidth;
     let height = fxlViewportHeight;
@@ -487,7 +488,7 @@ function configureFixedLayout(documant, isFixedLayout, fxlViewportWidth, fxlView
         }
         const ratioX = visibleWidth / width;
         const ratioY = visibleHeight / height;
-        const ratio = Math.min(ratioX, ratioY);
+        const ratio = zoomPercent === 0 ? Math.min(ratioX, ratioY) : (zoomPercent / 100);
         const tx = (visibleWidth - (width * ratio)) *
             (wvSlot === styles_1.WebViewSlotEnum.center ? 0.5 : (wvSlot === styles_1.WebViewSlotEnum.right ? 0 : 1));
         const ty = (visibleHeight - (height * ratio)) / 2;
