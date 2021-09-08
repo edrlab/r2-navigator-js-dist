@@ -289,6 +289,7 @@ function ensureHighlightsContainer(win) {
     const documant = win.document;
     if (!_highlightsContainer) {
         documant.body.style.position = "relative";
+        documant.body.style.overflow = "hidden";
         if (!bodyEventListenersSet) {
             bodyEventListenersSet = true;
             documant.body.addEventListener("mousedown", (ev) => {
