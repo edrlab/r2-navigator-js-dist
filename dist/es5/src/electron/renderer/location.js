@@ -47,7 +47,7 @@ function setWebViewStyle(wv, wvSlot, fxl) {
         }
         var ty = fxl.ty >= 0 ? fxl.ty : 0;
         win.document.documentElement.style.setProperty((wvSlot_ === styles_1.WebViewSlotEnum.left || wvSlot_ === styles_1.WebViewSlotEnum.center) ? "--R2_FXL_Y_SHIFT" : "--R2_FXL_Y_SHIFT_", fxl.ty >= 0 ? "0px" : fxl.ty + "px");
-        var cxx = " width:" + fxl.width + "px; height:" + fxl.height + "px; transform-origin: 0 0; transform: translate(" + tx + "px, " + ty + "px) scale(" + fxl.scale + ");";
+        var cxx = " width:" + fxl.width * fxl.scale + "px; height:" + fxl.height * fxl.scale + "px; transform-origin: 0 0; transform: translate(" + tx + "px, " + ty + "px) scale(" + "1" + ");";
         wv.setAttribute("style", wvSlot_ === styles_1.WebViewSlotEnum.center ? webviewStyleCenter_ + cxx :
             (wvSlot_ === styles_1.WebViewSlotEnum.left ? webviewStyleLeft_ + cxx :
                 webviewStyleRight_ + cxx));

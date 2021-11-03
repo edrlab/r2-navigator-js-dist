@@ -25,15 +25,6 @@ const DEFAULT_BACKGROUND_COLOR = {
     green: 50,
     red: 230,
 };
-const CSS_COMMON_RESET = "background-color: transparent !important; " +
-    "position: absolute !important; " +
-    "top: 0 !important; " +
-    "left: 0 !important; " +
-    "overflow: visible !important; " +
-    "margin: 0 !important; " +
-    "padding: 0 !important; " +
-    "border: 0 !important; " +
-    "box-sizing: border-box !important;";
 const _highlights = [];
 const SVG_XML_NAMESPACE = "http://www.w3.org/2000/svg";
 function getBoundingClientRectOfDocumentBody(win) {
@@ -317,10 +308,8 @@ function ensureHighlightsContainer(win) {
         }
         _highlightsContainer = documant.createElement("div");
         _highlightsContainer.setAttribute("id", exports.ID_HIGHLIGHTS_CONTAINER);
-        _highlightsContainer.setAttribute("style", "width: auto !important; " +
-            "height: auto !important; " +
-            CSS_COMMON_RESET);
-        _highlightsContainer.style.setProperty("pointer-events", "none", "important");
+        _highlightsContainer.setAttribute("style", "background-color: transparent !important; position: absolute; width: auto; height: auto; top: 0; left: 0; overflow: visible;");
+        _highlightsContainer.style.setProperty("pointer-events", "none");
         documant.body.append(_highlightsContainer);
     }
     return _highlightsContainer;
@@ -436,20 +425,18 @@ function createHighlightDom(win, highlight, bodyRect) {
     const highlightParent = documant.createElement("div");
     highlightParent.setAttribute("id", highlight.id);
     highlightParent.setAttribute("class", exports.CLASS_HIGHLIGHT_CONTAINER);
-    highlightParent.setAttribute("style", "width: 1px !important; " +
-        "height: 1px !important; " +
-        CSS_COMMON_RESET);
-    highlightParent.style.setProperty("pointer-events", "none", "important");
+    highlightParent.setAttribute("style", "background-color: transparent !important; position: absolute; width: 1px; height: 1px; top: 0; left: 0; overflow: visible;");
+    highlightParent.style.setProperty("pointer-events", "none");
     if (highlight.pointerInteraction) {
         highlightParent.setAttribute("data-click", "1");
     }
     if (USE_BLEND_MODE) {
-        highlightParent.style.setProperty("mix-blend-mode", "multiply", "important");
+        highlightParent.style.setProperty("mix-blend-mode", "multiply");
         highlightParent.style.opacity = `${opacity}`;
     }
     const xOffset = paginated ? (-scrollElement.scrollLeft) : bodyRect.left;
     const yOffset = paginated ? (-scrollElement.scrollTop) : bodyRect.top;
-    const scale = 1;
+    const scale = 1 / ((win.READIUM2 && win.READIUM2.isFixedLayout) ? win.READIUM2.fxlViewportScale : 1);
     const useSVG = !win.READIUM2.DEBUG_VISUALS && USE_SVG;
     const drawUnderline = highlight.drawType === highlight_1.HighlightDrawTypeUnderline && !win.READIUM2.DEBUG_VISUALS;
     const drawStrikeThrough = highlight.drawType === highlight_1.HighlightDrawTypeStrikethrough && !win.READIUM2.DEBUG_VISUALS;
@@ -465,16 +452,12 @@ function createHighlightDom(win, highlight, bodyRect) {
     const highlightBounding = documant.createElement("div");
     highlightBounding.setAttribute("class", exports.CLASS_HIGHLIGHT_BOUNDING_AREA);
     if (win.READIUM2.DEBUG_VISUALS) {
-        highlightBounding.setAttribute("style", "outline-color: magenta !important; " +
-            "outline-style: solid !important; " +
-            "outline-width: 1px !important; " +
-            "outline-offset: -1px !important;" +
-            CSS_COMMON_RESET);
+        highlightBounding.setAttribute("style", `background-color: transparent !important; outline-color: magenta; outline-style: solid; outline-width: 1px; outline-offset: -1px;`);
     }
     else {
-        highlightBounding.setAttribute("style", CSS_COMMON_RESET);
+        highlightBounding.setAttribute("style", "background-color: transparent !important");
     }
-    highlightBounding.style.setProperty("pointer-events", "none", "important");
+    highlightBounding.style.setProperty("pointer-events", "none");
     highlightBounding.style.position = paginated ? "fixed" : "absolute";
     highlightBounding.scale = scale;
     highlightBounding.rect = {
@@ -499,9 +482,7 @@ function createHighlightDom(win, highlight, bodyRect) {
             if (drawUnderline) {
                 const highlightAreaSVGLine = documant.createElementNS(SVG_XML_NAMESPACE, "line");
                 highlightAreaSVGLine.setAttribute("class", exports.CLASS_HIGHLIGHT_AREA);
-                highlightAreaSVGLine.setAttribute("style", "stroke-linecap: round !important; " +
-                    `stroke-width: ${underlineThickness * scale} !important; ` +
-                    `stroke: rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}) !important;` +
+                highlightAreaSVGLine.setAttribute("style", `stroke-linecap: round; stroke-width: ${underlineThickness * scale}; stroke: rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}) !important;` +
                     (USE_BLEND_MODE ? "" : ` stroke-opacity: ${opacity} !important`));
                 highlightAreaSVGLine.scale = scale;
                 highlightAreaSVGLine.rect = {
@@ -523,9 +504,7 @@ function createHighlightDom(win, highlight, bodyRect) {
             else if (drawStrikeThrough) {
                 const highlightAreaSVGLine = documant.createElementNS(SVG_XML_NAMESPACE, "line");
                 highlightAreaSVGLine.setAttribute("class", exports.CLASS_HIGHLIGHT_AREA);
-                highlightAreaSVGLine.setAttribute("style", "stroke-linecap: butt !important; " +
-                    `stroke-width: ${strikeThroughLineThickness * scale} !important; ` +
-                    `stroke: rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}) !important;` +
+                highlightAreaSVGLine.setAttribute("style", `stroke-linecap: butt; stroke-width: ${strikeThroughLineThickness * scale}; stroke: rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}) !important;` +
                     (USE_BLEND_MODE ? "" : ` stroke-opacity: ${opacity} !important`));
                 highlightAreaSVGLine.scale = scale;
                 highlightAreaSVGLine.rect = {
@@ -547,8 +526,7 @@ function createHighlightDom(win, highlight, bodyRect) {
             else {
                 const highlightAreaSVGRect = documant.createElementNS(SVG_XML_NAMESPACE, "rect");
                 highlightAreaSVGRect.setAttribute("class", exports.CLASS_HIGHLIGHT_AREA);
-                highlightAreaSVGRect.setAttribute("style", `fill: rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}) !important; ` +
-                    "stroke-width: 0;" +
+                highlightAreaSVGRect.setAttribute("style", `fill: rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}) !important; stroke-width: 0;` +
                     (USE_BLEND_MODE ? "" : ` fill-opacity: ${opacity} !important;`));
                 highlightAreaSVGRect.scale = scale;
                 highlightAreaSVGRect.rect = {
@@ -573,7 +551,7 @@ function createHighlightDom(win, highlight, bodyRect) {
                 highlightAreaLine.setAttribute("style", USE_BLEND_MODE ?
                     `background-color: rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}) !important;` :
                     `background-color: rgba(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}, ${opacity}) !important;`);
-                highlightAreaLine.style.setProperty("pointer-events", "none", "important");
+                highlightAreaLine.style.setProperty("pointer-events", "none");
                 highlightAreaLine.style.transform = "translate3d(0px, 0px, 0px)";
                 highlightAreaLine.style.position = paginated ? "fixed" : "absolute";
                 highlightAreaLine.scale = scale;
@@ -608,15 +586,14 @@ function createHighlightDom(win, highlight, bodyRect) {
                             `rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}) !important` :
                             `rgba(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}, ${opacity}) !important`);
                 }
-                highlightArea.setAttribute("style", "box-sizing: border-box !important; " +
+                highlightArea.setAttribute("style", "box-sizing: border-box; " +
                     (drawUnderline ?
                         "" :
-                        (`border-radius: ${roundedCorner}px !important; ` +
-                            `background-color: ` +
+                        (`border-radius: ${roundedCorner}px !important; background-color: ` +
                             (USE_BLEND_MODE ?
                                 `rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}) !important;` :
                                 `rgba(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}, ${opacity}) !important;`))) + ` ${extra}`);
-                highlightArea.style.setProperty("pointer-events", "none", "important");
+                highlightArea.style.setProperty("pointer-events", "none");
                 highlightArea.style.transform = "translate3d(0px, 0px, 0px)";
                 highlightArea.style.position = paginated ? "fixed" : "absolute";
                 highlightArea.scale = scale;
