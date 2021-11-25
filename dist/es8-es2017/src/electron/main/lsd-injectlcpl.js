@@ -12,7 +12,7 @@ async function lsdLcpUpdateInject(lcplStr, publication, publicationPath) {
     debug(lcplJson);
     const isAudio = publication.Metadata &&
         publication.Metadata.RDFType &&
-        /http[s]?:\/\/schema\.org\/Audiobook$/.test(publication.Metadata.RDFType);
+        /https?:\/\/schema\.org\/Audiobook$/.test(publication.Metadata.RDFType);
     const zipEntryPath = isAudio ? "license.lcpl" : "META-INF/license.lcpl";
     let lcpl;
     try {

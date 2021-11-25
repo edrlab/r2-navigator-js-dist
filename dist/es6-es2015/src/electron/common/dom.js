@@ -186,7 +186,7 @@ function cssStyleItem(i) {
         if (trimmed.length) {
             count++;
             if (count === i) {
-                const regExStr = `(.+)[\s]*:[\s]*(.+)`;
+                const regExStr = "(.+)[\s]*:[\s]*(.+)";
                 const regex = new RegExp(regExStr, "g");
                 const regexMatch = regex.exec(trimmed);
                 if (regexMatch) {

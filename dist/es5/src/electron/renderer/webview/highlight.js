@@ -26,6 +26,15 @@ var DEFAULT_BACKGROUND_COLOR = {
     green: 50,
     red: 230,
 };
+var CSS_COMMON_RESET = " background-color: transparent !important; " +
+    "position: absolute !important; " +
+    "top: 0 !important; " +
+    "left: 0 !important; " +
+    "overflow: visible !important; " +
+    "margin: 0 !important; " +
+    "padding: 0 !important; " +
+    "border: 0 !important; " +
+    "box-sizing: border-box !important; ";
 var _highlights = [];
 var SVG_XML_NAMESPACE = "http://www.w3.org/2000/svg";
 function getBoundingClientRectOfDocumentBody(win) {
@@ -37,7 +46,7 @@ function resetHighlightBoundingStyle(_win, highlightBounding) {
         return;
     }
     highlightBounding.active = false;
-    highlightBounding.style.outline = "none";
+    highlightBounding.style.setProperty("outline", "none", "important");
     highlightBounding.style.setProperty("background-color", "transparent", "important");
 }
 function setHighlightBoundingStyle(_win, highlightBounding, highlight) {
@@ -47,12 +56,12 @@ function setHighlightBoundingStyle(_win, highlightBounding, highlight) {
     highlightBounding.active = true;
     var opacity = ALT_BACKGROUND_COLOR_OPACITY;
     highlightBounding.style.setProperty("background-color", USE_BLEND_MODE ?
-        "rgb(" + highlight.color.red + ", " + highlight.color.green + ", " + highlight.color.blue + ")" :
-        "rgba(" + highlight.color.red + ", " + highlight.color.green + ", " + highlight.color.blue + ", " + opacity + ")", "important");
-    highlightBounding.style.outlineColor = "rgba(" + highlight.color.red + ", " + highlight.color.green + ", " + highlight.color.blue + ", 1)";
-    highlightBounding.style.outlineStyle = "solid";
-    highlightBounding.style.outlineWidth = "1px";
-    highlightBounding.style.outlineOffset = "0px";
+        "rgb(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ")") :
+        "rgba(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ", ").concat(opacity, ")"), "important");
+    highlightBounding.style.setProperty("outline-color", "rgba(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ", 1)"), "important");
+    highlightBounding.style.setProperty("outline-style", "solid", "important");
+    highlightBounding.style.setProperty("outline-width", "1px", "important");
+    highlightBounding.style.setProperty("outline-offset", "0px", "important");
 }
 function resetHighlightAreaStyle(win, highlightArea) {
     if (USE_BLEND_MODE) {
@@ -75,21 +84,21 @@ function resetHighlightAreaStyle(win, highlightArea) {
         if (highlight) {
             if (isSVG) {
                 if (!highlight.drawType) {
-                    highlightArea.style.setProperty("fill", "rgb(" + highlight.color.red + ", " + highlight.color.green + ", " + highlight.color.blue + ")", "important");
+                    highlightArea.style.setProperty("fill", "rgb(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ")"), "important");
                 }
-                highlightArea.style.setProperty("stroke", "rgb(" + highlight.color.red + ", " + highlight.color.green + ", " + highlight.color.blue + ")", "important");
+                highlightArea.style.setProperty("stroke", "rgb(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ")"), "important");
                 if (!USE_BLEND_MODE) {
                     if (!highlight.drawType) {
-                        highlightArea.style.setProperty("fill-opacity", "" + opacity, "important");
+                        highlightArea.style.setProperty("fill-opacity", "".concat(opacity), "important");
                     }
-                    highlightArea.style.setProperty("stroke-opacity", "" + opacity, "important");
+                    highlightArea.style.setProperty("stroke-opacity", "".concat(opacity), "important");
                 }
             }
             else {
                 highlightArea.style.setProperty("background-color", highlight.drawType === highlight_1.HighlightDrawTypeUnderline ? "transparent" :
                     (USE_BLEND_MODE ?
-                        "rgb(" + highlight.color.red + ", " + highlight.color.green + ", " + highlight.color.blue + ")" :
-                        "rgba(" + highlight.color.red + ", " + highlight.color.green + ", " + highlight.color.blue + ", " + opacity + ")"), "important");
+                        "rgb(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ")") :
+                        "rgba(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ", ").concat(opacity, ")")), "important");
             }
         }
     }
@@ -112,21 +121,21 @@ function setHighlightAreaStyle(win, highlightAreas, highlight) {
             var isSVG = useSVG && highlightArea.namespaceURI === SVG_XML_NAMESPACE;
             if (isSVG) {
                 if (!highlight.drawType) {
-                    highlightArea.style.setProperty("fill", "rgb(" + highlight.color.red + ", " + highlight.color.green + ", " + highlight.color.blue + ")", "important");
+                    highlightArea.style.setProperty("fill", "rgb(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ")"), "important");
                 }
-                highlightArea.style.setProperty("stroke", "rgb(" + highlight.color.red + ", " + highlight.color.green + ", " + highlight.color.blue + ")", "important");
+                highlightArea.style.setProperty("stroke", "rgb(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ")"), "important");
                 if (!USE_BLEND_MODE) {
                     if (!highlight.drawType) {
-                        highlightArea.style.setProperty("fill-opacity", "" + opacity, "important");
+                        highlightArea.style.setProperty("fill-opacity", "".concat(opacity), "important");
                     }
-                    highlightArea.style.setProperty("stroke-opacity", "" + opacity, "important");
+                    highlightArea.style.setProperty("stroke-opacity", "".concat(opacity), "important");
                 }
             }
             else {
                 highlightArea.style.setProperty("background-color", highlight.drawType === highlight_1.HighlightDrawTypeUnderline ? "transparent" :
                     (USE_BLEND_MODE ?
-                        "rgb(" + highlight.color.red + ", " + highlight.color.green + ", " + highlight.color.blue + ")" :
-                        "rgba(" + highlight.color.red + ", " + highlight.color.green + ", " + highlight.color.blue + ", " + opacity + ")"), "important");
+                        "rgb(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ")") :
+                        "rgba(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ", ").concat(opacity, ")")), "important");
             }
         }
     }
@@ -176,9 +185,9 @@ function processMouseEvent(win, ev) {
     var foundElement;
     for (var i = _highlights.length - 1; i >= 0; i--) {
         var highlight = _highlights[i];
-        var highlightParent = documant.getElementById("" + highlight.id);
+        var highlightParent = documant.getElementById("".concat(highlight.id));
         if (!highlightParent) {
-            highlightParent = _highlightsContainer.querySelector("#" + highlight.id);
+            highlightParent = _highlightsContainer.querySelector("#".concat(highlight.id));
         }
         if (!highlightParent) {
             continue;
@@ -218,7 +227,7 @@ function processMouseEvent(win, ev) {
         var highlightContainer = _highlightsContainer.firstElementChild;
         while (highlightContainer) {
             if (USE_BLEND_MODE) {
-                highlightContainer.style.opacity = "" + opacity;
+                highlightContainer.style.setProperty("opacity", "".concat(opacity), "important");
             }
             if (win.READIUM2.DEBUG_VISUALS) {
                 var highlightContainerChild = highlightContainer.firstElementChild;
@@ -246,13 +255,13 @@ function processMouseEvent(win, ev) {
     }
     if (foundElement.getAttribute("data-click")) {
         if (isMouseMove) {
-            var foundElementHighlightAreas = foundElement.querySelectorAll("." + exports.CLASS_HIGHLIGHT_AREA);
-            var foundElementHighlightBounding = foundElement.querySelector("." + exports.CLASS_HIGHLIGHT_BOUNDING_AREA);
+            var foundElementHighlightAreas = foundElement.querySelectorAll(".".concat(exports.CLASS_HIGHLIGHT_AREA));
+            var foundElementHighlightBounding = foundElement.querySelector(".".concat(exports.CLASS_HIGHLIGHT_BOUNDING_AREA));
             var highlightContainer = _highlightsContainer.firstElementChild;
             while (highlightContainer) {
                 if (USE_BLEND_MODE) {
                     if (highlightContainer !== foundElement) {
-                        highlightContainer.style.opacity = "" + ALT_OTHER_BACKGROUND_COLOR_OPACITY;
+                        highlightContainer.style.setProperty("opacity", "".concat(ALT_OTHER_BACKGROUND_COLOR_OPACITY), "important");
                     }
                 }
                 if (win.READIUM2.DEBUG_VISUALS) {
@@ -276,7 +285,7 @@ function processMouseEvent(win, ev) {
                 highlightContainer = highlightContainer.nextElementSibling;
             }
             if (USE_BLEND_MODE) {
-                foundElement.style.opacity = "" + ALT_BACKGROUND_COLOR_OPACITY;
+                foundElement.style.setProperty("opacity", "".concat(ALT_BACKGROUND_COLOR_OPACITY), "important");
             }
             else {
                 setHighlightAreaStyle(win, foundElementHighlightAreas, foundHighlight);
@@ -320,8 +329,10 @@ function ensureHighlightsContainer(win) {
         }
         _highlightsContainer = documant.createElement("div");
         _highlightsContainer.setAttribute("id", exports.ID_HIGHLIGHTS_CONTAINER);
-        _highlightsContainer.setAttribute("style", "background-color: transparent !important; position: absolute; width: auto; height: auto; top: 0; left: 0; overflow: visible;");
-        _highlightsContainer.style.setProperty("pointer-events", "none");
+        _highlightsContainer.setAttribute("style", "width: auto !important; " +
+            "height: auto !important; " +
+            CSS_COMMON_RESET);
+        _highlightsContainer.style.setProperty("pointer-events", "none", "important");
         documant.body.append(_highlightsContainer);
     }
     return _highlightsContainer;
@@ -420,7 +431,7 @@ function createHighlights(win, highDefs, pointerInteraction) {
 }
 exports.createHighlights = createHighlights;
 function createHighlight(win, selectionInfo, color, pointerInteraction, drawType, expand, bodyRect) {
-    var uniqueStr = "" + selectionInfo.rangeInfo.startContainerElementCssSelector + selectionInfo.rangeInfo.startContainerChildTextNodeIndex + selectionInfo.rangeInfo.startOffset + selectionInfo.rangeInfo.endContainerElementCssSelector + selectionInfo.rangeInfo.endContainerChildTextNodeIndex + selectionInfo.rangeInfo.endOffset;
+    var uniqueStr = "".concat(selectionInfo.rangeInfo.startContainerElementCssSelector).concat(selectionInfo.rangeInfo.startContainerChildTextNodeIndex).concat(selectionInfo.rangeInfo.startOffset).concat(selectionInfo.rangeInfo.endContainerElementCssSelector).concat(selectionInfo.rangeInfo.endContainerChildTextNodeIndex).concat(selectionInfo.rangeInfo.endOffset);
     var checkSum = crypto.createHash("sha1");
     checkSum.update(uniqueStr);
     var shaHex = checkSum.digest("hex");
@@ -432,7 +443,7 @@ function createHighlight(win, selectionInfo, color, pointerInteraction, drawType
         if (IS_DEV) {
             console.log("HIGHLIGHT ID already exists, increment: " + id);
         }
-        id = idBase + "_" + idIdx++;
+        id = "".concat(idBase, "_").concat(idIdx++);
     }
     var highlight = {
         color: color ? color : DEFAULT_BACKGROUND_COLOR,
@@ -460,14 +471,16 @@ function createHighlightDom(win, highlight, bodyRect) {
     var highlightParent = documant.createElement("div");
     highlightParent.setAttribute("id", highlight.id);
     highlightParent.setAttribute("class", exports.CLASS_HIGHLIGHT_CONTAINER);
-    highlightParent.setAttribute("style", "background-color: transparent !important; position: absolute; width: 1px; height: 1px; top: 0; left: 0; overflow: visible;");
-    highlightParent.style.setProperty("pointer-events", "none");
+    highlightParent.setAttribute("style", "width: 1px !important; " +
+        "height: 1px !important; " +
+        CSS_COMMON_RESET);
+    highlightParent.style.setProperty("pointer-events", "none", "important");
     if (highlight.pointerInteraction) {
         highlightParent.setAttribute("data-click", "1");
     }
     if (USE_BLEND_MODE) {
-        highlightParent.style.setProperty("mix-blend-mode", "multiply");
-        highlightParent.style.opacity = "" + opacity;
+        highlightParent.style.setProperty("mix-blend-mode", "multiply", "important");
+        highlightParent.style.setProperty("opacity", "".concat(opacity), "important");
     }
     var xOffset = paginated ? (-scrollElement.scrollLeft) : bodyRect.left;
     var yOffset = paginated ? (-scrollElement.scrollTop) : bodyRect.top;
@@ -487,13 +500,17 @@ function createHighlightDom(win, highlight, bodyRect) {
     var highlightBounding = documant.createElement("div");
     highlightBounding.setAttribute("class", exports.CLASS_HIGHLIGHT_BOUNDING_AREA);
     if (win.READIUM2.DEBUG_VISUALS) {
-        highlightBounding.setAttribute("style", "background-color: transparent !important; outline-color: magenta; outline-style: solid; outline-width: 1px; outline-offset: -1px;");
+        highlightBounding.setAttribute("style", "outline-color: magenta !important; " +
+            "outline-style: solid !important; " +
+            "outline-width: 1px !important; " +
+            "outline-offset: -1px !important;" +
+            CSS_COMMON_RESET);
     }
     else {
-        highlightBounding.setAttribute("style", "background-color: transparent !important");
+        highlightBounding.setAttribute("style", CSS_COMMON_RESET);
     }
-    highlightBounding.style.setProperty("pointer-events", "none");
-    highlightBounding.style.position = paginated ? "fixed" : "absolute";
+    highlightBounding.style.setProperty("pointer-events", "none", "important");
+    highlightBounding.style.setProperty("position", paginated ? "fixed" : "absolute", "important");
     highlightBounding.scale = scale;
     highlightBounding.rect = {
         height: rangeBoundingClientRect.height,
@@ -501,12 +518,12 @@ function createHighlightDom(win, highlight, bodyRect) {
         top: rangeBoundingClientRect.top - yOffset,
         width: rangeBoundingClientRect.width,
     };
-    highlightBounding.style.width = highlightBounding.rect.width * scale + "px";
-    highlightBounding.style.height = highlightBounding.rect.height * scale + "px";
-    highlightBounding.style.minWidth = highlightBounding.style.width;
-    highlightBounding.style.minHeight = highlightBounding.style.height;
-    highlightBounding.style.left = highlightBounding.rect.left * scale + "px";
-    highlightBounding.style.top = highlightBounding.rect.top * scale + "px";
+    highlightBounding.style.setProperty("width", "".concat(highlightBounding.rect.width * scale, "px"), "important");
+    highlightBounding.style.setProperty("height", "".concat(highlightBounding.rect.height * scale, "px"), "important");
+    highlightBounding.style.setProperty("min-width", highlightBounding.style.width, "important");
+    highlightBounding.style.setProperty("min-height", highlightBounding.style.height, "important");
+    highlightBounding.style.setProperty("left", "".concat(highlightBounding.rect.left * scale, "px"), "important");
+    highlightBounding.style.setProperty("top", "".concat(highlightBounding.rect.top * scale, "px"), "important");
     highlightParent.append(highlightBounding);
     try {
         for (var clientRects_1 = (0, tslib_1.__values)(clientRects), clientRects_1_1 = clientRects_1.next(); !clientRects_1_1.done; clientRects_1_1 = clientRects_1.next()) {
@@ -519,8 +536,10 @@ function createHighlightDom(win, highlight, bodyRect) {
                 if (drawUnderline) {
                     var highlightAreaSVGLine = documant.createElementNS(SVG_XML_NAMESPACE, "line");
                     highlightAreaSVGLine.setAttribute("class", exports.CLASS_HIGHLIGHT_AREA);
-                    highlightAreaSVGLine.setAttribute("style", "stroke-linecap: round; stroke-width: " + underlineThickness * scale + "; stroke: rgb(" + highlight.color.red + ", " + highlight.color.green + ", " + highlight.color.blue + ") !important;" +
-                        (USE_BLEND_MODE ? "" : " stroke-opacity: " + opacity + " !important"));
+                    highlightAreaSVGLine.setAttribute("style", "stroke-linecap: round !important; " +
+                        "stroke-width: ".concat(underlineThickness * scale, " !important; ") +
+                        "stroke: rgb(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ") !important;") +
+                        (USE_BLEND_MODE ? "" : " stroke-opacity: ".concat(opacity, " !important")));
                     highlightAreaSVGLine.scale = scale;
                     highlightAreaSVGLine.rect = {
                         height: clientRect.height,
@@ -529,20 +548,22 @@ function createHighlightDom(win, highlight, bodyRect) {
                         width: clientRect.width,
                     };
                     var lineOffset = (highlightAreaSVGLine.rect.width > roundedCorner) ? roundedCorner : 0;
-                    highlightAreaSVGLine.setAttribute("x1", "" + (highlightAreaSVGLine.rect.left + lineOffset) * scale);
-                    highlightAreaSVGLine.setAttribute("x2", "" + (highlightAreaSVGLine.rect.left + highlightAreaSVGLine.rect.width - lineOffset) * scale);
+                    highlightAreaSVGLine.setAttribute("x1", "".concat((highlightAreaSVGLine.rect.left + lineOffset) * scale));
+                    highlightAreaSVGLine.setAttribute("x2", "".concat((highlightAreaSVGLine.rect.left + highlightAreaSVGLine.rect.width - lineOffset) * scale));
                     var y = (highlightAreaSVGLine.rect.top + highlightAreaSVGLine.rect.height - (underlineThickness / 2)) * scale;
-                    highlightAreaSVGLine.setAttribute("y1", "" + y);
-                    highlightAreaSVGLine.setAttribute("y2", "" + y);
-                    highlightAreaSVGLine.setAttribute("height", "" + highlightAreaSVGLine.rect.height * scale);
-                    highlightAreaSVGLine.setAttribute("width", "" + highlightAreaSVGLine.rect.width * scale);
+                    highlightAreaSVGLine.setAttribute("y1", "".concat(y));
+                    highlightAreaSVGLine.setAttribute("y2", "".concat(y));
+                    highlightAreaSVGLine.setAttribute("height", "".concat(highlightAreaSVGLine.rect.height * scale));
+                    highlightAreaSVGLine.setAttribute("width", "".concat(highlightAreaSVGLine.rect.width * scale));
                     highlightAreaSVGDocFrag.appendChild(highlightAreaSVGLine);
                 }
                 else if (drawStrikeThrough) {
                     var highlightAreaSVGLine = documant.createElementNS(SVG_XML_NAMESPACE, "line");
                     highlightAreaSVGLine.setAttribute("class", exports.CLASS_HIGHLIGHT_AREA);
-                    highlightAreaSVGLine.setAttribute("style", "stroke-linecap: butt; stroke-width: " + strikeThroughLineThickness * scale + "; stroke: rgb(" + highlight.color.red + ", " + highlight.color.green + ", " + highlight.color.blue + ") !important;" +
-                        (USE_BLEND_MODE ? "" : " stroke-opacity: " + opacity + " !important"));
+                    highlightAreaSVGLine.setAttribute("style", "stroke-linecap: butt !important; " +
+                        "stroke-width: ".concat(strikeThroughLineThickness * scale, " !important; ") +
+                        "stroke: rgb(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ") !important;") +
+                        (USE_BLEND_MODE ? "" : " stroke-opacity: ".concat(opacity, " !important")));
                     highlightAreaSVGLine.scale = scale;
                     highlightAreaSVGLine.rect = {
                         height: clientRect.height,
@@ -550,21 +571,22 @@ function createHighlightDom(win, highlight, bodyRect) {
                         top: clientRect.top - yOffset,
                         width: clientRect.width,
                     };
-                    highlightAreaSVGLine.setAttribute("x1", "" + highlightAreaSVGLine.rect.left * scale);
-                    highlightAreaSVGLine.setAttribute("x2", "" + (highlightAreaSVGLine.rect.left + highlightAreaSVGLine.rect.width) * scale);
+                    highlightAreaSVGLine.setAttribute("x1", "".concat(highlightAreaSVGLine.rect.left * scale));
+                    highlightAreaSVGLine.setAttribute("x2", "".concat((highlightAreaSVGLine.rect.left + highlightAreaSVGLine.rect.width) * scale));
                     var lineOffset = highlightAreaSVGLine.rect.height / 2;
                     var y = (highlightAreaSVGLine.rect.top + lineOffset) * scale;
-                    highlightAreaSVGLine.setAttribute("y1", "" + y);
-                    highlightAreaSVGLine.setAttribute("y2", "" + y);
-                    highlightAreaSVGLine.setAttribute("height", "" + highlightAreaSVGLine.rect.height * scale);
-                    highlightAreaSVGLine.setAttribute("width", "" + highlightAreaSVGLine.rect.width * scale);
+                    highlightAreaSVGLine.setAttribute("y1", "".concat(y));
+                    highlightAreaSVGLine.setAttribute("y2", "".concat(y));
+                    highlightAreaSVGLine.setAttribute("height", "".concat(highlightAreaSVGLine.rect.height * scale));
+                    highlightAreaSVGLine.setAttribute("width", "".concat(highlightAreaSVGLine.rect.width * scale));
                     highlightAreaSVGDocFrag.appendChild(highlightAreaSVGLine);
                 }
                 else {
                     var highlightAreaSVGRect = documant.createElementNS(SVG_XML_NAMESPACE, "rect");
                     highlightAreaSVGRect.setAttribute("class", exports.CLASS_HIGHLIGHT_AREA);
-                    highlightAreaSVGRect.setAttribute("style", "fill: rgb(" + highlight.color.red + ", " + highlight.color.green + ", " + highlight.color.blue + ") !important; stroke-width: 0;" +
-                        (USE_BLEND_MODE ? "" : " fill-opacity: " + opacity + " !important;"));
+                    highlightAreaSVGRect.setAttribute("style", "fill: rgb(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ") !important; ") +
+                        "stroke-width: 0;" +
+                        (USE_BLEND_MODE ? "" : " fill-opacity: ".concat(opacity, " !important;")));
                     highlightAreaSVGRect.scale = scale;
                     highlightAreaSVGRect.rect = {
                         height: clientRect.height,
@@ -572,12 +594,12 @@ function createHighlightDom(win, highlight, bodyRect) {
                         top: clientRect.top - yOffset,
                         width: clientRect.width,
                     };
-                    highlightAreaSVGRect.setAttribute("rx", "" + roundedCorner * scale);
-                    highlightAreaSVGRect.setAttribute("ry", "" + roundedCorner * scale);
-                    highlightAreaSVGRect.setAttribute("x", "" + (highlightAreaSVGRect.rect.left - borderThickness) * scale);
-                    highlightAreaSVGRect.setAttribute("y", "" + (highlightAreaSVGRect.rect.top - borderThickness) * scale);
-                    highlightAreaSVGRect.setAttribute("height", "" + (highlightAreaSVGRect.rect.height + (borderThickness * 2)) * scale);
-                    highlightAreaSVGRect.setAttribute("width", "" + (highlightAreaSVGRect.rect.width + (borderThickness * 2)) * scale);
+                    highlightAreaSVGRect.setAttribute("rx", "".concat(roundedCorner * scale));
+                    highlightAreaSVGRect.setAttribute("ry", "".concat(roundedCorner * scale));
+                    highlightAreaSVGRect.setAttribute("x", "".concat((highlightAreaSVGRect.rect.left - borderThickness) * scale));
+                    highlightAreaSVGRect.setAttribute("y", "".concat((highlightAreaSVGRect.rect.top - borderThickness) * scale));
+                    highlightAreaSVGRect.setAttribute("height", "".concat((highlightAreaSVGRect.rect.height + (borderThickness * 2)) * scale));
+                    highlightAreaSVGRect.setAttribute("width", "".concat((highlightAreaSVGRect.rect.width + (borderThickness * 2)) * scale));
                     highlightAreaSVGDocFrag.appendChild(highlightAreaSVGRect);
                 }
             }
@@ -585,12 +607,13 @@ function createHighlightDom(win, highlight, bodyRect) {
                 if (drawStrikeThrough) {
                     var highlightAreaLine = documant.createElement("div");
                     highlightAreaLine.setAttribute("class", exports.CLASS_HIGHLIGHT_AREA);
-                    highlightAreaLine.setAttribute("style", USE_BLEND_MODE ?
-                        "background-color: rgb(" + highlight.color.red + ", " + highlight.color.green + ", " + highlight.color.blue + ") !important;" :
-                        "background-color: rgba(" + highlight.color.red + ", " + highlight.color.green + ", " + highlight.color.blue + ", " + opacity + ") !important;");
-                    highlightAreaLine.style.setProperty("pointer-events", "none");
-                    highlightAreaLine.style.transform = "translate3d(0px, 0px, 0px)";
-                    highlightAreaLine.style.position = paginated ? "fixed" : "absolute";
+                    highlightAreaLine.setAttribute("style", CSS_COMMON_RESET +
+                        (USE_BLEND_MODE ?
+                            "background-color: rgb(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ") !important;") :
+                            "background-color: rgba(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ", ").concat(opacity, ") !important;")));
+                    highlightAreaLine.style.setProperty("pointer-events", "none", "important");
+                    highlightAreaLine.style.setProperty("transform", "translate3d(0px, 0px, 0px)", "important");
+                    highlightAreaLine.style.setProperty("position", paginated ? "fixed" : "absolute", "important");
                     highlightAreaLine.scale = scale;
                     highlightAreaLine.rect = {
                         height: clientRect.height,
@@ -598,12 +621,12 @@ function createHighlightDom(win, highlight, bodyRect) {
                         top: clientRect.top - yOffset,
                         width: clientRect.width,
                     };
-                    highlightAreaLine.style.width = highlightAreaLine.rect.width * scale + "px";
-                    highlightAreaLine.style.height = strikeThroughLineThickness * scale + "px";
-                    highlightAreaLine.style.minWidth = highlightAreaLine.style.width;
-                    highlightAreaLine.style.minHeight = highlightAreaLine.style.height;
-                    highlightAreaLine.style.left = highlightAreaLine.rect.left * scale + "px";
-                    highlightAreaLine.style.top = (highlightAreaLine.rect.top + (highlightAreaLine.rect.height / 2) - (strikeThroughLineThickness / 2)) * scale + "px";
+                    highlightAreaLine.style.setProperty("width", "".concat(highlightAreaLine.rect.width * scale, "px"), "important");
+                    highlightAreaLine.style.setProperty("height", "".concat(strikeThroughLineThickness * scale, "px"), "important");
+                    highlightAreaLine.style.setProperty("min-width", highlightAreaLine.style.width, "important");
+                    highlightAreaLine.style.setProperty("min-height", highlightAreaLine.style.height, "important");
+                    highlightAreaLine.style.setProperty("left", "".concat(highlightAreaLine.rect.left * scale, "px"), "important");
+                    highlightAreaLine.style.setProperty("top", "".concat((highlightAreaLine.rect.top + (highlightAreaLine.rect.height / 2) - (strikeThroughLineThickness / 2)) * scale, "px"), "important");
                     highlightParent.append(highlightAreaLine);
                 }
                 else {
@@ -615,24 +638,25 @@ function createHighlightDom(win, highlight, bodyRect) {
                         var r = rgb >> 16;
                         var g = rgb >> 8 & 255;
                         var b = rgb & 255;
-                        extra = "outline-color: rgb(" + r + ", " + g + ", " + b + "); outline-style: solid; outline-width: 1px; outline-offset: -1px;";
+                        extra = "outline-color: rgb(".concat(r, ", ").concat(g, ", ").concat(b, "); outline-style: solid; outline-width: 1px; outline-offset: -1px;");
                     }
                     else if (drawUnderline) {
-                        extra = "border-bottom: " + underlineThickness * scale + "px solid " +
+                        extra = "border-bottom: ".concat(underlineThickness * scale, "px solid ") +
                             (USE_BLEND_MODE ?
-                                "rgb(" + highlight.color.red + ", " + highlight.color.green + ", " + highlight.color.blue + ") !important" :
-                                "rgba(" + highlight.color.red + ", " + highlight.color.green + ", " + highlight.color.blue + ", " + opacity + ") !important");
+                                "rgb(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ") !important") :
+                                "rgba(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ", ").concat(opacity, ") !important"));
                     }
-                    highlightArea.setAttribute("style", "box-sizing: border-box; " +
+                    highlightArea.setAttribute("style", CSS_COMMON_RESET +
                         (drawUnderline ?
                             "" :
-                            ("border-radius: " + roundedCorner + "px !important; background-color: " +
+                            ("border-radius: ".concat(roundedCorner, "px !important; ") +
+                                "background-color: " +
                                 (USE_BLEND_MODE ?
-                                    "rgb(" + highlight.color.red + ", " + highlight.color.green + ", " + highlight.color.blue + ") !important;" :
-                                    "rgba(" + highlight.color.red + ", " + highlight.color.green + ", " + highlight.color.blue + ", " + opacity + ") !important;"))) + (" " + extra));
-                    highlightArea.style.setProperty("pointer-events", "none");
-                    highlightArea.style.transform = "translate3d(0px, 0px, 0px)";
-                    highlightArea.style.position = paginated ? "fixed" : "absolute";
+                                    "rgb(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ") !important;") :
+                                    "rgba(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ", ").concat(opacity, ") !important;")))) + " ".concat(extra));
+                    highlightArea.style.setProperty("pointer-events", "none", "important");
+                    highlightArea.style.setProperty("transform", "translate3d(0px, 0px, 0px)", "important");
+                    highlightArea.style.setProperty("position", paginated ? "fixed" : "absolute", "important");
                     highlightArea.scale = scale;
                     highlightArea.rect = {
                         height: clientRect.height,
@@ -640,12 +664,12 @@ function createHighlightDom(win, highlight, bodyRect) {
                         top: clientRect.top - yOffset,
                         width: clientRect.width,
                     };
-                    highlightArea.style.width = highlightArea.rect.width * scale + "px";
-                    highlightArea.style.height = highlightArea.rect.height * scale + "px";
-                    highlightArea.style.minWidth = highlightArea.style.width;
-                    highlightArea.style.minHeight = highlightArea.style.height;
-                    highlightArea.style.left = highlightArea.rect.left * scale + "px";
-                    highlightArea.style.top = highlightArea.rect.top * scale + "px";
+                    highlightArea.style.setProperty("width", "".concat(highlightArea.rect.width * scale, "px"), "important");
+                    highlightArea.style.setProperty("height", "".concat(highlightArea.rect.height * scale, "px"), "important");
+                    highlightArea.style.setProperty("min-width", highlightArea.style.width, "important");
+                    highlightArea.style.setProperty("min-height", highlightArea.style.height, "important");
+                    highlightArea.style.setProperty("left", "".concat(highlightArea.rect.left * scale, "px"), "important");
+                    highlightArea.style.setProperty("top", "".concat(highlightArea.rect.top * scale, "px"), "important");
                     highlightParent.append(highlightArea);
                 }
             }
@@ -660,12 +684,9 @@ function createHighlightDom(win, highlight, bodyRect) {
     }
     if (useSVG && highlightAreaSVGDocFrag) {
         var highlightAreaSVG = documant.createElementNS(SVG_XML_NAMESPACE, "svg");
-        highlightAreaSVG.setAttribute("style", "background-color: transparent !important");
+        highlightAreaSVG.setAttribute("style", CSS_COMMON_RESET);
         highlightAreaSVG.setAttribute("pointer-events", "none");
-        highlightAreaSVG.style.position = paginated ? "fixed" : "absolute";
-        highlightAreaSVG.style.overflow = "visible";
-        highlightAreaSVG.style.left = "0";
-        highlightAreaSVG.style.top = "0";
+        highlightAreaSVG.style.setProperty("position", paginated ? "fixed" : "absolute", "important");
         highlightAreaSVG.append(highlightAreaSVGDocFrag);
         highlightParent.append(highlightAreaSVG);
     }

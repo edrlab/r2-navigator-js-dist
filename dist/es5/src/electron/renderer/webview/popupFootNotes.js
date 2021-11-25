@@ -45,7 +45,7 @@ function popupFootNote(element, focusScrollRaw, href, ensureTwoPageSpreadWithOdd
     var ID_PREFIX_ = "r2-footnote-for_";
     var id_ = ID_PREFIX_ + targetElement.id;
     htmltxt = htmltxt.replace(/id=["']([^"']+)["']/g, "idvoid=\"$1\"");
-    htmltxt = "<div id=\"" + id_ + "\" class=\"" + styles_1.FOOTNOTES_CONTAINER_CLASS + " " + styles_1.CSS_CLASS_NO_FOCUS_OUTLINE + "\" tabindex=\"0\" autofocus=\"autofocus\">" + htmltxt + "</div>";
+    htmltxt = "<div id=\"".concat(id_, "\" class=\"").concat(styles_1.FOOTNOTES_CONTAINER_CLASS, " ").concat(styles_1.CSS_CLASS_NO_FOCUS_OUTLINE, "\" tabindex=\"0\" autofocus=\"autofocus\">").concat(htmltxt, "</div>");
     var val = ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable();
     function onDialogClosed(el) {
         if (el) {

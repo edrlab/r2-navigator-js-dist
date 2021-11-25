@@ -12,7 +12,7 @@ let config;
 let rootDocument;
 function uniqueCssSelector(input, doc, options) {
     if (input.nodeType !== Node.ELEMENT_NODE) {
-        throw new Error(`Can't generate CSS selector for non-element node type.`);
+        throw new Error("Can't generate CSS selector for non-element node type.");
     }
     if ("html" === input.tagName.toLowerCase()) {
         return input.tagName.toLowerCase();
@@ -37,7 +37,7 @@ function uniqueCssSelector(input, doc, options) {
         return selector(path);
     }
     else {
-        throw new Error(`Selector was not found.`);
+        throw new Error("Selector was not found.");
     }
 }
 exports.uniqueCssSelector = uniqueCssSelector;

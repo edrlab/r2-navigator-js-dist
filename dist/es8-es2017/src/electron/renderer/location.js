@@ -251,17 +251,17 @@ function handleLink(href, previous, useGoto, rcss) {
     debug(`handleLink: ${href}`);
     const special = href.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://");
     if (special) {
-        debug(`handleLink R2 URL`);
+        debug("handleLink R2 URL");
         const okay = loadLink(href, previous, useGoto, rcss);
         if (!okay) {
             debug(`Readium link fail?! ${href}`);
         }
     }
     else {
-        debug(`handleLink non-R2 URL`);
+        debug("handleLink non-R2 URL");
         const okay = loadLink(href, previous, useGoto, rcss);
         if (!okay) {
-            if (/^http[s]?:\/\/127\.0\.0\.1/.test(href)) {
+            if (/^https?:\/\/127\.0\.0\.1/.test(href)) {
                 debug(`Internal link, fails to match publication document: ${href}`);
             }
             else {
@@ -456,18 +456,18 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
         activeWebView.READIUM2.readiumCss = actualReadiumCss;
     }
     const fileName = path.basename(linkPath);
-    const ext = path.extname(fileName).toLowerCase();
+    const ext = path.extname(fileName);
     const isAudio = publication.Metadata &&
         publication.Metadata.RDFType &&
-        /http[s]?:\/\/schema\.org\/Audiobook$/.test(publication.Metadata.RDFType) &&
+        /https?:\/\/schema\.org\/Audiobook$/.test(publication.Metadata.RDFType) &&
         ((pubLink.TypeLink && pubLink.TypeLink.startsWith("audio/")) ||
-            /\.mp[3|4]$/.test(ext) ||
-            /\.wav$/.test(ext) ||
-            /\.aac$/.test(ext) ||
-            /\.og[g|b|a]$/.test(ext) ||
-            /\.aiff$/.test(ext) ||
-            /\.wma$/.test(ext) ||
-            /\.flac$/.test(ext));
+            /\.mp[3|4]$/i.test(ext) ||
+            /\.wav$/i.test(ext) ||
+            /\.aac$/i.test(ext) ||
+            /\.og[g|b|a]$/i.test(ext) ||
+            /\.aiff$/i.test(ext) ||
+            /\.wma$/i.test(ext) ||
+            /\.flac$/i.test(ext));
     let webViewSlot = styles_1.WebViewSlotEnum.center;
     let loadingSecondWebView;
     const linkIndex = publication.Spine ? publication.Spine.indexOf(pubLink) : -1;
@@ -744,7 +744,7 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
 <head>
     <meta charset="utf-8" />
-    ${title ? `<title>${title}</title>` : `<!-- NO TITLE -->`}
+    ${title ? `<title>${title}</title>` : "<!-- NO TITLE -->"}
     <base href="${publicationURLHttp}" id="${readium_css_inject_1.READIUM2_BASEURL_ID}" />
     <style type="text/css">
     /*<![CDATA[*/
@@ -930,11 +930,11 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
 </head>
 <body id="${styles_1.AUDIO_BODY_ID}">
 <section id="${styles_1.AUDIO_SECTION_ID}">
-${title ? `<h3 id="${styles_1.AUDIO_TITLE_ID}">${title}</h3>` : ``}
-${coverLink ? `<img id="${styles_1.AUDIO_COVER_ID}" src="${coverLink.Href}" alt="" ${coverLink.Height ? `height="${coverLink.Height}"` : ""} ${coverLink.Width ? `width="${coverLink.Width}"` : ""} ${coverLink.Width || coverLink.Height ? `style="${coverLink.Height ? `height: ${coverLink.Height}px !important;` : ""} ${coverLink.Width ? `width: ${coverLink.Width}px !important;` : ""}"` : ""}/>` : ``}
+${title ? `<h3 id="${styles_1.AUDIO_TITLE_ID}">${title}</h3>` : ""}
+${coverLink ? `<img id="${styles_1.AUDIO_COVER_ID}" src="${coverLink.Href}" alt="" ${coverLink.Height ? `height="${coverLink.Height}"` : ""} ${coverLink.Width ? `width="${coverLink.Width}"` : ""} ${coverLink.Width || coverLink.Height ? `style="${coverLink.Height ? `height: ${coverLink.Height}px !important;` : ""} ${coverLink.Width ? `width: ${coverLink.Width}px !important;` : ""}"` : ""}/>` : ""}
     <audio
         id="${styles_1.AUDIO_ID}"
-        ${audiobook_1.DEBUG_AUDIO ? `controlsx="controlsx"` : ""}
+        ${audiobook_1.DEBUG_AUDIO ? "controlsx=\"controlsx\"" : ""}
         autoplay="autoplay"
         preload="metadata">
 
@@ -1063,7 +1063,7 @@ const _saveReadingLocation = (docHref, locator) => {
     if (publication && publication.Spine) {
         const isAudio = publication.Metadata &&
             publication.Metadata.RDFType &&
-            /http[s]?:\/\/schema\.org\/Audiobook$/.test(publication.Metadata.RDFType);
+            /https?:\/\/schema\.org\/Audiobook$/.test(publication.Metadata.RDFType);
         if (isAudio) {
             const metaDuration = publication.Metadata.Duration;
             let totalDuration = 0;

@@ -9,7 +9,7 @@ function isPopupDialogOpen(documant) {
 }
 exports.isPopupDialogOpen = isPopupDialogOpen;
 function closePopupDialogs(documant) {
-    var dialogs = documant.querySelectorAll("dialog." + styles_1.POPUP_DIALOG_CLASS);
+    var dialogs = documant.querySelectorAll("dialog.".concat(styles_1.POPUP_DIALOG_CLASS));
     dialogs.forEach(function (dialog) {
         var dia = dialog;
         if (dia.popDialog) {
@@ -95,18 +95,18 @@ var PopupDialog = (function () {
         this.dialog = documant.createElement("dialog");
         this.dialog.popDialog = this;
         this.dialog.setAttribute("class", styles_1.POPUP_DIALOG_CLASS
-            + (optionalCssClass ? " " + optionalCssClass : ""));
+            + (optionalCssClass ? " ".concat(optionalCssClass) : ""));
         this.dialog.setAttribute("id", styles_1.POPUP_DIALOG_CLASS);
         this.dialog.setAttribute("dir", "ltr");
         var namespaces = Array.from(documant.documentElement.attributes).reduce(function (pv, cv) {
             if (cv.name.startsWith("xmlns:")) {
-                return pv + " " + cv.name + "=\"" + cv.value + "\"";
+                return "".concat(pv, " ").concat(cv.name, "=\"").concat(cv.value, "\"");
             }
             else {
-                return "" + pv;
+                return "".concat(pv);
             }
         }, "");
-        var toInsert = outerHTML.replace(/>/, " " + namespaces + " >");
+        var toInsert = outerHTML.replace(/>/, " ".concat(namespaces, " >"));
         try {
             this.dialog.insertAdjacentHTML("beforeend", toInsert);
         }
@@ -122,7 +122,7 @@ var PopupDialog = (function () {
             var parseFullHTML = false;
             try {
                 if (parseFullHTML) {
-                    toInsert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" " + namespaces + " ><body>" + outerHTML + "</body></html>";
+                    toInsert = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" ".concat(namespaces, " ><body>").concat(outerHTML, "</body></html>");
                 }
                 else {
                 }
@@ -132,7 +132,7 @@ var PopupDialog = (function () {
                 var xmlStr = xmlSerializer.serializeToString(xmlDoc);
                 if (xmlStr.indexOf("parsererror") > 0) {
                     console.log("parsererror", xmlStr);
-                    this.dialog.insertAdjacentHTML("beforeend", "<pre class=\"" + styles_1.FOOTNOTES_CONTAINER_CLASS + "\" stylexx=\"overflow-y: scroll; position: absolute; top: 0px; right: 0px; left: 0px; bottom: 0px; margin: 0px; padding: 0px;\">" + outerHTML.replace(/>/g, "&gt;").replace(/</g, "&lt;") + "</pre>");
+                    this.dialog.insertAdjacentHTML("beforeend", "<pre class=\"".concat(styles_1.FOOTNOTES_CONTAINER_CLASS, "\" stylexx=\"overflow-y: scroll; position: absolute; top: 0px; right: 0px; left: 0px; bottom: 0px; margin: 0px; padding: 0px;\">").concat(outerHTML.replace(/>/g, "&gt;").replace(/</g, "&lt;"), "</pre>"));
                 }
                 else {
                     var el = parseFullHTML ?
@@ -165,7 +165,7 @@ var PopupDialog = (function () {
                         }
                     });
                     try {
-                        this.dialog.insertAdjacentHTML("beforeend", "<pre>" + outerHTML + "</pre>");
+                        this.dialog.insertAdjacentHTML("beforeend", "<pre>".concat(outerHTML, "</pre>"));
                     }
                     catch (err) {
                         console.log(err);

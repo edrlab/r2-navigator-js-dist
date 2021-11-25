@@ -135,7 +135,7 @@ function readiumCssApplyToWebview(loc, activeWebView, rcss) {
     }
     if (loc && loc.locator.href === ((_a = activeWebView.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href)) {
         setTimeout(() => {
-            debug(`readiumCssOnOff -> handleLinkLocator`);
+            debug("readiumCssOnOff -> handleLinkLocator");
             (0, location_1.handleLinkLocator)(loc.locator, actualReadiumCss);
         }, 60);
     }
@@ -436,7 +436,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
                 if (loc && loc.locator.href === ((_a = activeWebView.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href)) {
                     await new Promise((res, _rej) => {
                         setTimeout(() => {
-                            debug(`READIUM2.debug -> handleLinkLocator`);
+                            debug("READIUM2.debug -> handleLinkLocator");
                             (0, location_1.handleLinkLocator)(loc.locator, activeWebView.READIUM2.readiumCss);
                             res();
                         }, 100);
@@ -466,7 +466,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
     domRootElement.appendChild(domSlidingViewport);
     createWebView();
     setTimeout(() => {
-        debug(`installNavigatorDOM -> handleLinkLocator`);
+        debug("installNavigatorDOM -> handleLinkLocator");
         (0, location_1.handleLinkLocator)(location, rcss);
     }, 100);
 }

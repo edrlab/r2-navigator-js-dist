@@ -139,7 +139,7 @@ function readiumCSSSet(documant, messageJson, isVerticalWritingMode, isRTL) {
                             (element.getAttribute("rel") === "stylesheet" ||
                                 element.getAttribute("type") === "text/css" ||
                                 (element.getAttribute("src") &&
-                                    element.getAttribute("src").endsWith(".css"))))) {
+                                    /\.css$/i.test(element.getAttribute("src")))))) {
                         needsDefaultCSS = false;
                         break;
                     }

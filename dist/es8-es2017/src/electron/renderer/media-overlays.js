@@ -118,10 +118,14 @@ async function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
     _mediaOverlayActive = true;
     _mediaOverlayTextAudioPair = moTextAudioPair;
     _mediaOverlayTextId = undefined;
-    moHighlight_(moTextAudioPair);
     if (!moTextAudioPair.Audio) {
+        if (IS_DEV) {
+            debug("playMediaOverlaysAudio - !moTextAudioPair.Audio => mediaOverlaysNext()");
+        }
+        mediaOverlaysNext();
         return;
     }
+    moHighlight_(moTextAudioPair);
     const publicationURL = win.READIUM2.publicationURL;
     const urlObjFull = new URL(moTextAudioPair.Audio, publicationURL);
     const urlFull = urlObjFull.toString();

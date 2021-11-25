@@ -8,10 +8,10 @@ function convertColorHexadecimalToRGBA(cssHex, alpha) {
     if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(cssHex)) {
         var hex = cssHex.substring(1);
         var hex_ = hex.length === 3 ?
-            "0x" + hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2] :
-            "0x" + hex[0] + hex[1] + hex[2] + hex[3] + hex[4] + hex[5];
+            "0x".concat(hex[0]).concat(hex[0]).concat(hex[1]).concat(hex[1]).concat(hex[2]).concat(hex[2]) :
+            "0x".concat(hex[0]).concat(hex[1]).concat(hex[2]).concat(hex[3]).concat(hex[4]).concat(hex[5]);
         var hexVal = parseInt(hex_, 16);
-        return "rgb" + (alpha ? "a" : "") + "(" + ((hexVal >> 16) & 255) + ", " + ((hexVal >> 8) & 255) + ", " + (hexVal & 255) + (alpha ? ", " + alpha : "") + ")";
+        return "rgb".concat(alpha ? "a" : "", "(").concat((hexVal >> 16) & 255, ", ").concat((hexVal >> 8) & 255, ", ").concat(hexVal & 255).concat(alpha ? ", ".concat(alpha) : "", ")");
     }
     return undefined;
 }

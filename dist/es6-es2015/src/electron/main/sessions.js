@@ -248,7 +248,7 @@ const transformerAudioVideo = (_publication, link, url, htmlStr, _sessionInfo) =
     const patchElementSrc = (el) => {
         const src = el.getAttribute("src");
         if (!src || src[0] === "/" ||
-            /^http[s]?:\/\//.test(src) || /^data:\/\//.test(src)) {
+            /^https?:\/\//.test(src) || /^data:\/\//.test(src)) {
             return;
         }
         let src_ = src;
@@ -342,7 +342,7 @@ const transformerHttpBaseIframes = (_publication, link, url, htmlStr, _sessionIn
     const patchElementSrc = (el) => {
         const src = el.getAttribute("src");
         if (!src || src[0] === "/" ||
-            /^http[s]?:\/\//.test(src) || /^data:\/\//.test(src)) {
+            /^https?:\/\//.test(src) || /^data:\/\//.test(src)) {
             return;
         }
         let src_ = src;

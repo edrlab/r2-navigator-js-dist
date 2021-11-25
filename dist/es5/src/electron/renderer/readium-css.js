@@ -37,7 +37,7 @@ function obtainReadiumCss(rcss) {
         (_computeReadiumCssJsonMessage ? _computeReadiumCssJsonMessage() :
             _defaultReadiumCss);
     if (IS_DEV) {
-        console.log("ReadiumCSS obtain: " + (rcss ? "provided" : (_computeReadiumCssJsonMessage ? "pulled" : "default")));
+        console.log("ReadiumCSS obtain: ".concat(rcss ? "provided" : (_computeReadiumCssJsonMessage ? "pulled" : "default")));
         console.log(r);
     }
     return r;

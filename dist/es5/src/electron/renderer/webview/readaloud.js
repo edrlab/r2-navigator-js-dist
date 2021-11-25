@@ -285,11 +285,11 @@ function wrapHighlightWord(ttsQueueItemRef, utteranceText, charIndex, charLength
     }
     if (IS_DEV) {
         if (utteranceText !== txtToCheck) {
-            console.log("TTS utteranceText DIFF?? ", "[[" + utteranceText + "]]", "[[" + txtToCheck + "]]");
+            console.log("TTS utteranceText DIFF?? ", "[[".concat(utteranceText, "]]"), "[[".concat(txtToCheck, "]]"));
         }
         var ttsWord = utteranceText.substr(charIndex, charLength);
         if (ttsWord !== word) {
-            console.log("TTS word DIFF?? ", "[[" + ttsWord + "]]", "[[" + word + "]]", charIndex + "--" + charLength, start + "--" + (end - start));
+            console.log("TTS word DIFF?? ", "[[".concat(ttsWord, "]]"), "[[".concat(word, "]]"), "".concat(charIndex, "--").concat(charLength), "".concat(start, "--").concat(end - start));
         }
     }
     var acc = 0;
@@ -558,13 +558,13 @@ function updateTTSInfo(charIndex, charLength, utteranceText) {
         var word = right < 0 ? utteranceText.slice(start) : utteranceText.slice(start, right + charIndex);
         var end = start + word.length;
         if (_dialogState && _dialogState.ttsOverlayEnabled) {
-            var prefix = "<span id=\"" + styles_1.TTS_ID_ACTIVE_WORD + "\">";
+            var prefix = "<span id=\"".concat(styles_1.TTS_ID_ACTIVE_WORD, "\">");
             var suffix = "</span>";
             var before = utteranceText.substr(0, start);
             var after = utteranceText.substr(end);
             var l = before.length + word.length + after.length;
             ttsQueueItemMarkup = (l === utteranceText.length) ?
-                "" + (0, dom_text_utils_1.normalizeHtmlText)(before) + prefix + (0, dom_text_utils_1.normalizeHtmlText)(word) + suffix + (0, dom_text_utils_1.normalizeHtmlText)(after) :
+                "".concat((0, dom_text_utils_1.normalizeHtmlText)(before)).concat(prefix).concat((0, dom_text_utils_1.normalizeHtmlText)(word)).concat(suffix).concat((0, dom_text_utils_1.normalizeHtmlText)(after)) :
                 (0, dom_text_utils_1.normalizeHtmlText)(utteranceText);
         }
         else {
@@ -576,14 +576,14 @@ function updateTTSInfo(charIndex, charLength, utteranceText) {
     }
     var activeUtteranceElem = _dialogState.domText.ownerDocument ?
         _dialogState.domText.ownerDocument.getElementById(styles_1.TTS_ID_ACTIVE_UTTERANCE) :
-        _dialogState.domText.querySelector("#" + styles_1.TTS_ID_ACTIVE_UTTERANCE);
+        _dialogState.domText.querySelector("#".concat(styles_1.TTS_ID_ACTIVE_UTTERANCE));
     if (activeUtteranceElem) {
         var indexStr = activeUtteranceElem.getAttribute(R2_DATA_ATTR_UTTERANCE_INDEX);
-        if (indexStr && indexStr !== "" + ttsQueueItem.iGlobal) {
+        if (indexStr && indexStr !== "".concat(ttsQueueItem.iGlobal)) {
             activeUtteranceElem.removeAttribute("id");
             var activeWordElem = activeUtteranceElem.ownerDocument ?
                 activeUtteranceElem.ownerDocument.getElementById(styles_1.TTS_ID_ACTIVE_WORD) :
-                activeUtteranceElem.querySelector("#" + styles_1.TTS_ID_ACTIVE_WORD);
+                activeUtteranceElem.querySelector("#".concat(styles_1.TTS_ID_ACTIVE_WORD));
             if (activeWordElem) {
                 var index = parseInt(indexStr, 10);
                 if (!isNaN(index)) {
@@ -601,7 +601,7 @@ function updateTTSInfo(charIndex, charLength, utteranceText) {
                     }
                 }
             }
-            activeUtteranceElem = _dialogState.domText.querySelector("[" + R2_DATA_ATTR_UTTERANCE_INDEX + "=\"" + ttsQueueItem.iGlobal + "\"]");
+            activeUtteranceElem = _dialogState.domText.querySelector("[".concat(R2_DATA_ATTR_UTTERANCE_INDEX, "=\"").concat(ttsQueueItem.iGlobal, "\"]"));
             if (activeUtteranceElem) {
                 activeUtteranceElem.setAttribute("id", styles_1.TTS_ID_ACTIVE_UTTERANCE);
             }
@@ -656,14 +656,14 @@ function updateTTSInfo(charIndex, charLength, utteranceText) {
                 p = p.parentNode;
             }
             var classes = styles_1.TTS_CLASS_UTTERANCE +
-                (isHeadingLevel1 ? " " + styles_1.TTS_CLASS_UTTERANCE_HEADING1 :
-                    (isHeadingLevel2 ? " " + styles_1.TTS_CLASS_UTTERANCE_HEADING2 :
-                        (isHeadingLevel3 ? " " + styles_1.TTS_CLASS_UTTERANCE_HEADING3 :
-                            (isHeadingLevel4 ? " " + styles_1.TTS_CLASS_UTTERANCE_HEADING4 :
-                                (isHeadingLevel5 ? " " + styles_1.TTS_CLASS_UTTERANCE_HEADING5 : "")))));
-            var ttsQItemMarkupAttributes = R2_DATA_ATTR_UTTERANCE_INDEX + "=\"" + ttsQItem.iGlobal + "\" class=\"" + classes + "\"";
+                (isHeadingLevel1 ? " ".concat(styles_1.TTS_CLASS_UTTERANCE_HEADING1) :
+                    (isHeadingLevel2 ? " ".concat(styles_1.TTS_CLASS_UTTERANCE_HEADING2) :
+                        (isHeadingLevel3 ? " ".concat(styles_1.TTS_CLASS_UTTERANCE_HEADING3) :
+                            (isHeadingLevel4 ? " ".concat(styles_1.TTS_CLASS_UTTERANCE_HEADING4) :
+                                (isHeadingLevel5 ? " ".concat(styles_1.TTS_CLASS_UTTERANCE_HEADING5) : "")))));
+            var ttsQItemMarkupAttributes = "".concat(R2_DATA_ATTR_UTTERANCE_INDEX, "=\"").concat(ttsQItem.iGlobal, "\" class=\"").concat(classes, "\"");
             if (ttsQItem.iGlobal === ttsQueueItem.iGlobal) {
-                ttsQItemMarkupAttributes += " id=\"" + styles_1.TTS_ID_ACTIVE_UTTERANCE + "\" ";
+                ttsQItemMarkupAttributes += " id=\"".concat(styles_1.TTS_ID_ACTIVE_UTTERANCE, "\" ");
             }
             else {
                 ttsQItemMarkup = (0, dom_text_utils_1.normalizeHtmlText)((0, dom_text_utils_1.getTtsQueueItemRefText)(ttsQItem));
@@ -672,19 +672,19 @@ function updateTTSInfo(charIndex, charLength, utteranceText) {
             if (ttsQItem.item.parentElement && ttsQItem.item.parentElement.tagName &&
                 ttsQItem.item.parentElement.tagName.toLowerCase() === "img" &&
                 ttsQItem.item.parentElement.src) {
-                imageMarkup = "<img src=\"" + ttsQItem.item.parentElement.src + "\" />";
+                imageMarkup = "<img src=\"".concat(ttsQItem.item.parentElement.src, "\" />");
             }
             if (ttsQItem.item.parentElement && ttsQItem.item.parentElement.tagName &&
                 ttsQItem.item.parentElement.tagName.toLowerCase() === "svg") {
                 imageMarkup = ttsQItem.item.parentElement.outerHTML;
             }
             if (ttsQItem.item.dir) {
-                ttsQItemMarkupAttributes += " dir=\"" + ttsQItem.item.dir + "\" ";
+                ttsQItemMarkupAttributes += " dir=\"".concat(ttsQItem.item.dir, "\" ");
             }
             if (ttsQItem.item.lang) {
-                ttsQItemMarkupAttributes += " lang=\"" + ttsQItem.item.lang + "\" xml:lang=\"" + ttsQItem.item.lang + "\" ";
+                ttsQItemMarkupAttributes += " lang=\"".concat(ttsQItem.item.lang, "\" xml:lang=\"").concat(ttsQItem.item.lang, "\" ");
             }
-            fullMarkup += imageMarkup + "<div " + ttsQItemMarkupAttributes + ">" + ttsQItemMarkup + "</div>";
+            fullMarkup += "".concat(imageMarkup, "<div ").concat(ttsQItemMarkupAttributes, ">").concat(ttsQItemMarkup, "</div>");
         }
         try {
             _dialogState.domText.insertAdjacentHTML("beforeend", fullMarkup);
@@ -833,10 +833,10 @@ function startTTSSession(speed, voice, ttsRootElement, ttsQueue, ttsQueueIndexSt
             resetState();
         }, 50);
     }
-    var outerHTML = "<div id=\"" + styles_1.TTS_ID_CONTAINER + "\"\n    class=\"" + styles_1.CSS_CLASS_NO_FOCUS_OUTLINE + " " + styles_1.TTS_CLASS_THEME1 + "\"\n    dir=\"ltr\"\n    lang=\"en\"\n    xml:lang=\"en\"\n    tabindex=\"0\" autofocus=\"autofocus\"></div>\n" + (win.READIUM2.ttsOverlayEnabled ?
-        "\n<button id=\"" + styles_1.TTS_ID_PREVIOUS + "\" class=\"" + styles_1.TTS_NAV_BUTTON_CLASS + "\" title=\"previous\"><span>&#9668;</span></button>\n<button id=\"" + styles_1.TTS_ID_NEXT + "\" class=\"" + styles_1.TTS_NAV_BUTTON_CLASS + "\" title=\"next\"><span>&#9658;</span></button>\n<input id=\"" + styles_1.TTS_ID_SLIDER + "\" type=\"range\" min=\"0\" max=\"" + (ttsQueueLength - 1) + "\" value=\"0\"\n    " + ((0, readium_css_1.isRTL)() ? "dir=\"rtl\"" : "dir=\"ltr\"") + "  title=\"progress\"/>\n"
-        : "") + "\n";
-    var pop = new popup_dialog_1.PopupDialog(win.document, outerHTML, onDialogClosed, "" + styles_1.TTS_POPUP_DIALOG_CLASS + (win.READIUM2.ttsOverlayEnabled ? "" : " " + styles_1.POPUP_DIALOG_CLASS_COLLAPSE), true);
+    var outerHTML = "<div id=\"".concat(styles_1.TTS_ID_CONTAINER, "\"\n    class=\"").concat(styles_1.CSS_CLASS_NO_FOCUS_OUTLINE, " ").concat(styles_1.TTS_CLASS_THEME1, "\"\n    dir=\"ltr\"\n    lang=\"en\"\n    xml:lang=\"en\"\n    tabindex=\"0\" autofocus=\"autofocus\"></div>\n").concat(win.READIUM2.ttsOverlayEnabled ?
+        "\n<button id=\"".concat(styles_1.TTS_ID_PREVIOUS, "\" class=\"").concat(styles_1.TTS_NAV_BUTTON_CLASS, "\" title=\"previous\"><span>&#9668;</span></button>\n<button id=\"").concat(styles_1.TTS_ID_NEXT, "\" class=\"").concat(styles_1.TTS_NAV_BUTTON_CLASS, "\" title=\"next\"><span>&#9658;</span></button>\n<input id=\"").concat(styles_1.TTS_ID_SLIDER, "\" type=\"range\" min=\"0\" max=\"").concat(ttsQueueLength - 1, "\" value=\"0\"\n    ").concat((0, readium_css_1.isRTL)() ? "dir=\"rtl\"" : "dir=\"ltr\"", "  title=\"progress\"/>\n")
+        : "", "\n");
+    var pop = new popup_dialog_1.PopupDialog(win.document, outerHTML, onDialogClosed, "".concat(styles_1.TTS_POPUP_DIALOG_CLASS).concat(win.READIUM2.ttsOverlayEnabled ? "" : " ".concat(styles_1.POPUP_DIALOG_CLASS_COLLAPSE)), true);
     pop.show(ttsQueueItemStart.item.parentElement);
     _dialogState = pop.dialog;
     if (!_dialogState) {

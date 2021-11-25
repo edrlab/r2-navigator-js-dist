@@ -47,7 +47,7 @@ const contextMenuSetup = (webContent, webContentID) => {
     const wc = electron_1.webContents.fromId(webContentID);
     wc.on("context-menu", (_ev, params) => {
         const { x, y } = params;
-        debug(`MAIN context-menu EVENT on WebView`);
+        debug("MAIN context-menu EVENT on WebView");
         const win = electron_1.BrowserWindow.fromWebContents(webContent) || undefined;
         const openDevToolsAndInspect = () => {
             const devToolsOpened = () => {

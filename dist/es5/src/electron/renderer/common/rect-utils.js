@@ -89,7 +89,7 @@ function getClientRectsNoOverlap__(originalRects, doNotMergeHorizontallyAlignedR
         checkOverlaps(newRects);
     }
     if (IS_DEV) {
-        console.log("CLIENT RECT: reduced " + originalRects.length + " --> " + newRects.length);
+        console.log("CLIENT RECT: reduced ".concat(originalRects.length, " --> ").concat(newRects.length));
     }
     return newRects;
 }
@@ -238,7 +238,7 @@ function mergeTouchingRects(rects, tolerance, doNotMergeHorizontallyAlignedRects
             var canMerge = aligned && rectsTouchOrOverlap(rect1, rect2, tolerance);
             if (canMerge) {
                 if (IS_DEV) {
-                    console.log("CLIENT RECT: merging two into one, VERTICAL: " + rectsLineUpVertically + " HORIZONTAL: " + rectsLineUpHorizontally + " (" + doNotMergeHorizontallyAlignedRects + ")");
+                    console.log("CLIENT RECT: merging two into one, VERTICAL: ".concat(rectsLineUpVertically, " HORIZONTAL: ").concat(rectsLineUpHorizontally, " (").concat(doNotMergeHorizontallyAlignedRects, ")"));
                 }
                 var newRects = rects.filter(function (rect) {
                     return rect !== rect1 && rect !== rect2;
@@ -298,7 +298,7 @@ function replaceOverlapingRects(rects) {
                     checkOverlaps(toCheck);
                 }
                 if (IS_DEV) {
-                    console.log("CLIENT RECT: overlap, cut one rect into " + toAdd.length);
+                    console.log("CLIENT RECT: overlap, cut one rect into ".concat(toAdd.length));
                 }
                 var newRects = rects.filter(function (rect) {
                     return rect !== toRemove_1;
@@ -398,12 +398,12 @@ function checkOverlaps(rects) {
                                 stillOverlapingRects.push(rect2);
                             }
                             console.log("CLIENT RECT: overlap ---");
-                            console.log("#1 TOP:" + rect1.top + " BOTTOM:" + rect1.bottom + " LEFT:" + rect1.left + " RIGHT:" + rect1.right + " WIDTH:" + rect1.width + " HEIGHT:" + rect1.height);
-                            console.log("#2 TOP:" + rect2.top + " BOTTOM:" + rect2.bottom + " LEFT:" + rect2.left + " RIGHT:" + rect2.right + " WIDTH:" + rect2.width + " HEIGHT:" + rect2.height);
+                            console.log("#1 TOP:".concat(rect1.top, " BOTTOM:").concat(rect1.bottom, " LEFT:").concat(rect1.left, " RIGHT:").concat(rect1.right, " WIDTH:").concat(rect1.width, " HEIGHT:").concat(rect1.height));
+                            console.log("#2 TOP:".concat(rect2.top, " BOTTOM:").concat(rect2.bottom, " LEFT:").concat(rect2.left, " RIGHT:").concat(rect2.right, " WIDTH:").concat(rect2.width, " HEIGHT:").concat(rect2.height));
                             var xOverlap = getRectOverlapX(rect1, rect2);
-                            console.log("xOverlap: " + xOverlap);
+                            console.log("xOverlap: ".concat(xOverlap));
                             var yOverlap = getRectOverlapY(rect1, rect2);
-                            console.log("yOverlap: " + yOverlap);
+                            console.log("yOverlap: ".concat(yOverlap));
                         }
                     }
                 }
@@ -425,7 +425,7 @@ function checkOverlaps(rects) {
         finally { if (e_5) throw e_5.error; }
     }
     if (stillOverlapingRects.length) {
-        console.log("CLIENT RECT: overlaps " + stillOverlapingRects.length);
+        console.log("CLIENT RECT: overlaps ".concat(stillOverlapingRects.length));
     }
 }
 exports.checkOverlaps = checkOverlaps;

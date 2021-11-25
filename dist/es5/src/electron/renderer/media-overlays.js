@@ -151,10 +151,14 @@ function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
                     _mediaOverlayActive = true;
                     _mediaOverlayTextAudioPair = moTextAudioPair;
                     _mediaOverlayTextId = undefined;
-                    moHighlight_(moTextAudioPair);
                     if (!moTextAudioPair.Audio) {
+                        if (IS_DEV) {
+                            debug("playMediaOverlaysAudio - !moTextAudioPair.Audio => mediaOverlaysNext()");
+                        }
+                        mediaOverlaysNext();
                         return [2];
                     }
+                    moHighlight_(moTextAudioPair);
                     publicationURL = win.READIUM2.publicationURL;
                     urlObjFull = new URL(moTextAudioPair.Audio, publicationURL);
                     urlFull = urlObjFull.toString();
@@ -195,7 +199,7 @@ function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
                         _currentAudioEnd = end;
                     }
                     if (IS_DEV) {
-                        debug(urlFull + " => [" + _currentAudioBegin + "-" + _currentAudioEnd + "]");
+                        debug("".concat(urlFull, " => [").concat(_currentAudioBegin, "-").concat(_currentAudioEnd, "]"));
                     }
                     playClip = function (initial) { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
                         var timeToSeekTo, ontimeupdateSeeked_1, contiguous;

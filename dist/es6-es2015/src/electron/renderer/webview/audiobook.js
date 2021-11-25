@@ -191,7 +191,7 @@ function setupAudioBook(_docTitle, audioPlaybackRate) {
             remainingSeconds = 0;
         }
         remainingSeconds = Math.floor(remainingSeconds);
-        return `${nHours > 0 ? (nHours.toString().padStart(2, "0") + ":") : ``}${nMinutes > 0 ? (nMinutes.toString().padStart(2, "0") + ":") : `00:`}${remainingSeconds > 0 ? (remainingSeconds.toString().padStart(2, "0")) : `00`}`;
+        return `${nHours > 0 ? (nHours.toString().padStart(2, "0") + ":") : ""}${nMinutes > 0 ? (nMinutes.toString().padStart(2, "0") + ":") : "00:"}${remainingSeconds > 0 ? (remainingSeconds.toString().padStart(2, "0")) : "00"}`;
     }
     function notifyPlaybackLocation() {
         const percent = audioElement.currentTime / audioElement.duration;

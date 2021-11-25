@@ -43,7 +43,7 @@ electron_1.ipcMain.on("accessibility-support-changed", function (ev) {
     ev.sender.send("accessibility-support-changed", accessibilitySupportEnabled);
 });
 var contextMenuSetup = function (webContent, webContentID) {
-    debug("MAIN CONTEXT_MENU_SETUP " + webContentID);
+    debug("MAIN CONTEXT_MENU_SETUP ".concat(webContentID));
     var wc = electron_1.webContents.fromId(webContentID);
     wc.on("context-menu", function (_ev, params) {
         var x = params.x, y = params.y;

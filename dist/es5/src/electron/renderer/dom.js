@@ -311,7 +311,7 @@ function createWebViewInternal(preloadScriptPath) {
                         (0, sessions_1.convertCustomSchemeToHttpUrl)(win.READIUM2.publicationURL) :
                         win.READIUM2.publicationURL;
                     var rcssUrl = new URL(urlStr);
-                    rcssUrl.pathname = readium_css_settings_1.READIUM_CSS_URL_PATH + "/";
+                    rcssUrl.pathname = "".concat(readium_css_settings_1.READIUM_CSS_URL_PATH, "/");
                     rssStyleElement = win.document.createElement("style");
                     rssStyleElement.setAttribute("id", ELEMENT_ID_READIUM_CSS_STYLE);
                     var styleTxtNode = win.document.createTextNode(readiumCssStyle.replace(/{RCSS_BASE_URL}/g, rcssUrl.toString()));
@@ -326,11 +326,11 @@ function createWebViewInternal(preloadScriptPath) {
                     rootElement.appendChild(captionElement);
                 }
                 captionElement.setAttribute("style", captionsOverlayCssStyles +
-                    (payload.containerStyle ? " " + payload.containerStyle : " "));
+                    (payload.containerStyle ? " ".concat(payload.containerStyle) : " "));
                 var p = captionElement.firstElementChild;
                 if (p) {
                     p.setAttribute("style", captionsOverlayParaCssStyles +
-                        (payload.textStyle ? " " + payload.textStyle : " "));
+                        (payload.textStyle ? " ".concat(payload.textStyle) : " "));
                     p.textContent = payload.text;
                 }
             }
@@ -557,7 +557,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
                 var e_8, _a;
                 var _b;
                 if (cssStyles) {
-                    debug("debugVisuals ITEMS: ", cssSelector + " --- " + cssClass + " --- " + cssStyles);
+                    debug("debugVisuals ITEMS: ", "".concat(cssSelector, " --- ").concat(cssClass, " --- ").concat(cssStyles));
                 }
                 var activeWebViews = win.READIUM2.getActiveWebViews();
                 var _loop_3 = function (activeWebView) {

@@ -156,12 +156,12 @@ if (IS_DEV) {
     electron_1.ipcRenderer.on(events_1.R2_EVENT_DEBUG_VISUALS, function (_event, payload) {
         win.READIUM2.DEBUG_VISUALS = payload.debugVisuals;
         if (!payload.debugVisuals) {
-            var existings = win.document.querySelectorAll("*[" + styles_1.readPosCssStylesAttr1 + "], *[" + styles_1.readPosCssStylesAttr2 + "], *[" + styles_1.readPosCssStylesAttr3 + "], *[" + styles_1.readPosCssStylesAttr4 + "]");
+            var existings = win.document.querySelectorAll("*[".concat(styles_1.readPosCssStylesAttr1, "], *[").concat(styles_1.readPosCssStylesAttr2, "], *[").concat(styles_1.readPosCssStylesAttr3, "], *[").concat(styles_1.readPosCssStylesAttr4, "]"));
             existings.forEach(function (existing) {
-                existing.removeAttribute("" + styles_1.readPosCssStylesAttr1);
-                existing.removeAttribute("" + styles_1.readPosCssStylesAttr2);
-                existing.removeAttribute("" + styles_1.readPosCssStylesAttr3);
-                existing.removeAttribute("" + styles_1.readPosCssStylesAttr4);
+                existing.removeAttribute("".concat(styles_1.readPosCssStylesAttr1));
+                existing.removeAttribute("".concat(styles_1.readPosCssStylesAttr2));
+                existing.removeAttribute("".concat(styles_1.readPosCssStylesAttr3));
+                existing.removeAttribute("".concat(styles_1.readPosCssStylesAttr4));
             });
         }
         if (payload.cssClass) {
@@ -169,12 +169,12 @@ if (IS_DEV) {
                 _blacklistIdClassForCssSelectors.push(payload.cssClass.toLowerCase());
             }
             if (payload.debugVisuals && payload.cssStyles && payload.cssStyles.length) {
-                var idSuffix = "debug_for_class_" + payload.cssClass;
+                var idSuffix = "debug_for_class_".concat(payload.cssClass);
                 (0, readium_css_inject_1.appendCSSInline)(win.document, idSuffix, payload.cssStyles);
                 if (payload.cssSelector) {
                     var toHighlights = win.document.querySelectorAll(payload.cssSelector);
                     toHighlights.forEach(function (toHighlight) {
-                        var clazz = "" + payload.cssClass;
+                        var clazz = "".concat(payload.cssClass);
                         if (!toHighlight.classList.contains(clazz)) {
                             toHighlight.classList.add(clazz);
                         }
@@ -182,9 +182,9 @@ if (IS_DEV) {
                 }
             }
             else {
-                var existings = win.document.querySelectorAll("." + payload.cssClass);
+                var existings = win.document.querySelectorAll(".".concat(payload.cssClass));
                 existings.forEach(function (existing) {
-                    existing.classList.remove("" + payload.cssClass);
+                    existing.classList.remove("".concat(payload.cssClass));
                 });
             }
         }
@@ -654,9 +654,9 @@ var _lastAnimState2;
 var animationTime2 = 400;
 function scrollElementIntoView(element, doFocus, animate, domRect) {
     if (win.READIUM2.DEBUG_VISUALS) {
-        var existings = win.document.querySelectorAll("*[" + styles_1.readPosCssStylesAttr3 + "]");
+        var existings = win.document.querySelectorAll("*[".concat(styles_1.readPosCssStylesAttr3, "]"));
         existings.forEach(function (existing) {
-            existing.removeAttribute("" + styles_1.readPosCssStylesAttr3);
+            existing.removeAttribute("".concat(styles_1.readPosCssStylesAttr3));
         });
         element.setAttribute(styles_1.readPosCssStylesAttr3, "scrollElementIntoView");
     }
@@ -676,7 +676,7 @@ function scrollElementIntoView(element, doFocus, animate, domRect) {
                 }
             }
         }
-        var targets = win.document.querySelectorAll("." + styles_1.LINK_TARGET_CLASS);
+        var targets = win.document.querySelectorAll(".".concat(styles_1.LINK_TARGET_CLASS));
         targets.forEach(function (t) {
             t.classList.remove(styles_1.LINK_TARGET_CLASS);
         });
@@ -1130,7 +1130,7 @@ function checkSoundtrack(documant) {
     if (!src) {
         return;
     }
-    debug("AUDIO SOUNDTRACK: " + src + " ---> " + audio.src);
+    debug("AUDIO SOUNDTRACK: ".concat(src, " ---> ").concat(audio.src));
     if (!audio.src) {
         return;
     }
@@ -1309,7 +1309,7 @@ function loaded(forced) {
             if (currentElement.tagName.toLowerCase() === "a") {
                 href = currentElement.href;
                 var href_ = currentElement.getAttribute("href");
-                debug("A LINK CLICK: " + href + " (" + href_ + ")");
+                debug("A LINK CLICK: ".concat(href, " (").concat(href_, ")"));
                 break;
             }
             currentElement = currentElement.parentNode;
@@ -1811,9 +1811,9 @@ var processXYRaw = function (x, y, reverse, userInteract) {
         }
         if (win.READIUM2.DEBUG_VISUALS) {
             var el = win.READIUM2.locationHashOverride ? win.READIUM2.locationHashOverride : element;
-            var existings = win.document.querySelectorAll("*[" + styles_1.readPosCssStylesAttr2 + "]");
+            var existings = win.document.querySelectorAll("*[".concat(styles_1.readPosCssStylesAttr2, "]"));
             existings.forEach(function (existing) {
-                existing.removeAttribute("" + styles_1.readPosCssStylesAttr2);
+                existing.removeAttribute("".concat(styles_1.readPosCssStylesAttr2));
             });
             el.setAttribute(styles_1.readPosCssStylesAttr2, "processXYRaw");
         }
@@ -2234,9 +2234,9 @@ var notifyReadingLocationRaw = function (userInteract, ignoreMediaOverlays) {
         mediaOverlaysClickRaw(win.READIUM2.locationHashOverride, userInteract ? true : false);
     }
     if (win.READIUM2.DEBUG_VISUALS) {
-        var existings = win.document.querySelectorAll("*[" + styles_1.readPosCssStylesAttr4 + "]");
+        var existings = win.document.querySelectorAll("*[".concat(styles_1.readPosCssStylesAttr4, "]"));
         existings.forEach(function (existing) {
-            existing.removeAttribute("" + styles_1.readPosCssStylesAttr4);
+            existing.removeAttribute("".concat(styles_1.readPosCssStylesAttr4));
         });
         win.READIUM2.locationHashOverride.setAttribute(styles_1.readPosCssStylesAttr4, "notifyReadingLocationRaw");
     }
@@ -2291,14 +2291,14 @@ if (!win.READIUM2.isAudio) {
             (payload.classActive ? payload.classActive : styles_1.R2_MO_CLASS_ACTIVE);
         var activeClassPlayback = payload.classActivePlayback ? payload.classActivePlayback : styles_1.R2_MO_CLASS_ACTIVE_PLAYBACK;
         if (payload.classActive) {
-            var activeMoElements = win.document.body.querySelectorAll("." + payload.classActive);
+            var activeMoElements = win.document.body.querySelectorAll(".".concat(payload.classActive));
             activeMoElements.forEach(function (elem) {
                 if (payload.classActive) {
                     elem.classList.remove(payload.classActive);
                 }
             });
         }
-        var activeMoElements_ = win.document.body.querySelectorAll("." + styles_1.R2_MO_CLASS_ACTIVE);
+        var activeMoElements_ = win.document.body.querySelectorAll(".".concat(styles_1.R2_MO_CLASS_ACTIVE));
         activeMoElements_.forEach(function (elem) {
             elem.classList.remove(styles_1.R2_MO_CLASS_ACTIVE);
         });
@@ -2327,7 +2327,7 @@ if (!win.READIUM2.isAudio) {
                             if (isNight || isSepia) {
                                 var rsBackground = docStyle.getPropertyValue("--RS__backgroundColor");
                                 var rsColor = docStyle.getPropertyValue("--RS__textColor");
-                                containerStyle = "background-color: " + rsBackground + "; color: " + rsColor + ";";
+                                containerStyle = "background-color: ".concat(rsBackground, "; color: ").concat(rsColor, ";");
                             }
                             else {
                                 if (isUserBackground || isUserColor) {
@@ -2335,18 +2335,18 @@ if (!win.READIUM2.isAudio) {
                                 }
                                 if (isUserBackground) {
                                     var usrBackground = docStyle.getPropertyValue("--USER__backgroundColor");
-                                    containerStyle += "background-color: " + usrBackground + ";";
+                                    containerStyle += "background-color: ".concat(usrBackground, ";");
                                 }
                                 if (isUserColor) {
                                     var usrColor = docStyle.getPropertyValue("--USER__textColor");
-                                    containerStyle += "color: " + usrColor + ";";
+                                    containerStyle += "color: ".concat(usrColor, ";");
                                 }
                             }
                             var isUserFontSize = styleAttr ?
                                 styleAttr.indexOf("--USER__fontSize") >= 0 : false;
                             if (isUserFontSize) {
                                 var usrFontSize = docStyle.getPropertyValue("--USER__fontSize");
-                                containerStyle += "font-size: " + usrFontSize + ";";
+                                containerStyle += "font-size: ".concat(usrFontSize, ";");
                             }
                             else {
                                 containerStyle += "font-size: 120%;";
@@ -2355,7 +2355,7 @@ if (!win.READIUM2.isAudio) {
                                 styleAttr.indexOf("--USER__lineHeight") >= 0 : false;
                             if (isUserLineHeight) {
                                 var usrLineHeight = docStyle.getPropertyValue("--USER__lineHeight");
-                                containerStyle += "line-height: " + usrLineHeight + ";";
+                                containerStyle += "line-height: ".concat(usrLineHeight, ";");
                             }
                             else {
                                 containerStyle += "line-height: 1.2;";
@@ -2364,7 +2364,7 @@ if (!win.READIUM2.isAudio) {
                                 styleAttr.indexOf("--USER__fontFamily") >= 0 : false;
                             if (isUserFont) {
                                 var usrFont = docStyle.getPropertyValue("--USER__fontFamily");
-                                containerStyle += "font-family: " + usrFont + ";";
+                                containerStyle += "font-family: ".concat(usrFont, ";");
                             }
                             var payloadCaptions = {
                                 containerStyle: containerStyle,
@@ -2381,9 +2381,9 @@ if (!win.READIUM2.isAudio) {
                 notifyReadingLocationRaw(false, true);
                 if (win.READIUM2.DEBUG_VISUALS) {
                     var el = win.READIUM2.locationHashOverride;
-                    var existings = win.document.querySelectorAll("*[" + styles_1.readPosCssStylesAttr2 + "]");
+                    var existings = win.document.querySelectorAll("*[".concat(styles_1.readPosCssStylesAttr2, "]"));
                     existings.forEach(function (existing) {
-                        existing.removeAttribute("" + styles_1.readPosCssStylesAttr2);
+                        existing.removeAttribute("".concat(styles_1.readPosCssStylesAttr2));
                     });
                     el.setAttribute(styles_1.readPosCssStylesAttr2, "R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT");
                 }

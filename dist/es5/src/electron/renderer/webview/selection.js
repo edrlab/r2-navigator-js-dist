@@ -89,7 +89,7 @@ function getCurrentSelectionInfo(win, getCssSelector, computeElementCFI) {
         }
         if (range.startOffset !== r.startOffset) {
             console.log(">>>>>>>>>>>>>>>>>>>>>>> SELECTION RANGE NORMALIZE diff: startOffset");
-            console.log(range.startOffset + " !== " + r.startOffset);
+            console.log("".concat(range.startOffset, " !== ").concat(r.startOffset));
         }
         if (range.endContainer !== r.endContainer) {
             console.log(">>>>>>>>>>>>>>>>>>>>>>> SELECTION RANGE NORMALIZE diff: endContainer");
@@ -98,7 +98,7 @@ function getCurrentSelectionInfo(win, getCssSelector, computeElementCFI) {
         }
         if (range.endOffset !== r.endOffset) {
             console.log(">>>>>>>>>>>>>>>>>>>>>>> SELECTION RANGE NORMALIZE diff: endOffset");
-            console.log(range.endOffset + " !== " + r.endOffset);
+            console.log("".concat(range.endOffset, " !== ").concat(r.endOffset));
         }
     }
     var rangeInfo = convertRange(range, getCssSelector, computeElementCFI);

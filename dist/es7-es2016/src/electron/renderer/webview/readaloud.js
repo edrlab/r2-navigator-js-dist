@@ -819,7 +819,7 @@ ${win.READIUM2.ttsOverlayEnabled ?
 <button id="${styles_1.TTS_ID_PREVIOUS}" class="${styles_1.TTS_NAV_BUTTON_CLASS}" title="previous"><span>&#9668;</span></button>
 <button id="${styles_1.TTS_ID_NEXT}" class="${styles_1.TTS_NAV_BUTTON_CLASS}" title="next"><span>&#9658;</span></button>
 <input id="${styles_1.TTS_ID_SLIDER}" type="range" min="0" max="${ttsQueueLength - 1}" value="0"
-    ${(0, readium_css_1.isRTL)() ? `dir="rtl"` : `dir="ltr"`}  title="progress"/>
+    ${(0, readium_css_1.isRTL)() ? "dir=\"rtl\"" : "dir=\"ltr\""}  title="progress"/>
 `
         : ""}
 `;

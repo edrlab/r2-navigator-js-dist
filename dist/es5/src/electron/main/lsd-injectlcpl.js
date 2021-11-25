@@ -17,7 +17,7 @@ function lsdLcpUpdateInject(lcplStr, publication, publicationPath) {
             debug(lcplJson);
             isAudio = publication.Metadata &&
                 publication.Metadata.RDFType &&
-                /http[s]?:\/\/schema\.org\/Audiobook$/.test(publication.Metadata.RDFType);
+                /https?:\/\/schema\.org\/Audiobook$/.test(publication.Metadata.RDFType);
             zipEntryPath = isAudio ? "license.lcpl" : "META-INF/license.lcpl";
             try {
                 lcpl = (0, serializable_1.TaJsonDeserialize)(lcplJson, lcp_1.LCP);

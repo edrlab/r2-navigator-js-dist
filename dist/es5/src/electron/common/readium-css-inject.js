@@ -139,7 +139,7 @@ function readiumCSSSet(documant, messageJson, isVerticalWritingMode, isRTL) {
                             (element.getAttribute("rel") === "stylesheet" ||
                                 element.getAttribute("type") === "text/css" ||
                                 (element.getAttribute("src") &&
-                                    element.getAttribute("src").endsWith(".css"))))) {
+                                    /\.css$/i.test(element.getAttribute("src")))))) {
                         needsDefaultCSS = false;
                         break;
                     }
@@ -503,7 +503,7 @@ function configureFixedLayout(documant, isFixedLayout, fxlViewportWidth, fxlView
             wh.ty = ty;
         }
         documant.documentElement.style.transformOrigin = "0 0";
-        documant.documentElement.style.transform = "scale(" + ratio + ")";
+        documant.documentElement.style.transform = "scale(".concat(ratio, ")");
     }
     return wh;
 }
@@ -626,7 +626,7 @@ function readiumCssTransformHtml(htmlStr, readiumcssJson, mediaType) {
         return htmlStr;
     }
     var parseableChunk = htmlStr.substr(iHtmlStart, iBodyEnd - iHtmlStart + 1);
-    var htmlStrToParse = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" + parseableChunk + "TXT</body></html>";
+    var htmlStrToParse = "<?xml version=\"1.0\" encoding=\"utf-8\"?>".concat(parseableChunk, "TXT</body></html>");
     var documant = (0, dom_1.parseDOM)(htmlStrToParse, mediaType);
     documant.documentElement.setAttribute("data-readiumcss-injected", "yes");
     documant.documentElement.classList.add(styles_1.ROOT_CLASS_INVISIBLE_MASK);
@@ -659,7 +659,7 @@ function readiumCssTransformHtml(htmlStr, readiumcssJson, mediaType) {
         return htmlStr;
     }
     var middle = serialized.substr(iHtmlStart_, iBodyEnd_ - iHtmlStart_ + 1);
-    var newStr = "" + prefix + middle + suffix;
+    var newStr = "".concat(prefix).concat(middle).concat(suffix);
     return newStr;
 }
 exports.readiumCssTransformHtml = readiumCssTransformHtml;

@@ -95,7 +95,7 @@ function classListAdd(className) {
         finally { if (e_2) throw e_2.error; }
     }
     if (needsAdding) {
-        elem.setAttribute("class", classAttr + " " + className);
+        elem.setAttribute("class", "".concat(classAttr, " ").concat(className));
     }
 }
 function classListRemove(className) {
@@ -234,7 +234,7 @@ function cssStyleItem(i) {
             if (trimmed.length) {
                 count++;
                 if (count === i) {
-                    var regExStr = "(.+)[s]*:[s]*(.+)";
+                    var regExStr = "(.+)[\s]*:[\s]*(.+)";
                     var regex = new RegExp(regExStr, "g");
                     var regexMatch = regex.exec(trimmed);
                     if (regexMatch) {
@@ -259,7 +259,7 @@ function cssStyleGet(cssProperty, elem) {
     if (!styleAttr) {
         return undefined;
     }
-    var regExStr = cssProperty + "[s]*:[s]*(.+)";
+    var regExStr = "".concat(cssProperty, "[s]*:[s]*(.+)");
     var cssProps = styleAttr.split(";");
     var cssPropertyValue;
     try {
@@ -283,7 +283,7 @@ function cssStyleGet(cssProperty, elem) {
     return cssPropertyValue ? cssPropertyValue : undefined;
 }
 function cssStyleSet(cssProperty, val, elem) {
-    var str = val ? cssProperty + ": " + val : undefined;
+    var str = val ? "".concat(cssProperty, ": ").concat(val) : undefined;
     var styleAttr = elem.getAttribute("style");
     if (!styleAttr) {
         if (str) {
@@ -291,15 +291,15 @@ function cssStyleSet(cssProperty, val, elem) {
         }
     }
     else {
-        var regExStr = cssProperty + "[s]*:[s]*(.+)";
+        var regExStr = "".concat(cssProperty, "[s]*:[s]*(.+)");
         var regex = new RegExp(regExStr, "g");
         var regexMatch = regex.exec(styleAttr);
         if (regexMatch) {
-            elem.setAttribute("style", styleAttr.replace(regex, str ? "" + str : ""));
+            elem.setAttribute("style", styleAttr.replace(regex, str ? "".concat(str) : ""));
         }
         else {
             if (str) {
-                elem.setAttribute("style", styleAttr + "; " + str);
+                elem.setAttribute("style", "".concat(styleAttr, "; ").concat(str));
             }
         }
     }

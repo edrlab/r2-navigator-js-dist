@@ -2022,7 +2022,7 @@ const findPrecedingAncestorSiblingEpubPageBreak = (element) => {
             }
             return _htmlNamespaces[prefix] || null;
         };
-        const xpathResult = win.document.evaluate(`//*[contains(concat(' ', normalize-space(@epub:type), ' '), ' pagebreak ') or contains(concat(' ', normalize-space(role), ' '), ' doc-pagebreak ')]`, win.document.body, namespaceResolver, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+        const xpathResult = win.document.evaluate("//*[contains(concat(' ', normalize-space(@epub:type), ' '), ' pagebreak ') or contains(concat(' ', normalize-space(role), ' '), ' doc-pagebreak ')]", win.document.body, namespaceResolver, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
         for (let i = 0; i < xpathResult.snapshotLength; i++) {
             const n = xpathResult.snapshotItem(i);
             if (n) {
@@ -2251,7 +2251,7 @@ if (!win.READIUM2.isAudio) {
                                 containerStyle += `font-size: ${usrFontSize};`;
                             }
                             else {
-                                containerStyle += `font-size: 120%;`;
+                                containerStyle += "font-size: 120%;";
                             }
                             const isUserLineHeight = styleAttr ?
                                 styleAttr.indexOf("--USER__lineHeight") >= 0 : false;
@@ -2260,7 +2260,7 @@ if (!win.READIUM2.isAudio) {
                                 containerStyle += `line-height: ${usrLineHeight};`;
                             }
                             else {
-                                containerStyle += `line-height: 1.2;`;
+                                containerStyle += "line-height: 1.2;";
                             }
                             const isUserFont = styleAttr ?
                                 styleAttr.indexOf("--USER__fontFamily") >= 0 : false;

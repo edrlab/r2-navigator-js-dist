@@ -53,7 +53,7 @@ function secureSessions(server) {
             details.url.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
             callback({
                 cancel: false,
-                responseHeaders: (0, tslib_1.__assign)((0, tslib_1.__assign)({}, details.responseHeaders), { "Content-Security-Policy": ["default-src 'self' 'unsafe-inline' 'unsafe-eval' data: http: https: " + sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + ": " + serverUrl] }),
+                responseHeaders: (0, tslib_1.__assign)((0, tslib_1.__assign)({}, details.responseHeaders), { "Content-Security-Policy": ["default-src 'self' 'unsafe-inline' 'unsafe-eval' data: http: https: ".concat(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL, ": ").concat(serverUrl)] }),
             });
         }
         else {
@@ -248,7 +248,7 @@ var transformerAudioVideo = function (_publication, link, url, htmlStr, _session
         return htmlStr;
     }
     var parseableChunk = htmlStr.substr(iHtmlStart);
-    var htmlStrToParse = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" + parseableChunk;
+    var htmlStrToParse = "<?xml version=\"1.0\" encoding=\"utf-8\"?>".concat(parseableChunk);
     var mediaType = "application/xhtml+xml";
     if (link && link.TypeLink) {
         mediaType = link.TypeLink;
@@ -265,15 +265,15 @@ var transformerAudioVideo = function (_publication, link, url, htmlStr, _session
     var patchElementSrc = function (el) {
         var src = el.getAttribute("src");
         if (!src || src[0] === "/" ||
-            /^http[s]?:\/\//.test(src) || /^data:\/\//.test(src)) {
+            /^https?:\/\//.test(src) || /^data:\/\//.test(src)) {
             return;
         }
         var src_ = src;
         if (src_.startsWith("./")) {
             src_ = src_.substr(2);
         }
-        src_ = urlStr + "/../" + src_;
-        debug("VIDEO/AUDIO SRC PATCH: " + src + " ==> " + src_);
+        src_ = "".concat(urlStr, "/../").concat(src_);
+        debug("VIDEO/AUDIO SRC PATCH: ".concat(src, " ==> ").concat(src_));
         el.setAttribute("src", src_);
     };
     var processTree = function (el) {
@@ -313,7 +313,7 @@ var transformerAudioVideo = function (_publication, link, url, htmlStr, _session
         return htmlStr;
     }
     var remaining = serialized.substr(iHtmlStart_);
-    var newStr = "" + prefix + remaining;
+    var newStr = "".concat(prefix).concat(remaining);
     return newStr;
 };
 var transformerHttpBaseIframes = function (_publication, link, url, htmlStr, _sessionInfo) {
@@ -335,7 +335,7 @@ var transformerHttpBaseIframes = function (_publication, link, url, htmlStr, _se
         return htmlStr;
     }
     var parseableChunk = htmlStr.substr(iHtmlStart);
-    var htmlStrToParse = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" + parseableChunk;
+    var htmlStrToParse = "<?xml version=\"1.0\" encoding=\"utf-8\"?>".concat(parseableChunk);
     var mediaType = "application/xhtml+xml";
     if (link && link.TypeLink) {
         mediaType = link.TypeLink;
@@ -359,14 +359,14 @@ var transformerHttpBaseIframes = function (_publication, link, url, htmlStr, _se
     var patchElementSrc = function (el) {
         var src = el.getAttribute("src");
         if (!src || src[0] === "/" ||
-            /^http[s]?:\/\//.test(src) || /^data:\/\//.test(src)) {
+            /^https?:\/\//.test(src) || /^data:\/\//.test(src)) {
             return;
         }
         var src_ = src;
         if (src_.startsWith("./")) {
             src_ = src_.substr(2);
         }
-        src_ = urlStr + "/../" + src_;
+        src_ = "".concat(urlStr, "/../").concat(src_);
         var iframeUrl = new URL(src_);
         if (r2CLIPBOARDINTERCEPT) {
             iframeUrl.searchParams.append(url_params_1.URL_PARAM_CLIPBOARD_INTERCEPT, r2CLIPBOARDINTERCEPT);
@@ -391,7 +391,7 @@ var transformerHttpBaseIframes = function (_publication, link, url, htmlStr, _se
         }
         iframeUrl.searchParams.append(url_params_1.URL_PARAM_IS_IFRAME, "1");
         src_ = iframeUrl.toString();
-        debug("IFRAME SRC PATCH: " + src + " ==> " + src_);
+        debug("IFRAME SRC PATCH: ".concat(src, " ==> ").concat(src_));
         el.setAttribute("src", src_);
     };
     var processTree = function (el) {
@@ -419,7 +419,7 @@ var transformerHttpBaseIframes = function (_publication, link, url, htmlStr, _se
         return htmlStr;
     }
     var remaining = serialized.substr(iHtmlStart_);
-    var newStr = "" + prefix + remaining;
+    var newStr = "".concat(prefix).concat(remaining);
     return newStr;
 };
 var transformerHttpBase = function (publication, link, url, htmlStr, sessionInfo) {
@@ -441,7 +441,7 @@ var transformerHttpBase = function (publication, link, url, htmlStr, sessionInfo
     url_.search = "";
     url_.hash = "";
     var urlStr = url_.toString();
-    var baseStr = "\n<base href=\"" + urlStr + "\" />\n";
+    var baseStr = "\n<base href=\"".concat(urlStr, "\" />\n");
     var newStr = htmlStr.substr(0, iHead) + baseStr + htmlStr.substr(iHead);
     newStr = newStr.replace(/<(audio|video)/g, "<$1 data-r2-crossorigin=\"true\" crossorigin=\"anonymous\" ");
     newStr = transformerHttpBaseIframes(publication, link, url, newStr, sessionInfo);
@@ -550,7 +550,7 @@ function clearSession(sess, str) {
                     try {
                         for (results_1 = (0, tslib_1.__values)(results), results_1_1 = results_1.next(); !results_1_1.done; results_1_1 = results_1.next()) {
                             result = results_1_1.value;
-                            debug("SESSION CACHE + STORAGE DATA CLEARED - " + str + " => " + result.status);
+                            debug("SESSION CACHE + STORAGE DATA CLEARED - ".concat(str, " => ").concat(result.status));
                         }
                     }
                     catch (e_1_1) { e_1 = { error: e_1_1 }; }

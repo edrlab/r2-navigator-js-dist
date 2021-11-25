@@ -144,10 +144,10 @@ function selector(path) {
     for (var i = 1; i < path.length; i++) {
         var level = path[i].level || 0;
         if (node.level === level - 1) {
-            query = path[i].name + " > " + query;
+            query = "".concat(path[i].name, " > ").concat(query);
         }
         else {
-            query = path[i].name + " " + query;
+            query = "".concat(path[i].name, " ").concat(query);
         }
         node = path[i];
     }
@@ -159,7 +159,7 @@ function penalty(path) {
 function unique(path) {
     switch (rootDocument.querySelectorAll(selector(path)).length) {
         case 0:
-            throw new Error("Can't select any node with this selector: " + selector(path));
+            throw new Error("Can't select any node with this selector: ".concat(selector(path)));
         case 1:
             return true;
         default:
@@ -223,7 +223,7 @@ function index(input) {
 }
 function nthChild(node, i) {
     return {
-        name: node.name + (":nth-child(" + i + ")"),
+        name: node.name + ":nth-child(".concat(i, ")"),
         penalty: node.penalty + 1,
     };
 }

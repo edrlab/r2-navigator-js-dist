@@ -39,10 +39,10 @@ function setupAudioBook(_docTitle, audioPlaybackRate) {
     var forwardElement = win.document.getElementById(styles_1.AUDIO_FORWARD_ID);
     var rateElement = win.document.getElementById(styles_1.AUDIO_RATE_ID);
     if (audioPlaybackRate) {
-        rateElement.value = "" + audioPlaybackRate;
+        rateElement.value = "".concat(audioPlaybackRate);
     }
     else {
-        rateElement.value = "" + audioElement.playbackRate;
+        rateElement.value = "".concat(audioElement.playbackRate);
     }
     rateElement.addEventListener("change", function () {
         var speed = parseFloat(rateElement.value);
@@ -53,11 +53,11 @@ function setupAudioBook(_docTitle, audioPlaybackRate) {
         electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_AUDIO_PLAYBACK_RATE, payload);
     });
     function refreshTimeElements(p) {
-        var prettyPercent = percentElement.displayAlt ? p + "%" : "" + formatTime(audioElement.duration);
+        var prettyPercent = percentElement.displayAlt ? "".concat(p, "%") : "".concat(formatTime(audioElement.duration));
         percentElement.innerText = prettyPercent;
         var prettyTime = timeElement.displayAlt ?
-            "-" + formatTime(audioElement.duration - audioElement.currentTime) :
-            "" + formatTime(audioElement.currentTime);
+            "-".concat(formatTime(audioElement.duration - audioElement.currentTime)) :
+            "".concat(formatTime(audioElement.currentTime));
         timeElement.innerText = prettyTime;
     }
     function onTimeElementsClick(el) {
@@ -88,11 +88,11 @@ function setupAudioBook(_docTitle, audioPlaybackRate) {
                 context_1.fillRect(0, 0, bufferCanvasElement.width, bufferCanvasElement.height);
                 context_1.fillStyle = "green";
                 context_1.strokeStyle = "magenta";
-                console.log("audio -- buffered.length: " + audioElement.buffered.length);
+                console.log("audio -- buffered.length: ".concat(audioElement.buffered.length));
                 for (var i = 0; i < audioElement.buffered.length; i++) {
                     var start = audioElement.buffered.start(i);
                     var end = audioElement.buffered.end(i);
-                    console.log("audio -- buffered: " + start + " ... " + end);
+                    console.log("audio -- buffered: ".concat(start, " ... ").concat(end));
                     var x1 = start * pixelsPerSecond;
                     var x2 = end * pixelsPerSecond;
                     var w = x2 - x1;
@@ -145,7 +145,7 @@ function setupAudioBook(_docTitle, audioPlaybackRate) {
     sliderElement.addEventListener("input", function () {
         var p = sliderElement.valueAsNumber / 100;
         audioElement.currentTime = audioElement.duration * p;
-        sliderElement.style.setProperty("--audiopercent", sliderElement.valueAsNumber + "%");
+        sliderElement.style.setProperty("--audiopercent", "".concat(sliderElement.valueAsNumber, "%"));
     });
     function togglePlayPause() {
         var _this = this;
@@ -204,14 +204,14 @@ function setupAudioBook(_docTitle, audioPlaybackRate) {
             remainingSeconds = 0;
         }
         remainingSeconds = Math.floor(remainingSeconds);
-        return "" + (nHours > 0 ? (nHours.toString().padStart(2, "0") + ":") : "") + (nMinutes > 0 ? (nMinutes.toString().padStart(2, "0") + ":") : "00:") + (remainingSeconds > 0 ? (remainingSeconds.toString().padStart(2, "0")) : "00");
+        return "".concat(nHours > 0 ? (nHours.toString().padStart(2, "0") + ":") : "").concat(nMinutes > 0 ? (nMinutes.toString().padStart(2, "0") + ":") : "00:").concat(remainingSeconds > 0 ? (remainingSeconds.toString().padStart(2, "0")) : "00");
     }
     function notifyPlaybackLocation() {
         var percent = audioElement.currentTime / audioElement.duration;
         var p = Math.round(percent * 100);
         refreshTimeElements(p);
         sliderElement.valueAsNumber = p;
-        sliderElement.style.setProperty("--audiopercent", p + "%");
+        sliderElement.style.setProperty("--audiopercent", "".concat(p, "%"));
         win.READIUM2.locationHashOverrideInfo = {
             audioPlaybackInfo: {
                 globalDuration: undefined,
