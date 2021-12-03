@@ -310,7 +310,7 @@ function generateTtsQueue(rootElement, splitSentences) {
     var first = true;
     function processElement(element) {
         var e_11, _a, e_12, _b, e_13, _c, e_14, _d;
-        var _e, _f, _g, _h, _j, _k;
+        var _e, _f, _g, _h, _j, _k, _l;
         if (element.nodeType !== Node.ELEMENT_NODE) {
             return;
         }
@@ -320,17 +320,55 @@ function generateTtsQueue(rootElement, splitSentences) {
             elementStack.push(element);
         }
         try {
-            for (var _l = (0, tslib_1.__values)(element.childNodes), _m = _l.next(); !_m.done; _m = _l.next()) {
-                var childNode = _m.value;
+            for (var _m = (0, tslib_1.__values)(element.childNodes), _o = _m.next(); !_o.done; _o = _m.next()) {
+                var childNode = _o.value;
                 switch (childNode.nodeType) {
                     case Node.ELEMENT_NODE:
                         var childElement = childNode;
                         var childTagNameLow = childElement.tagName ? childElement.tagName.toLowerCase() : undefined;
                         var isMathJax = childTagNameLow && childTagNameLow.startsWith("mjx-");
-                        var isExcluded = isMathJax ||
+                        var isMathML = childTagNameLow === "math";
+                        var isExcluded = isMathJax || isMathML ||
                             childElement.matches("svg, img, sup, sub, audio, video, source, button, canvas, del, dialog, embed, form, head, iframe, meter, noscript, object, s, script, select, style, textarea");
                         if (!isExcluded) {
                             processElement(childElement);
+                        }
+                        else if (isMathML) {
+                            var altAttr = childElement.getAttribute("alttext");
+                            if (altAttr) {
+                                var txt = altAttr.trim();
+                                if (txt) {
+                                    var lang = getLanguage(childElement);
+                                    var dir = undefined;
+                                    ttsQueue.push({
+                                        combinedText: txt,
+                                        combinedTextSentences: undefined,
+                                        combinedTextSentencesRangeBegin: undefined,
+                                        combinedTextSentencesRangeEnd: undefined,
+                                        dir: dir,
+                                        lang: lang,
+                                        parentElement: childElement,
+                                        textNodes: [],
+                                    });
+                                }
+                            }
+                            else {
+                                var txt = (_e = childElement.textContent) === null || _e === void 0 ? void 0 : _e.trim();
+                                if (txt) {
+                                    var lang = getLanguage(childElement);
+                                    var dir = getDirection(childElement);
+                                    ttsQueue.push({
+                                        combinedText: txt,
+                                        combinedTextSentences: undefined,
+                                        combinedTextSentencesRangeBegin: undefined,
+                                        combinedTextSentencesRangeEnd: undefined,
+                                        dir: dir,
+                                        lang: lang,
+                                        parentElement: childElement,
+                                        textNodes: [],
+                                    });
+                                }
+                            }
                         }
                         else if (isMathJax) {
                             if (childTagNameLow === "mjx-container") {
@@ -340,15 +378,15 @@ function generateTtsQueue(rootElement, splitSentences) {
                                 try {
                                     for (var mathJaxContainerChildren_1 = (e_12 = void 0, (0, tslib_1.__values)(mathJaxContainerChildren)), mathJaxContainerChildren_1_1 = mathJaxContainerChildren_1.next(); !mathJaxContainerChildren_1_1.done; mathJaxContainerChildren_1_1 = mathJaxContainerChildren_1.next()) {
                                         var mathJaxContainerChild = mathJaxContainerChildren_1_1.value;
-                                        if (((_e = mathJaxContainerChild.tagName) === null || _e === void 0 ? void 0 : _e.toLowerCase()) === "mjx-math") {
+                                        if (((_f = mathJaxContainerChild.tagName) === null || _f === void 0 ? void 0 : _f.toLowerCase()) === "mjx-math") {
                                             mathJaxEl = mathJaxContainerChild;
                                         }
-                                        else if (((_f = mathJaxContainerChild.tagName) === null || _f === void 0 ? void 0 : _f.toLowerCase()) === "mjx-assistive-mml") {
+                                        else if (((_g = mathJaxContainerChild.tagName) === null || _g === void 0 ? void 0 : _g.toLowerCase()) === "mjx-assistive-mml") {
                                             var mathJaxAMMLChildren = Array.from(mathJaxContainerChild.children);
                                             try {
                                                 for (var mathJaxAMMLChildren_1 = (e_13 = void 0, (0, tslib_1.__values)(mathJaxAMMLChildren)), mathJaxAMMLChildren_1_1 = mathJaxAMMLChildren_1.next(); !mathJaxAMMLChildren_1_1.done; mathJaxAMMLChildren_1_1 = mathJaxAMMLChildren_1.next()) {
                                                     var mathJaxAMMLChild = mathJaxAMMLChildren_1_1.value;
-                                                    if (((_g = mathJaxAMMLChild.tagName) === null || _g === void 0 ? void 0 : _g.toLowerCase()) === "math") {
+                                                    if (((_h = mathJaxAMMLChild.tagName) === null || _h === void 0 ? void 0 : _h.toLowerCase()) === "math") {
                                                         mathJaxElMathML = mathJaxAMMLChild;
                                                         break;
                                                     }
@@ -409,7 +447,7 @@ function generateTtsQueue(rootElement, splitSentences) {
                                         }
                                     }
                                     else {
-                                        var txt = (_h = mathJaxElMathML.textContent) === null || _h === void 0 ? void 0 : _h.trim();
+                                        var txt = (_j = mathJaxElMathML.textContent) === null || _j === void 0 ? void 0 : _j.trim();
                                         if (txt) {
                                             var lang = getLanguage(mathJaxElMathML);
                                             var dir = getDirection(mathJaxElMathML);
@@ -474,8 +512,8 @@ function generateTtsQueue(rootElement, splitSentences) {
                                 try {
                                     for (var svgChildren_1 = (e_14 = void 0, (0, tslib_1.__values)(svgChildren)), svgChildren_1_1 = svgChildren_1.next(); !svgChildren_1_1.done; svgChildren_1_1 = svgChildren_1.next()) {
                                         var svgChild = svgChildren_1_1.value;
-                                        if (((_j = svgChild.tagName) === null || _j === void 0 ? void 0 : _j.toLowerCase()) === "title") {
-                                            var txt = (_k = svgChild.textContent) === null || _k === void 0 ? void 0 : _k.trim();
+                                        if (((_k = svgChild.tagName) === null || _k === void 0 ? void 0 : _k.toLowerCase()) === "title") {
+                                            var txt = (_l = svgChild.textContent) === null || _l === void 0 ? void 0 : _l.trim();
                                             if (txt) {
                                                 var lang = getLanguage(svgChild);
                                                 var dir = getDirection(svgChild);
@@ -517,7 +555,7 @@ function generateTtsQueue(rootElement, splitSentences) {
         catch (e_11_1) { e_11 = { error: e_11_1 }; }
         finally {
             try {
-                if (_m && !_m.done && (_a = _l.return)) _a.call(_l);
+                if (_o && !_o.done && (_a = _m.return)) _a.call(_m);
             }
             finally { if (e_11) throw e_11.error; }
         }

@@ -211,7 +211,7 @@ function generateTtsQueue(rootElement, splitSentences) {
     }
     let first = true;
     function processElement(element) {
-        var _a, _b, _c, _d, _e, _f;
+        var _a, _b, _c, _d, _e, _f, _g;
         if (element.nodeType !== Node.ELEMENT_NODE) {
             return;
         }
@@ -226,10 +226,48 @@ function generateTtsQueue(rootElement, splitSentences) {
                     const childElement = childNode;
                     const childTagNameLow = childElement.tagName ? childElement.tagName.toLowerCase() : undefined;
                     const isMathJax = childTagNameLow && childTagNameLow.startsWith("mjx-");
-                    const isExcluded = isMathJax ||
+                    const isMathML = childTagNameLow === "math";
+                    const isExcluded = isMathJax || isMathML ||
                         childElement.matches("svg, img, sup, sub, audio, video, source, button, canvas, del, dialog, embed, form, head, iframe, meter, noscript, object, s, script, select, style, textarea");
                     if (!isExcluded) {
                         processElement(childElement);
+                    }
+                    else if (isMathML) {
+                        const altAttr = childElement.getAttribute("alttext");
+                        if (altAttr) {
+                            const txt = altAttr.trim();
+                            if (txt) {
+                                const lang = getLanguage(childElement);
+                                const dir = undefined;
+                                ttsQueue.push({
+                                    combinedText: txt,
+                                    combinedTextSentences: undefined,
+                                    combinedTextSentencesRangeBegin: undefined,
+                                    combinedTextSentencesRangeEnd: undefined,
+                                    dir,
+                                    lang,
+                                    parentElement: childElement,
+                                    textNodes: [],
+                                });
+                            }
+                        }
+                        else {
+                            const txt = (_a = childElement.textContent) === null || _a === void 0 ? void 0 : _a.trim();
+                            if (txt) {
+                                const lang = getLanguage(childElement);
+                                const dir = getDirection(childElement);
+                                ttsQueue.push({
+                                    combinedText: txt,
+                                    combinedTextSentences: undefined,
+                                    combinedTextSentencesRangeBegin: undefined,
+                                    combinedTextSentencesRangeEnd: undefined,
+                                    dir,
+                                    lang,
+                                    parentElement: childElement,
+                                    textNodes: [],
+                                });
+                            }
+                        }
                     }
                     else if (isMathJax) {
                         if (childTagNameLow === "mjx-container") {
@@ -237,13 +275,13 @@ function generateTtsQueue(rootElement, splitSentences) {
                             let mathJaxElMathML;
                             const mathJaxContainerChildren = Array.from(childElement.children);
                             for (const mathJaxContainerChild of mathJaxContainerChildren) {
-                                if (((_a = mathJaxContainerChild.tagName) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === "mjx-math") {
+                                if (((_b = mathJaxContainerChild.tagName) === null || _b === void 0 ? void 0 : _b.toLowerCase()) === "mjx-math") {
                                     mathJaxEl = mathJaxContainerChild;
                                 }
-                                else if (((_b = mathJaxContainerChild.tagName) === null || _b === void 0 ? void 0 : _b.toLowerCase()) === "mjx-assistive-mml") {
+                                else if (((_c = mathJaxContainerChild.tagName) === null || _c === void 0 ? void 0 : _c.toLowerCase()) === "mjx-assistive-mml") {
                                     const mathJaxAMMLChildren = Array.from(mathJaxContainerChild.children);
                                     for (const mathJaxAMMLChild of mathJaxAMMLChildren) {
-                                        if (((_c = mathJaxAMMLChild.tagName) === null || _c === void 0 ? void 0 : _c.toLowerCase()) === "math") {
+                                        if (((_d = mathJaxAMMLChild.tagName) === null || _d === void 0 ? void 0 : _d.toLowerCase()) === "math") {
                                             mathJaxElMathML = mathJaxAMMLChild;
                                             break;
                                         }
@@ -288,7 +326,7 @@ function generateTtsQueue(rootElement, splitSentences) {
                                     }
                                 }
                                 else {
-                                    const txt = (_d = mathJaxElMathML.textContent) === null || _d === void 0 ? void 0 : _d.trim();
+                                    const txt = (_e = mathJaxElMathML.textContent) === null || _e === void 0 ? void 0 : _e.trim();
                                     if (txt) {
                                         const lang = getLanguage(mathJaxElMathML);
                                         const dir = getDirection(mathJaxElMathML);
@@ -351,8 +389,8 @@ function generateTtsQueue(rootElement, splitSentences) {
                         else {
                             const svgChildren = Array.from(childElement.children);
                             for (const svgChild of svgChildren) {
-                                if (((_e = svgChild.tagName) === null || _e === void 0 ? void 0 : _e.toLowerCase()) === "title") {
-                                    const txt = (_f = svgChild.textContent) === null || _f === void 0 ? void 0 : _f.trim();
+                                if (((_f = svgChild.tagName) === null || _f === void 0 ? void 0 : _f.toLowerCase()) === "title") {
+                                    const txt = (_g = svgChild.textContent) === null || _g === void 0 ? void 0 : _g.trim();
                                     if (txt) {
                                         const lang = getLanguage(svgChild);
                                         const dir = getDirection(svgChild);
