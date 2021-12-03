@@ -309,8 +309,8 @@ function generateTtsQueue(rootElement, splitSentences) {
     }
     var first = true;
     function processElement(element) {
-        var e_11, _a, e_12, _b;
-        var _c, _d;
+        var e_11, _a, e_12, _b, e_13, _c, e_14, _d;
+        var _e, _f, _g, _h, _j, _k;
         if (element.nodeType !== Node.ELEMENT_NODE) {
             return;
         }
@@ -320,17 +320,116 @@ function generateTtsQueue(rootElement, splitSentences) {
             elementStack.push(element);
         }
         try {
-            for (var _e = (0, tslib_1.__values)(element.childNodes), _f = _e.next(); !_f.done; _f = _e.next()) {
-                var childNode = _f.value;
+            for (var _l = (0, tslib_1.__values)(element.childNodes), _m = _l.next(); !_m.done; _m = _l.next()) {
+                var childNode = _m.value;
                 switch (childNode.nodeType) {
                     case Node.ELEMENT_NODE:
                         var childElement = childNode;
-                        var isExcluded = childElement.matches("svg, img, sup, sub, audio, video, source, button, canvas, del, dialog, embed, form, head, iframe, meter, noscript, object, s, script, select, style, textarea");
+                        var childTagNameLow = childElement.tagName ? childElement.tagName.toLowerCase() : undefined;
+                        var isMathJax = childTagNameLow && childTagNameLow.startsWith("mjx-");
+                        var isExcluded = isMathJax ||
+                            childElement.matches("svg, img, sup, sub, audio, video, source, button, canvas, del, dialog, embed, form, head, iframe, meter, noscript, object, s, script, select, style, textarea");
                         if (!isExcluded) {
                             processElement(childElement);
                         }
-                        else if (childElement.tagName
-                            && childElement.tagName.toLowerCase() === "img" &&
+                        else if (isMathJax) {
+                            if (childTagNameLow === "mjx-container") {
+                                var mathJaxEl = void 0;
+                                var mathJaxElMathML = void 0;
+                                var mathJaxContainerChildren = Array.from(childElement.children);
+                                try {
+                                    for (var mathJaxContainerChildren_1 = (e_12 = void 0, (0, tslib_1.__values)(mathJaxContainerChildren)), mathJaxContainerChildren_1_1 = mathJaxContainerChildren_1.next(); !mathJaxContainerChildren_1_1.done; mathJaxContainerChildren_1_1 = mathJaxContainerChildren_1.next()) {
+                                        var mathJaxContainerChild = mathJaxContainerChildren_1_1.value;
+                                        if (((_e = mathJaxContainerChild.tagName) === null || _e === void 0 ? void 0 : _e.toLowerCase()) === "mjx-math") {
+                                            mathJaxEl = mathJaxContainerChild;
+                                        }
+                                        else if (((_f = mathJaxContainerChild.tagName) === null || _f === void 0 ? void 0 : _f.toLowerCase()) === "mjx-assistive-mml") {
+                                            var mathJaxAMMLChildren = Array.from(mathJaxContainerChild.children);
+                                            try {
+                                                for (var mathJaxAMMLChildren_1 = (e_13 = void 0, (0, tslib_1.__values)(mathJaxAMMLChildren)), mathJaxAMMLChildren_1_1 = mathJaxAMMLChildren_1.next(); !mathJaxAMMLChildren_1_1.done; mathJaxAMMLChildren_1_1 = mathJaxAMMLChildren_1.next()) {
+                                                    var mathJaxAMMLChild = mathJaxAMMLChildren_1_1.value;
+                                                    if (((_g = mathJaxAMMLChild.tagName) === null || _g === void 0 ? void 0 : _g.toLowerCase()) === "math") {
+                                                        mathJaxElMathML = mathJaxAMMLChild;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                            catch (e_13_1) { e_13 = { error: e_13_1 }; }
+                                            finally {
+                                                try {
+                                                    if (mathJaxAMMLChildren_1_1 && !mathJaxAMMLChildren_1_1.done && (_c = mathJaxAMMLChildren_1.return)) _c.call(mathJaxAMMLChildren_1);
+                                                }
+                                                finally { if (e_13) throw e_13.error; }
+                                            }
+                                        }
+                                    }
+                                }
+                                catch (e_12_1) { e_12 = { error: e_12_1 }; }
+                                finally {
+                                    try {
+                                        if (mathJaxContainerChildren_1_1 && !mathJaxContainerChildren_1_1.done && (_b = mathJaxContainerChildren_1.return)) _b.call(mathJaxContainerChildren_1);
+                                    }
+                                    finally { if (e_12) throw e_12.error; }
+                                }
+                                var altAttr = childElement.getAttribute("aria-label");
+                                if (altAttr) {
+                                    var txt = altAttr.trim();
+                                    if (txt) {
+                                        var lang = getLanguage(childElement);
+                                        var dir = undefined;
+                                        ttsQueue.push({
+                                            combinedText: txt,
+                                            combinedTextSentences: undefined,
+                                            combinedTextSentencesRangeBegin: undefined,
+                                            combinedTextSentencesRangeEnd: undefined,
+                                            dir: dir,
+                                            lang: lang,
+                                            parentElement: mathJaxEl !== null && mathJaxEl !== void 0 ? mathJaxEl : childElement,
+                                            textNodes: [],
+                                        });
+                                    }
+                                }
+                                else if (mathJaxElMathML) {
+                                    var altAttr_1 = mathJaxElMathML.getAttribute("alttext");
+                                    if (altAttr_1) {
+                                        var txt = altAttr_1.trim();
+                                        if (txt) {
+                                            var lang = getLanguage(mathJaxElMathML);
+                                            var dir = undefined;
+                                            ttsQueue.push({
+                                                combinedText: txt,
+                                                combinedTextSentences: undefined,
+                                                combinedTextSentencesRangeBegin: undefined,
+                                                combinedTextSentencesRangeEnd: undefined,
+                                                dir: dir,
+                                                lang: lang,
+                                                parentElement: mathJaxEl !== null && mathJaxEl !== void 0 ? mathJaxEl : childElement,
+                                                textNodes: [],
+                                            });
+                                        }
+                                    }
+                                    else {
+                                        var txt = (_h = mathJaxElMathML.textContent) === null || _h === void 0 ? void 0 : _h.trim();
+                                        if (txt) {
+                                            var lang = getLanguage(mathJaxElMathML);
+                                            var dir = getDirection(mathJaxElMathML);
+                                            ttsQueue.push({
+                                                combinedText: txt,
+                                                combinedTextSentences: undefined,
+                                                combinedTextSentencesRangeBegin: undefined,
+                                                combinedTextSentencesRangeEnd: undefined,
+                                                dir: dir,
+                                                lang: lang,
+                                                parentElement: mathJaxEl !== null && mathJaxEl !== void 0 ? mathJaxEl : childElement,
+                                                textNodes: [],
+                                            });
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                        else if (childTagNameLow === "img" &&
                             childElement.src) {
                             var altAttr = childElement.getAttribute("alt");
                             if (altAttr) {
@@ -351,8 +450,7 @@ function generateTtsQueue(rootElement, splitSentences) {
                                 }
                             }
                         }
-                        else if (childElement.tagName
-                            && childElement.tagName.toLowerCase() === "svg") {
+                        else if (childTagNameLow === "svg") {
                             var altAttr = childElement.getAttribute("aria-label");
                             if (altAttr) {
                                 var txt = altAttr.trim();
@@ -374,10 +472,10 @@ function generateTtsQueue(rootElement, splitSentences) {
                             else {
                                 var svgChildren = Array.from(childElement.children);
                                 try {
-                                    for (var svgChildren_1 = (e_12 = void 0, (0, tslib_1.__values)(svgChildren)), svgChildren_1_1 = svgChildren_1.next(); !svgChildren_1_1.done; svgChildren_1_1 = svgChildren_1.next()) {
+                                    for (var svgChildren_1 = (e_14 = void 0, (0, tslib_1.__values)(svgChildren)), svgChildren_1_1 = svgChildren_1.next(); !svgChildren_1_1.done; svgChildren_1_1 = svgChildren_1.next()) {
                                         var svgChild = svgChildren_1_1.value;
-                                        if (((_c = svgChild.tagName) === null || _c === void 0 ? void 0 : _c.toLowerCase()) === "title") {
-                                            var txt = (_d = svgChild.textContent) === null || _d === void 0 ? void 0 : _d.trim();
+                                        if (((_j = svgChild.tagName) === null || _j === void 0 ? void 0 : _j.toLowerCase()) === "title") {
+                                            var txt = (_k = svgChild.textContent) === null || _k === void 0 ? void 0 : _k.trim();
                                             if (txt) {
                                                 var lang = getLanguage(svgChild);
                                                 var dir = getDirection(svgChild);
@@ -396,12 +494,12 @@ function generateTtsQueue(rootElement, splitSentences) {
                                         }
                                     }
                                 }
-                                catch (e_12_1) { e_12 = { error: e_12_1 }; }
+                                catch (e_14_1) { e_14 = { error: e_14_1 }; }
                                 finally {
                                     try {
-                                        if (svgChildren_1_1 && !svgChildren_1_1.done && (_b = svgChildren_1.return)) _b.call(svgChildren_1);
+                                        if (svgChildren_1_1 && !svgChildren_1_1.done && (_d = svgChildren_1.return)) _d.call(svgChildren_1);
                                     }
-                                    finally { if (e_12) throw e_12.error; }
+                                    finally { if (e_14) throw e_14.error; }
                                 }
                             }
                         }
@@ -419,7 +517,7 @@ function generateTtsQueue(rootElement, splitSentences) {
         catch (e_11_1) { e_11 = { error: e_11_1 }; }
         finally {
             try {
-                if (_f && !_f.done && (_a = _e.return)) _a.call(_e);
+                if (_m && !_m.done && (_a = _l.return)) _a.call(_l);
             }
             finally { if (e_11) throw e_11.error; }
         }
@@ -429,7 +527,7 @@ function generateTtsQueue(rootElement, splitSentences) {
     }
     processElement(rootElement);
     function finalizeTextNodes(ttsQueueItem) {
-        var e_13, _a;
+        var e_15, _a;
         if (!ttsQueueItem.textNodes || !ttsQueueItem.textNodes.length) {
             if (!ttsQueueItem.combinedText || !ttsQueueItem.combinedText.length) {
                 ttsQueueItem.combinedText = "";
@@ -469,12 +567,12 @@ function generateTtsQueue(rootElement, splitSentences) {
                         }
                     }
                 }
-                catch (e_13_1) { e_13 = { error: e_13_1 }; }
+                catch (e_15_1) { e_15 = { error: e_15_1 }; }
                 finally {
                     try {
                         if (sentences_1_1 && !sentences_1_1.done && (_a = sentences_1.return)) _a.call(sentences_1);
                     }
-                    finally { if (e_13) throw e_13.error; }
+                    finally { if (e_15) throw e_15.error; }
                 }
                 if (ttsQueueItem.combinedTextSentences.length === 0 ||
                     ttsQueueItem.combinedTextSentences.length === 1) {

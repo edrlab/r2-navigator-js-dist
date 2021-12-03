@@ -365,10 +365,13 @@ function wrapHighlight(doHighlight, ttsQueueItemRef) {
     }
     const ttsQueueItem = ttsQueueItemRef.item;
     if (doHighlight &&
-        ttsQueueItem.parentElement &&
-        ttsQueueItem.textNodes && ttsQueueItem.textNodes.length) {
+        ttsQueueItem.parentElement) {
         let range;
-        if (ttsQueueItem.combinedTextSentences &&
+        if (!ttsQueueItem.textNodes || !ttsQueueItem.textNodes.length) {
+            range = new Range();
+            range.selectNode(ttsQueueItem.parentElement);
+        }
+        else if (ttsQueueItem.combinedTextSentences &&
             ttsQueueItem.combinedTextSentencesRangeBegin &&
             ttsQueueItem.combinedTextSentencesRangeEnd &&
             ttsQueueItemRef.iSentence >= 0) {

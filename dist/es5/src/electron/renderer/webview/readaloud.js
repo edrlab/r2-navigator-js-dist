@@ -380,10 +380,13 @@ function wrapHighlight(doHighlight, ttsQueueItemRef) {
     }
     var ttsQueueItem = ttsQueueItemRef.item;
     if (doHighlight &&
-        ttsQueueItem.parentElement &&
-        ttsQueueItem.textNodes && ttsQueueItem.textNodes.length) {
+        ttsQueueItem.parentElement) {
         var range = void 0;
-        if (ttsQueueItem.combinedTextSentences &&
+        if (!ttsQueueItem.textNodes || !ttsQueueItem.textNodes.length) {
+            range = new Range();
+            range.selectNode(ttsQueueItem.parentElement);
+        }
+        else if (ttsQueueItem.combinedTextSentences &&
             ttsQueueItem.combinedTextSentencesRangeBegin &&
             ttsQueueItem.combinedTextSentencesRangeEnd &&
             ttsQueueItemRef.iSentence >= 0) {

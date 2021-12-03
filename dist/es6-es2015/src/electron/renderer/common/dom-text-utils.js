@@ -211,7 +211,7 @@ function generateTtsQueue(rootElement, splitSentences) {
     }
     let first = true;
     function processElement(element) {
-        var _a, _b;
+        var _a, _b, _c, _d, _e, _f;
         if (element.nodeType !== Node.ELEMENT_NODE) {
             return;
         }
@@ -224,12 +224,91 @@ function generateTtsQueue(rootElement, splitSentences) {
             switch (childNode.nodeType) {
                 case Node.ELEMENT_NODE:
                     const childElement = childNode;
-                    const isExcluded = childElement.matches("svg, img, sup, sub, audio, video, source, button, canvas, del, dialog, embed, form, head, iframe, meter, noscript, object, s, script, select, style, textarea");
+                    const childTagNameLow = childElement.tagName ? childElement.tagName.toLowerCase() : undefined;
+                    const isMathJax = childTagNameLow && childTagNameLow.startsWith("mjx-");
+                    const isExcluded = isMathJax ||
+                        childElement.matches("svg, img, sup, sub, audio, video, source, button, canvas, del, dialog, embed, form, head, iframe, meter, noscript, object, s, script, select, style, textarea");
                     if (!isExcluded) {
                         processElement(childElement);
                     }
-                    else if (childElement.tagName
-                        && childElement.tagName.toLowerCase() === "img" &&
+                    else if (isMathJax) {
+                        if (childTagNameLow === "mjx-container") {
+                            let mathJaxEl;
+                            let mathJaxElMathML;
+                            const mathJaxContainerChildren = Array.from(childElement.children);
+                            for (const mathJaxContainerChild of mathJaxContainerChildren) {
+                                if (((_a = mathJaxContainerChild.tagName) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === "mjx-math") {
+                                    mathJaxEl = mathJaxContainerChild;
+                                }
+                                else if (((_b = mathJaxContainerChild.tagName) === null || _b === void 0 ? void 0 : _b.toLowerCase()) === "mjx-assistive-mml") {
+                                    const mathJaxAMMLChildren = Array.from(mathJaxContainerChild.children);
+                                    for (const mathJaxAMMLChild of mathJaxAMMLChildren) {
+                                        if (((_c = mathJaxAMMLChild.tagName) === null || _c === void 0 ? void 0 : _c.toLowerCase()) === "math") {
+                                            mathJaxElMathML = mathJaxAMMLChild;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            const altAttr = childElement.getAttribute("aria-label");
+                            if (altAttr) {
+                                const txt = altAttr.trim();
+                                if (txt) {
+                                    const lang = getLanguage(childElement);
+                                    const dir = undefined;
+                                    ttsQueue.push({
+                                        combinedText: txt,
+                                        combinedTextSentences: undefined,
+                                        combinedTextSentencesRangeBegin: undefined,
+                                        combinedTextSentencesRangeEnd: undefined,
+                                        dir,
+                                        lang,
+                                        parentElement: mathJaxEl !== null && mathJaxEl !== void 0 ? mathJaxEl : childElement,
+                                        textNodes: [],
+                                    });
+                                }
+                            }
+                            else if (mathJaxElMathML) {
+                                const altAttr = mathJaxElMathML.getAttribute("alttext");
+                                if (altAttr) {
+                                    const txt = altAttr.trim();
+                                    if (txt) {
+                                        const lang = getLanguage(mathJaxElMathML);
+                                        const dir = undefined;
+                                        ttsQueue.push({
+                                            combinedText: txt,
+                                            combinedTextSentences: undefined,
+                                            combinedTextSentencesRangeBegin: undefined,
+                                            combinedTextSentencesRangeEnd: undefined,
+                                            dir,
+                                            lang,
+                                            parentElement: mathJaxEl !== null && mathJaxEl !== void 0 ? mathJaxEl : childElement,
+                                            textNodes: [],
+                                        });
+                                    }
+                                }
+                                else {
+                                    const txt = (_d = mathJaxElMathML.textContent) === null || _d === void 0 ? void 0 : _d.trim();
+                                    if (txt) {
+                                        const lang = getLanguage(mathJaxElMathML);
+                                        const dir = getDirection(mathJaxElMathML);
+                                        ttsQueue.push({
+                                            combinedText: txt,
+                                            combinedTextSentences: undefined,
+                                            combinedTextSentencesRangeBegin: undefined,
+                                            combinedTextSentencesRangeEnd: undefined,
+                                            dir,
+                                            lang,
+                                            parentElement: mathJaxEl !== null && mathJaxEl !== void 0 ? mathJaxEl : childElement,
+                                            textNodes: [],
+                                        });
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    else if (childTagNameLow === "img" &&
                         childElement.src) {
                         const altAttr = childElement.getAttribute("alt");
                         if (altAttr) {
@@ -250,8 +329,7 @@ function generateTtsQueue(rootElement, splitSentences) {
                             }
                         }
                     }
-                    else if (childElement.tagName
-                        && childElement.tagName.toLowerCase() === "svg") {
+                    else if (childTagNameLow === "svg") {
                         const altAttr = childElement.getAttribute("aria-label");
                         if (altAttr) {
                             const txt = altAttr.trim();
@@ -273,8 +351,8 @@ function generateTtsQueue(rootElement, splitSentences) {
                         else {
                             const svgChildren = Array.from(childElement.children);
                             for (const svgChild of svgChildren) {
-                                if (((_a = svgChild.tagName) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === "title") {
-                                    const txt = (_b = svgChild.textContent) === null || _b === void 0 ? void 0 : _b.trim();
+                                if (((_e = svgChild.tagName) === null || _e === void 0 ? void 0 : _e.toLowerCase()) === "title") {
+                                    const txt = (_f = svgChild.textContent) === null || _f === void 0 ? void 0 : _f.trim();
                                     if (txt) {
                                         const lang = getLanguage(svgChild);
                                         const dir = getDirection(svgChild);
