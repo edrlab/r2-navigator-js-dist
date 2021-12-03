@@ -2111,6 +2111,7 @@ function getCssSelector(element) {
 var _allEpubPageBreaks;
 var _htmlNamespaces = {
     epub: "http://www.idpf.org/2007/ops",
+    xhtml: "http://www.w3.org/1999/xhtml",
 };
 var findPrecedingAncestorSiblingEpubPageBreak = function (element) {
     if (!_allEpubPageBreaks) {
@@ -2120,7 +2121,7 @@ var findPrecedingAncestorSiblingEpubPageBreak = function (element) {
             }
             return _htmlNamespaces[prefix] || null;
         };
-        var xpathResult = win.document.evaluate("//*[contains(concat(' ', normalize-space(@epub:type), ' '), ' pagebreak ') or contains(concat(' ', normalize-space(role), ' '), ' doc-pagebreak ')]", win.document.body, namespaceResolver, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+        var xpathResult = win.document.evaluate("//*[contains(concat(' ', normalize-space(@role), ' '), ' doc-pagebreak ')] | //*[contains(concat(' ', normalize-space(@epub:type), ' '), ' pagebreak ')]", win.document.body, namespaceResolver, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
         for (var i = 0; i < xpathResult.snapshotLength; i++) {
             var n = xpathResult.snapshotItem(i);
             if (n) {
@@ -2144,7 +2145,7 @@ var findPrecedingAncestorSiblingEpubPageBreak = function (element) {
         if (!_allEpubPageBreaks) {
             _allEpubPageBreaks = [];
         }
-        debug("_allEpubPageBreaks XPath", _allEpubPageBreaks.length);
+        debug("_allEpubPageBreaks XPath", _allEpubPageBreaks.length, xpathResult.snapshotLength);
     }
     for (var i = _allEpubPageBreaks.length - 1; i >= 0; i--) {
         var pageBreak = _allEpubPageBreaks[i];
