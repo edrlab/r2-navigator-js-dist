@@ -45,6 +45,8 @@ export declare const R2_EVENT_FXL_CONFIGURE = "R2_EVENT_FXL_CONFIGURE";
 export interface IEventPayload_R2_EVENT_FXL_CONFIGURE {
     fxl: IwidthHeight | null;
 }
+export declare const R2_EVENT_SHOW = "R2_EVENT_SHOW";
+export declare const R2_EVENT_KEYBOARD_FOCUS_REQUEST = "R2_EVENT_KEYBOARD_FOCUS_REQUEST";
 export declare const R2_EVENT_READING_LOCATION = "R2_EVENT_READING_LOCATION";
 export interface IEventPayload_R2_EVENT_READING_LOCATION extends Locator {
     audioPlaybackInfo: IAudioPlaybackInfo | undefined;

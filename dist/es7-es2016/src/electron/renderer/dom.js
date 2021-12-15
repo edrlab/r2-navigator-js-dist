@@ -196,9 +196,6 @@ function createWebViewInternal(preloadScriptPath) {
     debug("createWebViewInternal ... setWebViewStyle");
     (0, location_1.setWebViewStyle)(wv, styles_1.WebViewSlotEnum.center);
     wv.setAttribute("preload", preloadScriptPath);
-    setTimeout(() => {
-        wv.removeAttribute("tabindex");
-    }, 500);
     wv.addEventListener("dom-ready", () => {
         wv.clearHistory();
         if (IS_DEV) {
@@ -214,12 +211,26 @@ function createWebViewInternal(preloadScriptPath) {
         (0, readaloud_1.checkTtsState)(wv);
     });
     wv.addEventListener("ipc-message", (event) => {
+        var _a, _b;
         const webview = event.currentTarget;
         if (webview !== wv) {
-            console.log("Wrong navigator webview?!");
+            debug("Wrong navigator webview?!");
             return;
         }
-        if (event.channel === "R2_EVENT_SHOW") {
+        if (event.channel === events_1.R2_EVENT_KEYBOARD_FOCUS_REQUEST) {
+            debug("KEYBOARD FOCUS REQUEST (2) ", webview.id, (_a = win.document.activeElement) === null || _a === void 0 ? void 0 : _a.id);
+            if (win.document.activeElement && win.document.activeElement.blur) {
+                win.document.activeElement.blur();
+            }
+            const iframe = (_b = webview.shadowRoot) === null || _b === void 0 ? void 0 : _b.querySelector("iframe");
+            if (iframe) {
+                iframe.focus();
+            }
+            else {
+                webview.focus();
+            }
+        }
+        else if (event.channel === events_1.R2_EVENT_SHOW) {
             webview.style.opacity = "1";
         }
         else if (event.channel === events_1.R2_EVENT_FXL_CONFIGURE) {
@@ -378,7 +389,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
         },
         domRootElement,
         domSlidingViewport,
-        enableScreenReaderAccessibilityWebViewHardRefresh: enableScreenReaderAccessibilityWebViewHardRefresh ? true : false,
+        enableScreenReaderAccessibilityWebViewHardRefresh: enableScreenReaderAccessibilityWebViewHardRefresh ? false : false,
         fixedLayoutZoomPercent: 0,
         getActiveWebViews: () => {
             const arr = [];

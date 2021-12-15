@@ -88,6 +88,14 @@ exports.contextMenuSetup = contextMenuSetup;
 electron_1.ipcMain.on(context_menu_1.CONTEXT_MENU_SETUP, function (event, webContentID) {
     (0, exports.contextMenuSetup)(event.sender, webContentID);
 });
+electron_1.ipcMain.handle(events_1.R2_EVENT_KEYBOARD_FOCUS_REQUEST, function (event, webContentsId) {
+    var wc = electron_1.webContents.fromId(webContentsId);
+    debug("KEYBOARD FOCUS REQUEST (3) ", wc ? wc.id : "??", " // ", webContentsId, " -- ", wc.hostWebContents.id, " == ", event.sender.id);
+    if (wc && wc.hostWebContents === event.sender) {
+        debug("KEYBOARD FOCUS REQUEST (3) GO! ", wc.id, wc.hostWebContents.id);
+        wc.focus();
+    }
+});
 electron_1.app.on("web-contents-created", function (_evt, wc) {
     wc.on("will-attach-webview", function (_event, webPreferences, params) {
         debug("WEBVIEW will-attach-webview");

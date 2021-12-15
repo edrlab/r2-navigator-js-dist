@@ -650,6 +650,27 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_PAGE_TURN, function (_event, payload
         onEventPageTurn(payload);
     }, 100);
 });
+function focusElement(element) {
+    if (element === win.document.body) {
+        var attr = element.getAttribute("tabindex");
+        if (!attr) {
+            element.setAttribute("tabindex", "-1");
+            element.classList.add(styles_1.CSS_CLASS_NO_FOCUS_OUTLINE);
+            if (IS_DEV) {
+                debug("tabindex -1 set BODY (focusable):");
+                debug(getCssSelector(element));
+            }
+        }
+        element.focus({ preventScroll: true });
+    }
+    else {
+        element.focus();
+    }
+    electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_KEYBOARD_FOCUS_REQUEST, null);
+    if (IS_DEV) {
+        debug("KEYBOARD FOCUS REQUEST (1) ", getCssSelector(element));
+    }
+}
 var _lastAnimState2;
 var animationTime2 = 400;
 function scrollElementIntoView(element, doFocus, animate, domRect) {
@@ -693,7 +714,7 @@ function scrollElementIntoView(element, doFocus, animate, domRect) {
             element.classList.remove(styles_1.LINK_TARGET_CLASS);
         }, 2000);
         if (!domRect) {
-            element.focus();
+            focusElement(element);
         }
     }
     setTimeout(function () {
@@ -909,6 +930,7 @@ var scrollToHashRaw = function (animate) {
                     }, 10);
                     win.READIUM2.locationHashOverride = win.document.body;
                     resetLocationHashOverrideInfo();
+                    focusElement(win.READIUM2.locationHashOverride);
                     processXYRaw(0, 0, false);
                     if (!win.READIUM2.locationHashOverride) {
                         notifyReadingLocationDebounced();
@@ -928,6 +950,7 @@ var scrollToHashRaw = function (animate) {
                 }, 10);
                 win.READIUM2.locationHashOverride = win.document.body;
                 resetLocationHashOverrideInfo();
+                focusElement(win.READIUM2.locationHashOverride);
                 processXYRaw(0, 0, false);
                 if (!win.READIUM2.locationHashOverride) {
                     notifyReadingLocationDebounced();
@@ -943,6 +966,7 @@ var scrollToHashRaw = function (animate) {
         }, 10);
         win.READIUM2.locationHashOverride = win.document.body;
         resetLocationHashOverrideInfo();
+        focusElement(win.READIUM2.locationHashOverride);
         debug("processXYRaw BODY");
         processXYRaw(0, 0, false);
     }
@@ -959,7 +983,7 @@ function showHideContentMask(doHide, isFixedLayout) {
         win.document.documentElement.classList.remove(styles_1.ROOT_CLASS_INVISIBLE_MASK_REMOVED);
     }
     else {
-        electron_1.ipcRenderer.sendToHost("R2_EVENT_SHOW", null);
+        electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_SHOW, null);
         if (isFixedLayout) {
             win.document.documentElement.classList.add(styles_1.ROOT_CLASS_INVISIBLE_MASK_REMOVED);
         }
