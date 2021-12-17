@@ -1565,33 +1565,14 @@ function loaded(forced) {
         var x = ev.clientX;
         var y = ev.clientY;
         processXYDebouncedImmediate(x, y, false, true);
-        var element;
-        var textNode;
-        var textNodeOffset = -1;
-        var range = win.document.caretRangeFromPoint(x, y);
-        if (range) {
-            var node = range.startContainer;
-            var offset = range.startOffset;
-            if (node) {
-                if (node.nodeType === Node.ELEMENT_NODE) {
-                    element = node;
-                }
-                else if (node.nodeType === Node.TEXT_NODE) {
-                    textNode = node;
-                    textNodeOffset = offset;
-                    if (node.parentNode && node.parentNode.nodeType === Node.ELEMENT_NODE) {
-                        element = node.parentNode;
-                    }
-                }
-            }
-        }
-        if (element && win.READIUM2.ttsClickEnabled) {
-            if (element) {
+        var domPointData = domDataFromPoint(x, y);
+        if (domPointData.element && win.READIUM2.ttsClickEnabled) {
+            if (domPointData.element) {
                 if (ev.altKey) {
-                    (0, readaloud_1.ttsPlay)(win.READIUM2.ttsPlaybackRate, win.READIUM2.ttsVoice, focusScrollRaw, element, undefined, undefined, -1, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+                    (0, readaloud_1.ttsPlay)(win.READIUM2.ttsPlaybackRate, win.READIUM2.ttsVoice, focusScrollRaw, domPointData.element, undefined, undefined, -1, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
                     return;
                 }
-                (0, readaloud_1.ttsPlay)(win.READIUM2.ttsPlaybackRate, win.READIUM2.ttsVoice, focusScrollRaw, element.ownerDocument.body, element, textNode, textNodeOffset, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+                (0, readaloud_1.ttsPlay)(win.READIUM2.ttsPlaybackRate, win.READIUM2.ttsVoice, focusScrollRaw, domPointData.element.ownerDocument.body, domPointData.element, domPointData.textNode, domPointData.textNodeOffset, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
             }
         }
     }
@@ -1753,35 +1734,64 @@ function findFirstVisibleElement(rootElement) {
     }
     return undefined;
 }
-var processXYRaw = function (x, y, reverse, userInteract) {
-    if ((0, popup_dialog_1.isPopupDialogOpen)(win.document)) {
-        return;
-    }
-    var element;
+var domDataFromPoint = function (x, y) {
+    var _a;
+    var domPointData = {
+        textNode: undefined,
+        textNodeOffset: -1,
+        element: undefined,
+    };
     var range = win.document.caretRangeFromPoint(x, y);
     if (range) {
         var node = range.startContainer;
         if (node) {
             if (node.nodeType === Node.ELEMENT_NODE) {
-                element = node;
+                domPointData.element = node;
+                var childrenCount = (_a = domPointData.element.childNodes) === null || _a === void 0 ? void 0 : _a.length;
+                if (childrenCount > 0 &&
+                    range.startOffset > 0 &&
+                    range.startOffset === range.endOffset &&
+                    range.startOffset < childrenCount) {
+                    var c = domPointData.element.childNodes[range.startOffset];
+                    if (c.nodeType === Node.ELEMENT_NODE) {
+                        domPointData.element = c;
+                    }
+                    else if (c.nodeType === Node.TEXT_NODE && range.startOffset > 0) {
+                        c = domPointData.element.childNodes[range.startOffset - 1];
+                        if (c.nodeType === Node.ELEMENT_NODE) {
+                            domPointData.element = c;
+                        }
+                    }
+                }
             }
             else if (node.nodeType === Node.TEXT_NODE) {
+                domPointData.textNode = node;
+                domPointData.textNodeOffset = range.startOffset;
                 if (node.parentNode && node.parentNode.nodeType === Node.ELEMENT_NODE) {
-                    element = node.parentNode;
+                    domPointData.element = node.parentNode;
                 }
             }
         }
     }
-    if (!element || element === win.document.body || element === win.document.documentElement) {
+    return domPointData;
+};
+var processXYRaw = function (x, y, reverse, userInteract) {
+    if ((0, popup_dialog_1.isPopupDialogOpen)(win.document)) {
+        return;
+    }
+    var domPointData = domDataFromPoint(x, y);
+    if (!domPointData.element ||
+        domPointData.element === win.document.body ||
+        domPointData.element === win.document.documentElement) {
         var root = win.document.body;
-        element = findFirstVisibleElement(root);
-        if (!element) {
+        domPointData.element = findFirstVisibleElement(root);
+        if (!domPointData.element) {
             debug("|||||||||||||| cannot find visible element inside BODY / HTML????");
-            element = win.document.body;
+            domPointData.element = win.document.body;
         }
     }
-    else if (!userInteract && !computeVisibility_(element, undefined)) {
-        var next = element;
+    else if (!userInteract && !computeVisibility_(domPointData.element, undefined)) {
+        var next = domPointData.element;
         var found = void 0;
         while (next) {
             var firstInside = findFirstVisibleElement(next);
@@ -1803,28 +1813,29 @@ var processXYRaw = function (x, y, reverse, userInteract) {
             next = sibling ? sibling : undefined;
         }
         if (found) {
-            element = found;
+            domPointData.element = found;
         }
         else {
             debug("|||||||||||||| cannot find visible element after current????");
         }
     }
-    if (element === win.document.body || element === win.document.documentElement) {
+    if (domPointData.element === win.document.body ||
+        domPointData.element === win.document.documentElement) {
         debug("|||||||||||||| BODY/HTML selected????");
     }
-    if (element) {
+    if (domPointData.element) {
         if (userInteract ||
             !win.READIUM2.locationHashOverride ||
             win.READIUM2.locationHashOverride === win.document.body ||
             win.READIUM2.locationHashOverride === win.document.documentElement) {
-            win.READIUM2.locationHashOverride = element;
+            win.READIUM2.locationHashOverride = domPointData.element;
         }
         else {
             var visible = win.READIUM2.isFixedLayout ||
                 win.READIUM2.locationHashOverride === win.document.body ||
                 computeVisibility_(win.READIUM2.locationHashOverride, undefined);
             if (!visible) {
-                win.READIUM2.locationHashOverride = element;
+                win.READIUM2.locationHashOverride = domPointData.element;
             }
         }
         if (userInteract) {
@@ -1834,7 +1845,7 @@ var processXYRaw = function (x, y, reverse, userInteract) {
             notifyReadingLocationDebounced(userInteract);
         }
         if (win.READIUM2.DEBUG_VISUALS) {
-            var el = win.READIUM2.locationHashOverride ? win.READIUM2.locationHashOverride : element;
+            var el = win.READIUM2.locationHashOverride ? win.READIUM2.locationHashOverride : domPointData.element;
             var existings = win.document.querySelectorAll("*[".concat(styles_1.readPosCssStylesAttr2, "]"));
             existings.forEach(function (existing) {
                 existing.removeAttribute("".concat(styles_1.readPosCssStylesAttr2));
