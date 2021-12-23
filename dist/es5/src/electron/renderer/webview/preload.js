@@ -47,6 +47,7 @@ win.READIUM2 = {
         audioPlaybackInfo: undefined,
         docInfo: undefined,
         epubPage: undefined,
+        headings: undefined,
         href: "",
         locations: {
             cfi: undefined,
@@ -358,6 +359,7 @@ function resetLocationHashOverrideInfo() {
         audioPlaybackInfo: undefined,
         docInfo: undefined,
         epubPage: undefined,
+        headings: undefined,
         href: "",
         locations: {
             cfi: undefined,
@@ -2143,20 +2145,75 @@ function getCssSelector(element) {
         return "";
     }
 }
-var _allEpubPageBreaks;
 var _htmlNamespaces = {
     epub: "http://www.idpf.org/2007/ops",
     xhtml: "http://www.w3.org/1999/xhtml",
 };
+var _namespaceResolver = function (prefix) {
+    if (!prefix) {
+        return null;
+    }
+    return _htmlNamespaces[prefix] || null;
+};
+var _allHeadings;
+var findPrecedingAncestorSiblingHeadings = function (element) {
+    var e_9, _a;
+    if (!_allHeadings) {
+        var headingElements = Array.from(win.document.querySelectorAll("h1,h2,h3,h4,h5,h6"));
+        try {
+            for (var headingElements_1 = (0, tslib_1.__values)(headingElements), headingElements_1_1 = headingElements_1.next(); !headingElements_1_1.done; headingElements_1_1 = headingElements_1.next()) {
+                var n = headingElements_1_1.value;
+                if (n) {
+                    var el = n;
+                    var t = el.textContent || el.getAttribute("title") || el.getAttribute("aria-label");
+                    var i = el.getAttribute("id");
+                    var heading = {
+                        element: el,
+                        id: i ? i : undefined,
+                        level: parseInt(el.localName.substring(1), 10),
+                        text: t ? t : undefined,
+                    };
+                    if (!_allHeadings) {
+                        _allHeadings = [];
+                    }
+                    _allHeadings.push(heading);
+                }
+            }
+        }
+        catch (e_9_1) { e_9 = { error: e_9_1 }; }
+        finally {
+            try {
+                if (headingElements_1_1 && !headingElements_1_1.done && (_a = headingElements_1.return)) _a.call(headingElements_1);
+            }
+            finally { if (e_9) throw e_9.error; }
+        }
+        if (!_allHeadings) {
+            _allHeadings = [];
+        }
+        debug("_allHeadings", _allHeadings.length, headingElements.length);
+    }
+    var arr;
+    for (var i = _allHeadings.length - 1; i >= 0; i--) {
+        var heading = _allHeadings[i];
+        var c = element.compareDocumentPosition(heading.element);
+        if (c === 0 || (c & Node.DOCUMENT_POSITION_PRECEDING) || (c & Node.DOCUMENT_POSITION_CONTAINS)) {
+            debug("preceding or containing heading", heading.id, heading.text);
+            if (!arr) {
+                arr = [];
+            }
+            arr.push({
+                id: heading.id,
+                level: heading.level,
+                txt: heading.text,
+            });
+        }
+    }
+    return arr;
+};
+var _allEpubPageBreaks;
 var findPrecedingAncestorSiblingEpubPageBreak = function (element) {
     if (!_allEpubPageBreaks) {
-        var namespaceResolver = function (prefix) {
-            if (!prefix) {
-                return null;
-            }
-            return _htmlNamespaces[prefix] || null;
-        };
-        var xpathResult = win.document.evaluate("//*[contains(concat(' ', normalize-space(@role), ' '), ' doc-pagebreak ')] | //*[contains(concat(' ', normalize-space(@epub:type), ' '), ' pagebreak ')]", win.document.body, namespaceResolver, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+        var xpathResult = win.document.evaluate("//*[contains(concat(' ', normalize-space(@role), ' '), ' doc-pagebreak ')] | //*[contains(concat(' ', normalize-space(@epub:type), ' '), ' pagebreak ')]", win.document.body, _namespaceResolver, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
         for (var i = 0; i < xpathResult.snapshotLength; i++) {
             var n = xpathResult.snapshotItem(i);
             if (n) {
@@ -2235,6 +2292,7 @@ var notifyReadingLocationRaw = function (userInteract, ignoreMediaOverlays) {
                 !(0, selection_1.sameSelections)(win.READIUM2.locationHashOverrideInfo.selectionInfo, selInfo);
     }
     var epubPage = findPrecedingAncestorSiblingEpubPageBreak(win.READIUM2.locationHashOverride);
+    var headings = findPrecedingAncestorSiblingHeadings(win.READIUM2.locationHashOverride);
     var secondWebViewHref = win.READIUM2.urlQueryParams &&
         win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_SECOND_WEBVIEW] &&
         win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_SECOND_WEBVIEW].length > 1 &&
@@ -2249,6 +2307,7 @@ var notifyReadingLocationRaw = function (userInteract, ignoreMediaOverlays) {
             isVerticalWritingMode: (0, readium_css_1.isVerticalWritingMode)(),
         },
         epubPage: epubPage,
+        headings: headings,
         href: "",
         locations: {
             cfi: cfi,
@@ -2435,7 +2494,7 @@ if (!win.READIUM2.isAudio) {
         }
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_HIGHLIGHT_CREATE, function (_event, payloadPing) {
-        var e_9, _a;
+        var e_10, _a;
         if (payloadPing.highlightDefinitions &&
             payloadPing.highlightDefinitions.length === 1 &&
             payloadPing.highlightDefinitions[0].selectionInfo) {
@@ -2462,12 +2521,12 @@ if (!win.READIUM2.isAudio) {
                 }
             }
         }
-        catch (e_9_1) { e_9 = { error: e_9_1 }; }
+        catch (e_10_1) { e_10 = { error: e_10_1 }; }
         finally {
             try {
                 if (highlightDefinitions_1_1 && !highlightDefinitions_1_1.done && (_a = highlightDefinitions_1.return)) _a.call(highlightDefinitions_1);
             }
-            finally { if (e_9) throw e_9.error; }
+            finally { if (e_10) throw e_10.error; }
         }
         var highlights = (0, highlight_1.createHighlights)(win, highlightDefinitions, true);
         var payloadPong = {

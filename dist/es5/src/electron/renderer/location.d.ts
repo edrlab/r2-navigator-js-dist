@@ -24,6 +24,11 @@ export interface LocatorExtended {
     selectionIsNew: boolean | undefined;
     docInfo: IDocInfo | undefined;
     epubPage: string | undefined;
+    headings: Array<{
+        id: string | undefined;
+        txt: string | undefined;
+        level: number;
+    }> | undefined;
     secondWebViewHref: string | undefined;
 }
 export declare function getCurrentReadingLocation(): LocatorExtended | undefined;

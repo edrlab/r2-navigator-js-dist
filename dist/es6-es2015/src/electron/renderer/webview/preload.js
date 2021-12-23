@@ -46,6 +46,7 @@ win.READIUM2 = {
         audioPlaybackInfo: undefined,
         docInfo: undefined,
         epubPage: undefined,
+        headings: undefined,
         href: "",
         locations: {
             cfi: undefined,
@@ -345,6 +346,7 @@ function resetLocationHashOverrideInfo() {
         audioPlaybackInfo: undefined,
         docInfo: undefined,
         epubPage: undefined,
+        headings: undefined,
         href: "",
         locations: {
             cfi: undefined,
@@ -2045,20 +2047,64 @@ function getCssSelector(element) {
         return "";
     }
 }
-let _allEpubPageBreaks;
 const _htmlNamespaces = {
     epub: "http://www.idpf.org/2007/ops",
     xhtml: "http://www.w3.org/1999/xhtml",
 };
+const _namespaceResolver = (prefix) => {
+    if (!prefix) {
+        return null;
+    }
+    return _htmlNamespaces[prefix] || null;
+};
+let _allHeadings;
+const findPrecedingAncestorSiblingHeadings = (element) => {
+    if (!_allHeadings) {
+        const headingElements = Array.from(win.document.querySelectorAll("h1,h2,h3,h4,h5,h6"));
+        for (const n of headingElements) {
+            if (n) {
+                const el = n;
+                const t = el.textContent || el.getAttribute("title") || el.getAttribute("aria-label");
+                const i = el.getAttribute("id");
+                const heading = {
+                    element: el,
+                    id: i ? i : undefined,
+                    level: parseInt(el.localName.substring(1), 10),
+                    text: t ? t : undefined,
+                };
+                if (!_allHeadings) {
+                    _allHeadings = [];
+                }
+                _allHeadings.push(heading);
+            }
+        }
+        if (!_allHeadings) {
+            _allHeadings = [];
+        }
+        debug("_allHeadings", _allHeadings.length, headingElements.length);
+    }
+    let arr;
+    for (let i = _allHeadings.length - 1; i >= 0; i--) {
+        const heading = _allHeadings[i];
+        const c = element.compareDocumentPosition(heading.element);
+        if (c === 0 || (c & Node.DOCUMENT_POSITION_PRECEDING) || (c & Node.DOCUMENT_POSITION_CONTAINS)) {
+            debug("preceding or containing heading", heading.id, heading.text);
+            if (!arr) {
+                arr = [];
+            }
+            arr.push({
+                id: heading.id,
+                level: heading.level,
+                txt: heading.text,
+            });
+        }
+    }
+    return arr;
+};
+let _allEpubPageBreaks;
 const findPrecedingAncestorSiblingEpubPageBreak = (element) => {
     if (!_allEpubPageBreaks) {
-        const namespaceResolver = (prefix) => {
-            if (!prefix) {
-                return null;
-            }
-            return _htmlNamespaces[prefix] || null;
-        };
-        const xpathResult = win.document.evaluate("//*[contains(concat(' ', normalize-space(@role), ' '), ' doc-pagebreak ')] | //*[contains(concat(' ', normalize-space(@epub:type), ' '), ' pagebreak ')]", win.document.body, namespaceResolver, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+        const xpathResult = win.document.evaluate("//*[contains(concat(' ', normalize-space(@role), ' '), ' doc-pagebreak ')] | //*[contains(concat(' ', normalize-space(@epub:type), ' '), ' pagebreak ')]", win.document.body, _namespaceResolver, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
         for (let i = 0; i < xpathResult.snapshotLength; i++) {
             const n = xpathResult.snapshotItem(i);
             if (n) {
@@ -2137,6 +2183,7 @@ const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays) => {
                 !(0, selection_1.sameSelections)(win.READIUM2.locationHashOverrideInfo.selectionInfo, selInfo);
     }
     const epubPage = findPrecedingAncestorSiblingEpubPageBreak(win.READIUM2.locationHashOverride);
+    const headings = findPrecedingAncestorSiblingHeadings(win.READIUM2.locationHashOverride);
     const secondWebViewHref = win.READIUM2.urlQueryParams &&
         win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_SECOND_WEBVIEW] &&
         win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_SECOND_WEBVIEW].length > 1 &&
@@ -2151,6 +2198,7 @@ const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays) => {
             isVerticalWritingMode: (0, readium_css_1.isVerticalWritingMode)(),
         },
         epubPage,
+        headings,
         href: "",
         locations: {
             cfi,
