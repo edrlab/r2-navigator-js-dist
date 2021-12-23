@@ -2065,7 +2065,23 @@ const findPrecedingAncestorSiblingHeadings = (element) => {
             if (n) {
                 const el = n;
                 const t = el.textContent || el.getAttribute("title") || el.getAttribute("aria-label");
-                const i = el.getAttribute("id");
+                let i = el.getAttribute("id");
+                if (!i) {
+                    let cur = el;
+                    let p;
+                    while ((p = cur.parentNode) &&
+                        (p === null || p === void 0 ? void 0 : p.nodeType) === Node.ELEMENT_NODE) {
+                        if (p.firstElementChild !== cur) {
+                            break;
+                        }
+                        const di = p.getAttribute("id");
+                        if (di) {
+                            i = di;
+                            break;
+                        }
+                        cur = p;
+                    }
+                }
                 const heading = {
                     element: el,
                     id: i ? i : undefined,

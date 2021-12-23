@@ -2167,6 +2167,22 @@ var findPrecedingAncestorSiblingHeadings = function (element) {
                     var el = n;
                     var t = el.textContent || el.getAttribute("title") || el.getAttribute("aria-label");
                     var i = el.getAttribute("id");
+                    if (!i) {
+                        var cur = el;
+                        var p = void 0;
+                        while ((p = cur.parentNode) &&
+                            (p === null || p === void 0 ? void 0 : p.nodeType) === Node.ELEMENT_NODE) {
+                            if (p.firstElementChild !== cur) {
+                                break;
+                            }
+                            var di = p.getAttribute("id");
+                            if (di) {
+                                i = di;
+                                break;
+                            }
+                            cur = p;
+                        }
+                    }
                     var heading = {
                         element: el,
                         id: i ? i : undefined,
