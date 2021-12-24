@@ -1199,6 +1199,7 @@ var onScrollDebounced = (0, debounce_1.debounce)(function () {
 }, 300);
 var _loaded = false;
 function loaded(forced) {
+    var _this = this;
     if (_loaded) {
         return;
     }
@@ -1328,50 +1329,57 @@ function loaded(forced) {
             win.document.documentElement.classList.add(styles_1.HIDE_CURSOR_CLASS);
         }, 1000);
     });
-    win.document.addEventListener("click", function (ev) {
-        var currentElement = ev.target;
-        var href;
-        while (currentElement && currentElement.nodeType === Node.ELEMENT_NODE) {
-            if (currentElement.tagName.toLowerCase() === "a") {
-                href = currentElement.href;
-                var href_ = currentElement.getAttribute("href");
-                debug("A LINK CLICK: ".concat(href, " (").concat(href_, ")"));
-                break;
+    win.document.addEventListener("click", function (ev) { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
+        var currentElement, href, href_, hrefStr, done, payload;
+        return (0, tslib_1.__generator)(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    currentElement = ev.target;
+                    while (currentElement && currentElement.nodeType === Node.ELEMENT_NODE) {
+                        if (currentElement.tagName.toLowerCase() === "a") {
+                            href = currentElement.href;
+                            href_ = currentElement.getAttribute("href");
+                            debug("A LINK CLICK: ".concat(href, " (").concat(href_, ")"));
+                            break;
+                        }
+                        currentElement = currentElement.parentNode;
+                    }
+                    if (!href) {
+                        return [2];
+                    }
+                    if (href.animVal) {
+                        href = href.animVal;
+                        if (!href) {
+                            return [2];
+                        }
+                    }
+                    hrefStr = href;
+                    if (/^javascript:/.test(hrefStr)) {
+                        return [2];
+                    }
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    return [4, (0, popupFootNotes_1.popupFootNote)(currentElement, focusScrollRaw, hrefStr, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable)];
+                case 1:
+                    done = _a.sent();
+                    if (!done) {
+                        focusScrollDebounced.clear();
+                        processXYDebouncedImmediate.clear();
+                        notifyReadingLocationDebounced.clear();
+                        notifyReadingLocationDebouncedImmediate.clear();
+                        scrollToHashDebounced.clear();
+                        onScrollDebounced.clear();
+                        onResizeDebounced.clear();
+                        handleFocusInDebounced.clear();
+                        payload = {
+                            url: hrefStr,
+                        };
+                        electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_LINK, payload);
+                    }
+                    return [2, false];
             }
-            currentElement = currentElement.parentNode;
-        }
-        if (!href) {
-            return;
-        }
-        if (href.animVal) {
-            href = href.animVal;
-            if (!href) {
-                return;
-            }
-        }
-        var hrefStr = href;
-        if (/^javascript:/.test(hrefStr)) {
-            return;
-        }
-        ev.preventDefault();
-        ev.stopPropagation();
-        var done = (0, popupFootNotes_1.popupFootNote)(currentElement, focusScrollRaw, hrefStr, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
-        if (!done) {
-            focusScrollDebounced.clear();
-            processXYDebouncedImmediate.clear();
-            notifyReadingLocationDebounced.clear();
-            notifyReadingLocationDebouncedImmediate.clear();
-            scrollToHashDebounced.clear();
-            onScrollDebounced.clear();
-            onResizeDebounced.clear();
-            handleFocusInDebounced.clear();
-            var payload = {
-                url: hrefStr,
-            };
-            electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_LINK, payload);
-        }
-        return false;
-    }, true);
+        });
+    }); }, true);
     electron_1.ipcRenderer.on("R2_EVENT_WINDOW_RESIZE", function (_event, zoomPercent) {
         debug("R2_EVENT_WINDOW_RESIZE zoomPercent " + zoomPercent);
         win.READIUM2.fxlZoomPercent = zoomPercent;

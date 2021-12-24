@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.computeCFI = exports.computeProgressionData = void 0;
+const tslib_1 = require("tslib");
 const debounce_1 = require("debounce");
 const debug_ = require("debug");
 const electron_1 = require("electron");
@@ -1315,7 +1316,7 @@ function loaded(forced) {
             win.document.documentElement.classList.add(styles_1.HIDE_CURSOR_CLASS);
         }, 1000);
     });
-    win.document.addEventListener("click", (ev) => {
+    win.document.addEventListener("click", (ev) => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
         let currentElement = ev.target;
         let href;
         while (currentElement && currentElement.nodeType === Node.ELEMENT_NODE) {
@@ -1342,7 +1343,7 @@ function loaded(forced) {
         }
         ev.preventDefault();
         ev.stopPropagation();
-        const done = (0, popupFootNotes_1.popupFootNote)(currentElement, focusScrollRaw, hrefStr, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+        const done = yield (0, popupFootNotes_1.popupFootNote)(currentElement, focusScrollRaw, hrefStr, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
         if (!done) {
             focusScrollDebounced.clear();
             processXYDebouncedImmediate.clear();
@@ -1358,7 +1359,7 @@ function loaded(forced) {
             electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_LINK, payload);
         }
         return false;
-    }, true);
+    }), true);
     electron_1.ipcRenderer.on("R2_EVENT_WINDOW_RESIZE", (_event, zoomPercent) => {
         debug("R2_EVENT_WINDOW_RESIZE zoomPercent " + zoomPercent);
         win.READIUM2.fxlZoomPercent = zoomPercent;

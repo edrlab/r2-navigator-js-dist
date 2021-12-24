@@ -59,6 +59,7 @@ exports.footnotesCssStyles = `
     width: 90%;
     max-width: 40em;
 
+    top: auto;
     bottom: 1em;
     height: 7em;
 

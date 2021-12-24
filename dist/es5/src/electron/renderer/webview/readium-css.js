@@ -197,10 +197,10 @@ function checkHiddenFootNotes(documant) {
                 continue;
             }
             var iHash = href.indexOf("#");
-            if (iHash < 0) {
+            if (iHash <= 0) {
                 continue;
             }
-            if (href.substr(iHash) === id) {
+            if (href.substring(iHash) === id) {
                 found = true;
                 break;
             }

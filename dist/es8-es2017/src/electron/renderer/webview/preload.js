@@ -1315,7 +1315,7 @@ function loaded(forced) {
             win.document.documentElement.classList.add(styles_1.HIDE_CURSOR_CLASS);
         }, 1000);
     });
-    win.document.addEventListener("click", (ev) => {
+    win.document.addEventListener("click", async (ev) => {
         let currentElement = ev.target;
         let href;
         while (currentElement && currentElement.nodeType === Node.ELEMENT_NODE) {
@@ -1342,7 +1342,7 @@ function loaded(forced) {
         }
         ev.preventDefault();
         ev.stopPropagation();
-        const done = (0, popupFootNotes_1.popupFootNote)(currentElement, focusScrollRaw, hrefStr, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+        const done = await (0, popupFootNotes_1.popupFootNote)(currentElement, focusScrollRaw, hrefStr, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
         if (!done) {
             focusScrollDebounced.clear();
             processXYDebouncedImmediate.clear();
