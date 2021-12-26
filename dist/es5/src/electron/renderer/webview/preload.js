@@ -328,6 +328,7 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, function (_event, payload)
     }
     var delayScrollIntoView = false;
     if (payload.hash) {
+        debug(".hashElement = 1");
         win.READIUM2.hashElement = win.document.getElementById(payload.hash);
         if (win.READIUM2.DEBUG_VISUALS) {
             if (win.READIUM2.hashElement) {
@@ -878,6 +879,7 @@ var scrollToHashRaw = function (animate) {
                 }
                 if (selected) {
                     win.READIUM2.locationHashOverride = selected;
+                    debug(".hashElement = 2");
                     win.READIUM2.hashElement = selected;
                     resetLocationHashOverrideInfo();
                     if (win.READIUM2.locationHashOverrideInfo) {
@@ -1001,6 +1003,8 @@ function focusScrollRaw(el, doFocus, animate, domRect) {
     if (blacklisted) {
         return;
     }
+    debug(".hashElement = 3");
+    win.READIUM2.hashElement = doFocus ? el : win.READIUM2.hashElement;
     win.READIUM2.locationHashOverride = el;
     notifyReadingLocationDebounced();
 }
@@ -1031,6 +1035,7 @@ win.addEventListener("DOMContentLoaded", function () {
     }
     if (!win.READIUM2.isAudio &&
         win.location.hash && win.location.hash.length > 1) {
+        debug(".hashElement = 4");
         win.READIUM2.hashElement = win.document.getElementById(win.location.hash.substr(1));
         if (win.READIUM2.DEBUG_VISUALS) {
             if (win.READIUM2.hashElement) {
@@ -1229,9 +1234,10 @@ function loaded(forced) {
                 focusLink_1.setAttribute("tabindex", "0");
                 win.document.body.insertAdjacentElement("afterbegin", focusLink_1);
                 setTimeout(function () {
-                    focusLink_1.addEventListener("click", function (_ev) {
+                    focusLink_1.addEventListener("click", function (ev) {
+                        ev.preventDefault();
                         if (IS_DEV) {
-                            debug("focus link click:");
+                            debug(">>>> focus link click: ");
                             debug(win.READIUM2.hashElement ?
                                 getCssSelector(win.READIUM2.hashElement) : "!hashElement");
                             debug(win.READIUM2.locationHashOverride ?
@@ -1572,6 +1578,11 @@ function loaded(forced) {
         if ((0, popup_dialog_1.isPopupDialogOpen)(win.document)) {
             return;
         }
+        if (win.document.activeElement &&
+            win.document.activeElement === win.document.getElementById(styles_1.SKIP_LINK_ID)) {
+            debug(".hashElement = 5 => SKIP_LINK_ID mouse click event - screen reader VoiceOver generates mouse click / non-keyboard event");
+            return;
+        }
         var x = ev.clientX;
         var y = ev.clientY;
         processXYDebouncedImmediate(x, y, false, true);
@@ -1800,7 +1811,7 @@ var processXYRaw = function (x, y, reverse, userInteract) {
             domPointData.element = win.document.body;
         }
     }
-    else if (!userInteract && !computeVisibility_(domPointData.element, undefined)) {
+    else if (!userInteract && domPointData.element && !computeVisibility_(domPointData.element, undefined)) {
         var next = domPointData.element;
         var found = void 0;
         while (next) {
@@ -1838,6 +1849,8 @@ var processXYRaw = function (x, y, reverse, userInteract) {
             !win.READIUM2.locationHashOverride ||
             win.READIUM2.locationHashOverride === win.document.body ||
             win.READIUM2.locationHashOverride === win.document.documentElement) {
+            debug(".hashElement = 5 ", userInteract);
+            win.READIUM2.hashElement = userInteract ? domPointData.element : win.READIUM2.hashElement;
             win.READIUM2.locationHashOverride = domPointData.element;
         }
         else {
@@ -1845,6 +1858,8 @@ var processXYRaw = function (x, y, reverse, userInteract) {
                 win.READIUM2.locationHashOverride === win.document.body ||
                 computeVisibility_(win.READIUM2.locationHashOverride, undefined);
             if (!visible) {
+                debug(".hashElement = 6");
+                win.READIUM2.hashElement = userInteract ? domPointData.element : win.READIUM2.hashElement;
                 win.READIUM2.locationHashOverride = domPointData.element;
             }
         }
@@ -2494,6 +2509,8 @@ if (!win.READIUM2.isAudio) {
                         }
                     }
                 }
+                debug(".hashElement = 7");
+                win.READIUM2.hashElement = targetEl;
                 win.READIUM2.locationHashOverride = targetEl;
                 scrollElementIntoView(targetEl, false, true, undefined);
                 scrollToHashDebounced.clear();

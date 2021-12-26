@@ -825,12 +825,15 @@ function startTTSSession(speed, voice, ttsRootElement, ttsQueue, ttsQueueIndexSt
             if (_dialogState.ttsQueueItem && _dialogState.ttsQueueItem.item.parentElement) {
                 toScrollTo = _dialogState.ttsQueueItem.item.parentElement;
             }
-            if (toScrollTo && _dialogState.ttsOverlayEnabled) {
-                _dialogState.focusScrollRaw(toScrollTo, false, true, undefined);
+            if (toScrollTo) {
+                _dialogState.focusScrollRaw(toScrollTo, true, false, undefined);
             }
             else if (typeof val !== "undefined") {
                 ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable(val);
             }
+        }
+        else if (typeof val !== "undefined") {
+            ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable(val);
         }
         setTimeout(function () {
             resetState();
