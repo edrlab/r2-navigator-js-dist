@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.parseDOM = exports.serializeDOM = void 0;
 var tslib_1 = require("tslib");
-var xmldom = require("xmldom");
+var xmldom = require("@xmldom/xmldom");
 function serializeDOM(documant) {
     var serialized = new xmldom.XMLSerializer().serializeToString(documant);
     return serialized;
