@@ -15,6 +15,7 @@ export declare const ROOT_CLASS_NO_FOOTNOTES = "r2-no-popup-foonotes";
 export declare const FOOTNOTES_CONTAINER_CLASS = "r2-footnote-container";
 export declare const FOOTNOTES_CLOSE_BUTTON_CLASS = "r2-footnote-close";
 export declare const FOOTNOTE_FORCE_SHOW = "r2-footnote-force-show";
+export declare const POPOUTIMAGE_CONTAINER_CLASS = "r2-popoutimage-container";
 export declare const POPUP_DIALOG_CLASS = "r2-popup-dialog";
 export declare const POPUP_DIALOG_CLASS_COLLAPSE = "r2-popup-dialog-collapse";
 export declare const footnotesCssStyles: string;

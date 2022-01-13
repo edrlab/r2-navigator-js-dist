@@ -577,6 +577,11 @@ function appendCSS(documant, mod, urlRoot) {
     }
     if (mod === "before" && childElementCount && firstElementChild) {
         documant.head.insertBefore(linkElement, firstElementChild);
+        var styleElement = documant.createElement("style");
+        styleElement.setAttribute("id", idz + "-PATCH");
+        styleElement.setAttribute("type", "text/css");
+        styleElement.appendChild(documant.createTextNode("audio[controls] { width: revert; height: revert; }"));
+        documant.head.insertBefore(styleElement, firstElementChild);
     }
     else {
         documant.head.appendChild(linkElement);

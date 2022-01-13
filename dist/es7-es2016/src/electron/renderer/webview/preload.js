@@ -21,6 +21,7 @@ const url_params_1 = require("../common/url-params");
 const audiobook_1 = require("./audiobook");
 const epubReadingSystem_1 = require("./epubReadingSystem");
 const highlight_1 = require("./highlight");
+const popoutImages_1 = require("./popoutImages");
 const popupFootNotes_1 = require("./popupFootNotes");
 const readaloud_1 = require("./readaloud");
 const readium_css_1 = require("./readium-css");
@@ -1322,6 +1323,48 @@ function loaded(forced) {
             win.document.documentElement.classList.add(styles_1.HIDE_CURSOR_CLASS);
         }, 1000);
     });
+    const imageMouseExit = (ev) => {
+        if (ev.target._r2ImageHoverTimer) {
+            win.clearTimeout(ev.target._r2ImageHoverTimer);
+            ev.target._r2ImageHoverTimer = 0;
+        }
+        if (ev.target.hasAttribute(`data-${styles_1.POPOUTIMAGE_CONTAINER_CLASS}`)) {
+            ev.target.removeAttribute(`data-${styles_1.POPOUTIMAGE_CONTAINER_CLASS}`);
+        }
+    };
+    setTimeout(() => {
+        const images = win.document.querySelectorAll("img[src]");
+        images.forEach((img) => {
+            img.addEventListener("mousemove", (ev) => {
+                if (ev.shiftKey) {
+                    if (ev.target._r2ImageHoverTimer) {
+                        return;
+                    }
+                    ev.target._r2ImageHoverTimer = win.setTimeout(() => {
+                        ev.target.setAttribute(`data-${styles_1.POPOUTIMAGE_CONTAINER_CLASS}`, "1");
+                        ev.target._r2ImageHoverTimer = 0;
+                    }, 400);
+                    return;
+                }
+                imageMouseExit(ev);
+            });
+            img.addEventListener("mouseleave", (ev) => {
+                imageMouseExit(ev);
+            });
+        });
+    }, 800);
+    win.document.addEventListener("mousedown", (ev) => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+        const currentElement = ev.target;
+        if (currentElement &&
+            currentElement.src &&
+            currentElement.nodeType === Node.ELEMENT_NODE &&
+            currentElement.tagName.toLowerCase() === "img" &&
+            currentElement.hasAttribute(`data-${styles_1.POPOUTIMAGE_CONTAINER_CLASS}`)) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            (0, popoutImages_1.popoutImage)(win, currentElement, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+        }
+    }), true);
     win.document.addEventListener("click", (ev) => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
         let currentElement = ev.target;
         let href;

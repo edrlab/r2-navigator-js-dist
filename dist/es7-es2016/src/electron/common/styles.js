@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.readPosCssStylesAttr4 = exports.readPosCssStylesAttr3 = exports.readPosCssStylesAttr2 = exports.readPosCssStylesAttr1 = exports.scrollBarCssStyles = exports.selectionCssStyles = exports.targetCssStyles = exports.focusCssStyles = exports.CSS_CLASS_NO_FOCUS_OUTLINE = exports.ROOT_CLASS_KEYBOARD_INTERACT = exports.visibilityMaskCssStyles = exports.ROOT_CLASS_INVISIBLE_MASK_REMOVED = exports.ROOT_CLASS_INVISIBLE_MASK = exports.ttsCssStyles = exports.TTS_POPUP_DIALOG_CLASS = exports.TTS_ID_SPEAKING_DOC_ELEMENT = exports.TTS_NAV_BUTTON_CLASS = exports.TTS_ID_CONTAINER = exports.TTS_CLASS_UTTERANCE_HEADING5 = exports.TTS_CLASS_UTTERANCE_HEADING4 = exports.TTS_CLASS_UTTERANCE_HEADING3 = exports.TTS_CLASS_UTTERANCE_HEADING2 = exports.TTS_CLASS_UTTERANCE_HEADING1 = exports.TTS_CLASS_UTTERANCE = exports.TTS_ID_ACTIVE_UTTERANCE = exports.TTS_ID_ACTIVE_WORD = exports.TTS_ID_SLIDER = exports.TTS_ID_NEXT = exports.TTS_ID_PREVIOUS = exports.TTS_CLASS_IS_ACTIVE = exports.TTS_CLASS_THEME1 = exports.mediaOverlaysCssStyles = exports.R2_MO_CLASS_ACTIVE_PLAYBACK = exports.R2_MO_CLASS_ACTIVE = exports.footnotesCssStyles = exports.POPUP_DIALOG_CLASS_COLLAPSE = exports.POPUP_DIALOG_CLASS = exports.FOOTNOTE_FORCE_SHOW = exports.FOOTNOTES_CLOSE_BUTTON_CLASS = exports.FOOTNOTES_CONTAINER_CLASS = exports.ROOT_CLASS_NO_FOOTNOTES = exports.ROOT_CLASS_FIXED_LAYOUT = exports.ROOT_CLASS_MATHJAX = exports.ROOT_CLASS_REDUCE_MOTION = exports.LINK_TARGET_CLASS = exports.SKIP_LINK_ID = exports.ZERO_TRANSFORM_CLASS = exports.HIDE_CURSOR_CLASS = exports.CLASS_PAGINATED = exports.WebViewSlotEnum = void 0;
-exports.audioCssStyles = exports.AUDIO_FORWARD_ID = exports.AUDIO_REWIND_ID = exports.AUDIO_NEXT_ID = exports.AUDIO_PREVIOUS_ID = exports.AUDIO_PLAYPAUSE_ID = exports.AUDIO_RATE_ID = exports.AUDIO_PERCENT_ID = exports.AUDIO_TIME_ID = exports.AUDIO_SLIDER_ID = exports.AUDIO_TITLE_ID = exports.AUDIO_COVER_ID = exports.AUDIO_CONTROLS_ID = exports.AUDIO_SECTION_ID = exports.AUDIO_BODY_ID = exports.AUDIO_ID = exports.AUDIO_PROGRESS_CLASS = exports.AUDIO_BUFFER_CANVAS_ID = exports.readPosCssStyles = void 0;
+exports.readPosCssStylesAttr3 = exports.readPosCssStylesAttr2 = exports.readPosCssStylesAttr1 = exports.scrollBarCssStyles = exports.selectionCssStyles = exports.targetCssStyles = exports.focusCssStyles = exports.CSS_CLASS_NO_FOCUS_OUTLINE = exports.ROOT_CLASS_KEYBOARD_INTERACT = exports.visibilityMaskCssStyles = exports.ROOT_CLASS_INVISIBLE_MASK_REMOVED = exports.ROOT_CLASS_INVISIBLE_MASK = exports.ttsCssStyles = exports.TTS_POPUP_DIALOG_CLASS = exports.TTS_ID_SPEAKING_DOC_ELEMENT = exports.TTS_NAV_BUTTON_CLASS = exports.TTS_ID_CONTAINER = exports.TTS_CLASS_UTTERANCE_HEADING5 = exports.TTS_CLASS_UTTERANCE_HEADING4 = exports.TTS_CLASS_UTTERANCE_HEADING3 = exports.TTS_CLASS_UTTERANCE_HEADING2 = exports.TTS_CLASS_UTTERANCE_HEADING1 = exports.TTS_CLASS_UTTERANCE = exports.TTS_ID_ACTIVE_UTTERANCE = exports.TTS_ID_ACTIVE_WORD = exports.TTS_ID_SLIDER = exports.TTS_ID_NEXT = exports.TTS_ID_PREVIOUS = exports.TTS_CLASS_IS_ACTIVE = exports.TTS_CLASS_THEME1 = exports.mediaOverlaysCssStyles = exports.R2_MO_CLASS_ACTIVE_PLAYBACK = exports.R2_MO_CLASS_ACTIVE = exports.footnotesCssStyles = exports.POPUP_DIALOG_CLASS_COLLAPSE = exports.POPUP_DIALOG_CLASS = exports.POPOUTIMAGE_CONTAINER_CLASS = exports.FOOTNOTE_FORCE_SHOW = exports.FOOTNOTES_CLOSE_BUTTON_CLASS = exports.FOOTNOTES_CONTAINER_CLASS = exports.ROOT_CLASS_NO_FOOTNOTES = exports.ROOT_CLASS_FIXED_LAYOUT = exports.ROOT_CLASS_MATHJAX = exports.ROOT_CLASS_REDUCE_MOTION = exports.LINK_TARGET_CLASS = exports.SKIP_LINK_ID = exports.ZERO_TRANSFORM_CLASS = exports.HIDE_CURSOR_CLASS = exports.CLASS_PAGINATED = exports.WebViewSlotEnum = void 0;
+exports.audioCssStyles = exports.AUDIO_FORWARD_ID = exports.AUDIO_REWIND_ID = exports.AUDIO_NEXT_ID = exports.AUDIO_PREVIOUS_ID = exports.AUDIO_PLAYPAUSE_ID = exports.AUDIO_RATE_ID = exports.AUDIO_PERCENT_ID = exports.AUDIO_TIME_ID = exports.AUDIO_SLIDER_ID = exports.AUDIO_TITLE_ID = exports.AUDIO_COVER_ID = exports.AUDIO_CONTROLS_ID = exports.AUDIO_SECTION_ID = exports.AUDIO_BODY_ID = exports.AUDIO_ID = exports.AUDIO_PROGRESS_CLASS = exports.AUDIO_BUFFER_CANVAS_ID = exports.readPosCssStyles = exports.readPosCssStylesAttr4 = void 0;
 var WebViewSlotEnum;
 (function (WebViewSlotEnum) {
     WebViewSlotEnum["center"] = "center";
@@ -20,6 +20,7 @@ exports.ROOT_CLASS_NO_FOOTNOTES = "r2-no-popup-foonotes";
 exports.FOOTNOTES_CONTAINER_CLASS = "r2-footnote-container";
 exports.FOOTNOTES_CLOSE_BUTTON_CLASS = "r2-footnote-close";
 exports.FOOTNOTE_FORCE_SHOW = "r2-footnote-force-show";
+exports.POPOUTIMAGE_CONTAINER_CLASS = "r2-popoutimage-container";
 exports.POPUP_DIALOG_CLASS = "r2-popup-dialog";
 exports.POPUP_DIALOG_CLASS_COLLAPSE = "r2-popup-dialog-collapse";
 exports.footnotesCssStyles = `
@@ -96,6 +97,93 @@ exports.footnotesCssStyles = `
 :root dialog#${exports.POPUP_DIALOG_CLASS}.${exports.POPUP_DIALOG_CLASS_COLLAPSE} {
     top: auto;
     height: 1px;
+}
+
+:root[style] .${exports.POPOUTIMAGE_CONTAINER_CLASS},
+:root .${exports.POPOUTIMAGE_CONTAINER_CLASS} {
+    grid-column-start: 1;
+    grid-column-end: 4;
+    grid-row-start: 1;
+    grid-row-end: 3;
+
+    outline-color: magenta !important;
+    outline-style: dashed !important;
+    outline-width: 6px !important;
+    outline-offset: -6px !important;
+
+    padding: 0;
+    margin: 0;
+
+    box-sizing: border-box;
+
+    cursor: pointer;
+
+    /* position: relative; */
+
+    display: flex;
+    /* no need for vertical / horizontal control, as we use margin:auto
+    justify-content: center;
+    align-items: center;
+    */
+
+    /* FXL, just in case the top-level transform scale isn't applied */
+    overflow-y: auto;
+    overflow-x: auto;
+}
+
+:root[style] img[data-${exports.POPOUTIMAGE_CONTAINER_CLASS}],
+:root img[data-${exports.POPOUTIMAGE_CONTAINER_CLASS}] {
+    outline-color: magenta !important;
+    outline-style: dashed !important;
+    outline-width: 10px !important;
+    outline-offset: 2px !important;
+
+    cursor: pointer !important;
+}
+
+:root[style] .${exports.POPOUTIMAGE_CONTAINER_CLASS} > img,
+:root .${exports.POPOUTIMAGE_CONTAINER_CLASS} > img {
+    transform-origin: 0px 0px;
+
+    box-sizing: border-box;
+    border: 4px solid #333333;
+
+    object-fit: cover !important;
+    cursor: pointer !important;
+
+    margin: auto !important;
+    position: relative !important;
+
+    max-height: 100% !important;
+    max-width: 100% !important;
+    width: auto !important;
+    height: auto !important;
+
+    /* vertical centering breaks image height
+    max-width: 100% !important;
+    width: 100% !important;
+    max-height: none !important;
+    height: auto !important;
+
+    position: absolute !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    margin: auto !important;
+    */
+
+    /* this works with position:relative in the parent (no need for flex)
+    max-height: 100% !important;
+    max-width: 100% !important;
+    width: auto !important;
+    height: auto !important;
+
+    position: absolute !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    margin: auto !important;
+    */
 }
 
 :root[style] .${exports.FOOTNOTES_CONTAINER_CLASS},

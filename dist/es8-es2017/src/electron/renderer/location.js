@@ -68,7 +68,9 @@ function locationHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
     if (eventChannel === events_1.R2_EVENT_LOCATOR_VISIBLE) {
     }
     else if (eventChannel === events_1.R2_EVENT_SHIFT_VIEW_X) {
-        shiftWebview(activeWebView, eventArgs[0].offset, eventArgs[0].backgroundColor);
+        if (!activeWebView.hasAttribute("data-wv-fxl")) {
+            shiftWebview(activeWebView, eventArgs[0].offset, eventArgs[0].backgroundColor);
+        }
     }
     else if (eventChannel === events_1.R2_EVENT_PAGE_TURN_RES) {
         const publication = win.READIUM2.publication;

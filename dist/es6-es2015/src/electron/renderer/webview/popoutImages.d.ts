@@ -1,0 +1,2 @@
+import { IReadiumElectronWebviewWindow } from "./state";
+export declare function popoutImage(win: IReadiumElectronWebviewWindow, element: HTMLImageElement, focusScrollRaw: (el: HTMLOrSVGElement, doFocus: boolean, animate: boolean, domRect: DOMRect | undefined) => void, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable: () => number, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable: (val: number) => void): void;
