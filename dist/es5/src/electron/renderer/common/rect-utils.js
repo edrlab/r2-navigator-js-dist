@@ -14,7 +14,7 @@ function getClientRectsNoOverlap_(clientRects, doNotMergeHorizontallyAlignedRect
     var e_1, _a;
     var originalRects = [];
     try {
-        for (var clientRects_1 = (0, tslib_1.__values)(clientRects), clientRects_1_1 = clientRects_1.next(); !clientRects_1_1.done; clientRects_1_1 = clientRects_1.next()) {
+        for (var clientRects_1 = tslib_1.__values(clientRects), clientRects_1_1 = clientRects_1.next(); !clientRects_1_1.done; clientRects_1_1 = clientRects_1.next()) {
             var rangeClientRect = clientRects_1_1.value;
             originalRects.push({
                 bottom: rangeClientRect.bottom,
@@ -41,7 +41,7 @@ function getClientRectsNoOverlap__(originalRects, doNotMergeHorizontallyAlignedR
     var ex = expand ? expand : 0;
     if (ex) {
         try {
-            for (var originalRects_1 = (0, tslib_1.__values)(originalRects), originalRects_1_1 = originalRects_1.next(); !originalRects_1_1.done; originalRects_1_1 = originalRects_1.next()) {
+            for (var originalRects_1 = tslib_1.__values(originalRects), originalRects_1_1 = originalRects_1.next(); !originalRects_1_1.done; originalRects_1_1 = originalRects_1.next()) {
                 var rect = originalRects_1_1.value;
                 rect.left -= ex;
                 rect.top -= ex;
@@ -328,7 +328,7 @@ function removeContainedRects(rects, tolerance) {
     var e_3, _a, e_4, _b;
     var rectsToKeep = new Set(rects);
     try {
-        for (var rects_1 = (0, tslib_1.__values)(rects), rects_1_1 = rects_1.next(); !rects_1_1.done; rects_1_1 = rects_1.next()) {
+        for (var rects_1 = tslib_1.__values(rects), rects_1_1 = rects_1.next(); !rects_1_1.done; rects_1_1 = rects_1.next()) {
             var rect = rects_1_1.value;
             var bigEnough = rect.width > 1 && rect.height > 1;
             if (!bigEnough) {
@@ -339,7 +339,7 @@ function removeContainedRects(rects, tolerance) {
                 continue;
             }
             try {
-                for (var rects_2 = (e_4 = void 0, (0, tslib_1.__values)(rects)), rects_2_1 = rects_2.next(); !rects_2_1.done; rects_2_1 = rects_2.next()) {
+                for (var rects_2 = (e_4 = void 0, tslib_1.__values(rects)), rects_2_1 = rects_2.next(); !rects_2_1.done; rects_2_1 = rects_2.next()) {
                     var possiblyContainingRect = rects_2_1.value;
                     if (rect === possiblyContainingRect) {
                         continue;
@@ -379,10 +379,10 @@ function checkOverlaps(rects) {
     var e_5, _a, e_6, _b;
     var stillOverlapingRects = [];
     try {
-        for (var rects_3 = (0, tslib_1.__values)(rects), rects_3_1 = rects_3.next(); !rects_3_1.done; rects_3_1 = rects_3.next()) {
+        for (var rects_3 = tslib_1.__values(rects), rects_3_1 = rects_3.next(); !rects_3_1.done; rects_3_1 = rects_3.next()) {
             var rect1 = rects_3_1.value;
             try {
-                for (var rects_4 = (e_6 = void 0, (0, tslib_1.__values)(rects)), rects_4_1 = rects_4.next(); !rects_4_1.done; rects_4_1 = rects_4.next()) {
+                for (var rects_4 = (e_6 = void 0, tslib_1.__values(rects)), rects_4_1 = rects_4.next(); !rects_4_1.done; rects_4_1 = rects_4.next()) {
                     var rect2 = rects_4_1.value;
                     if (rect1 === rect2) {
                         continue;

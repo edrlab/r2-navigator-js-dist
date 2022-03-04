@@ -157,7 +157,7 @@ var _cssPathStep = function (node, optimized, isTargetNode) {
             }
         });
         try {
-            for (var siblingClassNamesArray_1 = (e_2 = void 0, (0, tslib_1.__values)(siblingClassNamesArray)), siblingClassNamesArray_1_1 = siblingClassNamesArray_1.next(); !siblingClassNamesArray_1_1.done; siblingClassNamesArray_1_1 = siblingClassNamesArray_1.next()) {
+            for (var siblingClassNamesArray_1 = (e_2 = void 0, tslib_1.__values(siblingClassNamesArray)), siblingClassNamesArray_1_1 = siblingClassNamesArray_1.next(); !siblingClassNamesArray_1_1.done; siblingClassNamesArray_1_1 = siblingClassNamesArray_1.next()) {
                 var siblingClass = siblingClassNamesArray_1_1.value;
                 var ind = ownClassNames.indexOf(siblingClass);
                 if (ind < 0) {
@@ -194,7 +194,7 @@ var _cssPathStep = function (node, optimized, isTargetNode) {
     }
     else if (needsClassNames) {
         try {
-            for (var prefixedOwnClassNamesArray_1 = (0, tslib_1.__values)(prefixedOwnClassNamesArray), prefixedOwnClassNamesArray_1_1 = prefixedOwnClassNamesArray_1.next(); !prefixedOwnClassNamesArray_1_1.done; prefixedOwnClassNamesArray_1_1 = prefixedOwnClassNamesArray_1.next()) {
+            for (var prefixedOwnClassNamesArray_1 = tslib_1.__values(prefixedOwnClassNamesArray), prefixedOwnClassNamesArray_1_1 = prefixedOwnClassNamesArray_1.next(); !prefixedOwnClassNamesArray_1_1.done; prefixedOwnClassNamesArray_1_1 = prefixedOwnClassNamesArray_1.next()) {
                 var prefixedName = prefixedOwnClassNamesArray_1_1.value;
                 result += "." + escapeIdentifierIfNeeded(prefixedName.substr(1));
             }

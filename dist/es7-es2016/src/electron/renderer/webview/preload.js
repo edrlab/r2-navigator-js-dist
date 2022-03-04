@@ -1353,7 +1353,7 @@ function loaded(forced) {
             });
         });
     }, 800);
-    win.document.addEventListener("mousedown", (ev) => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+    win.document.addEventListener("mousedown", (ev) => tslib_1.__awaiter(this, void 0, void 0, function* () {
         const currentElement = ev.target;
         if (currentElement &&
             currentElement.src &&
@@ -1365,7 +1365,7 @@ function loaded(forced) {
             (0, popoutImages_1.popoutImage)(win, currentElement, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
         }
     }), true);
-    win.document.addEventListener("click", (ev) => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+    win.document.addEventListener("click", (ev) => tslib_1.__awaiter(this, void 0, void 0, function* () {
         let currentElement = ev.target;
         let href;
         while (currentElement && currentElement.nodeType === Node.ELEMENT_NODE) {

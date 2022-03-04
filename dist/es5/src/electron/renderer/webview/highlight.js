@@ -111,7 +111,7 @@ function setHighlightAreaStyle(win, highlightAreas, highlight) {
     var opacity = ALT_BACKGROUND_COLOR_OPACITY;
     var useSVG = !win.READIUM2.DEBUG_VISUALS && USE_SVG;
     try {
-        for (var highlightAreas_1 = (0, tslib_1.__values)(highlightAreas), highlightAreas_1_1 = highlightAreas_1.next(); !highlightAreas_1_1.done; highlightAreas_1_1 = highlightAreas_1.next()) {
+        for (var highlightAreas_1 = tslib_1.__values(highlightAreas), highlightAreas_1_1 = highlightAreas_1.next(); !highlightAreas_1_1.done; highlightAreas_1_1 = highlightAreas_1.next()) {
             var highlightArea_ = highlightAreas_1_1.value;
             var highlightArea = highlightArea_;
             if (highlightArea.active) {
@@ -310,7 +310,6 @@ function ensureHighlightsContainer(win) {
     var documant = win.document;
     if (!_highlightsContainer) {
         documant.body.style.position = "relative";
-        documant.body.style.overflow = "hidden";
         if (!bodyEventListenersSet) {
             bodyEventListenersSet = true;
             documant.body.addEventListener("mousedown", function (ev) {
@@ -371,7 +370,7 @@ function recreateAllHighlightsRaw(win) {
     var bodyRect = getBoundingClientRectOfDocumentBody(win);
     var docFrag = documant.createDocumentFragment();
     try {
-        for (var _highlights_1 = (0, tslib_1.__values)(_highlights), _highlights_1_1 = _highlights_1.next(); !_highlights_1_1.done; _highlights_1_1 = _highlights_1.next()) {
+        for (var _highlights_1 = tslib_1.__values(_highlights), _highlights_1_1 = _highlights_1.next(); !_highlights_1_1.done; _highlights_1_1 = _highlights_1.next()) {
             var highlight = _highlights_1_1.value;
             var div = createHighlightDom(win, highlight, bodyRect);
             if (div) {
@@ -405,13 +404,13 @@ function createHighlights(win, highDefs, pointerInteraction) {
     var bodyRect = getBoundingClientRectOfDocumentBody(win);
     var docFrag = documant.createDocumentFragment();
     try {
-        for (var highDefs_1 = (0, tslib_1.__values)(highDefs), highDefs_1_1 = highDefs_1.next(); !highDefs_1_1.done; highDefs_1_1 = highDefs_1.next()) {
+        for (var highDefs_1 = tslib_1.__values(highDefs), highDefs_1_1 = highDefs_1.next(); !highDefs_1_1.done; highDefs_1_1 = highDefs_1.next()) {
             var highDef = highDefs_1_1.value;
             if (!highDef.selectionInfo) {
                 highlights.push(null);
                 continue;
             }
-            var _b = (0, tslib_1.__read)(createHighlight(win, highDef.selectionInfo, highDef.color, pointerInteraction, highDef.drawType, highDef.expand, bodyRect), 2), high = _b[0], div = _b[1];
+            var _b = tslib_1.__read(createHighlight(win, highDef.selectionInfo, highDef.color, pointerInteraction, highDef.drawType, highDef.expand, bodyRect), 2), high = _b[0], div = _b[1];
             highlights.push(high);
             if (div) {
                 docFrag.append(div);
@@ -526,7 +525,7 @@ function createHighlightDom(win, highlight, bodyRect) {
     highlightBounding.style.setProperty("top", "".concat(highlightBounding.rect.top * scale, "px"), "important");
     highlightParent.append(highlightBounding);
     try {
-        for (var clientRects_1 = (0, tslib_1.__values)(clientRects), clientRects_1_1 = clientRects_1.next(); !clientRects_1_1.done; clientRects_1_1 = clientRects_1.next()) {
+        for (var clientRects_1 = tslib_1.__values(clientRects), clientRects_1_1 = clientRects_1.next(); !clientRects_1_1.done; clientRects_1_1 = clientRects_1.next()) {
             var clientRect = clientRects_1_1.value;
             if (useSVG) {
                 var borderThickness = 0;

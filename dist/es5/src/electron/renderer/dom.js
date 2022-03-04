@@ -43,7 +43,7 @@ win.addEventListener("resize", function () {
         debug("Window resize (TOP), IMMEDIATE");
         var activeWebViews = win.READIUM2.getActiveWebViews();
         try {
-            for (var activeWebViews_1 = (0, tslib_1.__values)(activeWebViews), activeWebViews_1_1 = activeWebViews_1.next(); !activeWebViews_1_1.done; activeWebViews_1_1 = activeWebViews_1.next()) {
+            for (var activeWebViews_1 = tslib_1.__values(activeWebViews), activeWebViews_1_1 = activeWebViews_1.next(); !activeWebViews_1_1.done; activeWebViews_1_1 = activeWebViews_1.next()) {
                 var activeWebView = activeWebViews_1_1.value;
                 var wvSlot = activeWebView.getAttribute("data-wv-slot");
                 if (wvSlot) {
@@ -63,10 +63,10 @@ win.addEventListener("resize", function () {
     if (_resizeTimeout) {
         clearTimeout(_resizeTimeout);
     }
-    _resizeTimeout = win.setTimeout(function () { return (0, tslib_1.__awaiter)(void 0, void 0, void 0, function () {
+    _resizeTimeout = win.setTimeout(function () { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
         var activeWebViews, activeWebViews_2, activeWebViews_2_1, activeWebView, wvSlot, e_2, e_3_1;
         var e_3, _a;
-        return (0, tslib_1.__generator)(this, function (_b) {
+        return tslib_1.__generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
                     debug("Window resize (TOP), DEFERRED");
@@ -77,7 +77,7 @@ win.addEventListener("resize", function () {
                     _b.label = 1;
                 case 1:
                     _b.trys.push([1, 8, 9, 10]);
-                    activeWebViews_2 = (0, tslib_1.__values)(activeWebViews), activeWebViews_2_1 = activeWebViews_2.next();
+                    activeWebViews_2 = tslib_1.__values(activeWebViews), activeWebViews_2_1 = activeWebViews_2.next();
                     _b.label = 2;
                 case 2:
                     if (!!activeWebViews_2_1.done) return [3, 7];
@@ -128,8 +128,8 @@ function readiumCssApplyToWebview(loc, activeWebView, rcss) {
         activeWebView.style.transform !== "none" &&
         !activeWebView.hasAttribute("data-wv-fxl")) {
         activeWebView.style.opacity = "0";
-        setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
-            return (0, tslib_1.__generator)(this, function (_a) {
+        setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+            return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         (0, location_1.shiftWebview)(activeWebView, 0, undefined);
@@ -142,8 +142,8 @@ function readiumCssApplyToWebview(loc, activeWebView, rcss) {
         }); }, 10);
     }
     else {
-        setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
-            return (0, tslib_1.__generator)(this, function (_a) {
+        setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+            return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4, activeWebView.send(events_1.R2_EVENT_READIUMCSS, payloadRcss)];
                     case 1:
@@ -178,9 +178,9 @@ function fixedLayoutZoomPercent(zoomPercent) {
         if (wvSlot) {
             debug("fixedLayoutZoomPercent ... setWebViewStyle");
             (0, location_1.setWebViewStyle)(activeWebView, wvSlot);
-            _fixedLayoutZoomPercentTimers[activeWebView.id] = win.setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
+            _fixedLayoutZoomPercentTimers[activeWebView.id] = win.setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
                 var e_5;
-                return (0, tslib_1.__generator)(this, function (_a) {
+                return tslib_1.__generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
                             _a.trys.push([0, 2, , 3]);
@@ -200,7 +200,7 @@ function fixedLayoutZoomPercent(zoomPercent) {
         }
     };
     try {
-        for (var activeWebViews_3 = (0, tslib_1.__values)(activeWebViews), activeWebViews_3_1 = activeWebViews_3.next(); !activeWebViews_3_1.done; activeWebViews_3_1 = activeWebViews_3.next()) {
+        for (var activeWebViews_3 = tslib_1.__values(activeWebViews), activeWebViews_3_1 = activeWebViews_3.next(); !activeWebViews_3_1.done; activeWebViews_3_1 = activeWebViews_3.next()) {
             var activeWebView = activeWebViews_3_1.value;
             _loop_1(activeWebView);
         }
@@ -219,7 +219,7 @@ function readiumCssOnOff(rcss) {
     var loc = (0, location_1.getCurrentReadingLocation)();
     var activeWebViews = win.READIUM2.getActiveWebViews();
     try {
-        for (var activeWebViews_4 = (0, tslib_1.__values)(activeWebViews), activeWebViews_4_1 = activeWebViews_4.next(); !activeWebViews_4_1.done; activeWebViews_4_1 = activeWebViews_4.next()) {
+        for (var activeWebViews_4 = tslib_1.__values(activeWebViews), activeWebViews_4_1 = activeWebViews_4.next(); !activeWebViews_4_1.done; activeWebViews_4_1 = activeWebViews_4.next()) {
             var activeWebView = activeWebViews_4_1.value;
             readiumCssApplyToWebview(loc, activeWebView, rcss);
         }
@@ -487,12 +487,12 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
             window.localStorage.getItem(url_params_1.URL_PARAM_DEBUG_VISUALS) === "true") ? true : false;
         debug("debugVisuals GET: ", debugVisualz);
         win.READIUM2.DEBUG_VISUALS = debugVisualz;
-        window.READIUM2.debug = function (debugVisuals) { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
+        window.READIUM2.debug = function (debugVisuals) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
             var loc, activeWebViews, _loop_2, activeWebViews_5, activeWebViews_5_1, activeWebView, e_7_1;
             var e_7, _a;
             var _this = this;
             var _b;
-            return (0, tslib_1.__generator)(this, function (_c) {
+            return tslib_1.__generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
                         debug("debugVisuals SET: ", debugVisuals);
@@ -504,12 +504,12 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
                         activeWebViews = win.READIUM2.getActiveWebViews();
                         _loop_2 = function (activeWebView) {
                             var payload;
-                            return (0, tslib_1.__generator)(this, function (_d) {
+                            return tslib_1.__generator(this, function (_d) {
                                 switch (_d.label) {
                                     case 0:
                                         payload = { debugVisuals: debugVisuals };
-                                        setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
-                                            return (0, tslib_1.__generator)(this, function (_a) {
+                                        setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                                            return tslib_1.__generator(this, function (_a) {
                                                 switch (_a.label) {
                                                     case 0: return [4, activeWebView.send(events_1.R2_EVENT_DEBUG_VISUALS, payload)];
                                                     case 1:
@@ -536,7 +536,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
                         _c.label = 1;
                     case 1:
                         _c.trys.push([1, 6, 7, 8]);
-                        activeWebViews_5 = (0, tslib_1.__values)(activeWebViews), activeWebViews_5_1 = activeWebViews_5.next();
+                        activeWebViews_5 = tslib_1.__values(activeWebViews), activeWebViews_5_1 = activeWebViews_5.next();
                         _c.label = 2;
                     case 2:
                         if (!!activeWebViews_5_1.done) return [3, 5];
@@ -577,8 +577,8 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
                     }
                     var d = win.READIUM2.DEBUG_VISUALS;
                     var payload = { debugVisuals: d, cssSelector: cssSelector, cssClass: cssClass, cssStyles: cssStyles };
-                    setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
-                        return (0, tslib_1.__generator)(this, function (_a) {
+                    setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                        return tslib_1.__generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0: return [4, activeWebView.send(events_1.R2_EVENT_DEBUG_VISUALS, payload)];
                                 case 1:
@@ -589,7 +589,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
                     }); }, 0);
                 };
                 try {
-                    for (var activeWebViews_6 = (0, tslib_1.__values)(activeWebViews), activeWebViews_6_1 = activeWebViews_6.next(); !activeWebViews_6_1.done; activeWebViews_6_1 = activeWebViews_6.next()) {
+                    for (var activeWebViews_6 = tslib_1.__values(activeWebViews), activeWebViews_6_1 = activeWebViews_6.next(); !activeWebViews_6_1.done; activeWebViews_6_1 = activeWebViews_6.next()) {
                         var activeWebView = activeWebViews_6_1.value;
                         _loop_3(activeWebView);
                     }

@@ -11,7 +11,7 @@ function combineTextNodes(textNodes, skipNormalize) {
     if (textNodes && textNodes.length) {
         var str = "";
         try {
-            for (var textNodes_1 = (0, tslib_1.__values)(textNodes), textNodes_1_1 = textNodes_1.next(); !textNodes_1_1.done; textNodes_1_1 = textNodes_1.next()) {
+            for (var textNodes_1 = tslib_1.__values(textNodes), textNodes_1_1 = textNodes_1.next(); !textNodes_1_1.done; textNodes_1_1 = textNodes_1.next()) {
                 var textNode = textNodes_1_1.value;
                 if (textNode.nodeValue) {
                     str += (skipNormalize ? textNode.nodeValue : normalizeText(textNode.nodeValue));
@@ -80,7 +80,7 @@ function consoleLogTtsQueueItem(i) {
     if (i.combinedTextSentences) {
         console.log(".......");
         try {
-            for (var _b = (0, tslib_1.__values)(i.combinedTextSentences), _c = _b.next(); !_c.done; _c = _b.next()) {
+            for (var _b = tslib_1.__values(i.combinedTextSentences), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var j = _c.value;
                 console.log(j);
             }
@@ -100,7 +100,7 @@ exports.consoleLogTtsQueueItem = consoleLogTtsQueueItem;
 function consoleLogTtsQueue(f) {
     var e_3, _a;
     try {
-        for (var f_1 = (0, tslib_1.__values)(f), f_1_1 = f_1.next(); !f_1_1.done; f_1_1 = f_1.next()) {
+        for (var f_1 = tslib_1.__values(f), f_1_1 = f_1.next(); !f_1_1.done; f_1_1 = f_1.next()) {
             var i = f_1_1.value;
             consoleLogTtsQueueItem(i);
         }
@@ -118,7 +118,7 @@ function getTtsQueueLength(items) {
     var e_4, _a;
     var l = 0;
     try {
-        for (var items_1 = (0, tslib_1.__values)(items), items_1_1 = items_1.next(); !items_1_1.done; items_1_1 = items_1.next()) {
+        for (var items_1 = tslib_1.__values(items), items_1_1 = items_1.next(); !items_1_1.done; items_1_1 = items_1.next()) {
             var it = items_1_1.value;
             if (it.combinedTextSentences) {
                 l += it.combinedTextSentences.length;
@@ -153,13 +153,13 @@ function getTtsQueueItemRef(items, index) {
     var i = -1;
     var k = -1;
     try {
-        for (var items_2 = (0, tslib_1.__values)(items), items_2_1 = items_2.next(); !items_2_1.done; items_2_1 = items_2.next()) {
+        for (var items_2 = tslib_1.__values(items), items_2_1 = items_2.next(); !items_2_1.done; items_2_1 = items_2.next()) {
             var it = items_2_1.value;
             k++;
             if (it.combinedTextSentences) {
                 var j = -1;
                 try {
-                    for (var _c = (e_6 = void 0, (0, tslib_1.__values)(it.combinedTextSentences)), _d = _c.next(); !_d.done; _d = _c.next()) {
+                    for (var _c = (e_6 = void 0, tslib_1.__values(it.combinedTextSentences)), _d = _c.next(); !_d.done; _d = _c.next()) {
                         var _sent = _d.value;
                         j++;
                         i++;
@@ -199,7 +199,7 @@ function findTtsQueueItemIndex(ttsQueue, element, startTextNode, startTextNodeOf
     var _g, _h, _j;
     var i = 0;
     try {
-        for (var ttsQueue_1 = (0, tslib_1.__values)(ttsQueue), ttsQueue_1_1 = ttsQueue_1.next(); !ttsQueue_1_1.done; ttsQueue_1_1 = ttsQueue_1.next()) {
+        for (var ttsQueue_1 = tslib_1.__values(ttsQueue), ttsQueue_1_1 = ttsQueue_1.next(); !ttsQueue_1_1.done; ttsQueue_1_1 = ttsQueue_1.next()) {
             var ttsQueueItem = ttsQueue_1_1.value;
             if (startTextNode) {
                 if ((_g = ttsQueueItem.textNodes) === null || _g === void 0 ? void 0 : _g.includes(startTextNode)) {
@@ -208,7 +208,7 @@ function findTtsQueueItemIndex(ttsQueue, element, startTextNode, startTextNodeOf
                         ttsQueueItem.combinedTextSentencesRangeEnd) {
                         var offset = 0;
                         try {
-                            for (var _k = (e_8 = void 0, (0, tslib_1.__values)(ttsQueueItem.textNodes)), _l = _k.next(); !_l.done; _l = _k.next()) {
+                            for (var _k = (e_8 = void 0, tslib_1.__values(ttsQueueItem.textNodes)), _l = _k.next(); !_l.done; _l = _k.next()) {
                                 var txtNode = _l.value;
                                 if (!txtNode.nodeValue && txtNode.nodeValue !== "") {
                                     continue;
@@ -229,7 +229,7 @@ function findTtsQueueItemIndex(ttsQueue, element, startTextNode, startTextNodeOf
                         }
                         var j = i - 1;
                         try {
-                            for (var _m = (e_9 = void 0, (0, tslib_1.__values)(ttsQueueItem.combinedTextSentencesRangeEnd)), _o = _m.next(); !_o.done; _o = _m.next()) {
+                            for (var _m = (e_9 = void 0, tslib_1.__values(ttsQueueItem.combinedTextSentencesRangeEnd)), _o = _m.next(); !_o.done; _o = _m.next()) {
                                 var end = _o.value;
                                 j++;
                                 if (end < offset) {
@@ -278,7 +278,7 @@ function findTtsQueueItemIndex(ttsQueue, element, startTextNode, startTextNodeOf
     }
     i = 0;
     try {
-        for (var ttsQueue_2 = (0, tslib_1.__values)(ttsQueue), ttsQueue_2_1 = ttsQueue_2.next(); !ttsQueue_2_1.done; ttsQueue_2_1 = ttsQueue_2.next()) {
+        for (var ttsQueue_2 = tslib_1.__values(ttsQueue), ttsQueue_2_1 = ttsQueue_2.next(); !ttsQueue_2_1.done; ttsQueue_2_1 = ttsQueue_2.next()) {
             var ttsQueueItem = ttsQueue_2_1.value;
             if (startTextNode && ((_h = ttsQueueItem.textNodes) === null || _h === void 0 ? void 0 : _h.includes(startTextNode))) {
                 if (ttsQueueItem.combinedTextSentences &&
@@ -286,7 +286,7 @@ function findTtsQueueItemIndex(ttsQueue, element, startTextNode, startTextNodeOf
                     ttsQueueItem.combinedTextSentencesRangeEnd) {
                     var offset = 0;
                     try {
-                        for (var _p = (e_11 = void 0, (0, tslib_1.__values)(ttsQueueItem.textNodes)), _q = _p.next(); !_q.done; _q = _p.next()) {
+                        for (var _p = (e_11 = void 0, tslib_1.__values(ttsQueueItem.textNodes)), _q = _p.next(); !_q.done; _q = _p.next()) {
                             var txtNode = _q.value;
                             if (!txtNode.nodeValue && txtNode.nodeValue !== "") {
                                 continue;
@@ -307,7 +307,7 @@ function findTtsQueueItemIndex(ttsQueue, element, startTextNode, startTextNodeOf
                     }
                     var j = i - 1;
                     try {
-                        for (var _r = (e_12 = void 0, (0, tslib_1.__values)(ttsQueueItem.combinedTextSentencesRangeEnd)), _s = _r.next(); !_s.done; _s = _r.next()) {
+                        for (var _r = (e_12 = void 0, tslib_1.__values(ttsQueueItem.combinedTextSentencesRangeEnd)), _s = _r.next(); !_s.done; _s = _r.next()) {
                             var end = _s.value;
                             j++;
                             if (end < offset) {
@@ -443,7 +443,7 @@ function generateTtsQueue(rootElement, splitSentences) {
             elementStack.push(element);
         }
         try {
-            for (var _m = (0, tslib_1.__values)(element.childNodes), _o = _m.next(); !_o.done; _o = _m.next()) {
+            for (var _m = tslib_1.__values(element.childNodes), _o = _m.next(); !_o.done; _o = _m.next()) {
                 var childNode = _o.value;
                 switch (childNode.nodeType) {
                     case Node.ELEMENT_NODE:
@@ -501,7 +501,7 @@ function generateTtsQueue(rootElement, splitSentences) {
                                     var mathJaxElMathML = void 0;
                                     var mathJaxContainerChildren = Array.from(childElement.children);
                                     try {
-                                        for (var mathJaxContainerChildren_1 = (e_15 = void 0, (0, tslib_1.__values)(mathJaxContainerChildren)), mathJaxContainerChildren_1_1 = mathJaxContainerChildren_1.next(); !mathJaxContainerChildren_1_1.done; mathJaxContainerChildren_1_1 = mathJaxContainerChildren_1.next()) {
+                                        for (var mathJaxContainerChildren_1 = (e_15 = void 0, tslib_1.__values(mathJaxContainerChildren)), mathJaxContainerChildren_1_1 = mathJaxContainerChildren_1.next(); !mathJaxContainerChildren_1_1.done; mathJaxContainerChildren_1_1 = mathJaxContainerChildren_1.next()) {
                                             var mathJaxContainerChild = mathJaxContainerChildren_1_1.value;
                                             if (((_f = mathJaxContainerChild.tagName) === null || _f === void 0 ? void 0 : _f.toLowerCase()) === "mjx-math") {
                                                 mathJaxEl = mathJaxContainerChild;
@@ -509,7 +509,7 @@ function generateTtsQueue(rootElement, splitSentences) {
                                             else if (((_g = mathJaxContainerChild.tagName) === null || _g === void 0 ? void 0 : _g.toLowerCase()) === "mjx-assistive-mml") {
                                                 var mathJaxAMMLChildren = Array.from(mathJaxContainerChild.children);
                                                 try {
-                                                    for (var mathJaxAMMLChildren_1 = (e_16 = void 0, (0, tslib_1.__values)(mathJaxAMMLChildren)), mathJaxAMMLChildren_1_1 = mathJaxAMMLChildren_1.next(); !mathJaxAMMLChildren_1_1.done; mathJaxAMMLChildren_1_1 = mathJaxAMMLChildren_1.next()) {
+                                                    for (var mathJaxAMMLChildren_1 = (e_16 = void 0, tslib_1.__values(mathJaxAMMLChildren)), mathJaxAMMLChildren_1_1 = mathJaxAMMLChildren_1.next(); !mathJaxAMMLChildren_1_1.done; mathJaxAMMLChildren_1_1 = mathJaxAMMLChildren_1.next()) {
                                                         var mathJaxAMMLChild = mathJaxAMMLChildren_1_1.value;
                                                         if (((_h = mathJaxAMMLChild.tagName) === null || _h === void 0 ? void 0 : _h.toLowerCase()) === "math") {
                                                             mathJaxElMathML = mathJaxAMMLChild;
@@ -635,7 +635,7 @@ function generateTtsQueue(rootElement, splitSentences) {
                                 else {
                                     var svgChildren = Array.from(childElement.children);
                                     try {
-                                        for (var svgChildren_1 = (e_17 = void 0, (0, tslib_1.__values)(svgChildren)), svgChildren_1_1 = svgChildren_1.next(); !svgChildren_1_1.done; svgChildren_1_1 = svgChildren_1.next()) {
+                                        for (var svgChildren_1 = (e_17 = void 0, tslib_1.__values(svgChildren)), svgChildren_1_1 = svgChildren_1.next(); !svgChildren_1_1.done; svgChildren_1_1 = svgChildren_1.next()) {
                                             var svgChild = svgChildren_1_1.value;
                                             if (((_k = svgChild.tagName) === null || _k === void 0 ? void 0 : _k.toLowerCase()) === "title") {
                                                 var txt = (_l = svgChild.textContent) === null || _l === void 0 ? void 0 : _l.trim();
@@ -722,7 +722,7 @@ function generateTtsQueue(rootElement, splitSentences) {
                 ttsQueueItem.combinedTextSentencesRangeBegin = [];
                 ttsQueueItem.combinedTextSentencesRangeEnd = [];
                 try {
-                    for (var sentences_1 = (0, tslib_1.__values)(sentences), sentences_1_1 = sentences_1.next(); !sentences_1_1.done; sentences_1_1 = sentences_1.next()) {
+                    for (var sentences_1 = tslib_1.__values(sentences), sentences_1_1 = sentences_1.next(); !sentences_1_1.done; sentences_1_1 = sentences_1.next()) {
                         var sentence = sentences_1_1.value;
                         if (sentence.type === "Sentence") {
                             ttsQueueItem.combinedTextSentences.push(sentence.raw);
@@ -755,7 +755,7 @@ function generateTtsQueue(rootElement, splitSentences) {
         }
     }
     try {
-        for (var ttsQueue_3 = (0, tslib_1.__values)(ttsQueue), ttsQueue_3_1 = ttsQueue_3.next(); !ttsQueue_3_1.done; ttsQueue_3_1 = ttsQueue_3.next()) {
+        for (var ttsQueue_3 = tslib_1.__values(ttsQueue), ttsQueue_3_1 = ttsQueue_3.next(); !ttsQueue_3_1.done; ttsQueue_3_1 = ttsQueue_3.next()) {
             var ttsQueueItem = ttsQueue_3_1.value;
             finalizeTextNodes(ttsQueueItem);
         }

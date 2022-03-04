@@ -24,7 +24,7 @@ function publicationHasMediaOverlays(publication) {
             }
             if (link.Alternate) {
                 try {
-                    for (var _c = (0, tslib_1.__values)(link.Alternate), _d = _c.next(); !_d.done; _d = _c.next()) {
+                    for (var _c = tslib_1.__values(link.Alternate), _d = _c.next(); !_d.done; _d = _c.next()) {
                         var altLink = _d.value;
                         if (altLink.TypeLink === "application/vnd.syncnarr+json") {
                             return true;
@@ -63,9 +63,9 @@ var _mediaOverlayTextId;
 var _mediaOverlayTextHref;
 var _mediaOverlayActive = false;
 function playMediaOverlays(textHref, rootMo, textFragmentIDChain) {
-    return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
+    return tslib_1.__awaiter(this, void 0, void 0, function () {
         var textFragmentIDChain_, moTextAudioPair;
-        return (0, tslib_1.__generator)(this, function (_a) {
+        return tslib_1.__generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     if (IS_DEV) {
@@ -108,9 +108,9 @@ function playMediaOverlays(textHref, rootMo, textFragmentIDChain) {
         });
     });
 }
-var ontimeupdate = function (ev) { return (0, tslib_1.__awaiter)(void 0, void 0, void 0, function () {
+var ontimeupdate = function (ev) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
     var currentAudioElement;
-    return (0, tslib_1.__generator)(this, function (_a) {
+    return tslib_1.__generator(this, function (_a) {
         currentAudioElement = ev.currentTarget;
         if (_currentAudioEnd && currentAudioElement.currentTime >= (_currentAudioEnd - 0.05)) {
             if (IS_DEV) {
@@ -138,10 +138,10 @@ var ensureOnTimeUpdate = function (remove) {
     }
 };
 function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
-    return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
+    return tslib_1.__awaiter(this, void 0, void 0, function () {
         var publicationURL, urlObjFull, urlFull, urlObjNoQuery, urlNoQuery, hasBegin, hasEnd, matches, b, e, playClip, oncanplaythrough_1, onpause_1, onplay_1;
         var _this = this;
-        return (0, tslib_1.__generator)(this, function (_a) {
+        return tslib_1.__generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     if (IS_DEV) {
@@ -201,10 +201,10 @@ function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
                     if (IS_DEV) {
                         debug("".concat(urlFull, " => [").concat(_currentAudioBegin, "-").concat(_currentAudioEnd, "]"));
                     }
-                    playClip = function (initial) { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
+                    playClip = function (initial) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
                         var timeToSeekTo, ontimeupdateSeeked_1, contiguous;
                         var _this = this;
-                        return (0, tslib_1.__generator)(this, function (_a) {
+                        return tslib_1.__generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0:
                                     if (!_currentAudioElement) {
@@ -227,9 +227,9 @@ function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
                                     if (IS_DEV) {
                                         debug("playMediaOverlaysAudio() - playClip() - ontimeupdateSeeked");
                                     }
-                                    ontimeupdateSeeked_1 = function (ev) { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
+                                    ontimeupdateSeeked_1 = function (ev) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
                                         var currentAudioElement;
-                                        return (0, tslib_1.__generator)(this, function (_a) {
+                                        return tslib_1.__generator(this, function (_a) {
                                             switch (_a.label) {
                                                 case 0:
                                                     currentAudioElement = ev.currentTarget;
@@ -427,9 +427,9 @@ function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
                                 + ev.currentTarget.src.substr(ev.currentTarget.src.lastIndexOf("/")));
                         });
                     }
-                    oncanplaythrough_1 = function (ev) { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
+                    oncanplaythrough_1 = function (ev) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
                         var currentAudioElement;
-                        return (0, tslib_1.__generator)(this, function (_a) {
+                        return tslib_1.__generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0:
                                     currentAudioElement = ev.currentTarget;
@@ -443,15 +443,15 @@ function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
                         });
                     }); };
                     _currentAudioElement.addEventListener("canplaythrough", oncanplaythrough_1);
-                    onpause_1 = function (_ev) { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
-                        return (0, tslib_1.__generator)(this, function (_a) {
+                    onpause_1 = function (_ev) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                        return tslib_1.__generator(this, function (_a) {
                             debug("onpause");
                             return [2];
                         });
                     }); };
                     _currentAudioElement.addEventListener("pause", onpause_1);
-                    onplay_1 = function (_ev) { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
-                        return (0, tslib_1.__generator)(this, function (_a) {
+                    onplay_1 = function (_ev) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                        return tslib_1.__generator(this, function (_a) {
                             debug("onplay");
                             return [2];
                         });
@@ -524,7 +524,7 @@ function findNextTextAudioPair(mo, moToMatch, previousMo, escape) {
         return undefined;
     }
     try {
-        for (var _b = (0, tslib_1.__values)(mo.Children), _c = _b.next(); !_c.done; _c = _b.next()) {
+        for (var _b = tslib_1.__values(mo.Children), _c = _b.next(); !_c.done; _c = _b.next()) {
             var child = _c.value;
             if (audiobook_1.DEBUG_AUDIO) {
                 debug("findNextTextAudioPair() - child");
@@ -587,7 +587,7 @@ function findPreviousTextAudioPair(mo, moToMatch, previousMo) {
         return undefined;
     }
     try {
-        for (var _b = (0, tslib_1.__values)(mo.Children), _c = _b.next(); !_c.done; _c = _b.next()) {
+        for (var _b = tslib_1.__values(mo.Children), _c = _b.next(); !_c.done; _c = _b.next()) {
             var child = _c.value;
             if (audiobook_1.DEBUG_AUDIO) {
                 debug("findPreviousTextAudioPair() - child");
@@ -628,7 +628,7 @@ function findDepthFirstTextAudioPair(textHref, mo, textFragmentIDChain) {
                 isFragmentIDMatch = false;
                 var id = hrefUrlObj.hash.substr(1);
                 try {
-                    for (var textFragmentIDChain_1 = (0, tslib_1.__values)(textFragmentIDChain), textFragmentIDChain_1_1 = textFragmentIDChain_1.next(); !textFragmentIDChain_1_1.done; textFragmentIDChain_1_1 = textFragmentIDChain_1.next()) {
+                    for (var textFragmentIDChain_1 = tslib_1.__values(textFragmentIDChain), textFragmentIDChain_1_1 = textFragmentIDChain_1.next(); !textFragmentIDChain_1_1.done; textFragmentIDChain_1_1 = textFragmentIDChain_1.next()) {
                         var frag = textFragmentIDChain_1_1.value;
                         if (frag === id) {
                             isFragmentIDMatch = true;
@@ -683,7 +683,7 @@ function findDepthFirstTextAudioPair(textHref, mo, textFragmentIDChain) {
     var textFragmentIDChainOriginal = textFragmentIDChain;
     var frags = textFragmentIDChain;
     try {
-        for (var _c = (0, tslib_1.__values)(mo.Children), _d = _c.next(); !_d.done; _d = _c.next()) {
+        for (var _c = tslib_1.__values(mo.Children), _d = _c.next(); !_d.done; _d = _c.next()) {
             var child = _d.value;
             if (audiobook_1.DEBUG_AUDIO) {
                 debug("findDepthFirstTextAudioPair() - child");
@@ -750,10 +750,10 @@ function ensureKillAutoNextTimeout() {
 }
 function playMediaOverlaysForLink(link, textFragmentIDChain) {
     var _a;
-    return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
+    return tslib_1.__awaiter(this, void 0, void 0, function () {
         var moUrl, _b, _c, altLink, publicationURL, moUrlObjFull, moUrlFull, response, e_6, moJson, e_7, href, hrefUrlObj;
         var e_8, _d;
-        return (0, tslib_1.__generator)(this, function (_e) {
+        return tslib_1.__generator(this, function (_e) {
             switch (_e.label) {
                 case 0:
                     if (IS_DEV) {
@@ -771,7 +771,7 @@ function playMediaOverlaysForLink(link, textFragmentIDChain) {
                     }
                     if (link.Alternate) {
                         try {
-                            for (_b = (0, tslib_1.__values)(link.Alternate), _c = _b.next(); !_c.done; _c = _b.next()) {
+                            for (_b = tslib_1.__values(link.Alternate), _c = _b.next(); !_c.done; _c = _b.next()) {
                                 altLink = _c.value;
                                 if (altLink.TypeLink === "application/vnd.syncnarr+json") {
                                     if (!moUrl) {
@@ -895,8 +895,8 @@ function mediaOverlaysHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarg
                 if (IS_DEV) {
                     debug("playMediaOverlaysForLink");
                 }
-                setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
-                    return (0, tslib_1.__generator)(this, function (_a) {
+                setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                    return tslib_1.__generator(this, function (_a) {
                         switch (_a.label) {
                             case 0:
                                 if (!activeWebView.READIUM2.link) return [3, 2];
@@ -987,8 +987,8 @@ function moHighlight(href, id) {
                 _lastClickedNotification = undefined;
             }
         }
-        setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
-            return (0, tslib_1.__generator)(this, function (_a) {
+        setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+            return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4, activeWebView.send(events_1.R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT, payload)];
                     case 1:
@@ -999,7 +999,7 @@ function moHighlight(href, id) {
         }); }, 0);
     };
     try {
-        for (var activeWebViews_1 = (0, tslib_1.__values)(activeWebViews), activeWebViews_1_1 = activeWebViews_1.next(); !activeWebViews_1_1.done; activeWebViews_1_1 = activeWebViews_1.next()) {
+        for (var activeWebViews_1 = tslib_1.__values(activeWebViews), activeWebViews_1_1 = activeWebViews_1.next(); !activeWebViews_1_1.done; activeWebViews_1_1 = activeWebViews_1.next()) {
             var activeWebView = activeWebViews_1_1.value;
             _loop_1(activeWebView);
         }
@@ -1049,8 +1049,8 @@ function mediaOverlaysPlay(speed) {
         else {
             activeWebView_1 = win.READIUM2.getFirstWebView();
         }
-        setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
-            return (0, tslib_1.__generator)(this, function (_a) {
+        setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+            return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         if (!(activeWebView_1 && activeWebView_1.READIUM2.link)) return [3, 2];
@@ -1134,8 +1134,8 @@ function mediaOverlaysResume() {
         }
         ensureOnTimeUpdate(false);
         if (_currentAudioElement) {
-            setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
-                return (0, tslib_1.__generator)(this, function (_a) {
+            setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                return tslib_1.__generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
                             if (!_currentAudioElement) return [3, 2];
@@ -1208,8 +1208,8 @@ function mediaOverlaysPrevious() {
                 if (IS_DEV) {
                     debug("mediaOverlaysPrevious() - playMediaOverlaysAudio()");
                 }
-                setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
-                    return (0, tslib_1.__generator)(this, function (_a) {
+                setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                    return tslib_1.__generator(this, function (_a) {
                         switch (_a.label) {
                             case 0: return [4, playMediaOverlaysAudio(previousTextAudioPair_1, undefined, undefined)];
                             case 1:
@@ -1280,8 +1280,8 @@ function mediaOverlaysNext(escape) {
                 if (IS_DEV) {
                     debug("mediaOverlaysNext() - playMediaOverlaysAudio()");
                 }
-                setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
-                    return (0, tslib_1.__generator)(this, function (_a) {
+                setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                    return tslib_1.__generator(this, function (_a) {
                         switch (_a.label) {
                             case 0: return [4, playMediaOverlaysAudio(nextTextAudioPair_1, undefined, undefined)];
                             case 1:

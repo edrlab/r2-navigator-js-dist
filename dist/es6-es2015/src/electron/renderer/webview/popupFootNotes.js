@@ -6,7 +6,7 @@ const path = require("path");
 const styles_1 = require("../../common/styles");
 const popup_dialog_1 = require("../common/popup-dialog");
 function popupFootNote(element, focusScrollRaw, href, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
-    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+    return tslib_1.__awaiter(this, void 0, void 0, function* () {
         let documant = element.ownerDocument;
         if (!documant.documentElement ||
             documant.documentElement.classList.contains(styles_1.ROOT_CLASS_NO_FOOTNOTES)) {

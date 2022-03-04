@@ -6,7 +6,7 @@ var path = require("path");
 var styles_1 = require("../../common/styles");
 var popup_dialog_1 = require("../common/popup-dialog");
 function popupFootNote(element, focusScrollRaw, href, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
-    return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
+    return tslib_1.__awaiter(this, void 0, void 0, function () {
         function onDialogClosed(el) {
             if (el) {
                 focusScrollRaw(el, true, true, undefined);
@@ -19,7 +19,7 @@ function popupFootNote(element, focusScrollRaw, href, ensureTwoPageSpreadWithOdd
             }, 50);
         }
         var documant, epubType, isNoteref, url, hrefSelf, urlSelf, res, txt, domparser, aNodeList, i, aNode, href_1, from, too, relFromMainToNotes, relPath, e_1, targetElement, htmltxt, ID_PREFIX_, id_, val, pop;
-        return (0, tslib_1.__generator)(this, function (_a) {
+        return tslib_1.__generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     documant = element.ownerDocument;

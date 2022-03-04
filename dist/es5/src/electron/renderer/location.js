@@ -243,8 +243,8 @@ function navLeftOrRight(left, spineNav, ignorePageSpreadHandling) {
         };
         var activeWebView_1 = win.READIUM2.getFirstOrSecondWebView();
         if (activeWebView_1) {
-            setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
-                return (0, tslib_1.__generator)(this, function (_a) {
+            setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                return tslib_1.__generator(this, function (_a) {
                     switch (_a.label) {
                         case 0: return [4, activeWebView_1.send(events_1.R2_EVENT_PAGE_TURN, payload_1)];
                         case 1:
@@ -278,9 +278,9 @@ function handleLink(href, previous, useGoto, rcss) {
             }
             else {
                 debug("External link: ".concat(href));
-                (function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
+                (function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
                     var err_1;
-                    return (0, tslib_1.__generator)(this, function (_a) {
+                    return tslib_1.__generator(this, function (_a) {
                         switch (_a.label) {
                             case 0:
                                 _a.trys.push([0, 2, , 3]);
@@ -367,7 +367,7 @@ function reloadContent() {
     var e_1, _a;
     var activeWebViews = win.READIUM2.getActiveWebViews();
     try {
-        for (var activeWebViews_1 = (0, tslib_1.__values)(activeWebViews), activeWebViews_1_1 = activeWebViews_1.next(); !activeWebViews_1_1.done; activeWebViews_1_1 = activeWebViews_1.next()) {
+        for (var activeWebViews_1 = tslib_1.__values(activeWebViews), activeWebViews_1_1 = activeWebViews_1.next(); !activeWebViews_1_1.done; activeWebViews_1_1 = activeWebViews_1.next()) {
             var activeWebView = activeWebViews_1_1.value;
             reloadWebView(activeWebView);
         }
@@ -704,8 +704,8 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
                 activeWebView.style.transform !== "none" &&
                 !activeWebView.hasAttribute("data-wv-fxl")) {
                 activeWebView.style.opacity = "0";
-                setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
-                    return (0, tslib_1.__generator)(this, function (_a) {
+                setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                    return tslib_1.__generator(this, function (_a) {
                         switch (_a.label) {
                             case 0:
                                 shiftWebview(activeWebView, 0, undefined);
@@ -718,8 +718,8 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
                 }); }, 10);
             }
             else {
-                setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
-                    return (0, tslib_1.__generator)(this, function (_a) {
+                setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                    return tslib_1.__generator(this, function (_a) {
                         switch (_a.label) {
                             case 0: return [4, activeWebView.send(events_1.R2_EVENT_SCROLLTO, payload_2)];
                             case 1:
@@ -869,7 +869,7 @@ var _saveReadingLocation = function (docHref, locator) {
             var totalDuration = 0;
             var timePosition = void 0;
             try {
-                for (var _b = (0, tslib_1.__values)(publication.Spine), _c = _b.next(); !_c.done; _c = _b.next()) {
+                for (var _b = tslib_1.__values(publication.Spine), _c = _b.next(); !_c.done; _c = _b.next()) {
                     var spineItem = _c.value;
                     if (typeof spineItem.Duration !== "undefined") {
                         if (docHref === spineItem.Href) {
@@ -942,9 +942,9 @@ function setReadingLocationSaver(func) {
 }
 exports.setReadingLocationSaver = setReadingLocationSaver;
 function isLocatorVisible(locator) {
-    return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
+    return tslib_1.__awaiter(this, void 0, void 0, function () {
         var _this = this;
-        return (0, tslib_1.__generator)(this, function (_a) {
+        return tslib_1.__generator(this, function (_a) {
             return [2, new Promise(function (resolve, reject) {
                     var e_3, _a;
                     var _b;
@@ -967,8 +967,8 @@ function isLocatorVisible(locator) {
                         };
                         activeWebView.addEventListener("ipc-message", cb);
                         var payloadPing = { location: locator.locations, visible: false };
-                        setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
-                            return (0, tslib_1.__generator)(this, function (_a) {
+                        setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                            return tslib_1.__generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0: return [4, activeWebView.send(events_1.R2_EVENT_LOCATOR_VISIBLE, payloadPing)];
                                     case 1:
@@ -980,7 +980,7 @@ function isLocatorVisible(locator) {
                         return { value: void 0 };
                     };
                     try {
-                        for (var activeWebViews_2 = (0, tslib_1.__values)(activeWebViews), activeWebViews_2_1 = activeWebViews_2.next(); !activeWebViews_2_1.done; activeWebViews_2_1 = activeWebViews_2.next()) {
+                        for (var activeWebViews_2 = tslib_1.__values(activeWebViews), activeWebViews_2_1 = activeWebViews_2.next(); !activeWebViews_2_1.done; activeWebViews_2_1 = activeWebViews_2.next()) {
                             var activeWebView = activeWebViews_2_1.value;
                             var state_1 = _loop_1(activeWebView);
                             if (typeof state_1 === "object")

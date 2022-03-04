@@ -14,12 +14,12 @@ var url_params_1 = require("../renderer/common/url-params");
 var debug = debug_("r2:navigator#electron/main/sessions");
 var USE_STREAM_PROTOCOL_INSTEAD_OF_HTTP = true;
 function promiseAllSettled(promises) {
-    return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
+    return tslib_1.__awaiter(this, void 0, void 0, function () {
         var promises_;
         var _this = this;
-        return (0, tslib_1.__generator)(this, function (_a) {
-            promises_ = promises.map(function (promise) { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
-                return (0, tslib_1.__generator)(this, function (_a) {
+        return tslib_1.__generator(this, function (_a) {
+            promises_ = promises.map(function (promise) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                return tslib_1.__generator(this, function (_a) {
                     return [2, promise
                             .then(function (value) {
                             return {
@@ -53,13 +53,13 @@ function secureSessions(server) {
             details.url.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
             callback({
                 cancel: false,
-                responseHeaders: (0, tslib_1.__assign)((0, tslib_1.__assign)({}, details.responseHeaders), { "Content-Security-Policy": ["default-src 'self' 'unsafe-inline' 'unsafe-eval' data: http: https: ".concat(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL, ": ").concat(serverUrl)] }),
+                responseHeaders: tslib_1.__assign(tslib_1.__assign({}, details.responseHeaders), { "Content-Security-Policy": ["default-src 'self' 'unsafe-inline' 'unsafe-eval' data: http: https: ".concat(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL, ": ").concat(serverUrl)] }),
             });
         }
         else {
             callback({
                 cancel: false,
-                responseHeaders: (0, tslib_1.__assign)({}, details.responseHeaders),
+                responseHeaders: tslib_1.__assign({}, details.responseHeaders),
             });
         }
     };
@@ -78,13 +78,13 @@ function secureSessions(server) {
             }
             callback({
                 cancel: false,
-                requestHeaders: (0, tslib_1.__assign)({}, details.requestHeaders),
+                requestHeaders: tslib_1.__assign({}, details.requestHeaders),
             });
         }
         else {
             callback({
                 cancel: false,
-                requestHeaders: (0, tslib_1.__assign)({}, details.requestHeaders),
+                requestHeaders: tslib_1.__assign({}, details.requestHeaders),
             });
         }
     };
@@ -127,9 +127,9 @@ function secureSessions(server) {
 }
 exports.secureSessions = secureSessions;
 var _customUrlProtocolSchemeHandlerWasCalled = false;
-var streamProtocolHandler = function (req, callback) { return (0, tslib_1.__awaiter)(void 0, void 0, void 0, function () {
+var streamProtocolHandler = function (req, callback) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
     var url, u, ref, failure, success, reqHeaders, serverUrl, header, needsStreamingResponse, response, err_1;
-    return (0, tslib_1.__generator)(this, function (_a) {
+    return tslib_1.__generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 _customUrlProtocolSchemeHandlerWasCalled = true;
@@ -474,9 +474,9 @@ function initSessions() {
                 scheme: sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL,
             }]);
     }
-    electron_1.app.on("ready", function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
+    electron_1.app.on("ready", function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
         var err_2, webViewSession;
-        return (0, tslib_1.__generator)(this, function (_a) {
+        return tslib_1.__generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     debug("app ready");
@@ -522,10 +522,10 @@ function initSessions() {
 }
 exports.initSessions = initSessions;
 function clearSession(sess, str) {
-    return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
+    return tslib_1.__awaiter(this, void 0, void 0, function () {
         var prom1, prom2, results, results_1, results_1_1, result, err_3;
         var e_1, _a;
-        return (0, tslib_1.__generator)(this, function (_b) {
+        return tslib_1.__generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
                     prom1 = sess.clearCache();
@@ -548,7 +548,7 @@ function clearSession(sess, str) {
                 case 2:
                     results = _b.sent();
                     try {
-                        for (results_1 = (0, tslib_1.__values)(results), results_1_1 = results_1.next(); !results_1_1.done; results_1_1 = results_1.next()) {
+                        for (results_1 = tslib_1.__values(results), results_1_1 = results_1.next(); !results_1_1.done; results_1_1 = results_1.next()) {
                             result = results_1_1.value;
                             debug("SESSION CACHE + STORAGE DATA CLEARED - ".concat(str, " => ").concat(result.status));
                         }
@@ -576,9 +576,9 @@ function getWebViewSession() {
 }
 exports.getWebViewSession = getWebViewSession;
 function clearWebviewSession() {
-    return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
+    return tslib_1.__awaiter(this, void 0, void 0, function () {
         var sess, err_4;
-        return (0, tslib_1.__generator)(this, function (_a) {
+        return tslib_1.__generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     sess = getWebViewSession();
@@ -601,9 +601,9 @@ function clearWebviewSession() {
 }
 exports.clearWebviewSession = clearWebviewSession;
 function clearDefaultSession() {
-    return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
+    return tslib_1.__awaiter(this, void 0, void 0, function () {
         var err_5;
-        return (0, tslib_1.__generator)(this, function (_a) {
+        return tslib_1.__generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     if (!electron_1.session.defaultSession) return [3, 4];
@@ -625,9 +625,9 @@ function clearDefaultSession() {
 }
 exports.clearDefaultSession = clearDefaultSession;
 function clearSessions() {
-    return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
+    return tslib_1.__awaiter(this, void 0, void 0, function () {
         var err_6;
-        return (0, tslib_1.__generator)(this, function (_a) {
+        return tslib_1.__generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);

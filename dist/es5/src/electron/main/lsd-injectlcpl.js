@@ -9,10 +9,10 @@ var serializable_1 = require("r2-lcp-js/dist/es5/src/serializable");
 var zipInjector_1 = require("r2-utils-js/dist/es5/src/_utils/zip/zipInjector");
 var debug = debug_("r2:navigator#electron/main/lsd-injectlcpl");
 function lsdLcpUpdateInject(lcplStr, publication, publicationPath) {
-    return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
+    return tslib_1.__awaiter(this, void 0, void 0, function () {
         var lcplJson, isAudio, zipEntryPath, lcpl;
         var _this = this;
-        return (0, tslib_1.__generator)(this, function (_a) {
+        return tslib_1.__generator(this, function (_a) {
             lcplJson = global.JSON.parse(lcplStr);
             debug(lcplJson);
             isAudio = publication.Metadata &&
@@ -29,9 +29,9 @@ function lsdLcpUpdateInject(lcplStr, publication, publicationPath) {
             lcpl.JsonSource = lcplStr;
             lcpl.init();
             publication.LCP = lcpl;
-            return [2, new Promise(function (resolve, reject) { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
+            return [2, new Promise(function (resolve, reject) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
                     var newPublicationPath;
-                    return (0, tslib_1.__generator)(this, function (_a) {
+                    return tslib_1.__generator(this, function (_a) {
                         newPublicationPath = publicationPath + ".new";
                         (0, zipInjector_1.injectBufferInZip)(publicationPath, newPublicationPath, Buffer.from(lcplStr, "utf8"), zipEntryPath, function (err) {
                             reject(err);

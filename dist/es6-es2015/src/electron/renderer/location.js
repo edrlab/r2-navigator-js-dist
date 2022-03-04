@@ -242,7 +242,7 @@ function navLeftOrRight(left, spineNav, ignorePageSpreadHandling) {
         };
         const activeWebView = win.READIUM2.getFirstOrSecondWebView();
         if (activeWebView) {
-            setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+            setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
                 yield activeWebView.send(events_1.R2_EVENT_PAGE_TURN, payload);
             }), 0);
         }
@@ -269,7 +269,7 @@ function handleLink(href, previous, useGoto, rcss) {
             }
             else {
                 debug(`External link: ${href}`);
-                (() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+                (() => tslib_1.__awaiter(this, void 0, void 0, function* () {
                     try {
                         yield electron_1.shell.openExternal(href);
                     }
@@ -673,13 +673,13 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
                 activeWebView.style.transform !== "none" &&
                 !activeWebView.hasAttribute("data-wv-fxl")) {
                 activeWebView.style.opacity = "0";
-                setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+                setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
                     shiftWebview(activeWebView, 0, undefined);
                     yield activeWebView.send(events_1.R2_EVENT_SCROLLTO, payload);
                 }), 10);
             }
             else {
-                setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+                setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
                     yield activeWebView.send(events_1.R2_EVENT_SCROLLTO, payload);
                 }), 0);
             }
@@ -1135,7 +1135,7 @@ function setReadingLocationSaver(func) {
 }
 exports.setReadingLocationSaver = setReadingLocationSaver;
 function isLocatorVisible(locator) {
-    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+    return tslib_1.__awaiter(this, void 0, void 0, function* () {
         return new Promise((resolve, reject) => {
             var _a;
             const activeWebViews = win.READIUM2.getActiveWebViews();
@@ -1157,7 +1157,7 @@ function isLocatorVisible(locator) {
                 };
                 activeWebView.addEventListener("ipc-message", cb);
                 const payloadPing = { location: locator.locations, visible: false };
-                setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+                setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
                     yield activeWebView.send(events_1.R2_EVENT_LOCATOR_VISIBLE, payloadPing);
                 }), 0);
                 return;

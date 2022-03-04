@@ -1366,9 +1366,9 @@ function loaded(forced) {
             });
         });
     }, 800);
-    win.document.addEventListener("mousedown", function (ev) { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
+    win.document.addEventListener("mousedown", function (ev) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
         var currentElement;
-        return (0, tslib_1.__generator)(this, function (_a) {
+        return tslib_1.__generator(this, function (_a) {
             currentElement = ev.target;
             if (currentElement &&
                 currentElement.src &&
@@ -1382,9 +1382,9 @@ function loaded(forced) {
             return [2];
         });
     }); }, true);
-    win.document.addEventListener("click", function (ev) { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
+    win.document.addEventListener("click", function (ev) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
         var currentElement, href, href_, hrefStr, done, payload;
-        return (0, tslib_1.__generator)(this, function (_a) {
+        return tslib_1.__generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     currentElement = ev.target;
@@ -1694,7 +1694,7 @@ function checkBlacklisted(el) {
         return true;
     }
     try {
-        for (var _blacklistIdClassForCFI_1 = (0, tslib_1.__values)(_blacklistIdClassForCFI), _blacklistIdClassForCFI_1_1 = _blacklistIdClassForCFI_1.next(); !_blacklistIdClassForCFI_1_1.done; _blacklistIdClassForCFI_1_1 = _blacklistIdClassForCFI_1.next()) {
+        for (var _blacklistIdClassForCFI_1 = tslib_1.__values(_blacklistIdClassForCFI), _blacklistIdClassForCFI_1_1 = _blacklistIdClassForCFI_1.next(); !_blacklistIdClassForCFI_1_1.done; _blacklistIdClassForCFI_1_1 = _blacklistIdClassForCFI_1.next()) {
             var item = _blacklistIdClassForCFI_1_1.value;
             if (el.classList.contains(item)) {
                 if (IS_DEV) {
@@ -1715,7 +1715,7 @@ function checkBlacklisted(el) {
     if (mathJax) {
         var low = el.tagName.toLowerCase();
         try {
-            for (var _blacklistIdClassForCFIMathJax_1 = (0, tslib_1.__values)(_blacklistIdClassForCFIMathJax), _blacklistIdClassForCFIMathJax_1_1 = _blacklistIdClassForCFIMathJax_1.next(); !_blacklistIdClassForCFIMathJax_1_1.done; _blacklistIdClassForCFIMathJax_1_1 = _blacklistIdClassForCFIMathJax_1.next()) {
+            for (var _blacklistIdClassForCFIMathJax_1 = tslib_1.__values(_blacklistIdClassForCFIMathJax), _blacklistIdClassForCFIMathJax_1_1 = _blacklistIdClassForCFIMathJax_1.next(); !_blacklistIdClassForCFIMathJax_1_1.done; _blacklistIdClassForCFIMathJax_1_1 = _blacklistIdClassForCFIMathJax_1.next()) {
                 var item = _blacklistIdClassForCFIMathJax_1_1.value;
                 if (low.startsWith(item)) {
                     if (IS_DEV) {
@@ -1735,7 +1735,7 @@ function checkBlacklisted(el) {
         if (id) {
             var lowId = id.toLowerCase();
             try {
-                for (var _blacklistIdClassForCFIMathJax_2 = (0, tslib_1.__values)(_blacklistIdClassForCFIMathJax), _blacklistIdClassForCFIMathJax_2_1 = _blacklistIdClassForCFIMathJax_2.next(); !_blacklistIdClassForCFIMathJax_2_1.done; _blacklistIdClassForCFIMathJax_2_1 = _blacklistIdClassForCFIMathJax_2.next()) {
+                for (var _blacklistIdClassForCFIMathJax_2 = tslib_1.__values(_blacklistIdClassForCFIMathJax), _blacklistIdClassForCFIMathJax_2_1 = _blacklistIdClassForCFIMathJax_2.next(); !_blacklistIdClassForCFIMathJax_2_1.done; _blacklistIdClassForCFIMathJax_2_1 = _blacklistIdClassForCFIMathJax_2.next()) {
                     var item = _blacklistIdClassForCFIMathJax_2_1.value;
                     if (lowId.startsWith(item)) {
                         if (IS_DEV) {
@@ -1757,7 +1757,7 @@ function checkBlacklisted(el) {
             var cl = el.classList[i];
             var lowCl = cl.toLowerCase();
             try {
-                for (var _blacklistIdClassForCFIMathJax_3 = (e_4 = void 0, (0, tslib_1.__values)(_blacklistIdClassForCFIMathJax)), _blacklistIdClassForCFIMathJax_3_1 = _blacklistIdClassForCFIMathJax_3.next(); !_blacklistIdClassForCFIMathJax_3_1.done; _blacklistIdClassForCFIMathJax_3_1 = _blacklistIdClassForCFIMathJax_3.next()) {
+                for (var _blacklistIdClassForCFIMathJax_3 = (e_4 = void 0, tslib_1.__values(_blacklistIdClassForCFIMathJax)), _blacklistIdClassForCFIMathJax_3_1 = _blacklistIdClassForCFIMathJax_3.next(); !_blacklistIdClassForCFIMathJax_3_1.done; _blacklistIdClassForCFIMathJax_3_1 = _blacklistIdClassForCFIMathJax_3.next()) {
                     var item = _blacklistIdClassForCFIMathJax_3_1.value;
                     if (lowCl.startsWith(item)) {
                         if (IS_DEV) {
@@ -1987,7 +1987,7 @@ var computeProgressionData = function () {
                     var clientRects = (0, rect_utils_1.getClientRectsNoOverlap_)(element.getClientRects(), false);
                     var rectangle = void 0;
                     try {
-                        for (var clientRects_1 = (0, tslib_1.__values)(clientRects), clientRects_1_1 = clientRects_1.next(); !clientRects_1_1.done; clientRects_1_1 = clientRects_1.next()) {
+                        for (var clientRects_1 = tslib_1.__values(clientRects), clientRects_1_1 = clientRects_1.next(); !clientRects_1_1.done; clientRects_1_1 = clientRects_1.next()) {
                             var rect = clientRects_1_1.value;
                             if (!rectangle) {
                                 rectangle = rect;
@@ -2139,7 +2139,7 @@ var _getCssSelectorOptions = {
         if (mathJax) {
             var low = str.toLowerCase();
             try {
-                for (var _blacklistIdClassForCssSelectorsMathJax_1 = (0, tslib_1.__values)(_blacklistIdClassForCssSelectorsMathJax), _blacklistIdClassForCssSelectorsMathJax_1_1 = _blacklistIdClassForCssSelectorsMathJax_1.next(); !_blacklistIdClassForCssSelectorsMathJax_1_1.done; _blacklistIdClassForCssSelectorsMathJax_1_1 = _blacklistIdClassForCssSelectorsMathJax_1.next()) {
+                for (var _blacklistIdClassForCssSelectorsMathJax_1 = tslib_1.__values(_blacklistIdClassForCssSelectorsMathJax), _blacklistIdClassForCssSelectorsMathJax_1_1 = _blacklistIdClassForCssSelectorsMathJax_1.next(); !_blacklistIdClassForCssSelectorsMathJax_1_1.done; _blacklistIdClassForCssSelectorsMathJax_1_1 = _blacklistIdClassForCssSelectorsMathJax_1.next()) {
                     var item = _blacklistIdClassForCssSelectorsMathJax_1_1.value;
                     if (low.startsWith(item)) {
                         return false;
@@ -2165,7 +2165,7 @@ var _getCssSelectorOptions = {
         if (mathJax) {
             var low = str.toLowerCase();
             try {
-                for (var _blacklistIdClassForCssSelectorsMathJax_2 = (0, tslib_1.__values)(_blacklistIdClassForCssSelectorsMathJax), _blacklistIdClassForCssSelectorsMathJax_2_1 = _blacklistIdClassForCssSelectorsMathJax_2.next(); !_blacklistIdClassForCssSelectorsMathJax_2_1.done; _blacklistIdClassForCssSelectorsMathJax_2_1 = _blacklistIdClassForCssSelectorsMathJax_2.next()) {
+                for (var _blacklistIdClassForCssSelectorsMathJax_2 = tslib_1.__values(_blacklistIdClassForCssSelectorsMathJax), _blacklistIdClassForCssSelectorsMathJax_2_1 = _blacklistIdClassForCssSelectorsMathJax_2.next(); !_blacklistIdClassForCssSelectorsMathJax_2_1.done; _blacklistIdClassForCssSelectorsMathJax_2_1 = _blacklistIdClassForCssSelectorsMathJax_2.next()) {
                     var item = _blacklistIdClassForCssSelectorsMathJax_2_1.value;
                     if (low.startsWith(item)) {
                         return false;
@@ -2187,7 +2187,7 @@ var _getCssSelectorOptions = {
         var mathJax = win.document.documentElement.classList.contains(styles_1.ROOT_CLASS_MATHJAX);
         if (mathJax) {
             try {
-                for (var _blacklistIdClassForCssSelectorsMathJax_3 = (0, tslib_1.__values)(_blacklistIdClassForCssSelectorsMathJax), _blacklistIdClassForCssSelectorsMathJax_3_1 = _blacklistIdClassForCssSelectorsMathJax_3.next(); !_blacklistIdClassForCssSelectorsMathJax_3_1.done; _blacklistIdClassForCssSelectorsMathJax_3_1 = _blacklistIdClassForCssSelectorsMathJax_3.next()) {
+                for (var _blacklistIdClassForCssSelectorsMathJax_3 = tslib_1.__values(_blacklistIdClassForCssSelectorsMathJax), _blacklistIdClassForCssSelectorsMathJax_3_1 = _blacklistIdClassForCssSelectorsMathJax_3.next(); !_blacklistIdClassForCssSelectorsMathJax_3_1.done; _blacklistIdClassForCssSelectorsMathJax_3_1 = _blacklistIdClassForCssSelectorsMathJax_3.next()) {
                     var item = _blacklistIdClassForCssSelectorsMathJax_3_1.value;
                     if (str.startsWith(item)) {
                         return false;
@@ -2231,7 +2231,7 @@ var findPrecedingAncestorSiblingHeadings = function (element) {
     if (!_allHeadings) {
         var headingElements = Array.from(win.document.querySelectorAll("h1,h2,h3,h4,h5,h6"));
         try {
-            for (var headingElements_1 = (0, tslib_1.__values)(headingElements), headingElements_1_1 = headingElements_1.next(); !headingElements_1_1.done; headingElements_1_1 = headingElements_1.next()) {
+            for (var headingElements_1 = tslib_1.__values(headingElements), headingElements_1_1 = headingElements_1.next(); !headingElements_1_1.done; headingElements_1_1 = headingElements_1.next()) {
                 var n = headingElements_1_1.value;
                 if (n) {
                     var el = n;
@@ -2602,7 +2602,7 @@ if (!win.READIUM2.isAudio) {
             ] :
             payloadPing.highlightDefinitions;
         try {
-            for (var highlightDefinitions_1 = (0, tslib_1.__values)(highlightDefinitions), highlightDefinitions_1_1 = highlightDefinitions_1.next(); !highlightDefinitions_1_1.done; highlightDefinitions_1_1 = highlightDefinitions_1.next()) {
+            for (var highlightDefinitions_1 = tslib_1.__values(highlightDefinitions), highlightDefinitions_1_1 = highlightDefinitions_1.next(); !highlightDefinitions_1_1.done; highlightDefinitions_1_1 = highlightDefinitions_1.next()) {
                 var highlightDefinition = highlightDefinitions_1_1.value;
                 if (!highlightDefinition.selectionInfo) {
                     highlightDefinition.selectionInfo = (0, selection_2.getCurrentSelectionInfo)(win, getCssSelector, exports.computeCFI);

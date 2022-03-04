@@ -299,7 +299,7 @@ function wrapHighlightWord(ttsQueueItemRef, utteranceText, charIndex, charLength
     var rangeEndOffset = -1;
     var charIndexEnd = charIndexAdjusted + charLength;
     try {
-        for (var _b = (0, tslib_1.__values)(ttsQueueItem.textNodes), _c = _b.next(); !_c.done; _c = _b.next()) {
+        for (var _b = tslib_1.__values(ttsQueueItem.textNodes), _c = _b.next(); !_c.done; _c = _b.next()) {
             var txtNode = _c.value;
             if (!txtNode.nodeValue && txtNode.nodeValue !== "") {
                 continue;
@@ -398,7 +398,7 @@ function wrapHighlight(doHighlight, ttsQueueItemRef) {
             var rangeEndNode = void 0;
             var rangeEndOffset = -1;
             try {
-                for (var _b = (0, tslib_1.__values)(ttsQueueItemRef.item.textNodes), _c = _b.next(); !_c.done; _c = _b.next()) {
+                for (var _b = tslib_1.__values(ttsQueueItemRef.item.textNodes), _c = _b.next(); !_c.done; _c = _b.next()) {
                     var txtNode = _c.value;
                     if (!txtNode.nodeValue && txtNode.nodeValue !== "") {
                         continue;

@@ -51,7 +51,7 @@ function classListContains(className) {
     }
     var classes = classAttr.split(" ");
     try {
-        for (var classes_1 = (0, tslib_1.__values)(classes), classes_1_1 = classes_1.next(); !classes_1_1.done; classes_1_1 = classes_1.next()) {
+        for (var classes_1 = tslib_1.__values(classes), classes_1_1 = classes_1.next(); !classes_1_1.done; classes_1_1 = classes_1.next()) {
             var clazz = classes_1_1.value;
             if (clazz === className) {
                 return true;
@@ -79,7 +79,7 @@ function classListAdd(className) {
     var needsAdding = true;
     var classes = classAttr.split(" ");
     try {
-        for (var classes_2 = (0, tslib_1.__values)(classes), classes_2_1 = classes_2.next(); !classes_2_1.done; classes_2_1 = classes_2.next()) {
+        for (var classes_2 = tslib_1.__values(classes), classes_2_1 = classes_2.next(); !classes_2_1.done; classes_2_1 = classes_2.next()) {
             var clazz = classes_2_1.value;
             if (clazz === className) {
                 needsAdding = false;
@@ -109,7 +109,7 @@ function classListRemove(className) {
     var arr = [];
     var classes = classAttr.split(" ");
     try {
-        for (var classes_3 = (0, tslib_1.__values)(classes), classes_3_1 = classes_3.next(); !classes_3_1.done; classes_3_1 = classes_3.next()) {
+        for (var classes_3 = tslib_1.__values(classes), classes_3_1 = classes_3.next(); !classes_3_1.done; classes_3_1 = classes_3.next()) {
             var clazz = classes_3_1.value;
             if (clazz !== className) {
                 arr.push(clazz);
@@ -170,7 +170,7 @@ function definePropertyGetterSetter_ElementStyle(element) {
             var count = 0;
             var cssProps = styleAttr.split(";");
             try {
-                for (var cssProps_1 = (0, tslib_1.__values)(cssProps), cssProps_1_1 = cssProps_1.next(); !cssProps_1_1.done; cssProps_1_1 = cssProps_1.next()) {
+                for (var cssProps_1 = tslib_1.__values(cssProps), cssProps_1_1 = cssProps_1.next(); !cssProps_1_1.done; cssProps_1_1 = cssProps_1.next()) {
                     var cssProp = cssProps_1_1.value;
                     if (cssProp.trim().length) {
                         count++;
@@ -228,7 +228,7 @@ function cssStyleItem(i) {
     var count = -1;
     var cssProps = styleAttr.split(";");
     try {
-        for (var cssProps_2 = (0, tslib_1.__values)(cssProps), cssProps_2_1 = cssProps_2.next(); !cssProps_2_1.done; cssProps_2_1 = cssProps_2.next()) {
+        for (var cssProps_2 = tslib_1.__values(cssProps), cssProps_2_1 = cssProps_2.next(); !cssProps_2_1.done; cssProps_2_1 = cssProps_2.next()) {
             var cssProp = cssProps_2_1.value;
             var trimmed = cssProp.trim();
             if (trimmed.length) {
@@ -263,7 +263,7 @@ function cssStyleGet(cssProperty, elem) {
     var cssProps = styleAttr.split(";");
     var cssPropertyValue;
     try {
-        for (var cssProps_3 = (0, tslib_1.__values)(cssProps), cssProps_3_1 = cssProps_3.next(); !cssProps_3_1.done; cssProps_3_1 = cssProps_3.next()) {
+        for (var cssProps_3 = tslib_1.__values(cssProps), cssProps_3_1 = cssProps_3.next(); !cssProps_3_1.done; cssProps_3_1 = cssProps_3.next()) {
             var cssProp = cssProps_3_1.value;
             var regex = new RegExp(regExStr, "g");
             var regexMatch = regex.exec(cssProp.trim());

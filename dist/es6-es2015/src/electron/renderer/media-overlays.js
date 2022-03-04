@@ -52,7 +52,7 @@ let _mediaOverlayTextId;
 let _mediaOverlayTextHref;
 let _mediaOverlayActive = false;
 function playMediaOverlays(textHref, rootMo, textFragmentIDChain) {
-    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+    return tslib_1.__awaiter(this, void 0, void 0, function* () {
         if (IS_DEV) {
             debug("playMediaOverlays()");
         }
@@ -88,7 +88,7 @@ function playMediaOverlays(textHref, rootMo, textFragmentIDChain) {
         }
     });
 }
-const ontimeupdate = (ev) => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
+const ontimeupdate = (ev) => tslib_1.__awaiter(void 0, void 0, void 0, function* () {
     const currentAudioElement = ev.currentTarget;
     if (_currentAudioEnd && currentAudioElement.currentTime >= (_currentAudioEnd - 0.05)) {
         if (IS_DEV) {
@@ -114,7 +114,7 @@ const ensureOnTimeUpdate = (remove) => {
     }
 };
 function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
-    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+    return tslib_1.__awaiter(this, void 0, void 0, function* () {
         if (IS_DEV) {
             debug("playMediaOverlaysAudio()");
         }
@@ -172,7 +172,7 @@ function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
         if (IS_DEV) {
             debug(`${urlFull} => [${_currentAudioBegin}-${_currentAudioEnd}]`);
         }
-        const playClip = (initial) => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+        const playClip = (initial) => tslib_1.__awaiter(this, void 0, void 0, function* () {
             if (!_currentAudioElement) {
                 return;
             }
@@ -191,7 +191,7 @@ function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
                     if (IS_DEV) {
                         debug("playMediaOverlaysAudio() - playClip() - ontimeupdateSeeked");
                     }
-                    const ontimeupdateSeeked = (ev) => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+                    const ontimeupdateSeeked = (ev) => tslib_1.__awaiter(this, void 0, void 0, function* () {
                         const currentAudioElement = ev.currentTarget;
                         currentAudioElement.removeEventListener("timeupdate", ontimeupdateSeeked);
                         if (IS_DEV) {
@@ -379,18 +379,18 @@ function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
                         + ev.currentTarget.src.substr(ev.currentTarget.src.lastIndexOf("/")));
                 });
             }
-            const oncanplaythrough = (ev) => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+            const oncanplaythrough = (ev) => tslib_1.__awaiter(this, void 0, void 0, function* () {
                 const currentAudioElement = ev.currentTarget;
                 currentAudioElement.removeEventListener("canplaythrough", oncanplaythrough);
                 debug("oncanplaythrough");
                 yield playClip(true);
             });
             _currentAudioElement.addEventListener("canplaythrough", oncanplaythrough);
-            const onpause = (_ev) => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+            const onpause = (_ev) => tslib_1.__awaiter(this, void 0, void 0, function* () {
                 debug("onpause");
             });
             _currentAudioElement.addEventListener("pause", onpause);
-            const onplay = (_ev) => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+            const onplay = (_ev) => tslib_1.__awaiter(this, void 0, void 0, function* () {
                 debug("onplay");
             });
             _currentAudioElement.addEventListener("play", onplay);
@@ -639,7 +639,7 @@ function ensureKillAutoNextTimeout() {
 }
 function playMediaOverlaysForLink(link, textFragmentIDChain) {
     var _a;
-    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+    return tslib_1.__awaiter(this, void 0, void 0, function* () {
         if (IS_DEV) {
             debug("playMediaOverlaysForLink()");
             debug(link.Href);
@@ -752,7 +752,7 @@ function mediaOverlaysHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarg
                 if (IS_DEV) {
                     debug("playMediaOverlaysForLink");
                 }
-                setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+                setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
                     if (activeWebView.READIUM2.link) {
                         yield playMediaOverlaysForLink(activeWebView.READIUM2.link, payload.textFragmentIDChain);
                     }
@@ -834,7 +834,7 @@ function moHighlight(href, id) {
                 _lastClickedNotification = undefined;
             }
         }
-        setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+        setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
             yield activeWebView.send(events_1.R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT, payload);
         }), 0);
     }
@@ -875,7 +875,7 @@ function mediaOverlaysPlay(speed) {
         else {
             activeWebView = win.READIUM2.getFirstWebView();
         }
-        setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+        setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
             if (activeWebView && activeWebView.READIUM2.link) {
                 yield playMediaOverlaysForLink(activeWebView.READIUM2.link, textFragmentIDChain);
             }
@@ -951,7 +951,7 @@ function mediaOverlaysResume() {
         }
         ensureOnTimeUpdate(false);
         if (_currentAudioElement) {
-            setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+            setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
                 if (_currentAudioElement) {
                     _currentAudioElement.playbackRate = _mediaOverlaysPlaybackRate;
                     yield _currentAudioElement.play();
@@ -1016,7 +1016,7 @@ function mediaOverlaysPrevious() {
                 if (IS_DEV) {
                     debug("mediaOverlaysPrevious() - playMediaOverlaysAudio()");
                 }
-                setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+                setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
                     yield playMediaOverlaysAudio(previousTextAudioPair, undefined, undefined);
                 }), 0);
                 if (_mediaOverlaysListener) {
@@ -1080,7 +1080,7 @@ function mediaOverlaysNext(escape) {
                 if (IS_DEV) {
                     debug("mediaOverlaysNext() - playMediaOverlaysAudio()");
                 }
-                setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+                setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
                     yield playMediaOverlaysAudio(nextTextAudioPair, undefined, undefined);
                 }), 0);
                 if (_mediaOverlaysListener) {

@@ -108,12 +108,6 @@ function readiumCSSSet(documant, messageJson, isVerticalWritingMode, isRTL) {
         docElement.classList.remove(styles_1.ROOT_CLASS_NO_FOOTNOTES);
         docElement.removeAttribute("data-readiumcss");
         removeAllCSS(documant);
-        if (messageJson.isFixedLayout) {
-            docElement.style.overflow = "hidden";
-        }
-        else {
-            docElement.style.overflow = "auto";
-        }
         const toRemove = [];
         for (let i = 0; i < docElement.style.length; i++) {
             const item = docElement.style.item(i);
@@ -200,11 +194,9 @@ function readiumCSSSet(documant, messageJson, isVerticalWritingMode, isRTL) {
         (setCSS.night ? "readium-night-on" : "readium-default-on"));
     docElement.style.setProperty("--USER__view", setCSS.paged ? "readium-paged-on" : "readium-scroll-on");
     if (setCSS.paged) {
-        docElement.style.overflow = "hidden";
         docElement.classList.add(styles_1.CLASS_PAGINATED);
     }
     else {
-        docElement.style.overflow = "auto";
         docElement.classList.remove(styles_1.CLASS_PAGINATED);
     }
     const defaultPublisherFont = !setCSS.font || setCSS.font === "DEFAULT";
@@ -474,8 +466,6 @@ function configureFixedLayout(documant, isFixedLayout, fxlViewportWidth, fxlView
         documant.documentElement.classList.add(styles_1.ROOT_CLASS_FIXED_LAYOUT);
         documant.body.style.width = width + "px";
         documant.body.style.height = height + "px";
-        documant.body.style.overflow = "hidden";
-        documant.body.style.margin = "0";
         if (isDEBUG_VISUALS(documant)) {
             debug("FXL width: " + width);
             debug("FXL height: " + height);

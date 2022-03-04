@@ -92,7 +92,7 @@ win.addEventListener("resize", () => {
     if (_resizeTimeout) {
         clearTimeout(_resizeTimeout);
     }
-    _resizeTimeout = win.setTimeout(() => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
+    _resizeTimeout = win.setTimeout(() => tslib_1.__awaiter(void 0, void 0, void 0, function* () {
         debug("Window resize (TOP), DEFERRED");
         _resizeTimeout = undefined;
         _resizeWebviewsNeedReset = true;
@@ -124,13 +124,13 @@ function readiumCssApplyToWebview(loc, activeWebView, rcss) {
         activeWebView.style.transform !== "none" &&
         !activeWebView.hasAttribute("data-wv-fxl")) {
         activeWebView.style.opacity = "0";
-        setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+        setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
             (0, location_1.shiftWebview)(activeWebView, 0, undefined);
             yield activeWebView.send(events_1.R2_EVENT_READIUMCSS, payloadRcss);
         }), 10);
     }
     else {
-        setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+        setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
             yield activeWebView.send(events_1.R2_EVENT_READIUMCSS, payloadRcss);
         }), 0);
     }
@@ -157,7 +157,7 @@ function fixedLayoutZoomPercent(zoomPercent) {
         if (wvSlot) {
             debug("fixedLayoutZoomPercent ... setWebViewStyle");
             (0, location_1.setWebViewStyle)(activeWebView, wvSlot);
-            _fixedLayoutZoomPercentTimers[activeWebView.id] = win.setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+            _fixedLayoutZoomPercentTimers[activeWebView.id] = win.setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
                 try {
                     _fixedLayoutZoomPercentTimers[activeWebView.id] = undefined;
                     yield activeWebView.send("R2_EVENT_WINDOW_RESIZE", zoomPercent);
@@ -431,7 +431,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
             window.localStorage.getItem(url_params_1.URL_PARAM_DEBUG_VISUALS) === "true") ? true : false;
         debug("debugVisuals GET: ", debugVisualz);
         win.READIUM2.DEBUG_VISUALS = debugVisualz;
-        window.READIUM2.debug = (debugVisuals) => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+        window.READIUM2.debug = (debugVisuals) => tslib_1.__awaiter(this, void 0, void 0, function* () {
             var _a;
             debug("debugVisuals SET: ", debugVisuals);
             win.READIUM2.DEBUG_VISUALS = debugVisuals;
@@ -442,7 +442,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
             const activeWebViews = win.READIUM2.getActiveWebViews();
             for (const activeWebView of activeWebViews) {
                 const payload = { debugVisuals };
-                setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+                setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
                     yield activeWebView.send(events_1.R2_EVENT_DEBUG_VISUALS, payload);
                 }), 0);
                 if (loc && loc.locator.href === ((_a = activeWebView.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href)) {
@@ -469,7 +469,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
                     }
                     const d = win.READIUM2.DEBUG_VISUALS;
                     const payload = { debugVisuals: d, cssSelector, cssClass, cssStyles };
-                    setTimeout(() => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+                    setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
                         yield activeWebView.send(events_1.R2_EVENT_DEBUG_VISUALS, payload);
                     }), 0);
                 }

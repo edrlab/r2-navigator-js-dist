@@ -14,8 +14,8 @@ const url_params_1 = require("../renderer/common/url-params");
 const debug = debug_("r2:navigator#electron/main/sessions");
 const USE_STREAM_PROTOCOL_INSTEAD_OF_HTTP = true;
 function promiseAllSettled(promises) {
-    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
-        const promises_ = promises.map((promise) => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+    return tslib_1.__awaiter(this, void 0, void 0, function* () {
+        const promises_ = promises.map((promise) => tslib_1.__awaiter(this, void 0, void 0, function* () {
             return promise
                 .then((value) => {
                 return {
@@ -121,7 +121,7 @@ function secureSessions(server) {
 }
 exports.secureSessions = secureSessions;
 let _customUrlProtocolSchemeHandlerWasCalled = false;
-const streamProtocolHandler = (req, callback) => (0, tslib_1.__awaiter)(void 0, void 0, void 0, function* () {
+const streamProtocolHandler = (req, callback) => tslib_1.__awaiter(void 0, void 0, void 0, function* () {
     _customUrlProtocolSchemeHandlerWasCalled = true;
     const url = (0, sessions_1.convertCustomSchemeToHttpUrl)(req.url);
     const u = new URL(url);
@@ -458,7 +458,7 @@ function initSessions() {
                 scheme: sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL,
             }]);
     }
-    electron_1.app.on("ready", () => (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+    electron_1.app.on("ready", () => tslib_1.__awaiter(this, void 0, void 0, function* () {
         debug("app ready");
         try {
             yield clearSessions();
@@ -493,7 +493,7 @@ function initSessions() {
 }
 exports.initSessions = initSessions;
 function clearSession(sess, str) {
-    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+    return tslib_1.__awaiter(this, void 0, void 0, function* () {
         const prom1 = sess.clearCache();
         const prom2 = sess.clearStorageData({
             origin: "*",
@@ -525,7 +525,7 @@ function getWebViewSession() {
 }
 exports.getWebViewSession = getWebViewSession;
 function clearWebviewSession() {
-    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+    return tslib_1.__awaiter(this, void 0, void 0, function* () {
         const sess = getWebViewSession();
         if (sess) {
             try {
@@ -540,7 +540,7 @@ function clearWebviewSession() {
 }
 exports.clearWebviewSession = clearWebviewSession;
 function clearDefaultSession() {
-    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+    return tslib_1.__awaiter(this, void 0, void 0, function* () {
         if (electron_1.session.defaultSession) {
             try {
                 yield clearSession(electron_1.session.defaultSession, "[default]");
@@ -554,7 +554,7 @@ function clearDefaultSession() {
 }
 exports.clearDefaultSession = clearDefaultSession;
 function clearSessions() {
-    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+    return tslib_1.__awaiter(this, void 0, void 0, function* () {
         try {
             yield promiseAllSettled([clearDefaultSession(), clearWebviewSession()]);
         }

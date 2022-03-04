@@ -27,7 +27,7 @@ function uniqueCssSelector(input, doc, options) {
         tagName: function (_name) { return true; },
         threshold: 1000,
     };
-    config = (0, tslib_1.__assign)((0, tslib_1.__assign)({}, defaults), options);
+    config = tslib_1.__assign(tslib_1.__assign({}, defaults), options);
     rootDocument = findRootDocument(config.root, defaults);
     var path = bottomUpSearch(input, Limit.All, function () {
         return bottomUpSearch(input, Limit.Two, function () {
@@ -62,7 +62,7 @@ function bottomUpSearch(input, limit, fallback) {
     var i = 0;
     var _loop_1 = function () {
         var e_1, _a;
-        var level = maybe(id(current)) || maybe.apply(void 0, (0, tslib_1.__spreadArray)([], (0, tslib_1.__read)(classNames(current)), false)) ||
+        var level = maybe(id(current)) || maybe.apply(void 0, tslib_1.__spreadArray([], tslib_1.__read(classNames(current)), false)) ||
             maybe(tagName(current)) || [any()];
         var nth = index(current);
         if (limit === Limit.All) {
@@ -77,13 +77,13 @@ function bottomUpSearch(input, limit, fallback) {
             }
         }
         else if (limit === Limit.One) {
-            var _b = (0, tslib_1.__read)(level = level.slice(0, 1), 1), node = _b[0];
+            var _b = tslib_1.__read(level = level.slice(0, 1), 1), node = _b[0];
             if (nth && dispensableNth(node)) {
                 level = [nthChild(node, nth)];
             }
         }
         try {
-            for (var level_1 = (e_1 = void 0, (0, tslib_1.__values)(level)), level_1_1 = level_1.next(); !level_1_1.done; level_1_1 = level_1.next()) {
+            for (var level_1 = (e_1 = void 0, tslib_1.__values(level)), level_1_1 = level_1.next(); !level_1_1.done; level_1_1 = level_1.next()) {
                 var node = level_1_1.value;
                 node.level = i;
             }
@@ -122,7 +122,7 @@ function findUniquePath(stack, fallback) {
         return fallback ? fallback() : null;
     }
     try {
-        for (var paths_1 = (0, tslib_1.__values)(paths), paths_1_1 = paths_1.next(); !paths_1_1.done; paths_1_1 = paths_1.next()) {
+        for (var paths_1 = tslib_1.__values(paths), paths_1_1 = paths_1.next(); !paths_1_1.done; paths_1_1 = paths_1.next()) {
             var candidate = paths_1_1.value;
             if (unique(candidate)) {
                 return candidate;
@@ -248,19 +248,19 @@ function combinations(stack, path) {
     var _a, _b, node, e_3_1;
     var e_3, _c;
     if (path === void 0) { path = []; }
-    return (0, tslib_1.__generator)(this, function (_d) {
+    return tslib_1.__generator(this, function (_d) {
         switch (_d.label) {
             case 0:
                 if (!(stack.length > 0)) return [3, 9];
                 _d.label = 1;
             case 1:
                 _d.trys.push([1, 6, 7, 8]);
-                _a = (0, tslib_1.__values)(stack[0]), _b = _a.next();
+                _a = tslib_1.__values(stack[0]), _b = _a.next();
                 _d.label = 2;
             case 2:
                 if (!!_b.done) return [3, 5];
                 node = _b.value;
-                return [5, (0, tslib_1.__values)(combinations(stack.slice(1, stack.length), path.concat(node)))];
+                return [5, tslib_1.__values(combinations(stack.slice(1, stack.length), path.concat(node)))];
             case 3:
                 _d.sent();
                 _d.label = 4;
@@ -292,7 +292,7 @@ function sort(paths) {
 }
 function optimize(path, input) {
     var i, newPath;
-    return (0, tslib_1.__generator)(this, function (_a) {
+    return tslib_1.__generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 if (!(path.length > 2 && path.length > config.optimizedMinLength)) return [3, 5];
@@ -300,13 +300,13 @@ function optimize(path, input) {
                 _a.label = 1;
             case 1:
                 if (!(i < path.length - 1)) return [3, 5];
-                newPath = (0, tslib_1.__spreadArray)([], (0, tslib_1.__read)(path), false);
+                newPath = tslib_1.__spreadArray([], tslib_1.__read(path), false);
                 newPath.splice(i, 1);
                 if (!(unique(newPath) && same(newPath, input))) return [3, 4];
                 return [4, newPath];
             case 2:
                 _a.sent();
-                return [5, (0, tslib_1.__values)(optimize(newPath, input))];
+                return [5, tslib_1.__values(optimize(newPath, input))];
             case 3:
                 _a.sent();
                 _a.label = 4;

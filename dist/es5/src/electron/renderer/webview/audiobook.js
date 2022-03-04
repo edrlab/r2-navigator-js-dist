@@ -16,7 +16,7 @@ function throttle(fn, time) {
             args[_i] = arguments[_i];
         }
         if (!called) {
-            fn.apply(void 0, (0, tslib_1.__spreadArray)([], (0, tslib_1.__read)(args), false));
+            fn.apply(void 0, tslib_1.__spreadArray([], tslib_1.__read(args), false));
             called = true;
             setTimeout(function () {
                 called = false;
@@ -164,8 +164,8 @@ function setupAudioBook(_docTitle, audioPlaybackRate) {
                     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, payload);
                 }
                 else {
-                    setTimeout(function () { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
-                        return (0, tslib_1.__generator)(this, function (_a) {
+                    setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                        return tslib_1.__generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0: return [4, audioElement.play()];
                                 case 1:
@@ -287,8 +287,8 @@ function setupAudioBook(_docTitle, audioPlaybackRate) {
     audioElement.addEventListener("timeupdate", function () {
         notifyPlaybackLocationThrottled();
     });
-    electron_1.ipcRenderer.on(events_1.R2_EVENT_AUDIO_DO_PLAY, function (_event) { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
-        return (0, tslib_1.__generator)(this, function (_a) {
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_AUDIO_DO_PLAY, function (_event) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+        return tslib_1.__generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4, audioElement.play()];
                 case 1:
@@ -300,8 +300,8 @@ function setupAudioBook(_docTitle, audioPlaybackRate) {
     electron_1.ipcRenderer.on(events_1.R2_EVENT_AUDIO_DO_PAUSE, function (_event) {
         audioElement.pause();
     });
-    electron_1.ipcRenderer.on(events_1.R2_EVENT_AUDIO_DO_PLAY, function (_event) { return (0, tslib_1.__awaiter)(_this, void 0, void 0, function () {
-        return (0, tslib_1.__generator)(this, function (_a) {
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_AUDIO_DO_PLAY, function (_event) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+        return tslib_1.__generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4, audioElement.play()];
                 case 1:
