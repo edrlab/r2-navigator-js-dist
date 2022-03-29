@@ -501,6 +501,7 @@ async function clearSession(sess, str) {
         storages: [
             "appcache",
             "serviceworkers",
+            "cachestorage",
         ],
     });
     try {

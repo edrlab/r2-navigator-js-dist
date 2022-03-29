@@ -108,6 +108,7 @@ electron_1.app.on("web-contents-created", (_evt, wc) => {
         webPreferences.nodeIntegration = false;
         webPreferences.nodeIntegrationInWorker = false;
         webPreferences.allowRunningInsecureContent = false;
+        webPreferences.partition = sessions_1.R2_SESSION_WEBVIEW;
     });
     if (!wc.hostWebContents) {
         return;

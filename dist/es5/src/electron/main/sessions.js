@@ -539,6 +539,7 @@ function clearSession(sess, str) {
                         storages: [
                             "appcache",
                             "serviceworkers",
+                            "cachestorage",
                         ],
                     });
                     _b.label = 1;
