@@ -310,6 +310,7 @@ function ensureHighlightsContainer(win) {
     var documant = win.document;
     if (!_highlightsContainer) {
         documant.body.style.position = "relative";
+        documant.body.style.height = "inherit";
         if (!bodyEventListenersSet) {
             bodyEventListenersSet = true;
             documant.body.addEventListener("mousedown", function (ev) {
