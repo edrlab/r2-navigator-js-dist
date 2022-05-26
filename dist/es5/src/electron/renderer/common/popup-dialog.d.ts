@@ -1,4 +1,4 @@
-export interface IHTMLDialogElementWithPopup extends HTMLElement {
+export interface IHTMLDialogElementWithPopup extends HTMLDialogElement {
     popDialog: PopupDialog | undefined;
     close: () => void;
     showModal: () => void;
