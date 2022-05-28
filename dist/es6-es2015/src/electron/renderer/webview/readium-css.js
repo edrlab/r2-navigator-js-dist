@@ -197,7 +197,7 @@ function checkHiddenFootNotes(documant) {
                 continue;
             }
             const iHash = href.indexOf("#");
-            if (iHash <= 0) {
+            if (iHash < 0) {
                 continue;
             }
             if (href.substring(iHash) === id) {

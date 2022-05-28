@@ -1272,8 +1272,12 @@ function loaded(forced) {
         if (ev.target) {
             let ignoreIncomingMouseClickOnFocusable = false;
             if (win.document && win.document.documentElement) {
-                if (!win.document.documentElement.classList.contains(styles_1.ROOT_CLASS_KEYBOARD_INTERACT)) {
-                    if (ev.target.tagName.toLowerCase() === "a" &&
+                const low = ev.target.tagName.toLowerCase();
+                if (low === "body") {
+                    ignoreIncomingMouseClickOnFocusable = true;
+                }
+                else if (!win.document.documentElement.classList.contains(styles_1.ROOT_CLASS_KEYBOARD_INTERACT)) {
+                    if (low === "a" &&
                         ev.target.href
                         ||
                             ev.target.getAttribute("tabindex") === "-1" &&
