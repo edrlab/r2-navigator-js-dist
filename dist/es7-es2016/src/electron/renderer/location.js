@@ -133,7 +133,11 @@ function locationHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
             href = destUrl.toString();
             debug(`R2_EVENT_LINK ABSOLUTE-ized: ${href}`);
         }
-        handleLinkUrl(href, activeWebView.READIUM2.readiumCss);
+        const eventPayload = {
+            url: href,
+            rcss: activeWebView.READIUM2.readiumCss,
+        };
+        electron_1.ipcRenderer.emit(events_1.R2_EVENT_LINK, eventPayload);
     }
     else if (eventChannel === events_1.R2_EVENT_AUDIO_PLAYBACK_RATE) {
         const payload = eventArgs[0];
@@ -145,11 +149,13 @@ function locationHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
     return true;
 }
 exports.locationHandleIpcMessage = locationHandleIpcMessage;
-electron_1.ipcRenderer.on(events_1.R2_EVENT_LINK, (_event, payload) => {
+electron_1.ipcRenderer.on(events_1.R2_EVENT_LINK, (event, payload) => {
     debug("R2_EVENT_LINK (ipcRenderer.on)");
-    debug(payload.url);
-    const activeWebView = win.READIUM2.getFirstOrSecondWebView();
-    handleLinkUrl(payload.url, activeWebView ? activeWebView.READIUM2.readiumCss : undefined);
+    const pay = (!payload && event.url) ? event : payload;
+    debug(pay.url);
+    const activeWebView = pay.rcss ? undefined : win.READIUM2.getFirstOrSecondWebView();
+    handleLinkUrl(pay.url, pay.rcss ? pay.rcss :
+        (activeWebView ? activeWebView.READIUM2.readiumCss : undefined));
 });
 function shiftWebview(webview, offset, backgroundColor) {
     if (!offset) {

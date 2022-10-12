@@ -66,6 +66,7 @@ export interface IEventPayload_R2_EVENT_READING_LOCATION extends Locator {
 export declare const R2_EVENT_LINK = "R2_EVENT_LINK";
 export interface IEventPayload_R2_EVENT_LINK {
     url: string;
+    rcss?: IEventPayload_R2_EVENT_READIUMCSS | undefined;
 }
 export declare const R2_EVENT_AUDIO_SOUNDTRACK = "R2_EVENT_AUDIO_SOUNDTRACK";
 export interface IEventPayload_R2_EVENT_AUDIO_SOUNDTRACK {
