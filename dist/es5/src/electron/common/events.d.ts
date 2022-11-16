@@ -179,7 +179,7 @@ export interface IEventPayload_R2_EVENT_WEBVIEW_KEYDOWN extends IKeyboardEvent {
         [name: string]: string;
     };
 }
-export declare type IEventPayload_R2_EVENT_WEBVIEW_KEYUP = IEventPayload_R2_EVENT_WEBVIEW_KEYDOWN;
+export type IEventPayload_R2_EVENT_WEBVIEW_KEYUP = IEventPayload_R2_EVENT_WEBVIEW_KEYDOWN;
 export declare const R2_EVENT_CLIPBOARD_COPY = "R2_EVENT_CLIPBOARD_COPY";
 export interface IEventPayload_R2_EVENT_CLIPBOARD_COPY {
     txt: string;

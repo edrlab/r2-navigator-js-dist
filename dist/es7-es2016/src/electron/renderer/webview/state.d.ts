@@ -64,5 +64,5 @@ export interface IReadiumElectronBrowserWindowState {
 export interface IWithReadiumElectronBrowserWindowState {
     READIUM2: IReadiumElectronBrowserWindowState;
 }
-export declare type TWindow = typeof window;
-export declare type IReadiumElectronBrowserWindow = TWindow & IWithReadiumElectronBrowserWindowState;
+export type TWindow = typeof window;
+export type IReadiumElectronBrowserWindow = TWindow & IWithReadiumElectronBrowserWindowState;

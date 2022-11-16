@@ -653,7 +653,12 @@ no new stacking context, otherwise massive performance degradation with CSS Colu
 }
 :root[style].${exports.CLASS_PAGINATED}:not(.${exports.ROOT_CLASS_FIXED_LAYOUT}) > body,
 :root.${exports.CLASS_PAGINATED}:not(.${exports.ROOT_CLASS_FIXED_LAYOUT}) > body {
+    /*
+    Electron v19 --> v23 breaking change :(
     overflow-x: hidden !important;
+    overflow-y: visible !important;
+    */
+    overflow-x: clip !important;
     overflow-y: visible !important;
 }
 
