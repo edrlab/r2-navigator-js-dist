@@ -241,8 +241,7 @@ var _webview1;
 var _webview2;
 function createWebViewInternal(preloadScriptPath) {
     var wv = document.createElement("webview");
-    wv.setAttribute("webpreferences", "nodeIntegration=0, nodeIntegrationInWorker=0, sandbox=0, javascript=1, " +
-        "contextIsolation=0, webSecurity=1, allowRunningInsecureContent=0" + ", partition=".concat(sessions_1.R2_SESSION_WEBVIEW));
+    wv.setAttribute("webpreferences", "enableRemoteModule=0, allowRunningInsecureContent=0, backgroundThrottling=0, nodeIntegration=0, contextIsolation=0, nodeIntegrationInWorker=0, sandbox=0, webSecurity=1, webviewTag=0, partition=".concat(sessions_1.R2_SESSION_WEBVIEW));
     wv.setAttribute("partition", sessions_1.R2_SESSION_WEBVIEW);
     var publicationURL_ = win.READIUM2.publicationURL;
     if (publicationURL_) {

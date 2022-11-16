@@ -102,13 +102,7 @@ electron_1.app.on("web-contents-created", function (_evt, wc) {
         if (params.src && !params.src.startsWith("data:")) {
             debug(params.src);
         }
-        webPreferences.contextIsolation = false;
-        webPreferences.javascript = true;
-        webPreferences.webSecurity = true;
-        webPreferences.nodeIntegration = false;
-        webPreferences.nodeIntegrationInWorker = false;
-        webPreferences.allowRunningInsecureContent = false;
-        webPreferences.partition = sessions_1.R2_SESSION_WEBVIEW;
+        debug(webPreferences);
     });
     if (!wc.hostWebContents) {
         return;
