@@ -215,6 +215,7 @@ function setupAudioBook(_docTitle, audioPlaybackRate) {
                 isVerticalWritingMode: false,
             },
             epubPage: undefined,
+            epubPageID: undefined,
             headings: undefined,
             href: "",
             locations: {

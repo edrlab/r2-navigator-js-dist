@@ -24,6 +24,7 @@ export interface LocatorExtended {
     selectionIsNew: boolean | undefined;
     docInfo: IDocInfo | undefined;
     epubPage: string | undefined;
+    epubPageID: string | undefined;
     headings: Array<{
         id: string | undefined;
         txt: string | undefined;

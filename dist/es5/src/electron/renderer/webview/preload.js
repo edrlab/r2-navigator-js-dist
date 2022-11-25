@@ -32,6 +32,7 @@ if (IS_DEV) {
     cr.consoleRedirect("r2:navigator#electron/renderer/webview/preload", process.stdout, process.stderr, true);
 }
 var debug = debug_("r2:navigator#electron/renderer/webview/preload");
+var INJECTED_LINK_TXT = "__";
 var win = global.window;
 win.READIUM2 = {
     DEBUG_VISUALS: false,
@@ -48,6 +49,7 @@ win.READIUM2 = {
         audioPlaybackInfo: undefined,
         docInfo: undefined,
         epubPage: undefined,
+        epubPageID: undefined,
         headings: undefined,
         href: "",
         locations: {
@@ -361,6 +363,7 @@ function resetLocationHashOverrideInfo() {
         audioPlaybackInfo: undefined,
         docInfo: undefined,
         epubPage: undefined,
+        epubPageID: undefined,
         headings: undefined,
         href: "",
         locations: {
@@ -1225,12 +1228,11 @@ function loaded(forced) {
             debug("++++ scrollToHashDebounced FROM LOAD");
             scrollToHashDebounced(false);
             if (win.document.body) {
-                var linkTxt = "__";
                 var focusLink_1 = win.document.createElement("a");
                 focusLink_1.setAttribute("id", styles_1.SKIP_LINK_ID);
-                focusLink_1.appendChild(win.document.createTextNode(linkTxt));
-                focusLink_1.setAttribute("title", linkTxt);
-                focusLink_1.setAttribute("aria-label", linkTxt);
+                focusLink_1.appendChild(win.document.createTextNode(INJECTED_LINK_TXT));
+                focusLink_1.setAttribute("title", INJECTED_LINK_TXT);
+                focusLink_1.setAttribute("aria-label", INJECTED_LINK_TXT);
                 focusLink_1.setAttribute("href", "javascript:;");
                 focusLink_1.setAttribute("tabindex", "0");
                 win.document.body.insertAdjacentElement("afterbegin", focusLink_1);
@@ -2311,7 +2313,7 @@ var findPrecedingAncestorSiblingEpubPageBreak = function (element) {
                 var elTitle = el.getAttribute("title");
                 var elLabel = el.getAttribute("aria-label");
                 var elText = el.textContent;
-                var pageLabel = elTitle || elLabel || elText;
+                var pageLabel = elTitle || elLabel || elText || " ";
                 if (pageLabel) {
                     var pageBreak = {
                         element: el,
@@ -2334,10 +2336,28 @@ var findPrecedingAncestorSiblingEpubPageBreak = function (element) {
         var c = element.compareDocumentPosition(pageBreak.element);
         if (c === 0 || (c & Node.DOCUMENT_POSITION_PRECEDING) || (c & Node.DOCUMENT_POSITION_CONTAINS)) {
             debug("preceding or containing EPUB page break", pageBreak.text);
-            return pageBreak.text;
+            return { epubPage: pageBreak.text, epubPageID: pageBreak.element.getAttribute("id") || undefined };
         }
     }
-    return undefined;
+    var nil = { epubPage: undefined, epubPageID: undefined };
+    if (_allEpubPageBreaks.length > 0) {
+        var first = { epubPage: _allEpubPageBreaks[0].text, epubPageID: _allEpubPageBreaks[0].element.getAttribute("id") || undefined };
+        if (win.document.body.firstChild === _allEpubPageBreaks[0].element) {
+            debug("pagebreak first", first);
+            return first;
+        }
+        var range = new Range();
+        range.setStart(win.document.body, 0);
+        range.setEnd(_allEpubPageBreaks[0].element, 0);
+        var txt = range.toString() || "";
+        if (txt) {
+            txt = txt.trim().replace(new RegExp("^".concat(INJECTED_LINK_TXT)), "").trim();
+        }
+        var pass = txt.length <= 10;
+        debug("pagebreak first? txt", first, txt.length, pass ? txt : "");
+        return pass ? first : nil;
+    }
+    return nil;
 };
 var notifyReadingLocationRaw = function (userInteract, ignoreMediaOverlays) {
     if (!win.READIUM2.locationHashOverride) {
@@ -2381,7 +2401,7 @@ var notifyReadingLocationRaw = function (userInteract, ignoreMediaOverlays) {
                 !win.READIUM2.locationHashOverrideInfo.selectionInfo ||
                 !(0, selection_1.sameSelections)(win.READIUM2.locationHashOverrideInfo.selectionInfo, selInfo);
     }
-    var epubPage = findPrecedingAncestorSiblingEpubPageBreak(win.READIUM2.locationHashOverride);
+    var _a = findPrecedingAncestorSiblingEpubPageBreak(win.READIUM2.locationHashOverride), epubPage = _a.epubPage, epubPageID = _a.epubPageID;
     var headings = findPrecedingAncestorSiblingHeadings(win.READIUM2.locationHashOverride);
     var secondWebViewHref = win.READIUM2.urlQueryParams &&
         win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_SECOND_WEBVIEW] &&
@@ -2397,6 +2417,7 @@ var notifyReadingLocationRaw = function (userInteract, ignoreMediaOverlays) {
             isVerticalWritingMode: (0, readium_css_1.isVerticalWritingMode)(),
         },
         epubPage: epubPage,
+        epubPageID: epubPageID,
         headings: headings,
         href: "",
         locations: {

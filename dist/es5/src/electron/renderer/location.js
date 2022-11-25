@@ -914,6 +914,7 @@ var _saveReadingLocation = function (docHref, locator) {
         audioPlaybackInfo: locator.audioPlaybackInfo,
         docInfo: locator.docInfo,
         epubPage: locator.epubPage,
+        epubPageID: locator.epubPageID,
         headings: locator.headings,
         locator: {
             href: docHref,

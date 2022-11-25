@@ -55,6 +55,7 @@ export interface IEventPayload_R2_EVENT_READING_LOCATION extends Locator {
     docInfo: IDocInfo | undefined;
     selectionIsNew: boolean | undefined;
     epubPage: string | undefined;
+    epubPageID: string | undefined;
     headings: Array<{
         id: string | undefined;
         txt: string | undefined;
