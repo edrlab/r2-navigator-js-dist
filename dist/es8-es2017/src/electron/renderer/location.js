@@ -370,7 +370,7 @@ function reloadWebView(activeWebView) {
     }, 0);
 }
 function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f, _g;
     const publication = win.READIUM2.publication;
     const publicationURL = win.READIUM2.publicationURL;
     if (!publication || !publicationURL) {
@@ -486,8 +486,16 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
         const publicationSpreadNone = ((_b = (_a = publication.Metadata) === null || _a === void 0 ? void 0 : _a.Rendition) === null || _b === void 0 ? void 0 : _b.Spread) === metadata_properties_1.SpreadEnum.None;
         const slotOfFirstPageInSpread = rtl ? metadata_properties_1.PageEnum.Right : metadata_properties_1.PageEnum.Left;
         const slotOfSecondPageInSpread = slotOfFirstPageInSpread === metadata_properties_1.PageEnum.Right ? metadata_properties_1.PageEnum.Left : metadata_properties_1.PageEnum.Right;
+        const linkSpreadNoneForced = ((_c = rcss === null || rcss === void 0 ? void 0 : rcss.setCSS) === null || _c === void 0 ? void 0 : _c.colCount) === "1" ||
+            ((_d = rcss === null || rcss === void 0 ? void 0 : rcss.setCSS) === null || _d === void 0 ? void 0 : _d.colCount) === "auto" &&
+                win.READIUM2.domSlidingViewport &&
+                win.READIUM2.domSlidingViewport.clientWidth !== 0 &&
+                win.READIUM2.domSlidingViewport.clientHeight !== 0 &&
+                win.READIUM2.domSlidingViewport.clientWidth < win.READIUM2.domSlidingViewport.clientHeight;
         publication.Spine.forEach((spineLink, i) => {
             var _a, _b, _c, _d, _e;
+            spineLink.__notInSpread = false;
+            spineLink.__notInSpreadForced = false;
             if (!(0, readium_css_1.isFixedLayout)(spineLink)) {
                 spineLink.__notInSpread = true;
                 if (!spineLink.Properties) {
@@ -496,7 +504,10 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
                 spineLink.Properties.Page = metadata_properties_1.PageEnum.Center;
                 return;
             }
-            const linkSpreadNone = ((_a = spineLink.Properties) === null || _a === void 0 ? void 0 : _a.Spread) === metadata_properties_1.SpreadEnum.None;
+            if (linkSpreadNoneForced) {
+                spineLink.__notInSpreadForced = true;
+            }
+            const linkSpreadNone = linkSpreadNoneForced || ((_a = spineLink.Properties) === null || _a === void 0 ? void 0 : _a.Spread) === metadata_properties_1.SpreadEnum.None;
             const linkSpreadOther = !linkSpreadNone && ((_b = spineLink.Properties) === null || _b === void 0 ? void 0 : _b.Spread);
             const notInSpread = linkSpreadNone || (publicationSpreadNone && !linkSpreadOther);
             spineLink.__notInSpread = notInSpread;
@@ -522,14 +533,14 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
             }
         });
         const prev = previous ? true : false;
-        const page = (_c = pubLink.Properties) === null || _c === void 0 ? void 0 : _c.Page;
+        const page = pubLink.__notInSpreadForced ? metadata_properties_1.PageEnum.Center : (_e = pubLink.Properties) === null || _e === void 0 ? void 0 : _e.Page;
         if (page === metadata_properties_1.PageEnum.Left) {
             webViewSlot = styles_1.WebViewSlotEnum.left;
             if (!secondWebView && !pubLink.__notInSpread) {
                 const otherIndex = linkIndex + (rtl ? -1 : 1);
                 const otherLink = publication.Spine[otherIndex];
                 if (otherLink && !otherLink.__notInSpread &&
-                    ((_d = otherLink.Properties) === null || _d === void 0 ? void 0 : _d.Page) === metadata_properties_1.PageEnum.Right) {
+                    ((_f = otherLink.Properties) === null || _f === void 0 ? void 0 : _f.Page) === metadata_properties_1.PageEnum.Right) {
                     const needToInverse = !webviewSpreadSwap &&
                         prev && publication.Spine.indexOf(pubLink) > otherIndex;
                     const otherLinkURLObj = new url_1.URL(otherLink.Href, publicationURL);
@@ -553,7 +564,7 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
                 const otherIndex = linkIndex + (!rtl ? -1 : 1);
                 const otherLink = publication.Spine[otherIndex];
                 if (otherLink && !otherLink.__notInSpread &&
-                    ((_e = otherLink.Properties) === null || _e === void 0 ? void 0 : _e.Page) === metadata_properties_1.PageEnum.Left) {
+                    ((_g = otherLink.Properties) === null || _g === void 0 ? void 0 : _g.Page) === metadata_properties_1.PageEnum.Left) {
                     const needToInverse = !webviewSpreadSwap &&
                         prev && publication.Spine.indexOf(pubLink) > otherIndex;
                     const otherLinkURLObj = new url_1.URL(otherLink.Href, publicationURL);
