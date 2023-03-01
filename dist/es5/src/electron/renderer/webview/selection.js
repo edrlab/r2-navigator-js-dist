@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.normalizeRange = exports.convertRangeInfo = exports.convertRange = exports.createOrderedRange = exports.getCurrentSelectionInfo = exports.clearCurrentSelection = void 0;
+exports.normalizeRange = exports.convertRangeInfo = exports.convertRange = exports.createOrderedRange = exports.getCurrentSelectionInfo = exports.cleanupStr = exports.collapseWhitespaces = exports.clearCurrentSelection = void 0;
 var IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 function dumpDebug(msg, startNode, startOffset, endNode, endOffset, getCssSelector) {
     console.log("$$$$$$$$$$$$$$$$$ " + msg);
@@ -56,6 +56,14 @@ function clearCurrentSelection(win) {
     selection.removeAllRanges();
 }
 exports.clearCurrentSelection = clearCurrentSelection;
+var collapseWhitespaces = function (str) {
+    return str.replace(/\n/g, " ").replace(/\s\s+/g, " ");
+};
+exports.collapseWhitespaces = collapseWhitespaces;
+var cleanupStr = function (str) {
+    return (0, exports.collapseWhitespaces)(str).trim();
+};
+exports.cleanupStr = cleanupStr;
 function getCurrentSelectionInfo(win, getCssSelector, computeElementCFI) {
     var selection = win.getSelection();
     if (!selection) {
@@ -66,7 +74,7 @@ function getCurrentSelectionInfo(win, getCssSelector, computeElementCFI) {
         return undefined;
     }
     var rawText = selection.toString();
-    var cleanText = rawText.trim().replace(/\n/g, " ").replace(/\s\s+/g, " ");
+    var cleanText = (0, exports.collapseWhitespaces)(rawText);
     if (cleanText.length === 0) {
         console.log("^^^ SELECTION TEXT EMPTY.");
         return undefined;
@@ -101,10 +109,22 @@ function getCurrentSelectionInfo(win, getCssSelector, computeElementCFI) {
             console.log("".concat(range.endOffset, " !== ").concat(r.endOffset));
         }
     }
-    var rangeInfo = convertRange(range, getCssSelector, computeElementCFI);
-    if (!rangeInfo) {
+    var tuple = convertRange(range, getCssSelector, computeElementCFI);
+    if (!tuple) {
         console.log("^^^ SELECTION RANGE INFO FAIL?!");
         return undefined;
+    }
+    var rangeInfo = tuple[0];
+    var textInfo = tuple[1];
+    if (IS_DEV) {
+        if (textInfo.cleanText !== cleanText) {
+            console.log(">>>>>>>>>>>>>>>>>>>>>>> SELECTION TEXT INFO diff: cleanText");
+            console.log("".concat(textInfo.cleanText, " !== ").concat(cleanText));
+        }
+        if (textInfo.rawText !== rawText) {
+            console.log(">>>>>>>>>>>>>>>>>>>>>>> SELECTION TEXT INFO diff: rawText");
+            console.log("".concat(textInfo.rawText, " !== ").concat(rawText));
+        }
     }
     if (IS_DEV && win.READIUM2.DEBUG_VISUALS) {
         var restoredRange = convertRangeInfo(win.document, rangeInfo);
@@ -128,7 +148,15 @@ function getCurrentSelectionInfo(win, getCssSelector, computeElementCFI) {
     }
     else {
     }
-    return { rangeInfo: rangeInfo, cleanText: cleanText, rawText: rawText };
+    return {
+        rangeInfo: rangeInfo,
+        cleanBefore: textInfo.cleanBefore,
+        cleanText: textInfo.cleanText,
+        cleanAfter: textInfo.cleanAfter,
+        rawBefore: textInfo.rawBefore,
+        rawText: textInfo.rawText,
+        rawAfter: textInfo.rawAfter,
+    };
 }
 exports.getCurrentSelectionInfo = getCurrentSelectionInfo;
 function createOrderedRange(startNode, startOffset, endNode, endOffset) {
@@ -151,6 +179,7 @@ function createOrderedRange(startNode, startOffset, endNode, endOffset) {
 }
 exports.createOrderedRange = createOrderedRange;
 function convertRange(range, getCssSelector, computeElementCFI) {
+    var _a, _b;
     var startIsElement = range.startContainer.nodeType === Node.ELEMENT_NODE;
     var startContainerElement = startIsElement ?
         range.startContainer :
@@ -194,6 +223,94 @@ function convertRange(range, getCssSelector, computeElementCFI) {
                 console.log(getCssSelector(rangeCommonAncestorElement));
             }
         }
+    }
+    var SELECTION_BEFORE_AFTER_TEXT_LENGTH = 30;
+    var rawBefore = "";
+    var rawText = range.toString();
+    var rawAfter = "";
+    var cleanBefore = "";
+    var cleanText = (0, exports.collapseWhitespaces)(rawText);
+    var cleanAfter = "";
+    var currentParent = commonElementAncestor;
+    while (currentParent) {
+        if (((_a = currentParent.tagName) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === "html") {
+            break;
+        }
+        var beforeNeedsToGrow = cleanBefore.length < SELECTION_BEFORE_AFTER_TEXT_LENGTH;
+        var afterNeedsToGrow = cleanAfter.length < SELECTION_BEFORE_AFTER_TEXT_LENGTH;
+        if (!beforeNeedsToGrow && !afterNeedsToGrow) {
+            break;
+        }
+        if (beforeNeedsToGrow) {
+            try {
+                var rangeBefore = new Range();
+                rangeBefore.setStartBefore(currentParent);
+                rangeBefore.setEnd(range.startContainer, range.startOffset);
+                rawBefore = rangeBefore.toString();
+                cleanBefore = (0, exports.collapseWhitespaces)(rawBefore);
+                if (cleanBefore.length > SELECTION_BEFORE_AFTER_TEXT_LENGTH) {
+                    cleanBefore = cleanBefore.substring(cleanBefore.length - SELECTION_BEFORE_AFTER_TEXT_LENGTH, cleanBefore.length);
+                }
+            }
+            catch (ex1) {
+                console.log(ex1);
+            }
+        }
+        if (afterNeedsToGrow) {
+            try {
+                var rangeAfter = new Range();
+                rangeAfter.setStart(range.endContainer, range.endOffset);
+                rangeAfter.setEndAfter(currentParent);
+                rawAfter = rangeAfter.toString();
+                cleanAfter = (0, exports.collapseWhitespaces)(rawAfter);
+                if (cleanAfter.length > SELECTION_BEFORE_AFTER_TEXT_LENGTH) {
+                    cleanAfter = cleanAfter.substring(0, SELECTION_BEFORE_AFTER_TEXT_LENGTH);
+                }
+            }
+            catch (ex2) {
+                console.log(ex2);
+            }
+        }
+        if (((_b = currentParent.tagName) === null || _b === void 0 ? void 0 : _b.toLowerCase()) === "body") {
+            break;
+        }
+        currentParent = currentParent.parentNode;
+    }
+    if (cleanBefore.length) {
+        var j = 0;
+        var i = rawBefore.length - 1;
+        var wasWhiteSpace = false;
+        for (; i >= 0; i--) {
+            var isWhiteSpace = /[\n\s]/.test(rawBefore[i]);
+            if (isWhiteSpace && i !== 0 && i !== rawBefore.length - 1 && wasWhiteSpace) {
+                wasWhiteSpace = isWhiteSpace;
+                continue;
+            }
+            wasWhiteSpace = isWhiteSpace;
+            j++;
+            if (j >= cleanBefore.length) {
+                break;
+            }
+        }
+        rawBefore = rawBefore.substring(i, rawBefore.length);
+    }
+    if (cleanAfter.length) {
+        var j = 0;
+        var i = 0;
+        var wasWhiteSpace = false;
+        for (; i < rawAfter.length; i++) {
+            var isWhiteSpace = /[\n\s]/.test(rawAfter[i]);
+            if (isWhiteSpace && i !== 0 && i !== rawAfter.length - 1 && wasWhiteSpace) {
+                wasWhiteSpace = isWhiteSpace;
+                continue;
+            }
+            wasWhiteSpace = isWhiteSpace;
+            j++;
+            if (j >= cleanAfter.length) {
+                break;
+            }
+        }
+        rawAfter = rawAfter.substring(0, i + 1);
     }
     var rootElementCfi = computeElementCFI(commonElementAncestor);
     var startElementCfi = computeElementCFI(startContainerElement);
@@ -260,17 +377,24 @@ function convertRange(range, getCssSelector, computeElementCFI) {
             startElementOrTextCfi.replace(rootElementCfi, "") + "," +
             endElementOrTextCfi.replace(rootElementCfi, "");
     }
-    return {
-        cfi: cfi,
-        endContainerChildTextNodeIndex: endContainerChildTextNodeIndex,
-        endContainerElementCFI: endElementCfi,
-        endContainerElementCssSelector: endContainerElementCssSelector,
-        endOffset: range.endOffset,
-        startContainerChildTextNodeIndex: startContainerChildTextNodeIndex,
-        startContainerElementCFI: startElementCfi,
-        startContainerElementCssSelector: startContainerElementCssSelector,
-        startOffset: range.startOffset,
-    };
+    return [{
+            cfi: cfi,
+            endContainerChildTextNodeIndex: endContainerChildTextNodeIndex,
+            endContainerElementCFI: endElementCfi,
+            endContainerElementCssSelector: endContainerElementCssSelector,
+            endOffset: range.endOffset,
+            startContainerChildTextNodeIndex: startContainerChildTextNodeIndex,
+            startContainerElementCFI: startElementCfi,
+            startContainerElementCssSelector: startContainerElementCssSelector,
+            startOffset: range.startOffset,
+        }, {
+            cleanBefore: cleanBefore,
+            cleanText: cleanText,
+            cleanAfter: cleanAfter,
+            rawBefore: rawBefore,
+            rawText: rawText,
+            rawAfter: rawAfter,
+        }];
 }
 exports.convertRange = convertRange;
 function convertRangeInfo(documant, rangeInfo) {

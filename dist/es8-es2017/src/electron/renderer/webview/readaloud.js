@@ -320,10 +320,12 @@ function wrapHighlightWord(ttsQueueItemRef, utteranceText, charIndex, charLength
             const domRect = range.getBoundingClientRect();
             _dialogState.focusScrollRaw(ttsQueueItemRef.item.parentElement, false, true, domRect);
         }
-        const rangeInfo = (0, selection_1.convertRange)(range, getCssSelector, (_node) => "");
-        if (!rangeInfo) {
+        const tuple = (0, selection_1.convertRange)(range, getCssSelector, (_node) => "");
+        if (!tuple) {
             return;
         }
+        const rangeInfo = tuple[0];
+        const textInfo = tuple[1];
         const highlightDefinitions = [
             {
                 color: {
@@ -334,9 +336,13 @@ function wrapHighlightWord(ttsQueueItemRef, utteranceText, charIndex, charLength
                 drawType: highlight_1.HighlightDrawTypeUnderline,
                 expand: 2,
                 selectionInfo: {
-                    cleanText: "",
+                    rawBefore: textInfo.rawBefore,
+                    rawText: textInfo.rawText,
+                    rawAfter: textInfo.rawAfter,
+                    cleanBefore: textInfo.cleanBefore,
+                    cleanText: textInfo.cleanText,
+                    cleanAfter: textInfo.cleanAfter,
                     rangeInfo,
-                    rawText: "",
                 },
             },
         ];
@@ -424,10 +430,12 @@ function wrapHighlight(doHighlight, ttsQueueItemRef) {
                 const domRect = range.getBoundingClientRect();
                 _dialogState.focusScrollRaw(ttsQueueItemRef.item.parentElement, false, true, domRect);
             }
-            const rangeInfo = (0, selection_1.convertRange)(range, getCssSelector, (_node) => "");
-            if (!rangeInfo) {
+            const tuple = (0, selection_1.convertRange)(range, getCssSelector, (_node) => "");
+            if (!tuple) {
                 return;
             }
+            const rangeInfo = tuple[0];
+            const textInfo = tuple[1];
             const highlightDefinitions = [
                 {
                     color: {
@@ -438,9 +446,13 @@ function wrapHighlight(doHighlight, ttsQueueItemRef) {
                     drawType: highlight_1.HighlightDrawTypeBackground,
                     expand: 4,
                     selectionInfo: {
-                        cleanText: "",
+                        rawBefore: textInfo.rawBefore,
+                        rawText: textInfo.rawText,
+                        rawAfter: textInfo.rawAfter,
+                        cleanBefore: textInfo.cleanBefore,
+                        cleanText: textInfo.cleanText,
+                        cleanAfter: textInfo.cleanAfter,
                         rangeInfo,
-                        rawText: "",
                     },
                 },
             ];

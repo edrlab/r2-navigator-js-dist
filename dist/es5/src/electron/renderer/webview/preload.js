@@ -1230,7 +1230,7 @@ function loaded(forced) {
             if (win.document.body) {
                 var focusLink_1 = win.document.createElement("a");
                 focusLink_1.setAttribute("id", styles_1.SKIP_LINK_ID);
-                focusLink_1.appendChild(win.document.createTextNode(INJECTED_LINK_TXT));
+                focusLink_1.appendChild(win.document.createTextNode(" "));
                 focusLink_1.setAttribute("title", INJECTED_LINK_TXT);
                 focusLink_1.setAttribute("aria-label", INJECTED_LINK_TXT);
                 focusLink_1.setAttribute("href", "javascript:;");
@@ -2351,7 +2351,7 @@ var findPrecedingAncestorSiblingEpubPageBreak = function (element) {
         range.setEnd(_allEpubPageBreaks[0].element, 0);
         var txt = range.toString() || "";
         if (txt) {
-            txt = txt.trim().replace(new RegExp("^".concat(INJECTED_LINK_TXT)), "").trim();
+            txt = txt.trim();
         }
         var pass = txt.length <= 10;
         debug("pagebreak first? txt", first, txt.length, pass ? txt : "");
@@ -2390,9 +2390,12 @@ var notifyReadingLocationRaw = function (userInteract, ignoreMediaOverlays) {
         cfi = selInfo.rangeInfo.startContainerElementCFI;
     }
     var text = selInfo ? {
-        after: undefined,
-        before: undefined,
+        after: selInfo.cleanAfter,
+        before: selInfo.cleanBefore,
         highlight: selInfo.cleanText,
+        afterRaw: selInfo.rawAfter,
+        beforeRaw: selInfo.rawBefore,
+        highlightRaw: selInfo.rawText,
     } : undefined;
     var selectionIsNew;
     if (selInfo) {

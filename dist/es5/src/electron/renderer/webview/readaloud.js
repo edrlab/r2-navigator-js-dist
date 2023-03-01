@@ -334,10 +334,12 @@ function wrapHighlightWord(ttsQueueItemRef, utteranceText, charIndex, charLength
             var domRect = range.getBoundingClientRect();
             _dialogState.focusScrollRaw(ttsQueueItemRef.item.parentElement, false, true, domRect);
         }
-        var rangeInfo = (0, selection_1.convertRange)(range, getCssSelector, function (_node) { return ""; });
-        if (!rangeInfo) {
+        var tuple = (0, selection_1.convertRange)(range, getCssSelector, function (_node) { return ""; });
+        if (!tuple) {
             return;
         }
+        var rangeInfo = tuple[0];
+        var textInfo = tuple[1];
         var highlightDefinitions = [
             {
                 color: {
@@ -348,9 +350,13 @@ function wrapHighlightWord(ttsQueueItemRef, utteranceText, charIndex, charLength
                 drawType: highlight_1.HighlightDrawTypeUnderline,
                 expand: 2,
                 selectionInfo: {
-                    cleanText: "",
+                    rawBefore: textInfo.rawBefore,
+                    rawText: textInfo.rawText,
+                    rawAfter: textInfo.rawAfter,
+                    cleanBefore: textInfo.cleanBefore,
+                    cleanText: textInfo.cleanText,
+                    cleanAfter: textInfo.cleanAfter,
                     rangeInfo: rangeInfo,
-                    rawText: "",
                 },
             },
         ];
@@ -449,10 +455,12 @@ function wrapHighlight(doHighlight, ttsQueueItemRef) {
                 var domRect = range.getBoundingClientRect();
                 _dialogState.focusScrollRaw(ttsQueueItemRef.item.parentElement, false, true, domRect);
             }
-            var rangeInfo = (0, selection_1.convertRange)(range, getCssSelector, function (_node) { return ""; });
-            if (!rangeInfo) {
+            var tuple = (0, selection_1.convertRange)(range, getCssSelector, function (_node) { return ""; });
+            if (!tuple) {
                 return;
             }
+            var rangeInfo = tuple[0];
+            var textInfo = tuple[1];
             var highlightDefinitions = [
                 {
                     color: {
@@ -463,9 +471,13 @@ function wrapHighlight(doHighlight, ttsQueueItemRef) {
                     drawType: highlight_1.HighlightDrawTypeBackground,
                     expand: 4,
                     selectionInfo: {
-                        cleanText: "",
+                        rawBefore: textInfo.rawBefore,
+                        rawText: textInfo.rawText,
+                        rawAfter: textInfo.rawAfter,
+                        cleanBefore: textInfo.cleanBefore,
+                        cleanText: textInfo.cleanText,
+                        cleanAfter: textInfo.cleanAfter,
                         rangeInfo: rangeInfo,
-                        rawText: "",
                     },
                 },
             ];
