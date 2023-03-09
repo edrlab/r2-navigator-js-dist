@@ -541,7 +541,7 @@ function updateTTSInfo(charIndex, charLength, utteranceText) {
         _dialogState.focusScrollRaw(ttsQueueItem.item.parentElement, false, true, undefined);
     }
     const ttsQueueItemText = utteranceText ? utteranceText : (0, dom_text_utils_1.getTtsQueueItemRefText)(ttsQueueItem);
-    let ttsQueueItemMarkup = ttsQueueItemText;
+    let ttsQueueItemMarkup = (0, dom_text_utils_1.normalizeHtmlText)(ttsQueueItemText);
     if (charIndex >= 0 && utteranceText) {
         const start = utteranceText.slice(0, charIndex + 1).search(/\S+$/);
         const right = utteranceText.slice(charIndex).search(/\s/);

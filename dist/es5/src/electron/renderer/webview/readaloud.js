@@ -566,7 +566,7 @@ function updateTTSInfo(charIndex, charLength, utteranceText) {
         _dialogState.focusScrollRaw(ttsQueueItem.item.parentElement, false, true, undefined);
     }
     var ttsQueueItemText = utteranceText ? utteranceText : (0, dom_text_utils_1.getTtsQueueItemRefText)(ttsQueueItem);
-    var ttsQueueItemMarkup = ttsQueueItemText;
+    var ttsQueueItemMarkup = (0, dom_text_utils_1.normalizeHtmlText)(ttsQueueItemText);
     if (charIndex >= 0 && utteranceText) {
         var start = utteranceText.slice(0, charIndex + 1).search(/\S+$/);
         var right = utteranceText.slice(charIndex).search(/\s/);
