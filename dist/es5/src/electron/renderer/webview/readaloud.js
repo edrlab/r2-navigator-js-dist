@@ -724,6 +724,7 @@ var ttsPlayQueueIndexDebounced = (0, debounce_1.debounce)(function (ttsQueueInde
     ttsPlayQueueIndex(ttsQueueIndex);
 }, 150);
 function ttsPlayQueueIndex(ttsQueueIndex) {
+    var _a;
     if (!_dialogState ||
         !_dialogState.ttsRootElement ||
         !_dialogState.focusScrollRaw ||
@@ -774,6 +775,34 @@ function ttsPlayQueueIndex(ttsQueueIndex) {
     utterance.voice = speechSynthesis.getVoices().find(function (voice) {
         return win.READIUM2.ttsVoice && (voice.name === win.READIUM2.ttsVoice.name && voice.lang === win.READIUM2.ttsVoice.lang && voice.voiceURI === win.READIUM2.ttsVoice.voiceURI && voice.default === win.READIUM2.ttsVoice.default && voice.localService === win.READIUM2.ttsVoice.localService);
     }) || null;
+    if (utterance.lang
+        && ((_a = utterance.voice) === null || _a === void 0 ? void 0 : _a.lang)) {
+        var utteranceLang = utterance.lang.toLowerCase();
+        var utteranceLangShort = utteranceLang;
+        var i = utteranceLangShort.indexOf("-");
+        var utteranceLangIsSpecific = i > 0;
+        if (utteranceLangIsSpecific) {
+            utteranceLangShort = utteranceLangShort.substring(0, i);
+        }
+        var utteranceVoiceLang = utterance.voice.lang.toLowerCase();
+        var utteranceVoiceLangShort = utteranceVoiceLang;
+        var j = utteranceVoiceLangShort.indexOf("-");
+        var utteranceVoiceLangIsSpecific = j > 0;
+        if (utteranceVoiceLangIsSpecific) {
+            utteranceVoiceLangShort = utteranceVoiceLangShort.substring(0, j);
+        }
+        if (utteranceLang !== utteranceVoiceLang) {
+            var doReset = false;
+            if (utteranceVoiceLangShort !== utteranceLangShort) {
+                doReset = true;
+            }
+            else if (utteranceLangIsSpecific) {
+            }
+            if (doReset) {
+                utterance.voice = null;
+            }
+        }
+    }
     utterance.onboundary = function (ev) {
         if (utterance.r2_cancel) {
             return;

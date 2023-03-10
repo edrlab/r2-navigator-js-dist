@@ -699,6 +699,7 @@ const ttsPlayQueueIndexDebounced = (0, debounce_1.debounce)((ttsQueueIndex) => {
     ttsPlayQueueIndex(ttsQueueIndex);
 }, 150);
 function ttsPlayQueueIndex(ttsQueueIndex) {
+    var _a;
     if (!_dialogState ||
         !_dialogState.ttsRootElement ||
         !_dialogState.focusScrollRaw ||
@@ -749,6 +750,34 @@ function ttsPlayQueueIndex(ttsQueueIndex) {
     utterance.voice = speechSynthesis.getVoices().find((voice) => {
         return win.READIUM2.ttsVoice && (voice.name === win.READIUM2.ttsVoice.name && voice.lang === win.READIUM2.ttsVoice.lang && voice.voiceURI === win.READIUM2.ttsVoice.voiceURI && voice.default === win.READIUM2.ttsVoice.default && voice.localService === win.READIUM2.ttsVoice.localService);
     }) || null;
+    if (utterance.lang
+        && ((_a = utterance.voice) === null || _a === void 0 ? void 0 : _a.lang)) {
+        const utteranceLang = utterance.lang.toLowerCase();
+        let utteranceLangShort = utteranceLang;
+        const i = utteranceLangShort.indexOf("-");
+        const utteranceLangIsSpecific = i > 0;
+        if (utteranceLangIsSpecific) {
+            utteranceLangShort = utteranceLangShort.substring(0, i);
+        }
+        const utteranceVoiceLang = utterance.voice.lang.toLowerCase();
+        let utteranceVoiceLangShort = utteranceVoiceLang;
+        const j = utteranceVoiceLangShort.indexOf("-");
+        const utteranceVoiceLangIsSpecific = j > 0;
+        if (utteranceVoiceLangIsSpecific) {
+            utteranceVoiceLangShort = utteranceVoiceLangShort.substring(0, j);
+        }
+        if (utteranceLang !== utteranceVoiceLang) {
+            let doReset = false;
+            if (utteranceVoiceLangShort !== utteranceLangShort) {
+                doReset = true;
+            }
+            else if (utteranceLangIsSpecific) {
+            }
+            if (doReset) {
+                utterance.voice = null;
+            }
+        }
+    }
     utterance.onboundary = (ev) => {
         if (utterance.r2_cancel) {
             return;
