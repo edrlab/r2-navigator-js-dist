@@ -1850,7 +1850,7 @@ const processXYRaw = (x, y, reverse, userInteract) => {
                 win.READIUM2.locationHashOverride = domPointData.element;
             }
         }
-        if (userInteract) {
+        if (userInteract && win.READIUM2.DEBUG_VISUALS) {
             notifyReadingLocationDebouncedImmediate(userInteract);
         }
         else {
