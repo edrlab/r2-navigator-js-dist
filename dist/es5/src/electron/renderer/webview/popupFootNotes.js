@@ -38,7 +38,7 @@ function popupFootNote(element, focusScrollRaw, href, ensureTwoPageSpreadWithOdd
                     if (!isNoteref) {
                         return [2, false];
                     }
-                    url = new URL(href);
+                    url = new URL(href, href.startsWith("#") ? documant.location.href : undefined);
                     if (!url.hash) {
                         return [2, false];
                     }
