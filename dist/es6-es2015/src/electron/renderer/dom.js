@@ -70,6 +70,9 @@ let _resizeWebviewsNeedReset = true;
 let _resizeTimeout;
 win.addEventListener("resize", () => {
     var _a, _b, _c;
+    if (!win.READIUM2) {
+        return;
+    }
     if (((_c = (_b = (_a = win.READIUM2.publication) === null || _a === void 0 ? void 0 : _a.Metadata) === null || _b === void 0 ? void 0 : _b.Rendition) === null || _c === void 0 ? void 0 : _c.Layout) !== "fixed") {
         return;
     }
@@ -112,6 +115,9 @@ win.addEventListener("resize", () => {
     }), 1000);
 });
 electron_1.ipcRenderer.on("accessibility-support-changed", (_e, accessibilitySupportEnabled) => {
+    if (!win.READIUM2) {
+        return;
+    }
     debug("accessibility-support-changed event received in WebView ", accessibilitySupportEnabled);
     win.READIUM2.isScreenReaderMounted = accessibilitySupportEnabled;
 });

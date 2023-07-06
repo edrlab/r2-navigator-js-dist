@@ -5,25 +5,25 @@ var bodyHyphensEnum;
 (function (bodyHyphensEnum) {
     bodyHyphensEnum["auto"] = "auto";
     bodyHyphensEnum["none"] = "none";
-})(bodyHyphensEnum = exports.bodyHyphensEnum || (exports.bodyHyphensEnum = {}));
+})(bodyHyphensEnum || (exports.bodyHyphensEnum = bodyHyphensEnum = {}));
 var colCountEnum;
 (function (colCountEnum) {
     colCountEnum["auto"] = "auto";
     colCountEnum["one"] = "1";
     colCountEnum["two"] = "2";
-})(colCountEnum = exports.colCountEnum || (exports.colCountEnum = {}));
+})(colCountEnum || (exports.colCountEnum = colCountEnum = {}));
 var ligaturesEnum;
 (function (ligaturesEnum) {
     ligaturesEnum["none"] = "none";
     ligaturesEnum["common_ligatures"] = "common-ligatures";
-})(ligaturesEnum = exports.ligaturesEnum || (exports.ligaturesEnum = {}));
+})(ligaturesEnum || (exports.ligaturesEnum = ligaturesEnum = {}));
 var textAlignEnum;
 (function (textAlignEnum) {
     textAlignEnum["left"] = "left";
     textAlignEnum["right"] = "right";
     textAlignEnum["justify"] = "justify";
     textAlignEnum["start"] = "start";
-})(textAlignEnum = exports.textAlignEnum || (exports.textAlignEnum = {}));
+})(textAlignEnum || (exports.textAlignEnum = textAlignEnum = {}));
 var fontEnum;
 (function (fontEnum) {
     fontEnum["DEFAULT"] = "DEFAULT";
@@ -38,7 +38,7 @@ var fontEnum;
     fontEnum["JA_SANS"] = "JA-SANS";
     fontEnum["JA_V"] = "JA-V";
     fontEnum["JA_V_SANS"] = "JA-V-SANS";
-})(fontEnum = exports.fontEnum || (exports.fontEnum = {}));
+})(fontEnum || (exports.fontEnum = fontEnum = {}));
 exports.readiumCSSDefaults = {
     a11yNormalize: false,
     backgroundColor: undefined,

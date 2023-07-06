@@ -150,6 +150,9 @@ function locationHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
 }
 exports.locationHandleIpcMessage = locationHandleIpcMessage;
 electron_1.ipcRenderer.on(events_1.R2_EVENT_LINK, function (event, payload) {
+    if (!win.READIUM2) {
+        return;
+    }
     debug("R2_EVENT_LINK (ipcRenderer.on)");
     var pay = (!payload && event.url) ? event : payload;
     debug(pay.url);

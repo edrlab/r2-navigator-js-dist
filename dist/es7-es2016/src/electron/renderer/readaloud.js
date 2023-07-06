@@ -132,7 +132,7 @@ var TTSStateEnum;
     TTSStateEnum["PAUSED"] = "PAUSED";
     TTSStateEnum["PLAYING"] = "PLAYING";
     TTSStateEnum["STOPPED"] = "STOPPED";
-})(TTSStateEnum = exports.TTSStateEnum || (exports.TTSStateEnum = {}));
+})(TTSStateEnum || (exports.TTSStateEnum = TTSStateEnum = {}));
 let _ttsListener;
 function ttsListen(ttsListener) {
     _ttsListener = ttsListener;

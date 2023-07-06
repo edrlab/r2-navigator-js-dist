@@ -7,7 +7,7 @@ var WebViewSlotEnum;
     WebViewSlotEnum["center"] = "center";
     WebViewSlotEnum["left"] = "left";
     WebViewSlotEnum["right"] = "right";
-})(WebViewSlotEnum = exports.WebViewSlotEnum || (exports.WebViewSlotEnum = {}));
+})(WebViewSlotEnum || (exports.WebViewSlotEnum = WebViewSlotEnum = {}));
 exports.CLASS_PAGINATED = "r2-css-paginated";
 exports.HIDE_CURSOR_CLASS = "r2-hideCursor";
 exports.ZERO_TRANSFORM_CLASS = "r2-zeroTransform";

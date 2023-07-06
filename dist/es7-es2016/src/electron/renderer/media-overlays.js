@@ -844,7 +844,7 @@ var MediaOverlaysStateEnum;
     MediaOverlaysStateEnum["PAUSED"] = "PAUSED";
     MediaOverlaysStateEnum["PLAYING"] = "PLAYING";
     MediaOverlaysStateEnum["STOPPED"] = "STOPPED";
-})(MediaOverlaysStateEnum = exports.MediaOverlaysStateEnum || (exports.MediaOverlaysStateEnum = {}));
+})(MediaOverlaysStateEnum || (exports.MediaOverlaysStateEnum = MediaOverlaysStateEnum = {}));
 let _mediaOverlaysListener;
 function mediaOverlaysListen(mediaOverlaysListener) {
     _mediaOverlaysListener = mediaOverlaysListener;

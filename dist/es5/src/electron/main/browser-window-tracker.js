@@ -45,6 +45,9 @@ electron_1.ipcMain.on("accessibility-support-changed", function (ev) {
 var contextMenuSetup = function (webContent, webContentID) {
     debug("MAIN CONTEXT_MENU_SETUP ".concat(webContentID));
     var wc = electron_1.webContents.fromId(webContentID);
+    if (!wc) {
+        return;
+    }
     wc.on("context-menu", function (_ev, params) {
         var x = params.x, y = params.y;
         debug("MAIN context-menu EVENT on WebView");
@@ -90,6 +93,9 @@ electron_1.ipcMain.on(context_menu_1.CONTEXT_MENU_SETUP, function (event, webCon
 });
 electron_1.ipcMain.handle(events_1.R2_EVENT_KEYBOARD_FOCUS_REQUEST, function (event, webContentsId) {
     var wc = electron_1.webContents.fromId(webContentsId);
+    if (!wc) {
+        return;
+    }
     debug("KEYBOARD FOCUS REQUEST (3) ", wc ? wc.id : "??", " // ", webContentsId, " -- ", wc.hostWebContents.id, " == ", event.sender.id);
     if (wc && wc.hostWebContents === event.sender) {
         debug("KEYBOARD FOCUS REQUEST (3) GO! ", wc.id, wc.hostWebContents.id);

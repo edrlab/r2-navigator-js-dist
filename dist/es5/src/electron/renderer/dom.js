@@ -31,6 +31,9 @@ var _resizeTimeout;
 win.addEventListener("resize", function () {
     var e_1, _a;
     var _b, _c, _d;
+    if (!win.READIUM2) {
+        return;
+    }
     if (((_d = (_c = (_b = win.READIUM2.publication) === null || _b === void 0 ? void 0 : _b.Metadata) === null || _c === void 0 ? void 0 : _c.Rendition) === null || _d === void 0 ? void 0 : _d.Layout) !== "fixed") {
         return;
     }
@@ -115,6 +118,9 @@ win.addEventListener("resize", function () {
     }); }, 1000);
 });
 electron_1.ipcRenderer.on("accessibility-support-changed", function (_e, accessibilitySupportEnabled) {
+    if (!win.READIUM2) {
+        return;
+    }
     debug("accessibility-support-changed event received in WebView ", accessibilitySupportEnabled);
     win.READIUM2.isScreenReaderMounted = accessibilitySupportEnabled;
 });
