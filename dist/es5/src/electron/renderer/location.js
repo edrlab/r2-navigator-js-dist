@@ -6,6 +6,7 @@ var debug_ = require("debug");
 var electron_1 = require("electron");
 var path = require("path");
 var url_1 = require("url");
+var cssselector2_1 = require("./common/cssselector2");
 var metadata_properties_1 = require("r2-shared-js/dist/es5/src/models/metadata-properties");
 var UrlUtils_1 = require("r2-utils-js/dist/es5/src/_utils/http/UrlUtils");
 var audiobook_1 = require("../common/audiobook");
@@ -156,6 +157,10 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_LINK, function (event, payload) {
     debug("R2_EVENT_LINK (ipcRenderer.on)");
     var pay = (!payload && event.url) ? event : payload;
     debug(pay.url);
+    if (pay.url.indexOf("#" + cssselector2_1.FRAG_ID_CSS_SELECTOR) >= 0) {
+        debug("R2_EVENT_LINK (ipcRenderer.on) SKIP link activation [FRAG_ID_CSS_SELECTOR]");
+        return;
+    }
     var activeWebView = pay.rcss ? undefined : win.READIUM2.getFirstOrSecondWebView();
     handleLinkUrl(pay.url, pay.rcss ? pay.rcss :
         (activeWebView ? activeWebView.READIUM2.readiumCss : undefined));
@@ -405,7 +410,7 @@ function reloadWebView(activeWebView) {
 }
 function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
     var _this = this;
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     var publication = win.READIUM2.publication;
     var publicationURL = win.READIUM2.publicationURL;
     if (!publication || !publicationURL) {
@@ -632,6 +637,15 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
     var rcssJsonstr = JSON.stringify(rcssJson, null, "");
     var rcssJsonstrBase64 = Buffer.from(rcssJsonstr).toString("base64");
     var hrefToLoadHttpUri = new URI(hrefToLoadHttp);
+    if ((_h = hrefToLoadHttpUri.fragment()) === null || _h === void 0 ? void 0 : _h.startsWith(cssselector2_1.FRAG_ID_CSS_SELECTOR)) {
+        var cssSelector_1 = decodeURIComponent(hrefToLoadHttpUri.fragment().substring(cssselector2_1.FRAG_ID_CSS_SELECTOR.length));
+        debug("FRAG_ID_CSS_SELECTOR: " + cssSelector_1);
+        hrefToLoadHttpUri.hash("").normalizeHash();
+        hrefToLoadHttpUri.search(function (data) {
+            data[url_params_1.URL_PARAM_GOTO] = Buffer.from(JSON.stringify({ cssSelector: cssSelector_1 }, null, "")).toString("base64");
+        });
+        useGoto = true;
+    }
     if (isAudio) {
         if (useGoto) {
             hrefToLoadHttpUri.hash("").normalizeHash();

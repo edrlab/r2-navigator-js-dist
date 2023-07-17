@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.uniqueCssSelector = void 0;
+exports.uniqueCssSelector = exports.FRAG_ID_CSS_SELECTOR = void 0;
 var tslib_1 = require("tslib");
 var cssesc = require("cssesc");
+exports.FRAG_ID_CSS_SELECTOR = "r2-css-selector_";
 var Limit;
 (function (Limit) {
     Limit[Limit["All"] = 0] = "All";

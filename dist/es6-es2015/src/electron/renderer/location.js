@@ -6,6 +6,7 @@ const debug_ = require("debug");
 const electron_1 = require("electron");
 const path = require("path");
 const url_1 = require("url");
+const cssselector2_1 = require("./common/cssselector2");
 const metadata_properties_1 = require("r2-shared-js/dist/es6-es2015/src/models/metadata-properties");
 const UrlUtils_1 = require("r2-utils-js/dist/es6-es2015/src/_utils/http/UrlUtils");
 const audiobook_1 = require("../common/audiobook");
@@ -156,6 +157,10 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_LINK, (event, payload) => {
     debug("R2_EVENT_LINK (ipcRenderer.on)");
     const pay = (!payload && event.url) ? event : payload;
     debug(pay.url);
+    if (pay.url.indexOf("#" + cssselector2_1.FRAG_ID_CSS_SELECTOR) >= 0) {
+        debug("R2_EVENT_LINK (ipcRenderer.on) SKIP link activation [FRAG_ID_CSS_SELECTOR]");
+        return;
+    }
     const activeWebView = pay.rcss ? undefined : win.READIUM2.getFirstOrSecondWebView();
     handleLinkUrl(pay.url, pay.rcss ? pay.rcss :
         (activeWebView ? activeWebView.READIUM2.readiumCss : undefined));
@@ -374,7 +379,7 @@ function reloadWebView(activeWebView) {
     }, 0);
 }
 function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     const publication = win.READIUM2.publication;
     const publicationURL = win.READIUM2.publicationURL;
     if (!publication || !publicationURL) {
@@ -601,6 +606,15 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
     const rcssJsonstr = JSON.stringify(rcssJson, null, "");
     const rcssJsonstrBase64 = Buffer.from(rcssJsonstr).toString("base64");
     const hrefToLoadHttpUri = new URI(hrefToLoadHttp);
+    if ((_h = hrefToLoadHttpUri.fragment()) === null || _h === void 0 ? void 0 : _h.startsWith(cssselector2_1.FRAG_ID_CSS_SELECTOR)) {
+        const cssSelector = decodeURIComponent(hrefToLoadHttpUri.fragment().substring(cssselector2_1.FRAG_ID_CSS_SELECTOR.length));
+        debug("FRAG_ID_CSS_SELECTOR: " + cssSelector);
+        hrefToLoadHttpUri.hash("").normalizeHash();
+        hrefToLoadHttpUri.search((data) => {
+            data[url_params_1.URL_PARAM_GOTO] = Buffer.from(JSON.stringify({ cssSelector }, null, "")).toString("base64");
+        });
+        useGoto = true;
+    }
     if (isAudio) {
         if (useGoto) {
             hrefToLoadHttpUri.hash("").normalizeHash();

@@ -5,6 +5,7 @@ const debounce_1 = require("debounce");
 const debug_ = require("debug");
 const electron_1 = require("electron");
 const tabbable_1 = require("tabbable");
+const UrlUtils_1 = require("r2-utils-js/dist/es8-es2017/src/_utils/http/UrlUtils");
 const events_1 = require("../../common/events");
 const readium_css_inject_1 = require("../../common/readium-css-inject");
 const selection_1 = require("../../common/selection");
@@ -1397,6 +1398,10 @@ function loaded(forced) {
         }
         ev.preventDefault();
         ev.stopPropagation();
+        const payload = {
+            url: "#" + cssselector2_1.FRAG_ID_CSS_SELECTOR + (0, UrlUtils_1.encodeURIComponent_RFC3986)(getCssSelector(currentElement)),
+        };
+        electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_LINK, payload);
         const done = await (0, popupFootNotes_1.popupFootNote)(currentElement, focusScrollRaw, hrefStr, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
         if (!done) {
             focusScrollDebounced.clear();

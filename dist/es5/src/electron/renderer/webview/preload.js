@@ -6,6 +6,7 @@ var debounce_1 = require("debounce");
 var debug_ = require("debug");
 var electron_1 = require("electron");
 var tabbable_1 = require("tabbable");
+var UrlUtils_1 = require("r2-utils-js/dist/es5/src/_utils/http/UrlUtils");
 var events_1 = require("../../common/events");
 var readium_css_inject_1 = require("../../common/readium-css-inject");
 var selection_1 = require("../../common/selection");
@@ -1389,7 +1390,7 @@ function loaded(forced) {
         });
     }); }, true);
     win.document.addEventListener("click", function (ev) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-        var currentElement, href, href_, hrefStr, done, payload;
+        var currentElement, href, href_, hrefStr, payload, done, payload_1;
         return tslib_1.__generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -1418,6 +1419,10 @@ function loaded(forced) {
                     }
                     ev.preventDefault();
                     ev.stopPropagation();
+                    payload = {
+                        url: "#" + cssselector2_1.FRAG_ID_CSS_SELECTOR + (0, UrlUtils_1.encodeURIComponent_RFC3986)(getCssSelector(currentElement)),
+                    };
+                    electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_LINK, payload);
                     return [4, (0, popupFootNotes_1.popupFootNote)(currentElement, focusScrollRaw, hrefStr, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable)];
                 case 1:
                     done = _a.sent();
@@ -1430,10 +1435,10 @@ function loaded(forced) {
                         onScrollDebounced.clear();
                         onResizeDebounced.clear();
                         handleFocusInDebounced.clear();
-                        payload = {
+                        payload_1 = {
                             url: hrefStr,
                         };
-                        electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_LINK, payload);
+                        electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_LINK, payload_1);
                     }
                     return [2, false];
             }
