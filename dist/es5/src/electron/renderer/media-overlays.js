@@ -12,7 +12,7 @@ var location_1 = require("./location");
 var readium_css_1 = require("./readium-css");
 var debug = debug_("r2:navigator#electron/renderer/media-overlays");
 var IS_DEV = process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev";
-var win = window;
+var win = global.window;
 var AUDIO_MO_ID = "R2_AUDIO_MO_ID";
 function publicationHasMediaOverlays(publication) {
     if (publication.Spine) {
@@ -988,12 +988,16 @@ function moHighlight(href, id) {
             }
         }
         setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, activeWebView.send(events_1.R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT, payload)];
+            var _a;
+            return tslib_1.__generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        if (!((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady)) return [3, 2];
+                        return [4, activeWebView.send(events_1.R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT, payload)];
                     case 1:
-                        _a.sent();
-                        return [2];
+                        _b.sent();
+                        _b.label = 2;
+                    case 2: return [2];
                 }
             });
         }); }, 0);

@@ -11,7 +11,7 @@ const location_1 = require("./location");
 const readium_css_1 = require("./readium-css");
 const debug = debug_("r2:navigator#electron/renderer/media-overlays");
 const IS_DEV = process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev";
-const win = window;
+const win = global.window;
 const AUDIO_MO_ID = "R2_AUDIO_MO_ID";
 function publicationHasMediaOverlays(publication) {
     if (publication.Spine) {
@@ -828,7 +828,10 @@ function moHighlight(href, id) {
             }
         }
         setTimeout(async () => {
-            await activeWebView.send(events_1.R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT, payload);
+            var _a;
+            if ((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady) {
+                await activeWebView.send(events_1.R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT, payload);
+            }
         }, 0);
     }
 }

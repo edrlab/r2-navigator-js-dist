@@ -6,7 +6,7 @@ var debounce_1 = require("debounce");
 var events_1 = require("../common/events");
 var location_1 = require("./location");
 var readium_css_1 = require("./readium-css");
-var win = window;
+var win = global.window;
 var _lastTTSWebView;
 var _lastTTSWebViewHref;
 var _ttsAutoPlayTimeout;
@@ -170,14 +170,16 @@ function ttsPlay(speed, voice) {
         voice: voice,
     };
     setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-        return tslib_1.__generator(this, function (_a) {
-            switch (_a.label) {
+        var _a;
+        return tslib_1.__generator(this, function (_b) {
+            switch (_b.label) {
                 case 0:
                     if (!activeWebView) return [3, 2];
+                    if (!((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady)) return [3, 2];
                     return [4, activeWebView.send(events_1.R2_EVENT_TTS_DO_PLAY, payload)];
                 case 1:
-                    _a.sent();
-                    _a.label = 2;
+                    _b.sent();
+                    _b.label = 2;
                 case 2: return [2];
             }
         });
@@ -193,12 +195,16 @@ function ttsPause() {
             return "continue";
         }
         setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, activeWebView.send(events_1.R2_EVENT_TTS_DO_PAUSE)];
+            var _a;
+            return tslib_1.__generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        if (!((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady)) return [3, 2];
+                        return [4, activeWebView.send(events_1.R2_EVENT_TTS_DO_PAUSE)];
                     case 1:
-                        _a.sent();
-                        return [2];
+                        _b.sent();
+                        _b.label = 2;
+                    case 2: return [2];
                 }
             });
         }); }, 0);
@@ -229,12 +235,16 @@ function ttsStop() {
         _lastTTSWebView = undefined;
         _lastTTSWebViewHref = undefined;
         setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, activeWebView.send(events_1.R2_EVENT_TTS_DO_STOP)];
+            var _a;
+            return tslib_1.__generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        if (!((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady)) return [3, 2];
+                        return [4, activeWebView.send(events_1.R2_EVENT_TTS_DO_STOP)];
                     case 1:
-                        _a.sent();
-                        return [2];
+                        _b.sent();
+                        _b.label = 2;
+                    case 2: return [2];
                 }
             });
         }); }, 0);
@@ -263,12 +273,16 @@ function ttsResume() {
             return "continue";
         }
         setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, activeWebView.send(events_1.R2_EVENT_TTS_DO_RESUME)];
+            var _a;
+            return tslib_1.__generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        if (!((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady)) return [3, 2];
+                        return [4, activeWebView.send(events_1.R2_EVENT_TTS_DO_RESUME)];
                     case 1:
-                        _a.sent();
-                        return [2];
+                        _b.sent();
+                        _b.label = 2;
+                    case 2: return [2];
                 }
             });
         }); }, 0);
@@ -299,16 +313,19 @@ function ttsPrevious(skipSentences) {
         }
         setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
             var payload;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
+            var _a;
+            return tslib_1.__generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
                         payload = {
                             skipSentences: skipSentences,
                         };
+                        if (!((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady)) return [3, 2];
                         return [4, activeWebView.send(events_1.R2_EVENT_TTS_DO_PREVIOUS, payload)];
                     case 1:
-                        _a.sent();
-                        return [2];
+                        _b.sent();
+                        _b.label = 2;
+                    case 2: return [2];
                 }
             });
         }); }, 0);
@@ -339,16 +356,19 @@ function ttsNext(skipSentences) {
         }
         setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
             var payload;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
+            var _a;
+            return tslib_1.__generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
                         payload = {
                             skipSentences: skipSentences,
                         };
+                        if (!((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady)) return [3, 2];
                         return [4, activeWebView.send(events_1.R2_EVENT_TTS_DO_NEXT, payload)];
                     case 1:
-                        _a.sent();
-                        return [2];
+                        _b.sent();
+                        _b.label = 2;
+                    case 2: return [2];
                 }
             });
         }); }, 0);
@@ -378,16 +398,19 @@ function ttsOverlayEnable(doEnable) {
     var _loop_6 = function (activeWebView) {
         setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
             var payload;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
+            var _a;
+            return tslib_1.__generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
                         payload = {
                             doEnable: doEnable,
                         };
+                        if (!((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady)) return [3, 2];
                         return [4, activeWebView.send(events_1.R2_EVENT_TTS_OVERLAY_ENABLE, payload)];
                     case 1:
-                        _a.sent();
-                        return [2];
+                        _b.sent();
+                        _b.label = 2;
+                    case 2: return [2];
                 }
             });
         }); }, 0);
@@ -417,16 +440,19 @@ function ttsClickEnable(doEnable) {
     var _loop_7 = function (activeWebView) {
         setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
             var payload;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
+            var _a;
+            return tslib_1.__generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
                         payload = {
                             doEnable: doEnable,
                         };
+                        if (!((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady)) return [3, 2];
                         return [4, activeWebView.send(events_1.R2_EVENT_TTS_CLICK_ENABLE, payload)];
                     case 1:
-                        _a.sent();
-                        return [2];
+                        _b.sent();
+                        _b.label = 2;
+                    case 2: return [2];
                 }
             });
         }); }, 0);
@@ -458,12 +484,16 @@ function ttsVoice(voice) {
             voice: voice,
         };
         setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, activeWebView.send(events_1.R2_EVENT_TTS_VOICE, payload)];
+            var _a;
+            return tslib_1.__generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        if (!((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady)) return [3, 2];
+                        return [4, activeWebView.send(events_1.R2_EVENT_TTS_VOICE, payload)];
                     case 1:
-                        _a.sent();
-                        return [2];
+                        _b.sent();
+                        _b.label = 2;
+                    case 2: return [2];
                 }
             });
         }); }, 0);
@@ -495,12 +525,16 @@ function ttsPlaybackRate(speed) {
             speed: speed,
         };
         setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, activeWebView.send(events_1.R2_EVENT_TTS_PLAYBACK_RATE, payload)];
+            var _a;
+            return tslib_1.__generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        if (!((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady)) return [3, 2];
+                        return [4, activeWebView.send(events_1.R2_EVENT_TTS_PLAYBACK_RATE, payload)];
                     case 1:
-                        _a.sent();
-                        return [2];
+                        _b.sent();
+                        _b.label = 2;
+                    case 2: return [2];
                 }
             });
         }); }, 0);
@@ -530,16 +564,19 @@ function ttsSentenceDetectionEnable(doEnable) {
     var _loop_10 = function (activeWebView) {
         setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
             var payload;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
+            var _a;
+            return tslib_1.__generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
                         payload = {
                             doEnable: doEnable,
                         };
+                        if (!((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady)) return [3, 2];
                         return [4, activeWebView.send(events_1.R2_EVENT_TTS_SENTENCE_DETECT_ENABLE, payload)];
                     case 1:
-                        _a.sent();
-                        return [2];
+                        _b.sent();
+                        _b.label = 2;
+                    case 2: return [2];
                 }
             });
         }); }, 0);

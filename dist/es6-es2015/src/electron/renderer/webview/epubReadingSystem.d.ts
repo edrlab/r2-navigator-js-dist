@@ -1,6 +1,6 @@
-import { IReadiumElectronWebviewWindow } from "./state";
+import { ReadiumElectronWebviewWindow } from "./state";
 export interface INameVersion {
     name: string;
     version: string;
 }
-export declare function setWindowNavigatorEpubReadingSystem(win: IReadiumElectronWebviewWindow, obj: any): void;
+export declare function setWindowNavigatorEpubReadingSystem(win: ReadiumElectronWebviewWindow, obj: any): void;

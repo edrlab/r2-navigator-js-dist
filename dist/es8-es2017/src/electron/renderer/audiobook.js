@@ -2,14 +2,17 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getCurrentAudioPlaybackRate = exports.setCurrentAudioPlaybackRate = exports.audioForward = exports.audioRewind = exports.audioTogglePlayPause = exports.audioPause = exports.audioPlay = void 0;
 const events_1 = require("../common/events");
-const win = window;
+const win = global.window;
 function audioPlay() {
     const activeWebView = win.READIUM2.getFirstOrSecondWebView();
     if (!activeWebView) {
         return;
     }
     setTimeout(async () => {
-        await activeWebView.send(events_1.R2_EVENT_AUDIO_DO_PLAY);
+        var _a;
+        if ((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady) {
+            await activeWebView.send(events_1.R2_EVENT_AUDIO_DO_PLAY);
+        }
     }, 0);
 }
 exports.audioPlay = audioPlay;
@@ -19,7 +22,10 @@ function audioPause() {
         return;
     }
     setTimeout(async () => {
-        await activeWebView.send(events_1.R2_EVENT_AUDIO_DO_PAUSE);
+        var _a;
+        if ((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady) {
+            await activeWebView.send(events_1.R2_EVENT_AUDIO_DO_PAUSE);
+        }
     }, 0);
 }
 exports.audioPause = audioPause;
@@ -29,7 +35,10 @@ function audioTogglePlayPause() {
         return;
     }
     setTimeout(async () => {
-        await activeWebView.send(events_1.R2_EVENT_AUDIO_TOGGLE_PLAY_PAUSE);
+        var _a;
+        if ((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady) {
+            await activeWebView.send(events_1.R2_EVENT_AUDIO_TOGGLE_PLAY_PAUSE);
+        }
     }, 0);
 }
 exports.audioTogglePlayPause = audioTogglePlayPause;
@@ -39,7 +48,10 @@ function audioRewind() {
         return;
     }
     setTimeout(async () => {
-        await activeWebView.send(events_1.R2_EVENT_AUDIO_REWIND);
+        var _a;
+        if ((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady) {
+            await activeWebView.send(events_1.R2_EVENT_AUDIO_REWIND);
+        }
     }, 0);
 }
 exports.audioRewind = audioRewind;
@@ -49,7 +61,10 @@ function audioForward() {
         return;
     }
     setTimeout(async () => {
-        await activeWebView.send(events_1.R2_EVENT_AUDIO_FORWARD);
+        var _a;
+        if ((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady) {
+            await activeWebView.send(events_1.R2_EVENT_AUDIO_FORWARD);
+        }
     }, 0);
 }
 exports.audioForward = audioForward;

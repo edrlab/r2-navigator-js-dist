@@ -3,12 +3,14 @@ import { Link } from "r2-shared-js/dist/es8-es2017/src/models/publication-link";
 import { IEventPayload_R2_EVENT_CLIPBOARD_COPY, IEventPayload_R2_EVENT_READING_LOCATION, IEventPayload_R2_EVENT_READIUMCSS } from "../../common/events";
 import { WebViewSlotEnum } from "../../common/styles";
 import { IStringMap } from "../common/querystring";
+export type TWindow = typeof window;
 export interface IReadiumElectronWebviewWindowState {
     urlQueryParams: IStringMap | undefined;
     hashElement: Element | null;
     locationHashOverride: Element | undefined;
     locationHashOverrideInfo: IEventPayload_R2_EVENT_READING_LOCATION | undefined;
     isAudio: boolean;
+    ignorekeyDownUpEvents: boolean;
     isFixedLayout: boolean;
     fxlViewportWidth: number;
     fxlViewportHeight: number;
@@ -23,19 +25,21 @@ export interface IReadiumElectronWebviewWindowState {
     ttsVoice: SpeechSynthesisVoice | null;
     isClipboardIntercept: boolean;
 }
-export interface IReadiumElectronWebviewWindow extends Window {
+export interface IReadiumElectronWebviewWindow {
     READIUM2: IReadiumElectronWebviewWindowState;
 }
+export type ReadiumElectronWebviewWindow = TWindow & IReadiumElectronWebviewWindow;
 export interface IReadiumElectronWebviewState {
     id: number;
     link: Link | undefined;
     forceRefresh?: boolean;
     readiumCss: IEventPayload_R2_EVENT_READIUMCSS | undefined;
+    DOMisReady?: boolean;
 }
 export interface IReadiumElectronWebview extends Electron.WebviewTag {
     READIUM2: IReadiumElectronWebviewState;
 }
-export interface IReadiumElectronBrowserWindowState {
+export interface IReadiumElectronBrowserWindow {
     publication: Publication;
     publicationURL: string;
     sessionInfo: string | undefined;
@@ -61,8 +65,7 @@ export interface IReadiumElectronBrowserWindowState {
     enableScreenReaderAccessibilityWebViewHardRefresh: boolean;
     isScreenReaderMounted: boolean;
 }
-export interface IWithReadiumElectronBrowserWindowState {
-    READIUM2: IReadiumElectronBrowserWindowState;
+export interface IWithIReadiumElectronBrowserWindow {
+    READIUM2: IReadiumElectronBrowserWindow;
 }
-export type TWindow = typeof window;
-export type IReadiumElectronBrowserWindow = TWindow & IWithReadiumElectronBrowserWindowState;
+export type ReadiumElectronBrowserWindow = TWindow & IWithIReadiumElectronBrowserWindow;

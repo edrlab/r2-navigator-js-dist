@@ -1,9 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getURLQueryParams = void 0;
+var win = global.window;
 var getURLQueryParams = function (search) {
     var params = {};
-    var query = search || window.location.search;
+    var query = search || win.location.search;
     if (query && query.length) {
         query = query.substring(1);
         var keyParams = query.split("&");

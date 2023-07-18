@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.readPosCssStylesAttr3 = exports.readPosCssStylesAttr2 = exports.readPosCssStylesAttr1 = exports.scrollBarCssStyles = exports.selectionCssStyles = exports.targetCssStyles = exports.focusCssStyles = exports.CSS_CLASS_NO_FOCUS_OUTLINE = exports.ROOT_CLASS_KEYBOARD_INTERACT = exports.visibilityMaskCssStyles = exports.ROOT_CLASS_INVISIBLE_MASK_REMOVED = exports.ROOT_CLASS_INVISIBLE_MASK = exports.ttsCssStyles = exports.TTS_POPUP_DIALOG_CLASS = exports.TTS_ID_SPEAKING_DOC_ELEMENT = exports.TTS_NAV_BUTTON_CLASS = exports.TTS_ID_CONTAINER = exports.TTS_CLASS_UTTERANCE_HEADING5 = exports.TTS_CLASS_UTTERANCE_HEADING4 = exports.TTS_CLASS_UTTERANCE_HEADING3 = exports.TTS_CLASS_UTTERANCE_HEADING2 = exports.TTS_CLASS_UTTERANCE_HEADING1 = exports.TTS_CLASS_UTTERANCE = exports.TTS_ID_ACTIVE_UTTERANCE = exports.TTS_ID_ACTIVE_WORD = exports.TTS_ID_SLIDER = exports.TTS_ID_NEXT = exports.TTS_ID_PREVIOUS = exports.TTS_CLASS_IS_ACTIVE = exports.TTS_CLASS_THEME1 = exports.mediaOverlaysCssStyles = exports.R2_MO_CLASS_ACTIVE_PLAYBACK = exports.R2_MO_CLASS_ACTIVE = exports.footnotesCssStyles = exports.POPUP_DIALOG_CLASS_COLLAPSE = exports.POPUP_DIALOG_CLASS = exports.POPOUTIMAGE_CONTAINER_CLASS = exports.FOOTNOTE_FORCE_SHOW = exports.FOOTNOTES_CLOSE_BUTTON_CLASS = exports.FOOTNOTES_CONTAINER_CLASS = exports.ROOT_CLASS_NO_FOOTNOTES = exports.ROOT_CLASS_FIXED_LAYOUT = exports.ROOT_CLASS_MATHJAX = exports.ROOT_CLASS_REDUCE_MOTION = exports.LINK_TARGET_CLASS = exports.SKIP_LINK_ID = exports.ZERO_TRANSFORM_CLASS = exports.HIDE_CURSOR_CLASS = exports.CLASS_PAGINATED = exports.WebViewSlotEnum = void 0;
-exports.audioCssStyles = exports.AUDIO_FORWARD_ID = exports.AUDIO_REWIND_ID = exports.AUDIO_NEXT_ID = exports.AUDIO_PREVIOUS_ID = exports.AUDIO_PLAYPAUSE_ID = exports.AUDIO_RATE_ID = exports.AUDIO_PERCENT_ID = exports.AUDIO_TIME_ID = exports.AUDIO_SLIDER_ID = exports.AUDIO_TITLE_ID = exports.AUDIO_COVER_ID = exports.AUDIO_CONTROLS_ID = exports.AUDIO_SECTION_ID = exports.AUDIO_BODY_ID = exports.AUDIO_ID = exports.AUDIO_PROGRESS_CLASS = exports.AUDIO_BUFFER_CANVAS_ID = exports.readPosCssStyles = exports.readPosCssStylesAttr4 = void 0;
+exports.targetCssStyles = exports.focusCssStyles = exports.visibilityMaskCssStyles = exports.ROOT_CLASS_INVISIBLE_MASK_REMOVED = exports.ROOT_CLASS_INVISIBLE_MASK = exports.ttsCssStyles = exports.TTS_POPUP_DIALOG_CLASS = exports.TTS_ID_SPEAKING_DOC_ELEMENT = exports.TTS_NAV_BUTTON_CLASS = exports.TTS_ID_CONTAINER = exports.TTS_CLASS_UTTERANCE_HEADING5 = exports.TTS_CLASS_UTTERANCE_HEADING4 = exports.TTS_CLASS_UTTERANCE_HEADING3 = exports.TTS_CLASS_UTTERANCE_HEADING2 = exports.TTS_CLASS_UTTERANCE_HEADING1 = exports.TTS_CLASS_UTTERANCE = exports.TTS_ID_ACTIVE_UTTERANCE = exports.TTS_ID_ACTIVE_WORD = exports.TTS_ID_SLIDER = exports.TTS_ID_NEXT = exports.TTS_ID_PREVIOUS = exports.TTS_CLASS_IS_ACTIVE = exports.TTS_CLASS_THEME1 = exports.mediaOverlaysCssStyles = exports.R2_MO_CLASS_ACTIVE_PLAYBACK = exports.R2_MO_CLASS_ACTIVE = exports.footnotesCssStyles = exports.CSS_CLASS_NO_FOCUS_OUTLINE = exports.ROOT_CLASS_KEYBOARD_INTERACT = exports.POPUP_DIALOG_CLASS_COLLAPSE = exports.POPUP_DIALOG_CLASS = exports.POPOUTIMAGE_RESET_ID = exports.POPOUTIMAGE_PLUS_ID = exports.POPOUTIMAGE_MINUS_ID = exports.POPOUTIMAGE_CONTROLS_ID = exports.POPOUTIMAGE_CLOSE_ID = exports.POPOUTIMAGE_CONTAINER_ID = exports.FOOTNOTE_FORCE_SHOW = exports.FOOTNOTES_CLOSE_BUTTON_CLASS = exports.FOOTNOTES_CONTAINER_CLASS = exports.ROOT_CLASS_NO_FOOTNOTES = exports.ROOT_CLASS_FIXED_LAYOUT = exports.ROOT_CLASS_MATHJAX = exports.ROOT_CLASS_REDUCE_MOTION = exports.LINK_TARGET_CLASS = exports.SKIP_LINK_ID = exports.ZERO_TRANSFORM_CLASS = exports.HIDE_CURSOR_CLASS = exports.CLASS_PAGINATED = exports.WebViewSlotEnum = void 0;
+exports.audioCssStyles = exports.AUDIO_FORWARD_ID = exports.AUDIO_REWIND_ID = exports.AUDIO_NEXT_ID = exports.AUDIO_PREVIOUS_ID = exports.AUDIO_PLAYPAUSE_ID = exports.AUDIO_RATE_ID = exports.AUDIO_PERCENT_ID = exports.AUDIO_TIME_ID = exports.AUDIO_SLIDER_ID = exports.AUDIO_TITLE_ID = exports.AUDIO_COVER_ID = exports.AUDIO_CONTROLS_ID = exports.AUDIO_SECTION_ID = exports.AUDIO_BODY_ID = exports.AUDIO_ID = exports.AUDIO_PROGRESS_CLASS = exports.AUDIO_BUFFER_CANVAS_ID = exports.readPosCssStyles = exports.readPosCssStylesAttr4 = exports.readPosCssStylesAttr3 = exports.readPosCssStylesAttr2 = exports.readPosCssStylesAttr1 = exports.scrollBarCssStyles = exports.selectionCssStyles = void 0;
 var WebViewSlotEnum;
 (function (WebViewSlotEnum) {
     WebViewSlotEnum["center"] = "center";
@@ -20,9 +20,16 @@ exports.ROOT_CLASS_NO_FOOTNOTES = "r2-no-popup-foonotes";
 exports.FOOTNOTES_CONTAINER_CLASS = "r2-footnote-container";
 exports.FOOTNOTES_CLOSE_BUTTON_CLASS = "r2-footnote-close";
 exports.FOOTNOTE_FORCE_SHOW = "r2-footnote-force-show";
-exports.POPOUTIMAGE_CONTAINER_CLASS = "r2-popoutimage-container";
+exports.POPOUTIMAGE_CONTAINER_ID = "r2-popoutimage-container-id";
+exports.POPOUTIMAGE_CLOSE_ID = "r2-popoutimage-close-id";
+exports.POPOUTIMAGE_CONTROLS_ID = "r2-popoutimage-controls-id";
+exports.POPOUTIMAGE_MINUS_ID = "r2-popoutimage-minus-id";
+exports.POPOUTIMAGE_PLUS_ID = "r2-popoutimage-plus-id";
+exports.POPOUTIMAGE_RESET_ID = "r2-popoutimage-reset-id";
 exports.POPUP_DIALOG_CLASS = "r2-popup-dialog";
 exports.POPUP_DIALOG_CLASS_COLLAPSE = "r2-popup-dialog-collapse";
+exports.ROOT_CLASS_KEYBOARD_INTERACT = "r2-keyboard-interact";
+exports.CSS_CLASS_NO_FOCUS_OUTLINE = "r2-no-focus-outline";
 exports.footnotesCssStyles = `
 @namespace epub "http://www.idpf.org/2007/ops";
 
@@ -99,17 +106,21 @@ exports.footnotesCssStyles = `
     height: 1px;
 }
 
-:root[style] .${exports.POPOUTIMAGE_CONTAINER_CLASS},
-:root .${exports.POPOUTIMAGE_CONTAINER_CLASS} {
+:root[style] div#${exports.POPOUTIMAGE_CONTAINER_ID},
+:root div#${exports.POPOUTIMAGE_CONTAINER_ID},
+:root[style].${exports.ROOT_CLASS_KEYBOARD_INTERACT} div#${exports.POPOUTIMAGE_CONTAINER_ID},
+:root.${exports.ROOT_CLASS_KEYBOARD_INTERACT} div#${exports.POPOUTIMAGE_CONTAINER_ID} {
     grid-column-start: 1;
     grid-column-end: 4;
     grid-row-start: 1;
     grid-row-end: 3;
 
+    /*
     outline-color: magenta !important;
-    outline-style: dashed !important;
-    outline-width: 6px !important;
-    outline-offset: -6px !important;
+    outline-style: dotted !important;
+    outline-width: 4px !important;
+    outline-offset: -4px !important;
+    */
 
     padding: 0;
     margin: 0;
@@ -131,44 +142,129 @@ exports.footnotesCssStyles = `
     overflow-x: auto;
 }
 
-:root[style] img[data-${exports.POPOUTIMAGE_CONTAINER_CLASS}],
-:root img[data-${exports.POPOUTIMAGE_CONTAINER_CLASS}] {
-    outline-color: magenta !important;
-    outline-style: dashed !important;
-    outline-width: 10px !important;
-    outline-offset: 2px !important;
+@keyframes readium2ElectronAnimation_IMG_OUTLINE {
+    0% {
+        outline-offset: -0.4em;
+    }
+    25% {
+        outline-offset: 0em;
+    }
+    50% {
+        outline-offset: 0.8em;
+    }
+    75% {
+        outline-offset: 0em;
+    }
+    100% {
+        outline-offset: -0.4em;
+    }
+}
 
+:root[style] img[data-${exports.POPOUTIMAGE_CONTAINER_ID}],
+:root img[data-${exports.POPOUTIMAGE_CONTAINER_ID}],
+:root[style].${exports.ROOT_CLASS_KEYBOARD_INTERACT} img[data-${exports.POPOUTIMAGE_CONTAINER_ID}],
+:root.${exports.ROOT_CLASS_KEYBOARD_INTERACT} img[data-${exports.POPOUTIMAGE_CONTAINER_ID}]
+{
+    outline-color: magenta !important;
+    outline-style: solid !important;
+    outline-width: 0.2em !important;
+    /* outline-offset: 2px !important; */
+
+    cursor: pointer !important;
+
+    animation-name: readium2ElectronAnimation_IMG_OUTLINE;
+    animation-iteration-count: infinite;
+    animation-duration: 1s;
+    animation-delay: 0s;
+    animation-fill-mode: forwards;
+    animation-timing-function: linear;
+}
+
+/*
+:root[style*="readium-night-on"]
+*/
+:root[style] div#${exports.POPOUTIMAGE_CONTAINER_ID} #${exports.POPOUTIMAGE_CONTROLS_ID},
+:root div#${exports.POPOUTIMAGE_CONTAINER_ID} #${exports.POPOUTIMAGE_CONTROLS_ID} {
+    border: 1px solid black;
+    background: white !important;
+    color: black !important;
+    padding: 0.2em;
+    margin: 0;
+    border-radius: 0.8em;
+    position: absolute;
+    top: 0.2em;
+    left: 0.4em;
+    width: auto;
+    height: auto;
+}
+:root[style] div#${exports.POPOUTIMAGE_CONTAINER_ID} #${exports.POPOUTIMAGE_CLOSE_ID},
+:root div#${exports.POPOUTIMAGE_CONTAINER_ID} #${exports.POPOUTIMAGE_CLOSE_ID} {
+    position: absolute;
+    top: 0.2em;
+    right: 0.4em;
+}
+:root[style] div#${exports.POPOUTIMAGE_CONTAINER_ID} button,
+:root div#${exports.POPOUTIMAGE_CONTAINER_ID} button {
+    border: 2px solid black;
+    background: white !important;
+    color: black !important;
+    font-family: Arial !important;
+    font-size: 1.5em !important;
+    font-weight: bold;
+    user-select: none;
+    padding: 0.2em;
+    margin: 0;
+    border-radius: 0.8em;
+    width: 1.6em;
+    display: inline-block;
     cursor: pointer !important;
 }
 
-:root[style] .${exports.POPOUTIMAGE_CONTAINER_CLASS} > img,
-:root .${exports.POPOUTIMAGE_CONTAINER_CLASS} > img {
+:root[style] div#${exports.POPOUTIMAGE_CONTAINER_ID} > img,
+:root div#${exports.POPOUTIMAGE_CONTAINER_ID} > img {
+
+    /*
+    outline-color: red !important;
+    outline-style: dashed !important;
+    outline-width: 2px !important;
+    outline-offset: -2px !important;
+    */
+
     transform-origin: 0px 0px;
 
     box-sizing: border-box;
-    border: 4px solid #333333;
+    /* border: 2px solid #333333; */
 
-    object-fit: cover !important;
-    cursor: pointer !important;
+    cursor: move !important;
 
-    margin: auto !important;
+    margin: 0 !important;
+    object-fit: contain !important;
     position: relative !important;
+    max-height: 100% !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    height: 100% !important;
 
+    /*
+    margin: auto !important;
+    object-fit: cover !important;
+    position: relative !important;
     max-height: 100% !important;
     max-width: 100% !important;
     width: auto !important;
     height: auto !important;
+    */
 
     /* vertical centering breaks image height
+    margin: auto !important;
+    position: absolute !important;
+    max-height: none !important;
     max-width: 100% !important;
     width: 100% !important;
-    max-height: none !important;
     height: auto !important;
 
-    position: absolute !important;
     top: 0 !important;
     bottom: 0 !important;
-    margin: auto !important;
     */
 
     /* this works with position:relative in the parent (no need for flex)
@@ -767,8 +863,6 @@ background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQA
     }
 }
 `;
-exports.ROOT_CLASS_KEYBOARD_INTERACT = "r2-keyboard-interact";
-exports.CSS_CLASS_NO_FOCUS_OUTLINE = "r2-no-focus-outline";
 exports.focusCssStyles = `
 
 #${exports.SKIP_LINK_ID} {

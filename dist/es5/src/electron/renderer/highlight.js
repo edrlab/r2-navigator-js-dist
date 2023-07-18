@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.highlightsCreate = exports.highlightsRemove = exports.highlightsRemoveAll = exports.highlightsClickListen = exports.highlightsHandleIpcMessage = void 0;
 var tslib_1 = require("tslib");
 var events_1 = require("../common/events");
-var win = window;
+var win = global.window;
 function highlightsHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
     if (eventChannel === events_1.R2_EVENT_HIGHLIGHT_CLICK) {
         var activeWebView = eventCurrentTarget;
@@ -36,12 +36,16 @@ function highlightsRemoveAll(href) {
             return "continue";
         }
         setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_REMOVE_ALL)];
+            var _a;
+            return tslib_1.__generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        if (!((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady)) return [3, 2];
+                        return [4, activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_REMOVE_ALL)];
                     case 1:
-                        _a.sent();
-                        return [2];
+                        _b.sent();
+                        _b.label = 2;
+                    case 2: return [2];
                 }
             });
         }); }, 0);
@@ -74,12 +78,16 @@ function highlightsRemove(href, highlightIDs) {
             highlightIDs: highlightIDs,
         };
         setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_REMOVE, payload)];
+            var _a;
+            return tslib_1.__generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        if (!((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady)) return [3, 2];
+                        return [4, activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_REMOVE, payload)];
                     case 1:
-                        _a.sent();
-                        return [2];
+                        _b.sent();
+                        _b.label = 2;
+                    case 2: return [2];
                 }
             });
         }); }, 0);
@@ -134,12 +142,16 @@ function highlightsCreate(href, highlightDefinitions) {
                             highlights: undefined,
                         };
                         setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-                            return tslib_1.__generator(this, function (_a) {
-                                switch (_a.label) {
-                                    case 0: return [4, activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_CREATE, payloadPing)];
+                            var _a;
+                            return tslib_1.__generator(this, function (_b) {
+                                switch (_b.label) {
+                                    case 0:
+                                        if (!((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady)) return [3, 2];
+                                        return [4, activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_CREATE, payloadPing)];
                                     case 1:
-                                        _a.sent();
-                                        return [2];
+                                        _b.sent();
+                                        _b.label = 2;
+                                    case 2: return [2];
                                 }
                             });
                         }); }, 0);

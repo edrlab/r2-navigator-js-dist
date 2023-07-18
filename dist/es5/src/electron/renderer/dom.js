@@ -24,7 +24,7 @@ var captionsOverlayCssStyles = "\n    overflow: hidden;\n    overflow-y: auto;\n
 var captionsOverlayParaCssStyles = "\n    margin: 0;\n    margin-top: auto;\n    margin-bottom: auto;\n    padding: 0;\n    max-width: 900px;\n    font-weight: bolder;\n    text-align: center;\n".replace(/\n/g, " ").replace(/\s\s+/g, " ").trim();
 var readiumCssStyle = "\n@font-face {\nfont-family: AccessibleDfA;\nfont-style: normal;\nfont-weight: normal;\nsrc: local(\"AccessibleDfA\"),\nurl(\"{RCSS_BASE_URL}fonts/AccessibleDfA.otf\") format(\"opentype\");\n}\n\n@font-face {\nfont-family: \"IA Writer Duospace\";\nfont-style: normal;\nfont-weight: normal;\nsrc: local(\"iAWriterDuospace-Regular\"),\nurl(\"{RCSS_BASE_URL}fonts/iAWriterDuospace-Regular.ttf\") format(\"truetype\");\n}\n";
 var debug = debug_("r2:navigator#electron/renderer/index");
-var win = window;
+var win = global.window;
 var _resizeSkip = 0;
 var _resizeWebviewsNeedReset = true;
 var _resizeTimeout;
@@ -69,50 +69,53 @@ win.addEventListener("resize", function () {
     _resizeTimeout = win.setTimeout(function () { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
         var activeWebViews, activeWebViews_2, activeWebViews_2_1, activeWebView, wvSlot, e_2, e_3_1;
         var e_3, _a;
-        return tslib_1.__generator(this, function (_b) {
-            switch (_b.label) {
+        var _b;
+        return tslib_1.__generator(this, function (_c) {
+            switch (_c.label) {
                 case 0:
                     debug("Window resize (TOP), DEFERRED");
                     _resizeTimeout = undefined;
                     _resizeWebviewsNeedReset = true;
                     activeWebViews = win.READIUM2.getActiveWebViews();
                     _resizeSkip = activeWebViews.length;
-                    _b.label = 1;
+                    _c.label = 1;
                 case 1:
-                    _b.trys.push([1, 8, 9, 10]);
+                    _c.trys.push([1, 9, 10, 11]);
                     activeWebViews_2 = tslib_1.__values(activeWebViews), activeWebViews_2_1 = activeWebViews_2.next();
-                    _b.label = 2;
+                    _c.label = 2;
                 case 2:
-                    if (!!activeWebViews_2_1.done) return [3, 7];
+                    if (!!activeWebViews_2_1.done) return [3, 8];
                     activeWebView = activeWebViews_2_1.value;
                     wvSlot = activeWebView.getAttribute("data-wv-slot");
-                    if (!wvSlot) return [3, 6];
-                    _b.label = 3;
+                    if (!wvSlot) return [3, 7];
+                    _c.label = 3;
                 case 3:
-                    _b.trys.push([3, 5, , 6]);
+                    _c.trys.push([3, 6, , 7]);
+                    if (!((_b = activeWebView.READIUM2) === null || _b === void 0 ? void 0 : _b.DOMisReady)) return [3, 5];
                     return [4, activeWebView.send("R2_EVENT_WINDOW_RESIZE", win.READIUM2.fixedLayoutZoomPercent)];
                 case 4:
-                    _b.sent();
-                    return [3, 6];
-                case 5:
-                    e_2 = _b.sent();
-                    debug(e_2);
-                    return [3, 6];
+                    _c.sent();
+                    _c.label = 5;
+                case 5: return [3, 7];
                 case 6:
+                    e_2 = _c.sent();
+                    debug(e_2);
+                    return [3, 7];
+                case 7:
                     activeWebViews_2_1 = activeWebViews_2.next();
                     return [3, 2];
-                case 7: return [3, 10];
-                case 8:
-                    e_3_1 = _b.sent();
-                    e_3 = { error: e_3_1 };
-                    return [3, 10];
+                case 8: return [3, 11];
                 case 9:
+                    e_3_1 = _c.sent();
+                    e_3 = { error: e_3_1 };
+                    return [3, 11];
+                case 10:
                     try {
                         if (activeWebViews_2_1 && !activeWebViews_2_1.done && (_a = activeWebViews_2.return)) _a.call(activeWebViews_2);
                     }
                     finally { if (e_3) throw e_3.error; }
                     return [7];
-                case 10: return [2];
+                case 11: return [2];
             }
         });
     }); }, 1000);
@@ -135,26 +138,33 @@ function readiumCssApplyToWebview(loc, activeWebView, rcss) {
         !activeWebView.hasAttribute("data-wv-fxl")) {
         activeWebView.style.opacity = "0";
         setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
+            var _a;
+            return tslib_1.__generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
                         (0, location_1.shiftWebview)(activeWebView, 0, undefined);
+                        if (!((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady)) return [3, 2];
                         return [4, activeWebView.send(events_1.R2_EVENT_READIUMCSS, payloadRcss)];
                     case 1:
-                        _a.sent();
-                        return [2];
+                        _b.sent();
+                        _b.label = 2;
+                    case 2: return [2];
                 }
             });
         }); }, 10);
     }
     else {
         setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, activeWebView.send(events_1.R2_EVENT_READIUMCSS, payloadRcss)];
+            var _a;
+            return tslib_1.__generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        if (!((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady)) return [3, 2];
+                        return [4, activeWebView.send(events_1.R2_EVENT_READIUMCSS, payloadRcss)];
                     case 1:
-                        _a.sent();
-                        return [2];
+                        _b.sent();
+                        _b.label = 2;
+                    case 2: return [2];
                 }
             });
         }); }, 0);
@@ -186,20 +196,23 @@ function fixedLayoutZoomPercent(zoomPercent) {
             (0, location_1.setWebViewStyle)(activeWebView, wvSlot);
             _fixedLayoutZoomPercentTimers[activeWebView.id] = win.setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
                 var e_5;
-                return tslib_1.__generator(this, function (_a) {
-                    switch (_a.label) {
+                var _a;
+                return tslib_1.__generator(this, function (_b) {
+                    switch (_b.label) {
                         case 0:
-                            _a.trys.push([0, 2, , 3]);
+                            _b.trys.push([0, 3, , 4]);
                             _fixedLayoutZoomPercentTimers[activeWebView.id] = undefined;
+                            if (!((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady)) return [3, 2];
                             return [4, activeWebView.send("R2_EVENT_WINDOW_RESIZE", zoomPercent)];
                         case 1:
-                            _a.sent();
-                            return [3, 3];
-                        case 2:
-                            e_5 = _a.sent();
+                            _b.sent();
+                            _b.label = 2;
+                        case 2: return [3, 4];
+                        case 3:
+                            e_5 = _b.sent();
                             debug(e_5);
-                            return [3, 3];
-                        case 3: return [2];
+                            return [3, 4];
+                        case 4: return [2];
                     }
                 });
             }); }, 500);
@@ -256,7 +269,17 @@ function createWebViewInternal(preloadScriptPath) {
     debug("createWebViewInternal ... setWebViewStyle");
     (0, location_1.setWebViewStyle)(wv, styles_1.WebViewSlotEnum.center);
     wv.setAttribute("preload", preloadScriptPath);
+    wv.addEventListener("did-start-loading", function () {
+        debug("DOMisReady... did-start-loading => false");
+        wv.READIUM2.DOMisReady = false;
+    });
+    wv.addEventListener("did-navigate-in-page", function () {
+        debug("DOMisReady... did-navigate-in-page => true");
+        wv.READIUM2.DOMisReady = true;
+    });
     wv.addEventListener("dom-ready", function () {
+        debug("DOMisReady... dom-ready => true");
+        wv.READIUM2.DOMisReady = true;
         wv.clearHistory();
         if (IS_DEV) {
             electron_1.ipcRenderer.send(context_menu_1.CONTEXT_MENU_SETUP, wv.getWebContentsId());
@@ -488,11 +511,11 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
     electron_1.ipcRenderer.send("accessibility-support-changed");
     if (IS_DEV) {
         debug("||||||++||||| installNavigatorDOM: ", JSON.stringify(location));
-        var debugVisualz = (window.localStorage &&
-            window.localStorage.getItem(url_params_1.URL_PARAM_DEBUG_VISUALS) === "true") ? true : false;
+        var debugVisualz = (win.localStorage &&
+            win.localStorage.getItem(url_params_1.URL_PARAM_DEBUG_VISUALS) === "true") ? true : false;
         debug("debugVisuals GET: ", debugVisualz);
         win.READIUM2.DEBUG_VISUALS = debugVisualz;
-        window.READIUM2.debug = function (debugVisuals) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+        win.READIUM2.debug = function (debugVisuals) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
             var loc, activeWebViews, _loop_2, activeWebViews_5, activeWebViews_5_1, activeWebView, e_7_1;
             var e_7, _a;
             var _this = this;
@@ -502,8 +525,8 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
                     case 0:
                         debug("debugVisuals SET: ", debugVisuals);
                         win.READIUM2.DEBUG_VISUALS = debugVisuals;
-                        if (window.localStorage) {
-                            window.localStorage.setItem(url_params_1.URL_PARAM_DEBUG_VISUALS, debugVisuals ? "true" : "false");
+                        if (win.localStorage) {
+                            win.localStorage.setItem(url_params_1.URL_PARAM_DEBUG_VISUALS, debugVisuals ? "true" : "false");
                         }
                         loc = (0, location_1.getCurrentReadingLocation)();
                         activeWebViews = win.READIUM2.getActiveWebViews();
@@ -514,12 +537,16 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
                                     case 0:
                                         payload = { debugVisuals: debugVisuals };
                                         setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-                                            return tslib_1.__generator(this, function (_a) {
-                                                switch (_a.label) {
-                                                    case 0: return [4, activeWebView.send(events_1.R2_EVENT_DEBUG_VISUALS, payload)];
+                                            var _a;
+                                            return tslib_1.__generator(this, function (_b) {
+                                                switch (_b.label) {
+                                                    case 0:
+                                                        if (!((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady)) return [3, 2];
+                                                        return [4, activeWebView.send(events_1.R2_EVENT_DEBUG_VISUALS, payload)];
                                                     case 1:
-                                                        _a.sent();
-                                                        return [2];
+                                                        _b.sent();
+                                                        _b.label = 2;
+                                                    case 2: return [2];
                                                 }
                                             });
                                         }); }, 0);
@@ -568,7 +595,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
                 }
             });
         }); };
-        window.READIUM2.debugItems =
+        win.READIUM2.debugItems =
             function (href, cssSelector, cssClass, cssStyles) {
                 var e_8, _a;
                 var _b;
@@ -583,12 +610,16 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
                     var d = win.READIUM2.DEBUG_VISUALS;
                     var payload = { debugVisuals: d, cssSelector: cssSelector, cssClass: cssClass, cssStyles: cssStyles };
                     setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-                        return tslib_1.__generator(this, function (_a) {
-                            switch (_a.label) {
-                                case 0: return [4, activeWebView.send(events_1.R2_EVENT_DEBUG_VISUALS, payload)];
+                        var _a;
+                        return tslib_1.__generator(this, function (_b) {
+                            switch (_b.label) {
+                                case 0:
+                                    if (!((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady)) return [3, 2];
+                                    return [4, activeWebView.send(events_1.R2_EVENT_DEBUG_VISUALS, payload)];
                                 case 1:
-                                    _a.sent();
-                                    return [2];
+                                    _b.sent();
+                                    _b.label = 2;
+                                case 2: return [2];
                             }
                         });
                     }); }, 0);

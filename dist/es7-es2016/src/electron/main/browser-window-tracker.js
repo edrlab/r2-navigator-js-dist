@@ -48,6 +48,10 @@ const contextMenuSetup = (webContent, webContentID) => {
     if (!wc) {
         return;
     }
+    if (wc.__CONTEXT_MENU_SETUP) {
+        return;
+    }
+    wc.__CONTEXT_MENU_SETUP = true;
     wc.on("context-menu", (_ev, params) => {
         const { x, y } = params;
         debug("MAIN context-menu EVENT on WebView");

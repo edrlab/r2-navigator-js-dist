@@ -48,6 +48,10 @@ var contextMenuSetup = function (webContent, webContentID) {
     if (!wc) {
         return;
     }
+    if (wc.__CONTEXT_MENU_SETUP) {
+        return;
+    }
+    wc.__CONTEXT_MENU_SETUP = true;
     wc.on("context-menu", function (_ev, params) {
         var x = params.x, y = params.y;
         debug("MAIN context-menu EVENT on WebView");

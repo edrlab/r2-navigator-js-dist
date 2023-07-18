@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.highlightsCreate = exports.highlightsRemove = exports.highlightsRemoveAll = exports.highlightsClickListen = exports.highlightsHandleIpcMessage = void 0;
 const tslib_1 = require("tslib");
 const events_1 = require("../common/events");
-const win = window;
+const win = global.window;
 function highlightsHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
     if (eventChannel === events_1.R2_EVENT_HIGHLIGHT_CLICK) {
         const activeWebView = eventCurrentTarget;
@@ -34,7 +34,10 @@ function highlightsRemoveAll(href) {
             continue;
         }
         setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
-            yield activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_REMOVE_ALL);
+            var _b;
+            if ((_b = activeWebView.READIUM2) === null || _b === void 0 ? void 0 : _b.DOMisReady) {
+                yield activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_REMOVE_ALL);
+            }
         }), 0);
     }
 }
@@ -50,7 +53,10 @@ function highlightsRemove(href, highlightIDs) {
             highlightIDs,
         };
         setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
-            yield activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_REMOVE, payload);
+            var _b;
+            if ((_b = activeWebView.READIUM2) === null || _b === void 0 ? void 0 : _b.DOMisReady) {
+                yield activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_REMOVE, payload);
+            }
         }), 0);
     }
 }
@@ -87,7 +93,10 @@ function highlightsCreate(href, highlightDefinitions) {
                     highlights: undefined,
                 };
                 setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
-                    yield activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_CREATE, payloadPing);
+                    var _b;
+                    if ((_b = activeWebView.READIUM2) === null || _b === void 0 ? void 0 : _b.DOMisReady) {
+                        yield activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_CREATE, payloadPing);
+                    }
                 }), 0);
                 return;
             }

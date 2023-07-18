@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getCurrentAudioPlaybackRate = exports.setCurrentAudioPlaybackRate = exports.audioForward = exports.audioRewind = exports.audioTogglePlayPause = exports.audioPause = exports.audioPlay = void 0;
 var tslib_1 = require("tslib");
 var events_1 = require("../common/events");
-var win = window;
+var win = global.window;
 function audioPlay() {
     var _this = this;
     var activeWebView = win.READIUM2.getFirstOrSecondWebView();
@@ -11,12 +11,16 @@ function audioPlay() {
         return;
     }
     setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-        return tslib_1.__generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4, activeWebView.send(events_1.R2_EVENT_AUDIO_DO_PLAY)];
+        var _a;
+        return tslib_1.__generator(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    if (!((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady)) return [3, 2];
+                    return [4, activeWebView.send(events_1.R2_EVENT_AUDIO_DO_PLAY)];
                 case 1:
-                    _a.sent();
-                    return [2];
+                    _b.sent();
+                    _b.label = 2;
+                case 2: return [2];
             }
         });
     }); }, 0);
@@ -29,12 +33,16 @@ function audioPause() {
         return;
     }
     setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-        return tslib_1.__generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4, activeWebView.send(events_1.R2_EVENT_AUDIO_DO_PAUSE)];
+        var _a;
+        return tslib_1.__generator(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    if (!((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady)) return [3, 2];
+                    return [4, activeWebView.send(events_1.R2_EVENT_AUDIO_DO_PAUSE)];
                 case 1:
-                    _a.sent();
-                    return [2];
+                    _b.sent();
+                    _b.label = 2;
+                case 2: return [2];
             }
         });
     }); }, 0);
@@ -47,12 +55,16 @@ function audioTogglePlayPause() {
         return;
     }
     setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-        return tslib_1.__generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4, activeWebView.send(events_1.R2_EVENT_AUDIO_TOGGLE_PLAY_PAUSE)];
+        var _a;
+        return tslib_1.__generator(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    if (!((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady)) return [3, 2];
+                    return [4, activeWebView.send(events_1.R2_EVENT_AUDIO_TOGGLE_PLAY_PAUSE)];
                 case 1:
-                    _a.sent();
-                    return [2];
+                    _b.sent();
+                    _b.label = 2;
+                case 2: return [2];
             }
         });
     }); }, 0);
@@ -65,12 +77,16 @@ function audioRewind() {
         return;
     }
     setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-        return tslib_1.__generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4, activeWebView.send(events_1.R2_EVENT_AUDIO_REWIND)];
+        var _a;
+        return tslib_1.__generator(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    if (!((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady)) return [3, 2];
+                    return [4, activeWebView.send(events_1.R2_EVENT_AUDIO_REWIND)];
                 case 1:
-                    _a.sent();
-                    return [2];
+                    _b.sent();
+                    _b.label = 2;
+                case 2: return [2];
             }
         });
     }); }, 0);
@@ -83,12 +99,16 @@ function audioForward() {
         return;
     }
     setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-        return tslib_1.__generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4, activeWebView.send(events_1.R2_EVENT_AUDIO_FORWARD)];
+        var _a;
+        return tslib_1.__generator(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    if (!((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady)) return [3, 2];
+                    return [4, activeWebView.send(events_1.R2_EVENT_AUDIO_FORWARD)];
                 case 1:
-                    _a.sent();
-                    return [2];
+                    _b.sent();
+                    _b.label = 2;
+                case 2: return [2];
             }
         });
     }); }, 0);

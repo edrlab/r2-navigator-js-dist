@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.setReadiumCssJsonGetter = exports.adjustReadiumCssJsonMessageForFixedLayout = exports.obtainReadiumCss = exports.isFixedLayout = exports.isRTL = void 0;
-const win = window;
+const win = global.window;
 const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 function isRTL() {
     const publication = win.READIUM2.publication;

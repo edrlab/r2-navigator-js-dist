@@ -43,6 +43,7 @@ win.READIUM2 = {
     fxlZoomPercent: 0,
     hashElement: null,
     isAudio: false,
+    ignorekeyDownUpEvents: false,
     isClipboardIntercept: false,
     isFixedLayout: false,
     locationHashOverride: undefined,
@@ -86,7 +87,92 @@ win.prompt = (...args) => {
     return "";
 };
 const CSS_PIXEL_TOLERANCE = 5;
+const TOUCH_SWIPE_DELTA_MIN = 80;
+const TOUCH_SWIPE_LONG_PRESS_MAX_TIME = 500;
+const TOUCH_SWIPE_MAX_TIME = 500;
+let touchstartEvent;
+let touchEventEnd;
+win.document.addEventListener("touchstart", (event) => {
+    if ((0, popup_dialog_1.isPopupDialogOpen)(win.document)) {
+        touchstartEvent = undefined;
+        touchEventEnd = undefined;
+        return;
+    }
+    if (event.changedTouches.length !== 1) {
+        return;
+    }
+    touchstartEvent = event;
+}, true);
+win.document.addEventListener("touchend", (event) => {
+    if ((0, popup_dialog_1.isPopupDialogOpen)(win.document)) {
+        touchstartEvent = undefined;
+        touchEventEnd = undefined;
+        return;
+    }
+    if (event.changedTouches.length !== 1) {
+        return;
+    }
+    if (!touchstartEvent) {
+        return;
+    }
+    const startTouch = touchstartEvent.changedTouches[0];
+    const endTouch = event.changedTouches[0];
+    if (!startTouch || !endTouch) {
+        return;
+    }
+    const deltaX = (startTouch.clientX - endTouch.clientX) / win.devicePixelRatio;
+    const deltaY = (startTouch.clientY - endTouch.clientY) / win.devicePixelRatio;
+    if (Math.abs(deltaX) < TOUCH_SWIPE_DELTA_MIN &&
+        Math.abs(deltaY) < TOUCH_SWIPE_DELTA_MIN) {
+        if (touchEventEnd) {
+            touchstartEvent = undefined;
+            touchEventEnd = undefined;
+            return;
+        }
+        if (event.timeStamp - touchstartEvent.timeStamp >
+            TOUCH_SWIPE_LONG_PRESS_MAX_TIME) {
+            touchstartEvent = undefined;
+            touchEventEnd = undefined;
+            return;
+        }
+        touchstartEvent = undefined;
+        touchEventEnd = event;
+        return;
+    }
+    touchEventEnd = undefined;
+    if (event.timeStamp - touchstartEvent.timeStamp >
+        TOUCH_SWIPE_MAX_TIME) {
+        touchstartEvent = undefined;
+        return;
+    }
+    const slope = (startTouch.clientY - endTouch.clientY) /
+        (startTouch.clientX - endTouch.clientX);
+    if (Math.abs(slope) > 0.5) {
+        touchstartEvent = undefined;
+        return;
+    }
+    if (deltaX < 0) {
+        const payload = {
+            direction: "LTR",
+            go: "NEXT",
+            nav: true,
+        };
+        electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, payload);
+    }
+    else {
+        const payload = {
+            direction: "LTR",
+            go: "PREVIOUS",
+            nav: true,
+        };
+        electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, payload);
+    }
+    touchstartEvent = undefined;
+}, true);
 function keyDownUpEventHandler(ev, keyDown) {
+    if (win.READIUM2.ignorekeyDownUpEvents) {
+        return;
+    }
     const elementName = (ev.target && ev.target.nodeName) ?
         ev.target.nodeName : "";
     const elementAttributes = {};
@@ -1301,7 +1387,7 @@ function loaded(forced) {
     if (useResizeObserver && win.document.body) {
         setTimeout(() => {
             let _firstResizeObserver = true;
-            const resizeObserver = new window.ResizeObserver((_entries) => {
+            const resizeObserver = new win.ResizeObserver((_entries) => {
                 if (_firstResizeObserver) {
                     _firstResizeObserver = false;
                     debug("ResizeObserver SKIP FIRST");
@@ -1330,80 +1416,95 @@ function loaded(forced) {
             win.document.documentElement.classList.add(styles_1.HIDE_CURSOR_CLASS);
         }, 1000);
     });
-    const imageMouseExit = (ev) => {
-        if (ev.target._r2ImageHoverTimer) {
-            win.clearTimeout(ev.target._r2ImageHoverTimer);
-            ev.target._r2ImageHoverTimer = 0;
-        }
-        if (ev.target.hasAttribute(`data-${styles_1.POPOUTIMAGE_CONTAINER_CLASS}`)) {
-            ev.target.removeAttribute(`data-${styles_1.POPOUTIMAGE_CONTAINER_CLASS}`);
-        }
-    };
-    setTimeout(() => {
-        const images = win.document.querySelectorAll("img[src]");
-        images.forEach((img) => {
-            img.addEventListener("mousemove", (ev) => {
-                if (ev.shiftKey) {
-                    if (ev.target._r2ImageHoverTimer) {
-                        return;
-                    }
-                    ev.target._r2ImageHoverTimer = win.setTimeout(() => {
-                        ev.target.setAttribute(`data-${styles_1.POPOUTIMAGE_CONTAINER_CLASS}`, "1");
-                        ev.target._r2ImageHoverTimer = 0;
-                    }, 400);
-                    return;
-                }
-                imageMouseExit(ev);
-            });
-            img.addEventListener("mouseleave", (ev) => {
-                imageMouseExit(ev);
-            });
-        });
-    }, 800);
-    win.document.addEventListener("mousedown", (ev) => tslib_1.__awaiter(this, void 0, void 0, function* () {
-        const currentElement = ev.target;
-        if (currentElement &&
-            currentElement.src &&
-            currentElement.nodeType === Node.ELEMENT_NODE &&
-            currentElement.tagName.toLowerCase() === "img" &&
-            currentElement.hasAttribute(`data-${styles_1.POPOUTIMAGE_CONTAINER_CLASS}`)) {
+    win.document.addEventListener("auxclick", (ev) => tslib_1.__awaiter(this, void 0, void 0, function* () {
+        debug(`AUX __CLICK: ${ev.button} (SKIP middle)`);
+        if (ev.button === 1) {
             ev.preventDefault();
             ev.stopPropagation();
-            (0, popoutImages_1.popoutImage)(win, currentElement, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
         }
     }), true);
     win.document.addEventListener("click", (ev) => tslib_1.__awaiter(this, void 0, void 0, function* () {
-        let currentElement = ev.target;
+        debug(`!AUX __CLICK: ${ev.button} ...`);
+        const clearImages = () => {
+            const images = win.document.querySelectorAll(`img[data-${styles_1.POPOUTIMAGE_CONTAINER_ID}]`);
+            images.forEach((img) => {
+                img.removeAttribute(`data-${styles_1.POPOUTIMAGE_CONTAINER_ID}`);
+            });
+        };
+        let linkElement;
         let href;
+        let imageElement;
+        let src;
+        let currentElement = ev.target;
         while (currentElement && currentElement.nodeType === Node.ELEMENT_NODE) {
-            if (currentElement.tagName.toLowerCase() === "a") {
+            if (currentElement.tagName.toLowerCase() === "img" && !currentElement.classList.contains(styles_1.POPOUTIMAGE_CONTAINER_ID)) {
+                src = currentElement.src;
+                let src_ = currentElement.getAttribute("src");
+                if (!src) {
+                    src = currentElement.href;
+                    src_ = currentElement.getAttribute("href");
+                }
+                imageElement = currentElement;
+                debug(`IMG CLICK: ${src} (${src_})`);
+            }
+            else if (currentElement.tagName.toLowerCase() === "a") {
                 href = currentElement.href;
                 const href_ = currentElement.getAttribute("href");
+                linkElement = currentElement;
                 debug(`A LINK CLICK: ${href} (${href_})`);
                 break;
             }
             currentElement = currentElement.parentNode;
         }
-        if (!href) {
+        currentElement = undefined;
+        if (!href && !src && !imageElement && !linkElement) {
+            clearImages();
             return;
         }
-        if (href.animVal) {
+        if (href && href.animVal) {
             href = href.animVal;
             if (!href) {
+                clearImages();
                 return;
             }
         }
-        const hrefStr = href;
-        if (/^javascript:/.test(hrefStr)) {
+        if (src && src.animVal) {
+            src = src.animVal;
+            if (!src) {
+                clearImages();
+                return;
+            }
+        }
+        const has = imageElement === null || imageElement === void 0 ? void 0 : imageElement.hasAttribute(`data-${styles_1.POPOUTIMAGE_CONTAINER_ID}`);
+        if (imageElement && src && (!href || has || ev.shiftKey)) {
+            clearImages();
+            ev.preventDefault();
+            ev.stopPropagation();
+            if (has) {
+                (0, popoutImages_1.popoutImage)(win, imageElement, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+            }
+            else {
+                imageElement.setAttribute(`data-${styles_1.POPOUTIMAGE_CONTAINER_ID}`, "1");
+            }
             return;
         }
+        if (!linkElement || !href) {
+            clearImages();
+            return;
+        }
+        const hrefStr = href;
+        if (/^javascript:/.test(hrefStr)) {
+            clearImages();
+            return;
+        }
+        clearImages();
         ev.preventDefault();
         ev.stopPropagation();
         const payload = {
-            url: "#" + cssselector2_1.FRAG_ID_CSS_SELECTOR + (0, UrlUtils_1.encodeURIComponent_RFC3986)(getCssSelector(currentElement)),
+            url: "#" + cssselector2_1.FRAG_ID_CSS_SELECTOR + (0, UrlUtils_1.encodeURIComponent_RFC3986)(getCssSelector(linkElement)),
         };
         electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_LINK, payload);
-        const done = yield (0, popupFootNotes_1.popupFootNote)(currentElement, focusScrollRaw, hrefStr, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+        const done = yield (0, popupFootNotes_1.popupFootNote)(linkElement, focusScrollRaw, hrefStr, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
         if (!done) {
             focusScrollDebounced.clear();
             processXYDebouncedImmediate.clear();
@@ -1418,7 +1519,6 @@ function loaded(forced) {
             };
             electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_LINK, payload);
         }
-        return false;
     }), true);
     electron_1.ipcRenderer.on("R2_EVENT_WINDOW_RESIZE", (_event, zoomPercent) => {
         debug("R2_EVENT_WINDOW_RESIZE zoomPercent " + zoomPercent);

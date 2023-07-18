@@ -22,7 +22,7 @@ const readium_css_1 = require("./readium-css");
 const URI = require("urijs");
 const debug = debug_("r2:navigator#electron/renderer/location");
 const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
-const win = window;
+const win = global.window;
 const webviewStyleCommon = "display: flex; border: 0; margin: 0; padding: 0; box-sizing: border-box; position: absolute; ";
 const webviewStyleLeft = "opacity: 0; " + webviewStyleCommon + "left: 0; width: 50%; bottom: 0; top: 0;";
 const webviewStyleRight = "opacity: 0; " + webviewStyleCommon + "left: 50%; right: 0; bottom: 0; top: 0;";
@@ -75,12 +75,17 @@ function locationHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
         }
     }
     else if (eventChannel === events_1.R2_EVENT_PAGE_TURN_RES) {
+        const payload = eventArgs[0];
+        if (payload.nav) {
+            const rtl = payload.direction === "LTR" && payload.go === "PREVIOUS" || payload.direction === "RTL" && payload.go === "NEXT";
+            navLeftOrRight(!rtl);
+            return true;
+        }
         const publication = win.READIUM2.publication;
         const publicationURL = win.READIUM2.publicationURL;
         if (!publication) {
             return true;
         }
-        const payload = eventArgs[0];
         const doNothing = payload.go === "" && payload.direction === "";
         if (doNothing) {
             return true;
@@ -257,7 +262,10 @@ function navLeftOrRight(left, spineNav, ignorePageSpreadHandling) {
         const activeWebView = win.READIUM2.getFirstOrSecondWebView();
         if (activeWebView) {
             setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
-                yield activeWebView.send(events_1.R2_EVENT_PAGE_TURN, payload);
+                var _a;
+                if ((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady) {
+                    yield activeWebView.send(events_1.R2_EVENT_PAGE_TURN, payload);
+                }
             }), 0);
         }
     }
@@ -708,13 +716,19 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
                 !activeWebView.hasAttribute("data-wv-fxl")) {
                 activeWebView.style.opacity = "0";
                 setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+                    var _j;
                     shiftWebview(activeWebView, 0, undefined);
-                    yield activeWebView.send(events_1.R2_EVENT_SCROLLTO, payload);
+                    if ((_j = activeWebView.READIUM2) === null || _j === void 0 ? void 0 : _j.DOMisReady) {
+                        yield activeWebView.send(events_1.R2_EVENT_SCROLLTO, payload);
+                    }
                 }), 10);
             }
             else {
                 setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
-                    yield activeWebView.send(events_1.R2_EVENT_SCROLLTO, payload);
+                    var _k;
+                    if ((_k = activeWebView.READIUM2) === null || _k === void 0 ? void 0 : _k.DOMisReady) {
+                        yield activeWebView.send(events_1.R2_EVENT_SCROLLTO, payload);
+                    }
                 }), 0);
             }
         }
@@ -1193,7 +1207,10 @@ function isLocatorVisible(locator) {
                 activeWebView.addEventListener("ipc-message", cb);
                 const payloadPing = { location: locator.locations, visible: false };
                 setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
-                    yield activeWebView.send(events_1.R2_EVENT_LOCATOR_VISIBLE, payloadPing);
+                    var _b;
+                    if ((_b = activeWebView.READIUM2) === null || _b === void 0 ? void 0 : _b.DOMisReady) {
+                        yield activeWebView.send(events_1.R2_EVENT_LOCATOR_VISIBLE, payloadPing);
+                    }
                 }), 0);
                 return;
             }
