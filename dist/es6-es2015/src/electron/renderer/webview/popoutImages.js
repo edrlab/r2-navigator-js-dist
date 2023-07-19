@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.popoutImage = void 0;
 const styles_1 = require("../../common/styles");
 const popup_dialog_1 = require("../common/popup-dialog");
-function popoutImage(win, element, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
+function popoutImage(win, element, href_src, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
     win.wheelzoom = (img) => {
         const zoomStep = 0.10;
         const panStep = 20;
@@ -293,7 +293,7 @@ function popoutImage(win, element, focusScrollRaw, ensureTwoPageSpreadWithOddCol
         }
         init();
     };
-    const imgHref = element.src;
+    const imgHref = href_src;
     if (!imgHref) {
         return;
     }

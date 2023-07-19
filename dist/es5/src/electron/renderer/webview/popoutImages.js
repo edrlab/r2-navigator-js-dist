@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.popoutImage = void 0;
 var styles_1 = require("../../common/styles");
 var popup_dialog_1 = require("../common/popup-dialog");
-function popoutImage(win, element, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
+function popoutImage(win, element, href_src, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
     win.wheelzoom = function (img) {
         var zoomStep = 0.10;
         var panStep = 20;
@@ -293,7 +293,7 @@ function popoutImage(win, element, focusScrollRaw, ensureTwoPageSpreadWithOddCol
         }
         init();
     };
-    var imgHref = element.src;
+    var imgHref = href_src;
     if (!imgHref) {
         return;
     }

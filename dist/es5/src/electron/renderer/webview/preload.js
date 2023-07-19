@@ -7,6 +7,7 @@ var debug_ = require("debug");
 var electron_1 = require("electron");
 var tabbable_1 = require("tabbable");
 var UrlUtils_1 = require("r2-utils-js/dist/es5/src/_utils/http/UrlUtils");
+var sessions_1 = require("../../common/sessions");
 var events_1 = require("../../common/events");
 var readium_css_inject_1 = require("../../common/readium-css-inject");
 var selection_1 = require("../../common/selection");
@@ -1440,75 +1441,84 @@ function loaded(forced) {
         });
     }); }, true);
     win.document.addEventListener("click", function (ev) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-        var clearImages, linkElement, href, imageElement, src, currentElement, src_, href_, has, hrefStr, payload, done, payload_1;
+        var clearImages, linkElement, imageElement, href_src, currentElement, href_src_, href_, has, destUrl, hrefStr, payload, done, payload_1;
         return tslib_1.__generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     debug("!AUX __CLICK: ".concat(ev.button, " ..."));
                     clearImages = function () {
-                        var images = win.document.querySelectorAll("img[data-".concat(styles_1.POPOUTIMAGE_CONTAINER_ID, "]"));
+                        var imgs = win.document.querySelectorAll("img[data-".concat(styles_1.POPOUTIMAGE_CONTAINER_ID, "]"));
+                        imgs.forEach(function (img) {
+                            img.removeAttribute("data-".concat(styles_1.POPOUTIMAGE_CONTAINER_ID));
+                        });
+                        var images = win.document.querySelectorAll("image[data-".concat(styles_1.POPOUTIMAGE_CONTAINER_ID, "]"));
                         images.forEach(function (img) {
                             img.removeAttribute("data-".concat(styles_1.POPOUTIMAGE_CONTAINER_ID));
                         });
                     };
                     currentElement = ev.target;
                     while (currentElement && currentElement.nodeType === Node.ELEMENT_NODE) {
-                        if (currentElement.tagName.toLowerCase() === "img" && !currentElement.classList.contains(styles_1.POPOUTIMAGE_CONTAINER_ID)) {
-                            src = currentElement.src;
-                            src_ = currentElement.getAttribute("src");
-                            if (!src) {
-                                src = currentElement.href;
-                                src_ = currentElement.getAttribute("href");
+                        if ((currentElement.tagName.toLowerCase() === "img" || currentElement.tagName.toLowerCase() === "image")
+                            && !currentElement.classList.contains(styles_1.POPOUTIMAGE_CONTAINER_ID)) {
+                            href_src = currentElement.src;
+                            href_src_ = currentElement.getAttribute("src");
+                            if (!href_src) {
+                                href_src = currentElement.href;
+                                href_src_ = currentElement.getAttribute("href") || currentElement.getAttributeNS("http://www.w3.org/1999/xlink", "href");
                             }
                             imageElement = currentElement;
-                            debug("IMG CLICK: ".concat(src, " (").concat(src_, ")"));
+                            debug("IMG CLICK: ".concat(href_src, " (").concat(href_src_, ")"));
                         }
                         else if (currentElement.tagName.toLowerCase() === "a") {
-                            href = currentElement.href;
-                            href_ = currentElement.getAttribute("href");
+                            href_src = currentElement.href;
+                            href_ = currentElement.getAttribute("href") || currentElement.getAttributeNS("http://www.w3.org/1999/xlink", "href");
                             linkElement = currentElement;
-                            debug("A LINK CLICK: ".concat(href, " (").concat(href_, ")"));
+                            debug("A LINK CLICK: ".concat(href_src, " (").concat(href_, ")"));
                             break;
                         }
                         currentElement = currentElement.parentNode;
                     }
                     currentElement = undefined;
-                    if (!href && !src && !imageElement && !linkElement) {
+                    if (!href_src || (!imageElement && !linkElement)) {
                         clearImages();
                         return [2];
                     }
-                    if (href && href.animVal) {
-                        href = href.animVal;
-                        if (!href) {
+                    if (href_src.animVal) {
+                        href_src = href_src.animVal;
+                        if (!href_src) {
                             clearImages();
                             return [2];
                         }
                     }
-                    if (src && src.animVal) {
-                        src = src.animVal;
-                        if (!src) {
-                            clearImages();
-                            return [2];
-                        }
+                    if (typeof href_src !== "string") {
+                        clearImages();
+                        return [2];
                     }
+                    debug("HREF SRC: ".concat(href_src, " (").concat(win.location.href, ")"));
                     has = imageElement === null || imageElement === void 0 ? void 0 : imageElement.hasAttribute("data-".concat(styles_1.POPOUTIMAGE_CONTAINER_ID));
-                    if (imageElement && src && (!href || has || ev.shiftKey)) {
+                    if (imageElement && href_src && (has || !linkElement || ev.shiftKey)) {
                         clearImages();
                         ev.preventDefault();
                         ev.stopPropagation();
                         if (has) {
-                            (0, popoutImages_1.popoutImage)(win, imageElement, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+                            if (!/^(https?|thoriumhttps):\/\//.test(href_src) &&
+                                !href_src.startsWith((sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://"))) {
+                                destUrl = new URL(href_src, win.location.href);
+                                href_src = destUrl.toString();
+                                debug("IMG CLICK ABSOLUTE-ized: ".concat(href_src));
+                            }
+                            (0, popoutImages_1.popoutImage)(win, imageElement, href_src, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
                         }
                         else {
                             imageElement.setAttribute("data-".concat(styles_1.POPOUTIMAGE_CONTAINER_ID), "1");
                         }
                         return [2];
                     }
-                    if (!linkElement || !href) {
+                    if (!linkElement || !href_src) {
                         clearImages();
                         return [2];
                     }
-                    hrefStr = href;
+                    hrefStr = href_src;
                     if (/^javascript:/.test(hrefStr)) {
                         clearImages();
                         return [2];

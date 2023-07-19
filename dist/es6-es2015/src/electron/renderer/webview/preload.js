@@ -7,6 +7,7 @@ const debug_ = require("debug");
 const electron_1 = require("electron");
 const tabbable_1 = require("tabbable");
 const UrlUtils_1 = require("r2-utils-js/dist/es6-es2015/src/_utils/http/UrlUtils");
+const sessions_1 = require("../../common/sessions");
 const events_1 = require("../../common/events");
 const readium_css_inject_1 = require("../../common/readium-css-inject");
 const selection_1 = require("../../common/selection");
@@ -1426,73 +1427,81 @@ function loaded(forced) {
     win.document.addEventListener("click", (ev) => tslib_1.__awaiter(this, void 0, void 0, function* () {
         debug(`!AUX __CLICK: ${ev.button} ...`);
         const clearImages = () => {
-            const images = win.document.querySelectorAll(`img[data-${styles_1.POPOUTIMAGE_CONTAINER_ID}]`);
+            const imgs = win.document.querySelectorAll(`img[data-${styles_1.POPOUTIMAGE_CONTAINER_ID}]`);
+            imgs.forEach((img) => {
+                img.removeAttribute(`data-${styles_1.POPOUTIMAGE_CONTAINER_ID}`);
+            });
+            const images = win.document.querySelectorAll(`image[data-${styles_1.POPOUTIMAGE_CONTAINER_ID}]`);
             images.forEach((img) => {
                 img.removeAttribute(`data-${styles_1.POPOUTIMAGE_CONTAINER_ID}`);
             });
         };
         let linkElement;
-        let href;
         let imageElement;
-        let src;
+        let href_src;
         let currentElement = ev.target;
         while (currentElement && currentElement.nodeType === Node.ELEMENT_NODE) {
-            if (currentElement.tagName.toLowerCase() === "img" && !currentElement.classList.contains(styles_1.POPOUTIMAGE_CONTAINER_ID)) {
-                src = currentElement.src;
-                let src_ = currentElement.getAttribute("src");
-                if (!src) {
-                    src = currentElement.href;
-                    src_ = currentElement.getAttribute("href");
+            if ((currentElement.tagName.toLowerCase() === "img" || currentElement.tagName.toLowerCase() === "image")
+                && !currentElement.classList.contains(styles_1.POPOUTIMAGE_CONTAINER_ID)) {
+                href_src = currentElement.src;
+                let href_src_ = currentElement.getAttribute("src");
+                if (!href_src) {
+                    href_src = currentElement.href;
+                    href_src_ = currentElement.getAttribute("href") || currentElement.getAttributeNS("http://www.w3.org/1999/xlink", "href");
                 }
                 imageElement = currentElement;
-                debug(`IMG CLICK: ${src} (${src_})`);
+                debug(`IMG CLICK: ${href_src} (${href_src_})`);
             }
             else if (currentElement.tagName.toLowerCase() === "a") {
-                href = currentElement.href;
-                const href_ = currentElement.getAttribute("href");
+                href_src = currentElement.href;
+                const href_ = currentElement.getAttribute("href") || currentElement.getAttributeNS("http://www.w3.org/1999/xlink", "href");
                 linkElement = currentElement;
-                debug(`A LINK CLICK: ${href} (${href_})`);
+                debug(`A LINK CLICK: ${href_src} (${href_})`);
                 break;
             }
             currentElement = currentElement.parentNode;
         }
         currentElement = undefined;
-        if (!href && !src && !imageElement && !linkElement) {
+        if (!href_src || (!imageElement && !linkElement)) {
             clearImages();
             return;
         }
-        if (href && href.animVal) {
-            href = href.animVal;
-            if (!href) {
+        if (href_src.animVal) {
+            href_src = href_src.animVal;
+            if (!href_src) {
                 clearImages();
                 return;
             }
         }
-        if (src && src.animVal) {
-            src = src.animVal;
-            if (!src) {
-                clearImages();
-                return;
-            }
+        if (typeof href_src !== "string") {
+            clearImages();
+            return;
         }
+        debug(`HREF SRC: ${href_src} (${win.location.href})`);
         const has = imageElement === null || imageElement === void 0 ? void 0 : imageElement.hasAttribute(`data-${styles_1.POPOUTIMAGE_CONTAINER_ID}`);
-        if (imageElement && src && (!href || has || ev.shiftKey)) {
+        if (imageElement && href_src && (has || !linkElement || ev.shiftKey)) {
             clearImages();
             ev.preventDefault();
             ev.stopPropagation();
             if (has) {
-                (0, popoutImages_1.popoutImage)(win, imageElement, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+                if (!/^(https?|thoriumhttps):\/\//.test(href_src) &&
+                    !href_src.startsWith((sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://"))) {
+                    const destUrl = new URL(href_src, win.location.href);
+                    href_src = destUrl.toString();
+                    debug(`IMG CLICK ABSOLUTE-ized: ${href_src}`);
+                }
+                (0, popoutImages_1.popoutImage)(win, imageElement, href_src, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
             }
             else {
                 imageElement.setAttribute(`data-${styles_1.POPOUTIMAGE_CONTAINER_ID}`, "1");
             }
             return;
         }
-        if (!linkElement || !href) {
+        if (!linkElement || !href_src) {
             clearImages();
             return;
         }
-        const hrefStr = href;
+        const hrefStr = href_src;
         if (/^javascript:/.test(hrefStr)) {
             clearImages();
             return;
