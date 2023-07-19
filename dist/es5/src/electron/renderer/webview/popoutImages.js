@@ -185,7 +185,7 @@ function popoutImage(win, element, href_src, focusScrollRaw, ensureTwoPageSpread
             img.style.backgroundRepeat = "no-repeat";
             img.style.backgroundImage = "url(\"" + img.src + "\")";
             img.__INITED = true;
-            img.src = "data:image/svg+xml;base64," + win.btoa("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"" + naturalWidth + "\" height=\"" + naturalHeight + "\"></svg>");
+            img.src = "data:image/svg+xml;base64," + Buffer.from("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"" + naturalWidth + "\" height=\"" + naturalHeight + "\"></svg>").toString("base64");
             onclick(undefined, true);
             img.addEventListener("wheel", onwheel);
             img.addEventListener("touchmove", ontouch);
@@ -293,14 +293,14 @@ function popoutImage(win, element, href_src, focusScrollRaw, ensureTwoPageSpread
         }
         init();
     };
-    var imgHref = href_src;
-    if (!imgHref) {
-        return;
+    var isSVG = href_src.startsWith("<svg");
+    if (isSVG) {
+        href_src = "data:image/svg+xml;base64," + Buffer.from(href_src).toString("base64");
     }
     var onloadhandler = "onload=\"javascript: " +
         "window.wheelzoom(this);" +
         "return; \"";
-    var htmltxt = "\n<div\n    class=\"".concat(styles_1.CSS_CLASS_NO_FOCUS_OUTLINE, "\"\n    tabindex=\"0\"\n    autofocus=\"autofocus\"\n    id=\"").concat(styles_1.POPOUTIMAGE_CONTAINER_ID, "\"\n    >\n    <img\n        class=\"").concat(styles_1.POPOUTIMAGE_CONTAINER_ID, "\"\n        ").concat(onloadhandler, "\n        src=\"").concat(imgHref, "\"\n    />\n    <div id=\"").concat(styles_1.POPOUTIMAGE_CONTROLS_ID, "\">\n    <button id=\"").concat(styles_1.POPOUTIMAGE_MINUS_ID, "\">-</button>\n    <button id=\"").concat(styles_1.POPOUTIMAGE_RESET_ID, "\">0</button>\n    <button id=\"").concat(styles_1.POPOUTIMAGE_PLUS_ID, "\">+</button>\n    </div>\n    <button id=\"").concat(styles_1.POPOUTIMAGE_CLOSE_ID, "\">X</button>\n</div>");
+    var htmltxt = "\n<div\n    class=\"".concat(styles_1.CSS_CLASS_NO_FOCUS_OUTLINE, "\"\n    tabindex=\"0\"\n    autofocus=\"autofocus\"\n    id=\"").concat(styles_1.POPOUTIMAGE_CONTAINER_ID, "\"\n    >\n    <img\n        class=\"").concat(styles_1.POPOUTIMAGE_CONTAINER_ID, "\"\n        ").concat(onloadhandler, "\n        src=\"").concat(href_src, "\"\n    />\n    <div id=\"").concat(styles_1.POPOUTIMAGE_CONTROLS_ID, "\">\n    <button id=\"").concat(styles_1.POPOUTIMAGE_MINUS_ID, "\">-</button>\n    <button id=\"").concat(styles_1.POPOUTIMAGE_RESET_ID, "\">0</button>\n    <button id=\"").concat(styles_1.POPOUTIMAGE_PLUS_ID, "\">+</button>\n    </div>\n    <button id=\"").concat(styles_1.POPOUTIMAGE_CLOSE_ID, "\">X</button>\n</div>");
     var val = ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable();
     function onDialogClosed(el) {
         win.READIUM2.ignorekeyDownUpEvents = false;

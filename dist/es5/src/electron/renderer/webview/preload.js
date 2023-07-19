@@ -1441,7 +1441,7 @@ function loaded(forced) {
         });
     }); }, true);
     win.document.addEventListener("click", function (ev) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-        var clearImages, linkElement, imageElement, href_src, currentElement, href_src_, href_, has, destUrl, hrefStr, payload, done, payload_1;
+        var clearImages, linkElement, imageElement, href_src, href_src_image_nested_in_link, isSVG, globalSVGDefs, currentElement, _loop_1, state_1, has, destUrl, hrefStr, payload, done, payload_1;
         return tslib_1.__generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -1455,33 +1455,160 @@ function loaded(forced) {
                         images.forEach(function (img) {
                             img.removeAttribute("data-".concat(styles_1.POPOUTIMAGE_CONTAINER_ID));
                         });
+                        var svgs = win.document.querySelectorAll("svg[data-".concat(styles_1.POPOUTIMAGE_CONTAINER_ID, "]"));
+                        svgs.forEach(function (svg) {
+                            svg.removeAttribute("data-".concat(styles_1.POPOUTIMAGE_CONTAINER_ID));
+                        });
                     };
+                    isSVG = false;
                     currentElement = ev.target;
-                    while (currentElement && currentElement.nodeType === Node.ELEMENT_NODE) {
-                        if ((currentElement.tagName.toLowerCase() === "img" || currentElement.tagName.toLowerCase() === "image")
+                    _loop_1 = function () {
+                        var e_1, _b;
+                        var tagName = currentElement.tagName.toLowerCase();
+                        if ((tagName === "img" || tagName === "image" || tagName === "svg")
                             && !currentElement.classList.contains(styles_1.POPOUTIMAGE_CONTAINER_ID)) {
-                            href_src = currentElement.src;
-                            href_src_ = currentElement.getAttribute("src");
-                            if (!href_src) {
-                                href_src = currentElement.href;
-                                href_src_ = currentElement.getAttribute("href") || currentElement.getAttributeNS("http://www.w3.org/1999/xlink", "href");
+                            isSVG = false;
+                            if (tagName === "svg") {
+                                if (imageElement) {
+                                    currentElement = currentElement.parentNode;
+                                    return "continue";
+                                }
+                                isSVG = true;
+                                href_src = currentElement.outerHTML;
+                                var defs_1 = currentElement.querySelectorAll("defs > *[id]");
+                                debug("SVG INNER defs: ", defs_1.length);
+                                var uses = currentElement.querySelectorAll("use");
+                                debug("SVG INNER uses: ", uses.length);
+                                var useIDs_2 = [];
+                                uses.forEach(function (useElem) {
+                                    var href = useElem.getAttribute("href") || useElem.getAttributeNS("http://www.w3.org/1999/xlink", "href");
+                                    if (href === null || href === void 0 ? void 0 : href.startsWith("#")) {
+                                        var id = href.substring(1);
+                                        var found = false;
+                                        for (var i = 0; i < defs_1.length; i++) {
+                                            var defElem = defs_1[i];
+                                            if (defElem.getAttribute("id") === id) {
+                                                found = true;
+                                                break;
+                                            }
+                                        }
+                                        if (!found) {
+                                            debug("SVG INNER use (need inject def): ", id);
+                                            useIDs_2.push(id);
+                                        }
+                                        else {
+                                            debug("SVG INNER use (already has def): ", id);
+                                        }
+                                    }
+                                });
+                                var defsToInject_1 = "";
+                                var _loop_2 = function (useID) {
+                                    if (!globalSVGDefs) {
+                                        globalSVGDefs = win.document.querySelectorAll("defs > *[id]");
+                                    }
+                                    debug("SVG GLOBAL defs: ", globalSVGDefs.length);
+                                    var found = false;
+                                    globalSVGDefs.forEach(function (globalSVGDef) {
+                                        if (globalSVGDef.getAttribute("id") === useID) {
+                                            found = true;
+                                            var outer = globalSVGDef.outerHTML;
+                                            if (outer.includes("<use")) {
+                                                debug("!!!!!! SVG WARNING use inside def: " + outer);
+                                            }
+                                            defsToInject_1 += outer;
+                                        }
+                                    });
+                                    if (found) {
+                                        debug("SVG GLOBAL def for INNER use id: ", useID);
+                                    }
+                                    else {
+                                        debug("no SVG GLOBAL def for INNER use id!! ", useID);
+                                    }
+                                };
+                                try {
+                                    for (var useIDs_1 = (e_1 = void 0, tslib_1.__values(useIDs_2)), useIDs_1_1 = useIDs_1.next(); !useIDs_1_1.done; useIDs_1_1 = useIDs_1.next()) {
+                                        var useID = useIDs_1_1.value;
+                                        _loop_2(useID);
+                                    }
+                                }
+                                catch (e_1_1) { e_1 = { error: e_1_1 }; }
+                                finally {
+                                    try {
+                                        if (useIDs_1_1 && !useIDs_1_1.done && (_b = useIDs_1.return)) _b.call(useIDs_1);
+                                    }
+                                    finally { if (e_1) throw e_1.error; }
+                                }
+                                if (href_src.indexOf("<defs") >= 0) {
+                                    href_src = href_src.replace(/<\/defs>/, "".concat(defsToInject_1, " </defs>"));
+                                }
+                                else {
+                                    href_src = href_src.replace(/>/, "> <defs> ".concat(defsToInject_1, " </defs>"));
+                                }
+                                href_src = href_src.replace(/:href[\s]*=(["|'])(.+?)(["|'])/g, function (match) {
+                                    var args = [];
+                                    for (var _i = 1; _i < arguments.length; _i++) {
+                                        args[_i - 1] = arguments[_i];
+                                    }
+                                    var l = args[1].trim();
+                                    var ret = l.startsWith("#") || l.startsWith("/") || l.startsWith("data:") || /https?:/.test(l) ? match :
+                                        ":href=".concat(args[0]).concat(new URL(l, win.location.origin + win.location.pathname)).concat(args[2]);
+                                    debug("SVG URL REPLACE: ", match, ret);
+                                    return ret;
+                                });
+                                href_src = href_src.replace(/url[\s]*\((.+?)\)/g, function (match) {
+                                    var args = [];
+                                    for (var _i = 1; _i < arguments.length; _i++) {
+                                        args[_i - 1] = arguments[_i];
+                                    }
+                                    var l = args[0].trim();
+                                    var ret = l.startsWith("#") || l.startsWith("/") || l.startsWith("data:") || /https?:/.test(l) ? match :
+                                        "url(".concat(new URL(l, win.location.origin + win.location.pathname), ")");
+                                    debug("SVG URL REPLACE: ", match, ret);
+                                    return ret;
+                                });
+                                href_src = href_src.replace(/\n/g, " ").replace(/\s\s+/g, " ").trim();
+                                href_src = href_src.replace(/<desc[^<]+<\/desc>/g, "");
+                                debug("SVG CLICK: ".concat(href_src));
+                            }
+                            else {
+                                href_src = currentElement.src;
+                                var href_src_ = currentElement.getAttribute("src");
+                                if (!href_src) {
+                                    href_src = currentElement.href;
+                                    href_src_ = currentElement.getAttribute("href") || currentElement.getAttributeNS("http://www.w3.org/1999/xlink", "href");
+                                }
+                                debug("IMG CLICK: ".concat(href_src, " (").concat(href_src_, ")"));
                             }
                             imageElement = currentElement;
-                            debug("IMG CLICK: ".concat(href_src, " (").concat(href_src_, ")"));
                         }
-                        else if (currentElement.tagName.toLowerCase() === "a") {
+                        else if (tagName === "a") {
+                            if (href_src) {
+                                href_src_image_nested_in_link = href_src;
+                            }
                             href_src = currentElement.href;
-                            href_ = currentElement.getAttribute("href") || currentElement.getAttributeNS("http://www.w3.org/1999/xlink", "href");
+                            var href_ = currentElement.getAttribute("href") || currentElement.getAttributeNS("http://www.w3.org/1999/xlink", "href");
                             linkElement = currentElement;
                             debug("A LINK CLICK: ".concat(href_src, " (").concat(href_, ")"));
-                            break;
+                            return "break";
                         }
                         currentElement = currentElement.parentNode;
+                    };
+                    while (currentElement && currentElement.nodeType === Node.ELEMENT_NODE) {
+                        state_1 = _loop_1();
+                        if (state_1 === "break")
+                            break;
                     }
                     currentElement = undefined;
                     if (!href_src || (!imageElement && !linkElement)) {
                         clearImages();
                         return [2];
+                    }
+                    if (href_src_image_nested_in_link && href_src_image_nested_in_link.animVal) {
+                        href_src_image_nested_in_link = href_src_image_nested_in_link.animVal;
+                        if (!href_src_image_nested_in_link) {
+                            clearImages();
+                            return [2];
+                        }
                     }
                     if (href_src.animVal) {
                         href_src = href_src.animVal;
@@ -1494,16 +1621,25 @@ function loaded(forced) {
                         clearImages();
                         return [2];
                     }
-                    debug("HREF SRC: ".concat(href_src, " (").concat(win.location.href, ")"));
+                    if (href_src_image_nested_in_link && typeof href_src_image_nested_in_link !== "string") {
+                        clearImages();
+                        return [2];
+                    }
+                    debug("HREF SRC: ".concat(href_src, " ").concat(href_src_image_nested_in_link, " (").concat(win.location.href, ")"));
                     has = imageElement === null || imageElement === void 0 ? void 0 : imageElement.hasAttribute("data-".concat(styles_1.POPOUTIMAGE_CONTAINER_ID));
-                    if (imageElement && href_src && (has || !linkElement || ev.shiftKey)) {
+                    if (imageElement && href_src && (has ||
+                        ((!linkElement && !win.READIUM2.isFixedLayout && !isSVG) || ev.shiftKey))) {
+                        if (linkElement && href_src_image_nested_in_link) {
+                            href_src = href_src_image_nested_in_link;
+                        }
                         clearImages();
                         ev.preventDefault();
                         ev.stopPropagation();
                         if (has) {
-                            if (!/^(https?|thoriumhttps):\/\//.test(href_src) &&
+                            if (!isSVG &&
+                                !/^(https?|thoriumhttps):\/\//.test(href_src) &&
                                 !href_src.startsWith((sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://"))) {
-                                destUrl = new URL(href_src, win.location.href);
+                                destUrl = new URL(href_src, win.location.origin + win.location.pathname);
                                 href_src = destUrl.toString();
                                 debug("IMG CLICK ABSOLUTE-ized: ".concat(href_src));
                             }
@@ -1803,7 +1939,7 @@ win.addEventListener("load", function () {
     loaded(false);
 });
 function checkBlacklisted(el) {
-    var e_1, _a, e_2, _b, e_3, _c, e_4, _d;
+    var e_2, _a, e_3, _b, e_4, _c, e_5, _d;
     var id = el.getAttribute("id");
     if (id && _blacklistIdClassForCFI.indexOf(id) >= 0) {
         if (IS_DEV && id !== styles_1.SKIP_LINK_ID) {
@@ -1822,12 +1958,12 @@ function checkBlacklisted(el) {
             }
         }
     }
-    catch (e_1_1) { e_1 = { error: e_1_1 }; }
+    catch (e_2_1) { e_2 = { error: e_2_1 }; }
     finally {
         try {
             if (_blacklistIdClassForCFI_1_1 && !_blacklistIdClassForCFI_1_1.done && (_a = _blacklistIdClassForCFI_1.return)) _a.call(_blacklistIdClassForCFI_1);
         }
-        finally { if (e_1) throw e_1.error; }
+        finally { if (e_2) throw e_2.error; }
     }
     var mathJax = win.document.documentElement.classList.contains(styles_1.ROOT_CLASS_MATHJAX);
     if (mathJax) {
@@ -1843,12 +1979,12 @@ function checkBlacklisted(el) {
                 }
             }
         }
-        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        catch (e_3_1) { e_3 = { error: e_3_1 }; }
         finally {
             try {
                 if (_blacklistIdClassForCFIMathJax_1_1 && !_blacklistIdClassForCFIMathJax_1_1.done && (_b = _blacklistIdClassForCFIMathJax_1.return)) _b.call(_blacklistIdClassForCFIMathJax_1);
             }
-            finally { if (e_2) throw e_2.error; }
+            finally { if (e_3) throw e_3.error; }
         }
         if (id) {
             var lowId = id.toLowerCase();
@@ -1863,19 +1999,19 @@ function checkBlacklisted(el) {
                     }
                 }
             }
-            catch (e_3_1) { e_3 = { error: e_3_1 }; }
+            catch (e_4_1) { e_4 = { error: e_4_1 }; }
             finally {
                 try {
                     if (_blacklistIdClassForCFIMathJax_2_1 && !_blacklistIdClassForCFIMathJax_2_1.done && (_c = _blacklistIdClassForCFIMathJax_2.return)) _c.call(_blacklistIdClassForCFIMathJax_2);
                 }
-                finally { if (e_3) throw e_3.error; }
+                finally { if (e_4) throw e_4.error; }
             }
         }
         for (var i = 0; i < el.classList.length; i++) {
             var cl = el.classList[i];
             var lowCl = cl.toLowerCase();
             try {
-                for (var _blacklistIdClassForCFIMathJax_3 = (e_4 = void 0, tslib_1.__values(_blacklistIdClassForCFIMathJax)), _blacklistIdClassForCFIMathJax_3_1 = _blacklistIdClassForCFIMathJax_3.next(); !_blacklistIdClassForCFIMathJax_3_1.done; _blacklistIdClassForCFIMathJax_3_1 = _blacklistIdClassForCFIMathJax_3.next()) {
+                for (var _blacklistIdClassForCFIMathJax_3 = (e_5 = void 0, tslib_1.__values(_blacklistIdClassForCFIMathJax)), _blacklistIdClassForCFIMathJax_3_1 = _blacklistIdClassForCFIMathJax_3.next(); !_blacklistIdClassForCFIMathJax_3_1.done; _blacklistIdClassForCFIMathJax_3_1 = _blacklistIdClassForCFIMathJax_3.next()) {
                     var item = _blacklistIdClassForCFIMathJax_3_1.value;
                     if (lowCl.startsWith(item)) {
                         if (IS_DEV) {
@@ -1885,12 +2021,12 @@ function checkBlacklisted(el) {
                     }
                 }
             }
-            catch (e_4_1) { e_4 = { error: e_4_1 }; }
+            catch (e_5_1) { e_5 = { error: e_5_1 }; }
             finally {
                 try {
                     if (_blacklistIdClassForCFIMathJax_3_1 && !_blacklistIdClassForCFIMathJax_3_1.done && (_d = _blacklistIdClassForCFIMathJax_3.return)) _d.call(_blacklistIdClassForCFIMathJax_3);
                 }
-                finally { if (e_4) throw e_4.error; }
+                finally { if (e_5) throw e_5.error; }
             }
         }
     }
@@ -2048,7 +2184,7 @@ var processXYDebouncedImmediate = (0, debounce_1.debounce)(function (x, y, rever
     processXYRaw(x, y, reverse, userInteract);
 }, 300, true);
 var computeProgressionData = function () {
-    var e_5, _a;
+    var e_6, _a;
     var isPaged = (0, readium_css_inject_1.isPaginated)(win.document);
     var isTwoPage = (0, readium_css_1.isTwoPageSpread)();
     var _b = (0, readium_css_1.calculateMaxScrollShift)(), maxScrollShift = _b.maxScrollShift, maxScrollShiftAdjusted = _b.maxScrollShiftAdjusted;
@@ -2148,12 +2284,12 @@ var computeProgressionData = function () {
                             }
                         }
                     }
-                    catch (e_5_1) { e_5 = { error: e_5_1 }; }
+                    catch (e_6_1) { e_6 = { error: e_6_1 }; }
                     finally {
                         try {
                             if (clientRects_1_1 && !clientRects_1_1.done && (_a = clientRects_1.return)) _a.call(clientRects_1);
                         }
-                        finally { if (e_5) throw e_5.error; }
+                        finally { if (e_6) throw e_6.error; }
                     }
                     if (!rectangle) {
                         rectangle = element.getBoundingClientRect();
@@ -2249,7 +2385,7 @@ var computeCFI = function (node) {
 exports.computeCFI = computeCFI;
 var _getCssSelectorOptions = {
     className: function (str) {
-        var e_6, _a;
+        var e_7, _a;
         if (_blacklistIdClassForCssSelectors.indexOf(str) >= 0) {
             return false;
         }
@@ -2264,18 +2400,18 @@ var _getCssSelectorOptions = {
                     }
                 }
             }
-            catch (e_6_1) { e_6 = { error: e_6_1 }; }
+            catch (e_7_1) { e_7 = { error: e_7_1 }; }
             finally {
                 try {
                     if (_blacklistIdClassForCssSelectorsMathJax_1_1 && !_blacklistIdClassForCssSelectorsMathJax_1_1.done && (_a = _blacklistIdClassForCssSelectorsMathJax_1.return)) _a.call(_blacklistIdClassForCssSelectorsMathJax_1);
                 }
-                finally { if (e_6) throw e_6.error; }
+                finally { if (e_7) throw e_7.error; }
             }
         }
         return true;
     },
     idName: function (str) {
-        var e_7, _a;
+        var e_8, _a;
         if (_blacklistIdClassForCssSelectors.indexOf(str) >= 0) {
             return false;
         }
@@ -2290,18 +2426,18 @@ var _getCssSelectorOptions = {
                     }
                 }
             }
-            catch (e_7_1) { e_7 = { error: e_7_1 }; }
+            catch (e_8_1) { e_8 = { error: e_8_1 }; }
             finally {
                 try {
                     if (_blacklistIdClassForCssSelectorsMathJax_2_1 && !_blacklistIdClassForCssSelectorsMathJax_2_1.done && (_a = _blacklistIdClassForCssSelectorsMathJax_2.return)) _a.call(_blacklistIdClassForCssSelectorsMathJax_2);
                 }
-                finally { if (e_7) throw e_7.error; }
+                finally { if (e_8) throw e_8.error; }
             }
         }
         return true;
     },
     tagName: function (str) {
-        var e_8, _a;
+        var e_9, _a;
         var mathJax = win.document.documentElement.classList.contains(styles_1.ROOT_CLASS_MATHJAX);
         if (mathJax) {
             try {
@@ -2312,12 +2448,12 @@ var _getCssSelectorOptions = {
                     }
                 }
             }
-            catch (e_8_1) { e_8 = { error: e_8_1 }; }
+            catch (e_9_1) { e_9 = { error: e_9_1 }; }
             finally {
                 try {
                     if (_blacklistIdClassForCssSelectorsMathJax_3_1 && !_blacklistIdClassForCssSelectorsMathJax_3_1.done && (_a = _blacklistIdClassForCssSelectorsMathJax_3.return)) _a.call(_blacklistIdClassForCssSelectorsMathJax_3);
                 }
-                finally { if (e_8) throw e_8.error; }
+                finally { if (e_9) throw e_9.error; }
             }
         }
         return true;
@@ -2345,7 +2481,7 @@ var _namespaceResolver = function (prefix) {
 };
 var _allHeadings;
 var findPrecedingAncestorSiblingHeadings = function (element) {
-    var e_9, _a;
+    var e_10, _a;
     if (!_allHeadings) {
         var headingElements = Array.from(win.document.querySelectorAll("h1,h2,h3,h4,h5,h6"));
         try {
@@ -2384,12 +2520,12 @@ var findPrecedingAncestorSiblingHeadings = function (element) {
                 }
             }
         }
-        catch (e_9_1) { e_9 = { error: e_9_1 }; }
+        catch (e_10_1) { e_10 = { error: e_10_1 }; }
         finally {
             try {
                 if (headingElements_1_1 && !headingElements_1_1.done && (_a = headingElements_1.return)) _a.call(headingElements_1);
             }
-            finally { if (e_9) throw e_9.error; }
+            finally { if (e_10) throw e_10.error; }
         }
         if (!_allHeadings) {
             _allHeadings = [];
@@ -2722,7 +2858,7 @@ if (!win.READIUM2.isAudio) {
         }
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_HIGHLIGHT_CREATE, function (_event, payloadPing) {
-        var e_10, _a;
+        var e_11, _a;
         if (payloadPing.highlightDefinitions &&
             payloadPing.highlightDefinitions.length === 1 &&
             payloadPing.highlightDefinitions[0].selectionInfo) {
@@ -2749,12 +2885,12 @@ if (!win.READIUM2.isAudio) {
                 }
             }
         }
-        catch (e_10_1) { e_10 = { error: e_10_1 }; }
+        catch (e_11_1) { e_11 = { error: e_11_1 }; }
         finally {
             try {
                 if (highlightDefinitions_1_1 && !highlightDefinitions_1_1.done && (_a = highlightDefinitions_1.return)) _a.call(highlightDefinitions_1);
             }
-            finally { if (e_10) throw e_10.error; }
+            finally { if (e_11) throw e_11.error; }
         }
         var highlights = (0, highlight_1.createHighlights)(win, highlightDefinitions, true);
         var payloadPong = {

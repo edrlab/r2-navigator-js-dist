@@ -1434,24 +1434,119 @@ function loaded(forced) {
             images.forEach((img) => {
                 img.removeAttribute(`data-${styles_1.POPOUTIMAGE_CONTAINER_ID}`);
             });
+            const svgs = win.document.querySelectorAll(`svg[data-${styles_1.POPOUTIMAGE_CONTAINER_ID}]`);
+            svgs.forEach((svg) => {
+                svg.removeAttribute(`data-${styles_1.POPOUTIMAGE_CONTAINER_ID}`);
+            });
         };
         let linkElement;
         let imageElement;
         let href_src;
+        let href_src_image_nested_in_link;
+        let isSVG = false;
+        let globalSVGDefs;
         let currentElement = ev.target;
         while (currentElement && currentElement.nodeType === Node.ELEMENT_NODE) {
-            if ((currentElement.tagName.toLowerCase() === "img" || currentElement.tagName.toLowerCase() === "image")
+            const tagName = currentElement.tagName.toLowerCase();
+            if ((tagName === "img" || tagName === "image" || tagName === "svg")
                 && !currentElement.classList.contains(styles_1.POPOUTIMAGE_CONTAINER_ID)) {
-                href_src = currentElement.src;
-                let href_src_ = currentElement.getAttribute("src");
-                if (!href_src) {
-                    href_src = currentElement.href;
-                    href_src_ = currentElement.getAttribute("href") || currentElement.getAttributeNS("http://www.w3.org/1999/xlink", "href");
+                isSVG = false;
+                if (tagName === "svg") {
+                    if (imageElement) {
+                        currentElement = currentElement.parentNode;
+                        continue;
+                    }
+                    isSVG = true;
+                    href_src = currentElement.outerHTML;
+                    const defs = currentElement.querySelectorAll("defs > *[id]");
+                    debug("SVG INNER defs: ", defs.length);
+                    const uses = currentElement.querySelectorAll("use");
+                    debug("SVG INNER uses: ", uses.length);
+                    const useIDs = [];
+                    uses.forEach((useElem) => {
+                        const href = useElem.getAttribute("href") || useElem.getAttributeNS("http://www.w3.org/1999/xlink", "href");
+                        if (href === null || href === void 0 ? void 0 : href.startsWith("#")) {
+                            const id = href.substring(1);
+                            let found = false;
+                            for (let i = 0; i < defs.length; i++) {
+                                const defElem = defs[i];
+                                if (defElem.getAttribute("id") === id) {
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (!found) {
+                                debug("SVG INNER use (need inject def): ", id);
+                                useIDs.push(id);
+                            }
+                            else {
+                                debug("SVG INNER use (already has def): ", id);
+                            }
+                        }
+                    });
+                    let defsToInject = "";
+                    for (const useID of useIDs) {
+                        if (!globalSVGDefs) {
+                            globalSVGDefs = win.document.querySelectorAll("defs > *[id]");
+                        }
+                        debug("SVG GLOBAL defs: ", globalSVGDefs.length);
+                        let found = false;
+                        globalSVGDefs.forEach((globalSVGDef) => {
+                            if (globalSVGDef.getAttribute("id") === useID) {
+                                found = true;
+                                const outer = globalSVGDef.outerHTML;
+                                if (outer.includes("<use")) {
+                                    debug("!!!!!! SVG WARNING use inside def: " + outer);
+                                }
+                                defsToInject += outer;
+                            }
+                        });
+                        if (found) {
+                            debug("SVG GLOBAL def for INNER use id: ", useID);
+                        }
+                        else {
+                            debug("no SVG GLOBAL def for INNER use id!! ", useID);
+                        }
+                    }
+                    if (href_src.indexOf("<defs") >= 0) {
+                        href_src = href_src.replace(/<\/defs>/, `${defsToInject} </defs>`);
+                    }
+                    else {
+                        href_src = href_src.replace(/>/, `> <defs> ${defsToInject} </defs>`);
+                    }
+                    href_src = href_src.replace(/:href[\s]*=(["|'])(.+?)(["|'])/g, (match, ...args) => {
+                        const l = args[1].trim();
+                        const ret = l.startsWith("#") || l.startsWith("/") || l.startsWith("data:") || /https?:/.test(l) ? match :
+                            `:href=${args[0]}${new URL(l, win.location.origin + win.location.pathname)}${args[2]}`;
+                        debug("SVG URL REPLACE: ", match, ret);
+                        return ret;
+                    });
+                    href_src = href_src.replace(/url[\s]*\((.+?)\)/g, (match, ...args) => {
+                        const l = args[0].trim();
+                        const ret = l.startsWith("#") || l.startsWith("/") || l.startsWith("data:") || /https?:/.test(l) ? match :
+                            `url(${new URL(l, win.location.origin + win.location.pathname)})`;
+                        debug("SVG URL REPLACE: ", match, ret);
+                        return ret;
+                    });
+                    href_src = href_src.replace(/\n/g, " ").replace(/\s\s+/g, " ").trim();
+                    href_src = href_src.replace(/<desc[^<]+<\/desc>/g, "");
+                    debug(`SVG CLICK: ${href_src}`);
+                }
+                else {
+                    href_src = currentElement.src;
+                    let href_src_ = currentElement.getAttribute("src");
+                    if (!href_src) {
+                        href_src = currentElement.href;
+                        href_src_ = currentElement.getAttribute("href") || currentElement.getAttributeNS("http://www.w3.org/1999/xlink", "href");
+                    }
+                    debug(`IMG CLICK: ${href_src} (${href_src_})`);
                 }
                 imageElement = currentElement;
-                debug(`IMG CLICK: ${href_src} (${href_src_})`);
             }
-            else if (currentElement.tagName.toLowerCase() === "a") {
+            else if (tagName === "a") {
+                if (href_src) {
+                    href_src_image_nested_in_link = href_src;
+                }
                 href_src = currentElement.href;
                 const href_ = currentElement.getAttribute("href") || currentElement.getAttributeNS("http://www.w3.org/1999/xlink", "href");
                 linkElement = currentElement;
@@ -1465,6 +1560,13 @@ function loaded(forced) {
             clearImages();
             return;
         }
+        if (href_src_image_nested_in_link && href_src_image_nested_in_link.animVal) {
+            href_src_image_nested_in_link = href_src_image_nested_in_link.animVal;
+            if (!href_src_image_nested_in_link) {
+                clearImages();
+                return;
+            }
+        }
         if (href_src.animVal) {
             href_src = href_src.animVal;
             if (!href_src) {
@@ -1476,16 +1578,25 @@ function loaded(forced) {
             clearImages();
             return;
         }
-        debug(`HREF SRC: ${href_src} (${win.location.href})`);
+        if (href_src_image_nested_in_link && typeof href_src_image_nested_in_link !== "string") {
+            clearImages();
+            return;
+        }
+        debug(`HREF SRC: ${href_src} ${href_src_image_nested_in_link} (${win.location.href})`);
         const has = imageElement === null || imageElement === void 0 ? void 0 : imageElement.hasAttribute(`data-${styles_1.POPOUTIMAGE_CONTAINER_ID}`);
-        if (imageElement && href_src && (has || !linkElement || ev.shiftKey)) {
+        if (imageElement && href_src && (has ||
+            ((!linkElement && !win.READIUM2.isFixedLayout && !isSVG) || ev.shiftKey))) {
+            if (linkElement && href_src_image_nested_in_link) {
+                href_src = href_src_image_nested_in_link;
+            }
             clearImages();
             ev.preventDefault();
             ev.stopPropagation();
             if (has) {
-                if (!/^(https?|thoriumhttps):\/\//.test(href_src) &&
+                if (!isSVG &&
+                    !/^(https?|thoriumhttps):\/\//.test(href_src) &&
                     !href_src.startsWith((sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://"))) {
-                    const destUrl = new URL(href_src, win.location.href);
+                    const destUrl = new URL(href_src, win.location.origin + win.location.pathname);
                     href_src = destUrl.toString();
                     debug(`IMG CLICK ABSOLUTE-ized: ${href_src}`);
                 }

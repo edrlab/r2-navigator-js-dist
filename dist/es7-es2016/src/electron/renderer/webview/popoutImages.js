@@ -185,7 +185,7 @@ function popoutImage(win, element, href_src, focusScrollRaw, ensureTwoPageSpread
             img.style.backgroundRepeat = "no-repeat";
             img.style.backgroundImage = "url(\"" + img.src + "\")";
             img.__INITED = true;
-            img.src = "data:image/svg+xml;base64," + win.btoa("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"" + naturalWidth + "\" height=\"" + naturalHeight + "\"></svg>");
+            img.src = "data:image/svg+xml;base64," + Buffer.from("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"" + naturalWidth + "\" height=\"" + naturalHeight + "\"></svg>").toString("base64");
             onclick(undefined, true);
             img.addEventListener("wheel", onwheel);
             img.addEventListener("touchmove", ontouch);
@@ -293,9 +293,9 @@ function popoutImage(win, element, href_src, focusScrollRaw, ensureTwoPageSpread
         }
         init();
     };
-    const imgHref = href_src;
-    if (!imgHref) {
-        return;
+    const isSVG = href_src.startsWith("<svg");
+    if (isSVG) {
+        href_src = "data:image/svg+xml;base64," + Buffer.from(href_src).toString("base64");
     }
     const onloadhandler = "onload=\"javascript: " +
         "window.wheelzoom(this);" +
@@ -310,7 +310,7 @@ function popoutImage(win, element, href_src, focusScrollRaw, ensureTwoPageSpread
     <img
         class="${styles_1.POPOUTIMAGE_CONTAINER_ID}"
         ${onloadhandler}
-        src="${imgHref}"
+        src="${href_src}"
     />
     <div id="${styles_1.POPOUTIMAGE_CONTROLS_ID}">
     <button id="${styles_1.POPOUTIMAGE_MINUS_ID}">-</button>
