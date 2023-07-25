@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.mediaOverlaysEnableSkippability = exports.mediaOverlaysPlaybackRate = exports.mediaOverlaysClickEnable = exports.mediaOverlaysEnableCaptionsMode = exports.mediaOverlaysEscape = exports.mediaOverlaysNext = exports.mediaOverlaysPrevious = exports.mediaOverlaysResume = exports.mediaOverlaysStop = exports.mediaOverlaysInterrupt = exports.mediaOverlaysPause = exports.mediaOverlaysPlay = exports.mediaOverlaysListen = exports.MediaOverlaysStateEnum = exports.mediaOverlaysHandleIpcMessage = exports.publicationHasMediaOverlays = void 0;
+exports.mediaOverlaysEnableSkippability = exports.mediaOverlaysPlaybackRate = exports.mediaOverlaysClickEnable = exports.mediaOverlaysEnableCaptionsMode = exports.mediaOverlaysEscape = exports.mediaOverlaysNext = exports.mediaOverlaysPrevious = exports.mediaOverlaysResume = exports.mediaOverlaysStop = exports.mediaOverlaysInterrupt = exports.mediaOverlaysPause = exports.mediaOverlaysPlay = exports.mediaOverlaysListen = exports.mediaOverlaysHandleIpcMessage = exports.publicationHasMediaOverlays = exports.MediaOverlaysStateEnum = void 0;
 var tslib_1 = require("tslib");
 var debug_ = require("debug");
 var util = require("util");
@@ -8,6 +8,7 @@ var serializable_1 = require("r2-lcp-js/dist/es5/src/serializable");
 var media_overlay_1 = require("r2-shared-js/dist/es5/src/models/media-overlay");
 var audiobook_1 = require("../common/audiobook");
 var events_1 = require("../common/events");
+Object.defineProperty(exports, "MediaOverlaysStateEnum", { enumerable: true, get: function () { return events_1.MediaOverlaysStateEnum; } });
 var location_1 = require("./location");
 var readium_css_1 = require("./readium-css");
 var debug = debug_("r2:navigator#electron/renderer/media-overlays");
@@ -93,9 +94,7 @@ function playMediaOverlays(textHref, rootMo, textFragmentIDChain) {
                     return [4, playMediaOverlaysAudio(moTextAudioPair, undefined, undefined)];
                 case 1:
                     _a.sent();
-                    if (_mediaOverlaysListener) {
-                        _mediaOverlaysListener(MediaOverlaysStateEnum.PLAYING);
-                    }
+                    mediaOverlaysStateSet(events_1.MediaOverlaysStateEnum.PLAYING);
                     _a.label = 2;
                 case 2: return [3, 4];
                 case 3:
@@ -805,9 +804,7 @@ function playMediaOverlaysForLink(link, textFragmentIDChain) {
                             var rtl = (0, readium_css_1.isRTL)();
                             (0, location_1.navLeftOrRight)(rtl, true, true);
                         }, 600);
-                        if (_mediaOverlaysListener) {
-                            _mediaOverlaysListener(MediaOverlaysStateEnum.PLAYING);
-                        }
+                        mediaOverlaysStateSet(events_1.MediaOverlaysStateEnum.PLAYING);
                         return [2];
                     }
                     if (!(!link.MediaOverlays || !link.MediaOverlays.initialized)) return [3, 9];
@@ -1016,12 +1013,45 @@ function moHighlight(href, id) {
         finally { if (e_9) throw e_9.error; }
     }
 }
-var MediaOverlaysStateEnum;
-(function (MediaOverlaysStateEnum) {
-    MediaOverlaysStateEnum["PAUSED"] = "PAUSED";
-    MediaOverlaysStateEnum["PLAYING"] = "PLAYING";
-    MediaOverlaysStateEnum["STOPPED"] = "STOPPED";
-})(MediaOverlaysStateEnum || (exports.MediaOverlaysStateEnum = MediaOverlaysStateEnum = {}));
+var mediaOverlaysStateSet = function (mediaOverlaysState) {
+    var e_10, _a;
+    var payload = {
+        state: mediaOverlaysState,
+    };
+    var activeWebViews = win.READIUM2.getActiveWebViews();
+    var _loop_2 = function (activeWebView) {
+        setTimeout(function () { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+            var _a;
+            return tslib_1.__generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        if (!((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady)) return [3, 2];
+                        return [4, activeWebView.send(events_1.R2_EVENT_MEDIA_OVERLAY_STATE, payload)];
+                    case 1:
+                        _b.sent();
+                        _b.label = 2;
+                    case 2: return [2];
+                }
+            });
+        }); }, 0);
+    };
+    try {
+        for (var activeWebViews_2 = tslib_1.__values(activeWebViews), activeWebViews_2_1 = activeWebViews_2.next(); !activeWebViews_2_1.done; activeWebViews_2_1 = activeWebViews_2.next()) {
+            var activeWebView = activeWebViews_2_1.value;
+            _loop_2(activeWebView);
+        }
+    }
+    catch (e_10_1) { e_10 = { error: e_10_1 }; }
+    finally {
+        try {
+            if (activeWebViews_2_1 && !activeWebViews_2_1.done && (_a = activeWebViews_2.return)) _a.call(activeWebViews_2);
+        }
+        finally { if (e_10) throw e_10.error; }
+    }
+    if (_mediaOverlaysListener) {
+        _mediaOverlaysListener(mediaOverlaysState);
+    }
+};
 var _mediaOverlaysListener;
 function mediaOverlaysListen(mediaOverlaysListener) {
     _mediaOverlaysListener = mediaOverlaysListener;
@@ -1087,9 +1117,7 @@ function mediaOverlaysPause() {
     if (_currentAudioElement) {
         _currentAudioElement.pause();
     }
-    if (_mediaOverlaysListener) {
-        _mediaOverlaysListener(MediaOverlaysStateEnum.PAUSED);
-    }
+    mediaOverlaysStateSet(events_1.MediaOverlaysStateEnum.PAUSED);
 }
 exports.mediaOverlaysPause = mediaOverlaysPause;
 function mediaOverlaysInterrupt() {
@@ -1118,9 +1146,7 @@ function mediaOverlaysStop(stayActive) {
     _mediaOverlayTextAudioPair = undefined;
     _mediaOverlayTextId = undefined;
     if (!_mediaOverlayActive) {
-        if (_mediaOverlaysListener) {
-            _mediaOverlaysListener(MediaOverlaysStateEnum.STOPPED);
-        }
+        mediaOverlaysStateSet(events_1.MediaOverlaysStateEnum.STOPPED);
     }
 }
 exports.mediaOverlaysStop = mediaOverlaysStop;
@@ -1153,9 +1179,7 @@ function mediaOverlaysResume() {
                 });
             }); }, 0);
         }
-        if (_mediaOverlaysListener) {
-            _mediaOverlaysListener(MediaOverlaysStateEnum.PLAYING);
-        }
+        mediaOverlaysStateSet(events_1.MediaOverlaysStateEnum.PLAYING);
         moHighlight_(_mediaOverlayTextAudioPair);
     }
     else {
@@ -1222,9 +1246,7 @@ function mediaOverlaysPrevious() {
                         }
                     });
                 }); }, 0);
-                if (_mediaOverlaysListener) {
-                    _mediaOverlaysListener(MediaOverlaysStateEnum.PLAYING);
-                }
+                mediaOverlaysStateSet(events_1.MediaOverlaysStateEnum.PLAYING);
             }
         }
     }
@@ -1294,9 +1316,7 @@ function mediaOverlaysNext(escape) {
                         }
                     });
                 }); }, 0);
-                if (_mediaOverlaysListener) {
-                    _mediaOverlaysListener(MediaOverlaysStateEnum.PLAYING);
-                }
+                mediaOverlaysStateSet(events_1.MediaOverlaysStateEnum.PLAYING);
             }
         }
     }

@@ -85,6 +85,16 @@ export interface IEventPayload_R2_EVENT_MEDIA_OVERLAY_STARTSTOP {
     stop: boolean | undefined;
     startstop: boolean | undefined;
 }
+export declare const R2_EVENT_MEDIA_OVERLAY_INTERRUPT = "R2_EVENT_MEDIA_OVERLAY_INTERRUPT";
+export declare enum MediaOverlaysStateEnum {
+    PAUSED = "PAUSED",
+    PLAYING = "PLAYING",
+    STOPPED = "STOPPED"
+}
+export declare const R2_EVENT_MEDIA_OVERLAY_STATE = "R2_EVENT_MEDIA_OVERLAY_STATE";
+export interface IEventPayload_R2_EVENT_MEDIA_OVERLAY_STATE {
+    state: MediaOverlaysStateEnum;
+}
 export declare const R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT = "R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT";
 export interface IEventPayload_R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT {
     id: string | undefined;

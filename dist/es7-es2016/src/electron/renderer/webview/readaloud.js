@@ -17,9 +17,15 @@ const selection_1 = require("./selection");
 const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 const win = global.window;
 let _dialogState;
-function resetState() {
-    _resumableState = undefined;
+function resetState(stop) {
+    if (stop) {
+        _resumableState = undefined;
+    }
     if (_dialogState) {
+        if (_dialogState.hasAttribute("open") || _dialogState.open) {
+            console.log("...DIALOG close() from TTS resetState()");
+            _dialogState.close();
+        }
         _dialogState.popDialog = undefined;
         _dialogState.focusScrollRaw = undefined;
         _dialogState.ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable = undefined;
@@ -38,7 +44,17 @@ function resetState() {
     }
     _dialogState = undefined;
     win.document.documentElement.classList.remove(styles_1.TTS_CLASS_IS_ACTIVE);
-    electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_TTS_IS_STOPPED);
+    if (stop || !_resumableState) {
+        electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_TTS_IS_STOPPED);
+        win.READIUM2.ttsClickEnabled = false;
+        win.document.documentElement.classList.remove(styles_1.TTS_CLASS_PLAYING, styles_1.TTS_CLASS_PAUSED);
+        win.document.documentElement.classList.add(styles_1.TTS_CLASS_STOPPED);
+    }
+    else {
+        win.READIUM2.ttsClickEnabled = true;
+        win.document.documentElement.classList.remove(styles_1.TTS_CLASS_PLAYING, styles_1.TTS_CLASS_STOPPED);
+        win.document.documentElement.classList.add(styles_1.TTS_CLASS_PAUSED);
+    }
 }
 function ttsPlay(speed, voice, focusScrollRaw, rootElem, startElem, startTextNode, startTextNodeOffset, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
     ttsStop();
@@ -67,17 +83,11 @@ function ttsPlay(speed, voice, focusScrollRaw, rootElem, startElem, startTextNod
 }
 exports.ttsPlay = ttsPlay;
 function ttsStop() {
-    if (_dialogState) {
-        if (_dialogState.hasAttribute("open")) {
-            _dialogState.close();
-            return;
-        }
-    }
-    ttsPause();
-    resetState();
+    ttsPause(true);
+    resetState(true);
 }
 exports.ttsStop = ttsStop;
-function ttsPause() {
+function ttsPause(doNotReset = false) {
     highlights(false);
     if (win.speechSynthesis.speaking) {
         if (_dialogState && _dialogState.ttsUtterance) {
@@ -95,10 +105,29 @@ function ttsPause() {
             win.speechSynthesis.cancel();
         }, 0);
     }
+    win.document.documentElement.classList.remove(styles_1.TTS_CLASS_PLAYING, styles_1.TTS_CLASS_STOPPED);
+    win.document.documentElement.classList.add(styles_1.TTS_CLASS_PAUSED);
     if (_dialogState && _dialogState.ttsOverlayEnabled) {
         win.document.documentElement.classList.add(styles_1.TTS_CLASS_IS_ACTIVE);
     }
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_TTS_IS_PAUSED);
+    win.READIUM2.ttsClickEnabled = true;
+    const isOpen = (_dialogState === null || _dialogState === void 0 ? void 0 : _dialogState.hasAttribute("open")) || (_dialogState === null || _dialogState === void 0 ? void 0 : _dialogState.open);
+    if ((0, popup_dialog_1.isPopupDialogOpen)(win.document) && isOpen) {
+        const diagEl = win.document.getElementById(styles_1.POPUP_DIALOG_CLASS);
+        if (diagEl) {
+            const isCollapsed = diagEl.classList.contains(styles_1.POPUP_DIALOG_CLASS_COLLAPSE);
+            if (!isCollapsed) {
+                doNotReset = true;
+            }
+        }
+    }
+    if (!doNotReset) {
+        if (isOpen) {
+            console.log("...DIALOG close() from TTS ttsPause()");
+            _dialogState === null || _dialogState === void 0 ? void 0 : _dialogState.close();
+        }
+    }
 }
 exports.ttsPause = ttsPause;
 function ttsVoice(voice) {
@@ -116,8 +145,8 @@ exports.ttsVoice = ttsVoice;
 function ttsPlaybackRate(speed) {
     win.READIUM2.ttsPlaybackRate = speed;
     if (_dialogState) {
-        ttsPause();
-        if (_dialogState.ttsUtterance) {
+        ttsPause(true);
+        if (_dialogState === null || _dialogState === void 0 ? void 0 : _dialogState.ttsUtterance) {
             _dialogState.ttsUtterance.rate = speed;
         }
         setTimeout(() => {
@@ -138,10 +167,13 @@ function ttsResume() {
                 win.speechSynthesis.speak(_dialogState.ttsUtterance);
             }
         }, 0);
+        win.document.documentElement.classList.remove(styles_1.TTS_CLASS_PAUSED, styles_1.TTS_CLASS_STOPPED);
+        win.document.documentElement.classList.add(styles_1.TTS_CLASS_PLAYING);
         if (_dialogState && _dialogState.ttsOverlayEnabled) {
             win.document.documentElement.classList.add(styles_1.TTS_CLASS_IS_ACTIVE);
         }
         electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_TTS_IS_PLAYING);
+        win.READIUM2.ttsClickEnabled = true;
     }
     else if (_resumableState) {
         setTimeout(() => {
@@ -157,7 +189,7 @@ function isTtsPlaying() {
 }
 exports.isTtsPlaying = isTtsPlaying;
 function isTtsActive() {
-    if (_dialogState && _dialogState.hasAttribute("open") &&
+    if (_dialogState && (_dialogState.hasAttribute("open") || _dialogState.open) &&
         (win.speechSynthesis.speaking || win.speechSynthesis.pending)) {
         return true;
     }
@@ -207,8 +239,11 @@ function ttsNext(skipSentences = false) {
         if (j >= _dialogState.ttsQueueLength || j < 0) {
             return;
         }
-        ttsPause();
+        ttsPause(true);
         ttsPlayQueueIndexDebounced(j);
+    }
+    else if (_resumableState) {
+        ttsResume();
     }
 }
 exports.ttsNext = ttsNext;
@@ -223,13 +258,16 @@ function ttsPrevious(skipSentences = false) {
         if (j >= _dialogState.ttsQueueLength || j < 0) {
             return;
         }
-        ttsPause();
+        ttsPause(true);
         ttsPlayQueueIndexDebounced(j);
+    }
+    else if (_resumableState) {
+        ttsResume();
     }
 }
 exports.ttsPrevious = ttsPrevious;
 function ttsPreviewAndEventuallyPlayQueueIndex(n) {
-    ttsPause();
+    ttsPause(true);
     ttsPlayQueueIndexDebounced(n);
 }
 exports.ttsPreviewAndEventuallyPlayQueueIndex = ttsPreviewAndEventuallyPlayQueueIndex;
@@ -525,7 +563,7 @@ function scrollIntoViewSpokenText(id) {
 }
 const R2_DATA_ATTR_UTTERANCE_INDEX = "data-r2-tts-utterance-index";
 function updateTTSInfo(charIndex, charLength, utteranceText) {
-    if (!_dialogState || !_dialogState.hasAttribute("open") || !_dialogState.domText ||
+    if (!_dialogState || !_dialogState.hasAttribute("open") || !_dialogState.open || !_dialogState.domText ||
         !_dialogState.ttsQueue || !_dialogState.ttsQueueItem) {
         return undefined;
     }
@@ -706,7 +744,7 @@ function ttsPlayQueueIndex(ttsQueueIndex) {
         !_dialogState.ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable ||
         !_dialogState.ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable ||
         !_dialogState.ttsQueue ||
-        !_dialogState.hasAttribute("open")) {
+        !_dialogState.hasAttribute("open") || !_dialogState.open) {
         ttsStop();
         return;
     }
@@ -818,10 +856,13 @@ function ttsPlayQueueIndex(ttsQueueIndex) {
     setTimeout(() => {
         win.speechSynthesis.speak(utterance);
     }, 0);
+    win.document.documentElement.classList.remove(styles_1.TTS_CLASS_PAUSED, styles_1.TTS_CLASS_STOPPED);
+    win.document.documentElement.classList.add(styles_1.TTS_CLASS_PLAYING);
     if (_dialogState && _dialogState.ttsOverlayEnabled) {
         win.document.documentElement.classList.add(styles_1.TTS_CLASS_IS_ACTIVE);
     }
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_TTS_IS_PLAYING);
+    win.READIUM2.ttsClickEnabled = true;
 }
 exports.ttsPlayQueueIndex = ttsPlayQueueIndex;
 function startTTSSession(speed, voice, ttsRootElement, ttsQueue, ttsQueueIndexStart, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
@@ -835,7 +876,7 @@ function startTTSSession(speed, voice, ttsRootElement, ttsQueue, ttsQueueIndexSt
     const ttsQueueLength = (0, dom_text_utils_1.getTtsQueueLength)(ttsQueue);
     const val = win.READIUM2.ttsOverlayEnabled ? ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable() : undefined;
     function onDialogClosed(el) {
-        ttsPause();
+        ttsPause(true);
         if (_dialogState && _dialogState.focusScrollRaw) {
             let toScrollTo = el;
             if (_dialogState.ttsQueueItem && _dialogState.ttsQueueItem.item.parentElement) {
@@ -852,7 +893,7 @@ function startTTSSession(speed, voice, ttsRootElement, ttsQueue, ttsQueueIndexSt
             ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable(val);
         }
         setTimeout(() => {
-            resetState();
+            resetState(false);
         }, 50);
     }
     const outerHTML = `<div id="${styles_1.TTS_ID_CONTAINER}"
@@ -929,7 +970,7 @@ ${win.READIUM2.ttsOverlayEnabled ?
                         const ttsQItem = (0, dom_text_utils_1.getTtsQueueItemRef)(_dialogState.ttsQueue, index);
                         if (ttsQItem) {
                             if (ttsQItem.iGlobal !== _dialogState.ttsQueueItem.iGlobal) {
-                                ttsPause();
+                                ttsPause(true);
                                 ttsPlayQueueIndexDebounced(index);
                                 return;
                             }

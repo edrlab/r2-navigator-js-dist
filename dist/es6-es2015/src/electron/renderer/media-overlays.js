@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.mediaOverlaysEnableSkippability = exports.mediaOverlaysPlaybackRate = exports.mediaOverlaysClickEnable = exports.mediaOverlaysEnableCaptionsMode = exports.mediaOverlaysEscape = exports.mediaOverlaysNext = exports.mediaOverlaysPrevious = exports.mediaOverlaysResume = exports.mediaOverlaysStop = exports.mediaOverlaysInterrupt = exports.mediaOverlaysPause = exports.mediaOverlaysPlay = exports.mediaOverlaysListen = exports.MediaOverlaysStateEnum = exports.mediaOverlaysHandleIpcMessage = exports.publicationHasMediaOverlays = void 0;
+exports.mediaOverlaysEnableSkippability = exports.mediaOverlaysPlaybackRate = exports.mediaOverlaysClickEnable = exports.mediaOverlaysEnableCaptionsMode = exports.mediaOverlaysEscape = exports.mediaOverlaysNext = exports.mediaOverlaysPrevious = exports.mediaOverlaysResume = exports.mediaOverlaysStop = exports.mediaOverlaysInterrupt = exports.mediaOverlaysPause = exports.mediaOverlaysPlay = exports.mediaOverlaysListen = exports.mediaOverlaysHandleIpcMessage = exports.publicationHasMediaOverlays = exports.MediaOverlaysStateEnum = void 0;
 const tslib_1 = require("tslib");
 const debug_ = require("debug");
 const util = require("util");
@@ -8,6 +8,7 @@ const serializable_1 = require("r2-lcp-js/dist/es6-es2015/src/serializable");
 const media_overlay_1 = require("r2-shared-js/dist/es6-es2015/src/models/media-overlay");
 const audiobook_1 = require("../common/audiobook");
 const events_1 = require("../common/events");
+Object.defineProperty(exports, "MediaOverlaysStateEnum", { enumerable: true, get: function () { return events_1.MediaOverlaysStateEnum; } });
 const location_1 = require("./location");
 const readium_css_1 = require("./readium-css");
 const debug = debug_("r2:navigator#electron/renderer/media-overlays");
@@ -76,9 +77,7 @@ function playMediaOverlays(textHref, rootMo, textFragmentIDChain) {
                 }
                 _mediaOverlayRoot = rootMo;
                 yield playMediaOverlaysAudio(moTextAudioPair, undefined, undefined);
-                if (_mediaOverlaysListener) {
-                    _mediaOverlaysListener(MediaOverlaysStateEnum.PLAYING);
-                }
+                mediaOverlaysStateSet(events_1.MediaOverlaysStateEnum.PLAYING);
             }
         }
         else {
@@ -680,9 +679,7 @@ function playMediaOverlaysForLink(link, textFragmentIDChain) {
                 const rtl = (0, readium_css_1.isRTL)();
                 (0, location_1.navLeftOrRight)(rtl, true, true);
             }, 600);
-            if (_mediaOverlaysListener) {
-                _mediaOverlaysListener(MediaOverlaysStateEnum.PLAYING);
-            }
+            mediaOverlaysStateSet(events_1.MediaOverlaysStateEnum.PLAYING);
             return;
         }
         if (!link.MediaOverlays || !link.MediaOverlays.initialized) {
@@ -842,12 +839,23 @@ function moHighlight(href, id) {
         }), 0);
     }
 }
-var MediaOverlaysStateEnum;
-(function (MediaOverlaysStateEnum) {
-    MediaOverlaysStateEnum["PAUSED"] = "PAUSED";
-    MediaOverlaysStateEnum["PLAYING"] = "PLAYING";
-    MediaOverlaysStateEnum["STOPPED"] = "STOPPED";
-})(MediaOverlaysStateEnum || (exports.MediaOverlaysStateEnum = MediaOverlaysStateEnum = {}));
+const mediaOverlaysStateSet = (mediaOverlaysState) => {
+    const payload = {
+        state: mediaOverlaysState,
+    };
+    const activeWebViews = win.READIUM2.getActiveWebViews();
+    for (const activeWebView of activeWebViews) {
+        setTimeout(() => tslib_1.__awaiter(void 0, void 0, void 0, function* () {
+            var _a;
+            if ((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady) {
+                yield activeWebView.send(events_1.R2_EVENT_MEDIA_OVERLAY_STATE, payload);
+            }
+        }), 0);
+    }
+    if (_mediaOverlaysListener) {
+        _mediaOverlaysListener(mediaOverlaysState);
+    }
+};
 let _mediaOverlaysListener;
 function mediaOverlaysListen(mediaOverlaysListener) {
     _mediaOverlaysListener = mediaOverlaysListener;
@@ -904,9 +912,7 @@ function mediaOverlaysPause() {
     if (_currentAudioElement) {
         _currentAudioElement.pause();
     }
-    if (_mediaOverlaysListener) {
-        _mediaOverlaysListener(MediaOverlaysStateEnum.PAUSED);
-    }
+    mediaOverlaysStateSet(events_1.MediaOverlaysStateEnum.PAUSED);
 }
 exports.mediaOverlaysPause = mediaOverlaysPause;
 function mediaOverlaysInterrupt() {
@@ -935,9 +941,7 @@ function mediaOverlaysStop(stayActive) {
     _mediaOverlayTextAudioPair = undefined;
     _mediaOverlayTextId = undefined;
     if (!_mediaOverlayActive) {
-        if (_mediaOverlaysListener) {
-            _mediaOverlaysListener(MediaOverlaysStateEnum.STOPPED);
-        }
+        mediaOverlaysStateSet(events_1.MediaOverlaysStateEnum.STOPPED);
     }
 }
 exports.mediaOverlaysStop = mediaOverlaysStop;
@@ -961,9 +965,7 @@ function mediaOverlaysResume() {
                 }
             }), 0);
         }
-        if (_mediaOverlaysListener) {
-            _mediaOverlaysListener(MediaOverlaysStateEnum.PLAYING);
-        }
+        mediaOverlaysStateSet(events_1.MediaOverlaysStateEnum.PLAYING);
         moHighlight_(_mediaOverlayTextAudioPair);
     }
     else {
@@ -1022,9 +1024,7 @@ function mediaOverlaysPrevious() {
                 setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
                     yield playMediaOverlaysAudio(previousTextAudioPair, undefined, undefined);
                 }), 0);
-                if (_mediaOverlaysListener) {
-                    _mediaOverlaysListener(MediaOverlaysStateEnum.PLAYING);
-                }
+                mediaOverlaysStateSet(events_1.MediaOverlaysStateEnum.PLAYING);
             }
         }
     }
@@ -1086,9 +1086,7 @@ function mediaOverlaysNext(escape) {
                 setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
                     yield playMediaOverlaysAudio(nextTextAudioPair, undefined, undefined);
                 }), 0);
-                if (_mediaOverlaysListener) {
-                    _mediaOverlaysListener(MediaOverlaysStateEnum.PLAYING);
-                }
+                mediaOverlaysStateSet(events_1.MediaOverlaysStateEnum.PLAYING);
             }
         }
     }

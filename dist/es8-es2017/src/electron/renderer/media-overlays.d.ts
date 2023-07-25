@@ -1,13 +1,10 @@
 import { Publication } from "r2-shared-js/dist/es8-es2017/src/models/publication";
+import { MediaOverlaysStateEnum as MediaOverlaysStateEnum_ } from "../common/events";
 import { IReadiumElectronWebview } from "./webview/state";
+export { MediaOverlaysStateEnum_ as MediaOverlaysStateEnum };
 export declare function publicationHasMediaOverlays(publication: Publication): boolean;
 export declare function mediaOverlaysHandleIpcMessage(eventChannel: string, eventArgs: any[], eventCurrentTarget: IReadiumElectronWebview): boolean;
-export declare enum MediaOverlaysStateEnum {
-    PAUSED = "PAUSED",
-    PLAYING = "PLAYING",
-    STOPPED = "STOPPED"
-}
-export declare function mediaOverlaysListen(mediaOverlaysListener: (mediaOverlaysState: MediaOverlaysStateEnum) => void): void;
+export declare function mediaOverlaysListen(mediaOverlaysListener: (mediaOverlaysState: MediaOverlaysStateEnum_) => void): void;
 export declare function mediaOverlaysPlay(speed: number): void;
 export declare function mediaOverlaysPause(): void;
 export declare function mediaOverlaysInterrupt(): void;

@@ -1426,6 +1426,31 @@ function loaded(forced) {
     }), true);
     win.document.addEventListener("click", (ev) => tslib_1.__awaiter(this, void 0, void 0, function* () {
         debug(`!AUX __CLICK: ${ev.button} ...`);
+        if (win.document.documentElement.classList.contains(styles_1.R2_MO_CLASS_PAUSED) || win.document.documentElement.classList.contains(styles_1.R2_MO_CLASS_PLAYING)) {
+            debug("!AUX __CLICK skip because MO playing/paused");
+            return;
+        }
+        if (!(0, popup_dialog_1.isPopupDialogOpen)(win.document)) {
+            const x = ev.clientX;
+            const y = ev.clientY;
+            const domPointData = domDataFromPoint(x, y);
+            if (domPointData.element && win.READIUM2.ttsClickEnabled) {
+                debug("!AUX __CLICK domPointData.element && win.READIUM2.ttsClickEnabled");
+                if (ev.altKey) {
+                    (0, readaloud_1.ttsPlay)(win.READIUM2.ttsPlaybackRate, win.READIUM2.ttsVoice, focusScrollRaw, domPointData.element, undefined, undefined, -1, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+                    return;
+                }
+                (0, readaloud_1.ttsPlay)(win.READIUM2.ttsPlaybackRate, win.READIUM2.ttsVoice, focusScrollRaw, domPointData.element.ownerDocument.body, domPointData.element, domPointData.textNode, domPointData.textNodeOffset, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+                return;
+            }
+        }
+        if (win.READIUM2.ttsClickEnabled || win.document.documentElement.classList.contains(styles_1.TTS_CLASS_PAUSED) || win.document.documentElement.classList.contains(styles_1.TTS_CLASS_PLAYING)) {
+            debug("!AUX __CLICK skip because TTS playing/paused");
+            return;
+        }
+        win.document.documentElement.classList.forEach((c) => {
+            debug(c);
+        });
         const clearImages = () => {
             const imgs = win.document.querySelectorAll(`img[data-${styles_1.POPOUTIMAGE_CONTAINER_ID}]`);
             imgs.forEach((img) => {
@@ -1840,16 +1865,6 @@ function loaded(forced) {
         const x = ev.clientX;
         const y = ev.clientY;
         processXYDebouncedImmediate(x, y, false, true);
-        const domPointData = domDataFromPoint(x, y);
-        if (domPointData.element && win.READIUM2.ttsClickEnabled) {
-            if (domPointData.element) {
-                if (ev.altKey) {
-                    (0, readaloud_1.ttsPlay)(win.READIUM2.ttsPlaybackRate, win.READIUM2.ttsVoice, focusScrollRaw, domPointData.element, undefined, undefined, -1, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
-                    return;
-                }
-                (0, readaloud_1.ttsPlay)(win.READIUM2.ttsPlaybackRate, win.READIUM2.ttsVoice, focusScrollRaw, domPointData.element.ownerDocument.body, domPointData.element, domPointData.textNode, domPointData.textNodeOffset, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
-            }
-        }
     }
     win.document.documentElement.addEventListener("mouseup", (ev) => {
         handleMouseEvent(ev);
@@ -2597,6 +2612,11 @@ if (!win.READIUM2.isAudio) {
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_OVERLAY_ENABLE, (_event, payload) => {
         win.READIUM2.ttsOverlayEnabled = payload.doEnable;
     });
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_MEDIA_OVERLAY_STATE, (_event, payload) => {
+        win.document.documentElement.classList.remove(styles_1.R2_MO_CLASS_PAUSED, styles_1.R2_MO_CLASS_PLAYING, styles_1.R2_MO_CLASS_STOPPED);
+        win.document.documentElement.classList.add(payload.state === events_1.MediaOverlaysStateEnum.PAUSED ? styles_1.R2_MO_CLASS_PAUSED :
+            (payload.state === events_1.MediaOverlaysStateEnum.PLAYING ? styles_1.R2_MO_CLASS_PLAYING : styles_1.R2_MO_CLASS_STOPPED));
+    });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT, (_event, payload) => {
         const styleAttr = win.document.documentElement.getAttribute("style");
         const isNight = styleAttr ? styleAttr.indexOf("readium-night-on") > 0 : false;
@@ -2618,8 +2638,7 @@ if (!win.READIUM2.isAudio) {
         });
         let removeCaptionContainer = true;
         if (!payload.id) {
-            win.document.documentElement.classList.remove(styles_1.R2_MO_CLASS_ACTIVE_PLAYBACK);
-            win.document.documentElement.classList.remove(activeClassPlayback);
+            win.document.documentElement.classList.remove(styles_1.R2_MO_CLASS_ACTIVE_PLAYBACK, activeClassPlayback);
         }
         else {
             win.document.documentElement.classList.add(activeClassPlayback);

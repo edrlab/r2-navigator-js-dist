@@ -2,6 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PopupDialog = exports.isElementInsidePopupDialog = exports.closePopupDialogs = exports.isPopupDialogOpen = void 0;
 var tabbable = require("tabbable");
+var electron_1 = require("electron");
+var events_1 = require("../../common/events");
 var styles_1 = require("../../common/styles");
 function isPopupDialogOpen(documant) {
     return documant.documentElement &&
@@ -9,13 +11,14 @@ function isPopupDialogOpen(documant) {
 }
 exports.isPopupDialogOpen = isPopupDialogOpen;
 function closePopupDialogs(documant) {
+    console.log("...DIALOG close all");
     var dialogs = documant.querySelectorAll("dialog.".concat(styles_1.POPUP_DIALOG_CLASS));
     dialogs.forEach(function (dialog) {
         var dia = dialog;
         if (dia.popDialog) {
             dia.popDialog.cancelRefocus();
         }
-        if (dia.hasAttribute("open")) {
+        if (dia.hasAttribute("open") || dia.open) {
             dia.close();
         }
         setTimeout(function () {
@@ -52,8 +55,11 @@ function onKeyUp(ev) {
     var ESCAPE_KEY = 27;
     if (ev.which === ESCAPE_KEY) {
         if (this.role !== "alertdialog") {
+            console.log("...DIALOG ESCAPE ...");
             ev.preventDefault();
-            this.dialog.close();
+            if (this.dialog.hasAttribute("open") || this.dialog.open) {
+                this.dialog.close();
+            }
             return;
         }
     }
@@ -186,23 +192,28 @@ var PopupDialog = (function () {
                 rect.left <= ev.clientX &&
                 ev.clientX <= rect.left + rect.width;
             if (!inside) {
-                if (that.dialog.hasAttribute("open")) {
+                if (that.dialog.hasAttribute("open") || that.dialog.open) {
+                    console.log("...DIALOG CLICK event => close()");
                     that.dialog.close();
                 }
             }
         });
         this.dialog.addEventListener("close", function (_ev) {
+            console.log("...DIALOG CLOSE event => hide()");
             that.hide();
         });
         this.documant = this.dialog.ownerDocument;
         this.role = this.dialog.getAttribute("role") || "dialog";
     }
     PopupDialog.prototype.show = function (toRefocus) {
+        console.log("...DIALOG show()");
+        electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_MEDIA_OVERLAY_INTERRUPT);
         var el = this.documant.documentElement;
         el.classList.add(styles_1.POPUP_DIALOG_CLASS);
         if (this.dialog.hasAttribute("open")) {
             return;
         }
+        console.log("...DIALOG show() 2");
         _focusedBeforeDialog = toRefocus ?
             toRefocus :
             this.documant.activeElement;
@@ -215,13 +226,15 @@ var PopupDialog = (function () {
         _focusedBeforeDialog = null;
     };
     PopupDialog.prototype.hide = function () {
+        console.log("...DIALOG hide()");
         var el = this.documant.documentElement;
         el.classList.remove(styles_1.POPUP_DIALOG_CLASS);
         this.documant.body.removeEventListener("keyup", this._onKeyUp, true);
         this.documant.body.removeEventListener("keydown", this._onKeyDown, true);
         this.onDialogClosed(_focusedBeforeDialog);
         _focusedBeforeDialog = null;
-        if (this.dialog.hasAttribute("open")) {
+        if (this.dialog.hasAttribute("open") || this.dialog.open) {
+            console.log("...DIALOG hide().close()");
             this.dialog.close();
         }
     };

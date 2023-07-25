@@ -5,6 +5,7 @@ const tslib_1 = require("tslib");
 const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 const debug_ = require("debug");
 const electron_1 = require("electron");
+const media_overlays_1 = require("./media-overlays");
 const context_menu_1 = require("../common/context-menu");
 const events_1 = require("../common/events");
 const readium_css_settings_1 = require("../common/readium-css-settings");
@@ -13,7 +14,7 @@ const styles_1 = require("../common/styles");
 const url_params_1 = require("./common/url-params");
 const highlight_1 = require("./highlight");
 const location_1 = require("./location");
-const media_overlays_1 = require("./media-overlays");
+const media_overlays_2 = require("./media-overlays");
 const readaloud_1 = require("./readaloud");
 const readium_css_1 = require("./readium-css");
 const soundtrack_1 = require("./soundtrack");
@@ -244,7 +245,10 @@ function createWebViewInternal(preloadScriptPath) {
             debug("Wrong navigator webview?!");
             return;
         }
-        if (event.channel === events_1.R2_EVENT_KEYBOARD_FOCUS_REQUEST) {
+        if (event.channel === events_1.R2_EVENT_MEDIA_OVERLAY_INTERRUPT) {
+            (0, media_overlays_1.mediaOverlaysInterrupt)();
+        }
+        else if (event.channel === events_1.R2_EVENT_KEYBOARD_FOCUS_REQUEST) {
             debug("KEYBOARD FOCUS REQUEST (2) ", webview.id, (_a = win.document.activeElement) === null || _a === void 0 ? void 0 : _a.id);
             if (win.document.activeElement && win.document.activeElement.blur) {
                 win.document.activeElement.blur();
@@ -338,7 +342,7 @@ function createWebViewInternal(preloadScriptPath) {
         else if (!(0, highlight_1.highlightsHandleIpcMessage)(event.channel, event.args, webview) &&
             !(0, readaloud_1.ttsHandleIpcMessage)(event.channel, event.args, webview) &&
             !(0, location_1.locationHandleIpcMessage)(event.channel, event.args, webview) &&
-            !(0, media_overlays_1.mediaOverlaysHandleIpcMessage)(event.channel, event.args, webview) &&
+            !(0, media_overlays_2.mediaOverlaysHandleIpcMessage)(event.channel, event.args, webview) &&
             !(0, soundtrack_1.soundtrackHandleIpcMessage)(event.channel, event.args, webview)) {
             debug("webview ipc-message");
             debug(event.channel);

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.targetCssStyles = exports.focusCssStyles = exports.visibilityMaskCssStyles = exports.ROOT_CLASS_INVISIBLE_MASK_REMOVED = exports.ROOT_CLASS_INVISIBLE_MASK = exports.ttsCssStyles = exports.TTS_POPUP_DIALOG_CLASS = exports.TTS_ID_SPEAKING_DOC_ELEMENT = exports.TTS_NAV_BUTTON_CLASS = exports.TTS_ID_CONTAINER = exports.TTS_CLASS_UTTERANCE_HEADING5 = exports.TTS_CLASS_UTTERANCE_HEADING4 = exports.TTS_CLASS_UTTERANCE_HEADING3 = exports.TTS_CLASS_UTTERANCE_HEADING2 = exports.TTS_CLASS_UTTERANCE_HEADING1 = exports.TTS_CLASS_UTTERANCE = exports.TTS_ID_ACTIVE_UTTERANCE = exports.TTS_ID_ACTIVE_WORD = exports.TTS_ID_SLIDER = exports.TTS_ID_NEXT = exports.TTS_ID_PREVIOUS = exports.TTS_CLASS_IS_ACTIVE = exports.TTS_CLASS_THEME1 = exports.mediaOverlaysCssStyles = exports.R2_MO_CLASS_ACTIVE_PLAYBACK = exports.R2_MO_CLASS_ACTIVE = exports.footnotesCssStyles = exports.CSS_CLASS_NO_FOCUS_OUTLINE = exports.ROOT_CLASS_KEYBOARD_INTERACT = exports.POPUP_DIALOG_CLASS_COLLAPSE = exports.POPUP_DIALOG_CLASS = exports.POPOUTIMAGE_RESET_ID = exports.POPOUTIMAGE_PLUS_ID = exports.POPOUTIMAGE_MINUS_ID = exports.POPOUTIMAGE_CONTROLS_ID = exports.POPOUTIMAGE_CLOSE_ID = exports.POPOUTIMAGE_CONTAINER_ID = exports.FOOTNOTE_FORCE_SHOW = exports.FOOTNOTES_CLOSE_BUTTON_CLASS = exports.FOOTNOTES_CONTAINER_CLASS = exports.ROOT_CLASS_NO_FOOTNOTES = exports.ROOT_CLASS_FIXED_LAYOUT = exports.ROOT_CLASS_MATHJAX = exports.ROOT_CLASS_REDUCE_MOTION = exports.LINK_TARGET_CLASS = exports.SKIP_LINK_ID = exports.ZERO_TRANSFORM_CLASS = exports.HIDE_CURSOR_CLASS = exports.CLASS_PAGINATED = exports.WebViewSlotEnum = void 0;
-exports.audioCssStyles = exports.AUDIO_FORWARD_ID = exports.AUDIO_REWIND_ID = exports.AUDIO_NEXT_ID = exports.AUDIO_PREVIOUS_ID = exports.AUDIO_PLAYPAUSE_ID = exports.AUDIO_RATE_ID = exports.AUDIO_PERCENT_ID = exports.AUDIO_TIME_ID = exports.AUDIO_SLIDER_ID = exports.AUDIO_TITLE_ID = exports.AUDIO_COVER_ID = exports.AUDIO_CONTROLS_ID = exports.AUDIO_SECTION_ID = exports.AUDIO_BODY_ID = exports.AUDIO_ID = exports.AUDIO_PROGRESS_CLASS = exports.AUDIO_BUFFER_CANVAS_ID = exports.readPosCssStyles = exports.readPosCssStylesAttr4 = exports.readPosCssStylesAttr3 = exports.readPosCssStylesAttr2 = exports.readPosCssStylesAttr1 = exports.scrollBarCssStyles = exports.selectionCssStyles = void 0;
+exports.TTS_POPUP_DIALOG_CLASS = exports.TTS_ID_SPEAKING_DOC_ELEMENT = exports.TTS_NAV_BUTTON_CLASS = exports.TTS_ID_CONTAINER = exports.TTS_CLASS_UTTERANCE_HEADING5 = exports.TTS_CLASS_UTTERANCE_HEADING4 = exports.TTS_CLASS_UTTERANCE_HEADING3 = exports.TTS_CLASS_UTTERANCE_HEADING2 = exports.TTS_CLASS_UTTERANCE_HEADING1 = exports.TTS_CLASS_UTTERANCE = exports.TTS_ID_ACTIVE_UTTERANCE = exports.TTS_ID_ACTIVE_WORD = exports.TTS_ID_SLIDER = exports.TTS_ID_NEXT = exports.TTS_ID_PREVIOUS = exports.TTS_CLASS_STOPPED = exports.TTS_CLASS_PLAYING = exports.TTS_CLASS_PAUSED = exports.TTS_CLASS_IS_ACTIVE = exports.TTS_CLASS_THEME1 = exports.mediaOverlaysCssStyles = exports.R2_MO_CLASS_STOPPED = exports.R2_MO_CLASS_PAUSED = exports.R2_MO_CLASS_PLAYING = exports.R2_MO_CLASS_ACTIVE_PLAYBACK = exports.R2_MO_CLASS_ACTIVE = exports.footnotesCssStyles = exports.CSS_CLASS_NO_FOCUS_OUTLINE = exports.ROOT_CLASS_KEYBOARD_INTERACT = exports.POPUP_DIALOG_CLASS_COLLAPSE = exports.POPUP_DIALOG_CLASS = exports.POPOUTIMAGE_RESET_ID = exports.POPOUTIMAGE_PLUS_ID = exports.POPOUTIMAGE_MINUS_ID = exports.POPOUTIMAGE_CONTROLS_ID = exports.POPOUTIMAGE_CLOSE_ID = exports.POPOUTIMAGE_CONTAINER_ID = exports.FOOTNOTE_FORCE_SHOW = exports.FOOTNOTES_CLOSE_BUTTON_CLASS = exports.FOOTNOTES_CONTAINER_CLASS = exports.ROOT_CLASS_NO_FOOTNOTES = exports.ROOT_CLASS_FIXED_LAYOUT = exports.ROOT_CLASS_MATHJAX = exports.ROOT_CLASS_REDUCE_MOTION = exports.LINK_TARGET_CLASS = exports.SKIP_LINK_ID = exports.ZERO_TRANSFORM_CLASS = exports.HIDE_CURSOR_CLASS = exports.CLASS_PAGINATED = exports.WebViewSlotEnum = void 0;
+exports.audioCssStyles = exports.AUDIO_FORWARD_ID = exports.AUDIO_REWIND_ID = exports.AUDIO_NEXT_ID = exports.AUDIO_PREVIOUS_ID = exports.AUDIO_PLAYPAUSE_ID = exports.AUDIO_RATE_ID = exports.AUDIO_PERCENT_ID = exports.AUDIO_TIME_ID = exports.AUDIO_SLIDER_ID = exports.AUDIO_TITLE_ID = exports.AUDIO_COVER_ID = exports.AUDIO_CONTROLS_ID = exports.AUDIO_SECTION_ID = exports.AUDIO_BODY_ID = exports.AUDIO_ID = exports.AUDIO_PROGRESS_CLASS = exports.AUDIO_BUFFER_CANVAS_ID = exports.readPosCssStyles = exports.readPosCssStylesAttr4 = exports.readPosCssStylesAttr3 = exports.readPosCssStylesAttr2 = exports.readPosCssStylesAttr1 = exports.scrollBarCssStyles = exports.selectionCssStyles = exports.targetCssStyles = exports.focusCssStyles = exports.visibilityMaskCssStyles = exports.ROOT_CLASS_INVISIBLE_MASK_REMOVED = exports.ROOT_CLASS_INVISIBLE_MASK = exports.ttsCssStyles = void 0;
 var WebViewSlotEnum;
 (function (WebViewSlotEnum) {
     WebViewSlotEnum["center"] = "center";
@@ -60,6 +60,8 @@ exports.footnotesCssStyles = `
 
 :root[style] dialog#${exports.POPUP_DIALOG_CLASS},
 :root dialog#${exports.POPUP_DIALOG_CLASS} {
+    -webkit-writing-mode: horizontal-tb;
+
     z-index: 3;
 
     position: fixed;
@@ -160,18 +162,21 @@ exports.footnotesCssStyles = `
     }
 }
 
-:root[style] img[data-${exports.POPOUTIMAGE_CONTAINER_ID}],
-:root img[data-${exports.POPOUTIMAGE_CONTAINER_ID}],
+/*
 :root[style].${exports.ROOT_CLASS_KEYBOARD_INTERACT} img[data-${exports.POPOUTIMAGE_CONTAINER_ID}],
 :root.${exports.ROOT_CLASS_KEYBOARD_INTERACT} img[data-${exports.POPOUTIMAGE_CONTAINER_ID}],
-:root[style] image[data-${exports.POPOUTIMAGE_CONTAINER_ID}],
-:root image[data-${exports.POPOUTIMAGE_CONTAINER_ID}],
 :root[style].${exports.ROOT_CLASS_KEYBOARD_INTERACT} image[data-${exports.POPOUTIMAGE_CONTAINER_ID}],
 :root.${exports.ROOT_CLASS_KEYBOARD_INTERACT} image[data-${exports.POPOUTIMAGE_CONTAINER_ID}],
-:root[style] svg[data-${exports.POPOUTIMAGE_CONTAINER_ID}],
-:root svg[data-${exports.POPOUTIMAGE_CONTAINER_ID}],
 :root[style].${exports.ROOT_CLASS_KEYBOARD_INTERACT} svg[data-${exports.POPOUTIMAGE_CONTAINER_ID}],
 :root.${exports.ROOT_CLASS_KEYBOARD_INTERACT} svg[data-${exports.POPOUTIMAGE_CONTAINER_ID}]
+*/
+
+:root[style] img[data-${exports.POPOUTIMAGE_CONTAINER_ID}],
+:root img[data-${exports.POPOUTIMAGE_CONTAINER_ID}],
+:root[style] image[data-${exports.POPOUTIMAGE_CONTAINER_ID}],
+:root image[data-${exports.POPOUTIMAGE_CONTAINER_ID}],
+:root[style] svg[data-${exports.POPOUTIMAGE_CONTAINER_ID}],
+:root svg[data-${exports.POPOUTIMAGE_CONTAINER_ID}]
 {
     outline-color: magenta !important;
     outline-style: solid !important;
@@ -336,6 +341,9 @@ exports.footnotesCssStyles = `
 `;
 exports.R2_MO_CLASS_ACTIVE = "r2-mo-active";
 exports.R2_MO_CLASS_ACTIVE_PLAYBACK = "r2-mo-active-playback";
+exports.R2_MO_CLASS_PLAYING = "r2-mo-playing";
+exports.R2_MO_CLASS_PAUSED = "r2-mo-paused";
+exports.R2_MO_CLASS_STOPPED = "r2-mo-stopped";
 exports.mediaOverlaysCssStyles = `
 :root[style] .${exports.R2_MO_CLASS_ACTIVE},
 :root .${exports.R2_MO_CLASS_ACTIVE} {
@@ -353,6 +361,9 @@ exports.mediaOverlaysCssStyles = `
 `;
 exports.TTS_CLASS_THEME1 = "r2-tts-theme1";
 exports.TTS_CLASS_IS_ACTIVE = "r2-tts-isPlaying";
+exports.TTS_CLASS_PAUSED = "r2-tts-paused";
+exports.TTS_CLASS_PLAYING = "r2-tts-playing";
+exports.TTS_CLASS_STOPPED = "r2-tts-stopped";
 exports.TTS_ID_PREVIOUS = "r2-tts-previous";
 exports.TTS_ID_NEXT = "r2-tts-next";
 exports.TTS_ID_SLIDER = "r2-tts-slider";
@@ -900,8 +911,8 @@ exports.focusCssStyles = `
 :root *:focus {
     outline: none;
 }
-:root[style].${exports.ROOT_CLASS_KEYBOARD_INTERACT} *.${exports.CSS_CLASS_NO_FOCUS_OUTLINE}:focus:not(:target):not(.${exports.LINK_TARGET_CLASS}),
-:root.${exports.ROOT_CLASS_KEYBOARD_INTERACT} *.${exports.CSS_CLASS_NO_FOCUS_OUTLINE}:focus:not(:target):not(.${exports.LINK_TARGET_CLASS}) {
+:root[style].${exports.ROOT_CLASS_KEYBOARD_INTERACT} *.${exports.CSS_CLASS_NO_FOCUS_OUTLINE}:focus:not(:target):not(.${exports.LINK_TARGET_CLASS}):not([data-${exports.POPOUTIMAGE_CONTAINER_ID}]),
+:root.${exports.ROOT_CLASS_KEYBOARD_INTERACT} *.${exports.CSS_CLASS_NO_FOCUS_OUTLINE}:focus:not(:target):not(.${exports.LINK_TARGET_CLASS}):not([data-${exports.POPOUTIMAGE_CONTAINER_ID}]) {
     outline: none !important;
 }
 :root[style].${exports.ROOT_CLASS_KEYBOARD_INTERACT} *:focus:not(:target):not(.${exports.LINK_TARGET_CLASS}),
