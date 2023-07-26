@@ -314,7 +314,7 @@ function popoutImage(win, element, href_src, focusScrollRaw, ensureTwoPageSpread
     />
     <div id="${styles_1.POPOUTIMAGE_CONTROLS_ID}">
     <button id="${styles_1.POPOUTIMAGE_MINUS_ID}">-</button>
-    <button id="${styles_1.POPOUTIMAGE_RESET_ID}">0</button>
+    <button id="${styles_1.POPOUTIMAGE_RESET_ID}" title="0">O</button>
     <button id="${styles_1.POPOUTIMAGE_PLUS_ID}">+</button>
     </div>
     <button id="${styles_1.POPOUTIMAGE_CLOSE_ID}">X</button>

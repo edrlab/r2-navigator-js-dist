@@ -52,17 +52,17 @@ let _mediaOverlayTextAudioPair;
 let _mediaOverlayTextId;
 let _mediaOverlayTextHref;
 let _mediaOverlayActive = false;
-function playMediaOverlays(textHref, rootMo, textFragmentIDChain) {
+function playMediaOverlays(textHref, rootMo, textFragmentIDChain, isInteract) {
     return tslib_1.__awaiter(this, void 0, void 0, function* () {
         if (IS_DEV) {
             debug("playMediaOverlays()");
         }
         let textFragmentIDChain_ = textFragmentIDChain ? textFragmentIDChain.filter((id) => id) : undefined;
         if (textFragmentIDChain_ && textFragmentIDChain_.length === 0) {
-            textFragmentIDChain_ = undefined;
+            textFragmentIDChain_ = null;
         }
         let moTextAudioPair = findDepthFirstTextAudioPair(textHref, rootMo, textFragmentIDChain_);
-        if (!moTextAudioPair && textFragmentIDChain_) {
+        if (!moTextAudioPair && (textFragmentIDChain_ || textFragmentIDChain_ === null && !isInteract)) {
             if (IS_DEV) {
                 debug("playMediaOverlays() - findDepthFirstTextAudioPair() SECOND CHANCE ");
                 debug(JSON.stringify(textFragmentIDChain_, null, 4));
@@ -562,7 +562,8 @@ function findDepthFirstTextAudioPair(textHref, mo, textFragmentIDChain) {
             }
             return undefined;
         }
-        if (isFragmentIDMatch || (isTextUrlMatch && !textFragmentIDChain)) {
+        if (isFragmentIDMatch ||
+            (isTextUrlMatch && textFragmentIDChain === undefined)) {
             if (isSkip) {
                 if (audiobook_1.DEBUG_AUDIO) {
                     debug("findDepthFirstTextAudioPair() - leaf - isFragmentIDMatch || (isTextUrlMatch && !textFragmentIDChain (isSkip)");
@@ -636,7 +637,7 @@ function ensureKillAutoNextTimeout() {
         _timeoutAutoNext = undefined;
     }
 }
-function playMediaOverlaysForLink(link, textFragmentIDChain) {
+function playMediaOverlaysForLink(link, textFragmentIDChain, isInteract) {
     var _a;
     return tslib_1.__awaiter(this, void 0, void 0, function* () {
         if (IS_DEV) {
@@ -727,7 +728,7 @@ function playMediaOverlaysForLink(link, textFragmentIDChain) {
         }
         const href = link.HrefDecoded || link.Href;
         const hrefUrlObj = new URL("https://dummy.com/" + href);
-        yield playMediaOverlays(hrefUrlObj.pathname.substr(1), link.MediaOverlays, textFragmentIDChain);
+        yield playMediaOverlays(hrefUrlObj.pathname.substr(1), link.MediaOverlays, textFragmentIDChain, isInteract);
     });
 }
 let _lastClickedNotification;
@@ -739,6 +740,8 @@ function mediaOverlaysHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarg
                 debug("R2_EVENT_MEDIA_OVERLAY_CLICK");
             }
             const payload = eventArgs[0];
+            const wasPlaying = _mediaOverlaysState === events_1.MediaOverlaysStateEnum.PLAYING;
+            const lastClickedNotification = _lastClickedNotification;
             mediaOverlaysInterrupt();
             _lastClickedNotification = {
                 link: activeWebView.READIUM2.link,
@@ -751,9 +754,18 @@ function mediaOverlaysHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarg
                 }
                 setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
                     if (activeWebView.READIUM2.link) {
-                        yield playMediaOverlaysForLink(activeWebView.READIUM2.link, payload.textFragmentIDChain);
+                        yield playMediaOverlaysForLink(activeWebView.READIUM2.link, payload.textFragmentIDChain, payload.userInteract);
+                        if (_mediaOverlaysState !== events_1.MediaOverlaysStateEnum.PLAYING) {
+                            _lastClickedNotification = lastClickedNotification;
+                            if (wasPlaying) {
+                                mediaOverlaysResume();
+                            }
+                        }
                     }
                 }), 0);
+            }
+            else {
+                _lastClickedNotification = lastClickedNotification;
             }
         }
     }
@@ -839,7 +851,10 @@ function moHighlight(href, id) {
         }), 0);
     }
 }
+let _mediaOverlaysState = events_1.MediaOverlaysStateEnum.STOPPED;
 const mediaOverlaysStateSet = (mediaOverlaysState) => {
+    _mediaOverlaysState = mediaOverlaysState;
+    debug("mediaOverlaysStateSet", mediaOverlaysState);
     const payload = {
         state: mediaOverlaysState,
     };
@@ -888,7 +903,7 @@ function mediaOverlaysPlay(speed) {
         }
         setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
             if (activeWebView && activeWebView.READIUM2.link) {
-                yield playMediaOverlaysForLink(activeWebView.READIUM2.link, textFragmentIDChain);
+                yield playMediaOverlaysForLink(activeWebView.READIUM2.link, textFragmentIDChain, false);
             }
         }), 0);
     }

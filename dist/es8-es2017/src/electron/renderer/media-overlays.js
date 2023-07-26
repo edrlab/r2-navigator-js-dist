@@ -51,16 +51,16 @@ let _mediaOverlayTextAudioPair;
 let _mediaOverlayTextId;
 let _mediaOverlayTextHref;
 let _mediaOverlayActive = false;
-async function playMediaOverlays(textHref, rootMo, textFragmentIDChain) {
+async function playMediaOverlays(textHref, rootMo, textFragmentIDChain, isInteract) {
     if (IS_DEV) {
         debug("playMediaOverlays()");
     }
     let textFragmentIDChain_ = textFragmentIDChain ? textFragmentIDChain.filter((id) => id) : undefined;
     if (textFragmentIDChain_ && textFragmentIDChain_.length === 0) {
-        textFragmentIDChain_ = undefined;
+        textFragmentIDChain_ = null;
     }
     let moTextAudioPair = findDepthFirstTextAudioPair(textHref, rootMo, textFragmentIDChain_);
-    if (!moTextAudioPair && textFragmentIDChain_) {
+    if (!moTextAudioPair && (textFragmentIDChain_ || textFragmentIDChain_ === null && !isInteract)) {
         if (IS_DEV) {
             debug("playMediaOverlays() - findDepthFirstTextAudioPair() SECOND CHANCE ");
             debug(JSON.stringify(textFragmentIDChain_, null, 4));
@@ -557,7 +557,8 @@ function findDepthFirstTextAudioPair(textHref, mo, textFragmentIDChain) {
             }
             return undefined;
         }
-        if (isFragmentIDMatch || (isTextUrlMatch && !textFragmentIDChain)) {
+        if (isFragmentIDMatch ||
+            (isTextUrlMatch && textFragmentIDChain === undefined)) {
             if (isSkip) {
                 if (audiobook_1.DEBUG_AUDIO) {
                     debug("findDepthFirstTextAudioPair() - leaf - isFragmentIDMatch || (isTextUrlMatch && !textFragmentIDChain (isSkip)");
@@ -631,7 +632,7 @@ function ensureKillAutoNextTimeout() {
         _timeoutAutoNext = undefined;
     }
 }
-async function playMediaOverlaysForLink(link, textFragmentIDChain) {
+async function playMediaOverlaysForLink(link, textFragmentIDChain, isInteract) {
     var _a;
     if (IS_DEV) {
         debug("playMediaOverlaysForLink()");
@@ -721,7 +722,7 @@ async function playMediaOverlaysForLink(link, textFragmentIDChain) {
     }
     const href = link.HrefDecoded || link.Href;
     const hrefUrlObj = new URL("https://dummy.com/" + href);
-    await playMediaOverlays(hrefUrlObj.pathname.substr(1), link.MediaOverlays, textFragmentIDChain);
+    await playMediaOverlays(hrefUrlObj.pathname.substr(1), link.MediaOverlays, textFragmentIDChain, isInteract);
 }
 let _lastClickedNotification;
 function mediaOverlaysHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
@@ -732,6 +733,8 @@ function mediaOverlaysHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarg
                 debug("R2_EVENT_MEDIA_OVERLAY_CLICK");
             }
             const payload = eventArgs[0];
+            const wasPlaying = _mediaOverlaysState === events_1.MediaOverlaysStateEnum.PLAYING;
+            const lastClickedNotification = _lastClickedNotification;
             mediaOverlaysInterrupt();
             _lastClickedNotification = {
                 link: activeWebView.READIUM2.link,
@@ -744,9 +747,18 @@ function mediaOverlaysHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarg
                 }
                 setTimeout(async () => {
                     if (activeWebView.READIUM2.link) {
-                        await playMediaOverlaysForLink(activeWebView.READIUM2.link, payload.textFragmentIDChain);
+                        await playMediaOverlaysForLink(activeWebView.READIUM2.link, payload.textFragmentIDChain, payload.userInteract);
+                        if (_mediaOverlaysState !== events_1.MediaOverlaysStateEnum.PLAYING) {
+                            _lastClickedNotification = lastClickedNotification;
+                            if (wasPlaying) {
+                                mediaOverlaysResume();
+                            }
+                        }
                     }
                 }, 0);
+            }
+            else {
+                _lastClickedNotification = lastClickedNotification;
             }
         }
     }
@@ -832,7 +844,10 @@ function moHighlight(href, id) {
         }, 0);
     }
 }
+let _mediaOverlaysState = events_1.MediaOverlaysStateEnum.STOPPED;
 const mediaOverlaysStateSet = (mediaOverlaysState) => {
+    _mediaOverlaysState = mediaOverlaysState;
+    debug("mediaOverlaysStateSet", mediaOverlaysState);
     const payload = {
         state: mediaOverlaysState,
     };
@@ -881,7 +896,7 @@ function mediaOverlaysPlay(speed) {
         }
         setTimeout(async () => {
             if (activeWebView && activeWebView.READIUM2.link) {
-                await playMediaOverlaysForLink(activeWebView.READIUM2.link, textFragmentIDChain);
+                await playMediaOverlaysForLink(activeWebView.READIUM2.link, textFragmentIDChain, false);
             }
         }, 0);
     }

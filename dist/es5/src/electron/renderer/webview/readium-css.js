@@ -1,10 +1,36 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.readiumCSS = exports.checkHiddenFootNotes = exports.computeVerticalRTL = exports.isRTL = exports.isVerticalWritingMode = exports.calculateColumnDimension = exports.calculateTotalColumns = exports.isTwoPageSpread = exports.calculateMaxScrollShift = exports.getScrollingElement = void 0;
+exports.readiumCSS = exports.checkHiddenFootNotes = exports.computeVerticalRTL = exports.isRTL = exports.isVerticalWritingMode = exports.calculateColumnDimension = exports.calculateTotalColumns = exports.isTwoPageSpread = exports.calculateMaxScrollShift = exports.getScrollingElement = exports.clearImageZoomOutline = exports.clearImageZoomOutlineDebounced = void 0;
+var debounce_1 = require("debounce");
 var readium_css_inject_1 = require("../../common/readium-css-inject");
 var styles_1 = require("../../common/styles");
+var styles_2 = require("../../common/styles");
 var win = global.window;
 var IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
+exports.clearImageZoomOutlineDebounced = (0, debounce_1.debounce)(function () {
+    if (win.document.documentElement.classList.contains(styles_2.R2_MO_CLASS_PAUSED) ||
+        win.document.documentElement.classList.contains(styles_2.R2_MO_CLASS_PLAYING) ||
+        win.READIUM2.ttsClickEnabled ||
+        win.document.documentElement.classList.contains(styles_2.TTS_CLASS_PAUSED) ||
+        win.document.documentElement.classList.contains(styles_2.TTS_CLASS_PLAYING)) {
+        (0, exports.clearImageZoomOutline)();
+    }
+}, 200);
+var clearImageZoomOutline = function () {
+    var imgs = win.document.querySelectorAll("img[data-".concat(styles_2.POPOUTIMAGE_CONTAINER_ID, "]"));
+    imgs.forEach(function (img) {
+        img.removeAttribute("data-".concat(styles_2.POPOUTIMAGE_CONTAINER_ID));
+    });
+    var images = win.document.querySelectorAll("image[data-".concat(styles_2.POPOUTIMAGE_CONTAINER_ID, "]"));
+    images.forEach(function (img) {
+        img.removeAttribute("data-".concat(styles_2.POPOUTIMAGE_CONTAINER_ID));
+    });
+    var svgs = win.document.querySelectorAll("svg[data-".concat(styles_2.POPOUTIMAGE_CONTAINER_ID, "]"));
+    svgs.forEach(function (svg) {
+        svg.removeAttribute("data-".concat(styles_2.POPOUTIMAGE_CONTAINER_ID));
+    });
+};
+exports.clearImageZoomOutline = clearImageZoomOutline;
 var getScrollingElement = function (documant) {
     if (documant.scrollingElement) {
         return documant.scrollingElement;
@@ -177,15 +203,15 @@ function checkHiddenFootNotes(documant) {
         var epubType = aside.getAttribute("epub:type");
         if (!epubType) {
             epubType = aside.getAttributeNS("http://www.idpf.org/2007/ops", "type");
+            if (!epubType) {
+                epubType = aside.getAttribute("role");
+            }
         }
         if (!epubType) {
             return;
         }
         epubType = epubType.trim().replace(/\s\s+/g, " ");
-        var isPotentiallyHiddenNote = epubType.indexOf("footnote") >= 0 ||
-            epubType.indexOf("endnote") >= 0 ||
-            epubType.indexOf("rearnote") >= 0 ||
-            epubType.indexOf("note") >= 0;
+        var isPotentiallyHiddenNote = epubType.indexOf("note") >= 0;
         if (!isPotentiallyHiddenNote) {
             return;
         }

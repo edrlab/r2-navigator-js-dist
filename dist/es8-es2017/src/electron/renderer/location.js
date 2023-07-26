@@ -5,7 +5,7 @@ const debug_ = require("debug");
 const electron_1 = require("electron");
 const path = require("path");
 const url_1 = require("url");
-const cssselector2_1 = require("./common/cssselector2");
+const cssselector2_3_1 = require("./common/cssselector2-3");
 const metadata_properties_1 = require("r2-shared-js/dist/es8-es2017/src/models/metadata-properties");
 const UrlUtils_1 = require("r2-utils-js/dist/es8-es2017/src/_utils/http/UrlUtils");
 const audiobook_1 = require("../common/audiobook");
@@ -161,7 +161,7 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_LINK, (event, payload) => {
     debug("R2_EVENT_LINK (ipcRenderer.on)");
     const pay = (!payload && event.url) ? event : payload;
     debug(pay.url);
-    if (pay.url.indexOf("#" + cssselector2_1.FRAG_ID_CSS_SELECTOR) >= 0) {
+    if (pay.url.indexOf("#" + cssselector2_3_1.FRAG_ID_CSS_SELECTOR) >= 0) {
         debug("R2_EVENT_LINK (ipcRenderer.on) SKIP link activation [FRAG_ID_CSS_SELECTOR]");
         return;
     }
@@ -613,8 +613,8 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
     const rcssJsonstr = JSON.stringify(rcssJson, null, "");
     const rcssJsonstrBase64 = Buffer.from(rcssJsonstr).toString("base64");
     const hrefToLoadHttpUri = new URI(hrefToLoadHttp);
-    if ((_h = hrefToLoadHttpUri.fragment()) === null || _h === void 0 ? void 0 : _h.startsWith(cssselector2_1.FRAG_ID_CSS_SELECTOR)) {
-        const cssSelector = decodeURIComponent(hrefToLoadHttpUri.fragment().substring(cssselector2_1.FRAG_ID_CSS_SELECTOR.length));
+    if ((_h = hrefToLoadHttpUri.fragment()) === null || _h === void 0 ? void 0 : _h.startsWith(cssselector2_3_1.FRAG_ID_CSS_SELECTOR)) {
+        const cssSelector = decodeURIComponent(hrefToLoadHttpUri.fragment().substring(cssselector2_3_1.FRAG_ID_CSS_SELECTOR.length));
         debug("FRAG_ID_CSS_SELECTOR: " + cssSelector);
         hrefToLoadHttpUri.hash("").normalizeHash();
         hrefToLoadHttpUri.search((data) => {

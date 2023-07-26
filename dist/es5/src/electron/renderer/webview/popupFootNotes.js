@@ -30,10 +30,14 @@ function popupFootNote(element, focusScrollRaw, href, ensureTwoPageSpreadWithOdd
                     epubType = element.getAttribute("epub:type");
                     if (!epubType) {
                         epubType = element.getAttributeNS("http://www.idpf.org/2007/ops", "type");
+                        if (!epubType) {
+                            epubType = element.getAttribute("role");
+                        }
                     }
                     if (!epubType) {
                         return [2, false];
                     }
+                    epubType = epubType.trim().replace(/\s\s+/g, " ");
                     isNoteref = epubType.indexOf("noteref") >= 0;
                     if (!isNoteref) {
                         return [2, false];

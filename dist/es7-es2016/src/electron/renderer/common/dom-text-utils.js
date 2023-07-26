@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateTtsQueue = exports.findTtsQueueItemIndex = exports.getTtsQueueItemRef = exports.getTtsQueueItemRefText = exports.getTtsQueueLength = exports.consoleLogTtsQueue = exports.consoleLogTtsQueueItem = exports.normalizeText = exports.normalizeHtmlText = exports.getDirection = exports.getLanguage = exports.combineTextNodes = void 0;
 const sentence_splitter_1 = require("sentence-splitter");
 const styles_1 = require("../../common/styles");
-const cssselector2_1 = require("../common/cssselector2");
+const cssselector2_3_1 = require("../common/cssselector2-3");
 const win = global.window;
 function combineTextNodes(textNodes, skipNormalize) {
     if (textNodes && textNodes.length) {
@@ -60,7 +60,7 @@ function consoleLogTtsQueueItem(i) {
     console.log("<<----");
     console.log(i.dir);
     console.log(i.lang);
-    const cssSelector = (0, cssselector2_1.uniqueCssSelector)(i.parentElement, i.parentElement.ownerDocument);
+    const cssSelector = (0, cssselector2_3_1.uniqueCssSelector)(i.parentElement, i.parentElement.ownerDocument);
     console.log(cssSelector);
     console.log(i.parentElement.tagName);
     console.log(i.combinedText);
@@ -270,14 +270,17 @@ function generateTtsQueue(rootElement, splitSentences) {
             return;
         }
         function isHidden(el) {
-            var _a;
+            var _a, _b;
             if (el.getAttribute("id") === styles_1.SKIP_LINK_ID) {
+                return true;
+            }
+            if (((_a = el.tagName) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === "rt") {
                 return true;
             }
             let curEl = el;
             do {
                 if (curEl.nodeType === Node.ELEMENT_NODE &&
-                    ((_a = curEl.tagName) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === "details" &&
+                    ((_b = curEl.tagName) === null || _b === void 0 ? void 0 : _b.toLowerCase()) === "details" &&
                     !curEl.open) {
                     return true;
                 }
@@ -318,16 +321,118 @@ function generateTtsQueue(rootElement, splitSentences) {
                 case Node.ELEMENT_NODE:
                     const childElement = childNode;
                     const childTagNameLow = childElement.tagName ? childElement.tagName.toLowerCase() : undefined;
+                    const hidden = isHidden(childElement);
+                    let epubType = childElement.getAttribute("epub:type");
+                    if (!epubType) {
+                        epubType = childElement.getAttributeNS("http://www.idpf.org/2007/ops", "type");
+                        if (!epubType) {
+                            epubType = childElement.getAttribute("role");
+                        }
+                    }
+                    const isPageBreak = epubType ? epubType.indexOf("pagebreak") >= 0 : false;
+                    let pageBreakNeedsDeepDive = isPageBreak && !hidden;
+                    if (pageBreakNeedsDeepDive) {
+                        let altAttr = childElement.getAttribute("title");
+                        if (altAttr) {
+                            const txt = altAttr.trim();
+                            if (txt) {
+                                pageBreakNeedsDeepDive = false;
+                                const lang = getLanguage(childElement);
+                                const dir = undefined;
+                                ttsQueue.push({
+                                    combinedText: txt,
+                                    combinedTextSentences: undefined,
+                                    combinedTextSentencesRangeBegin: undefined,
+                                    combinedTextSentencesRangeEnd: undefined,
+                                    dir,
+                                    lang,
+                                    parentElement: childElement,
+                                    textNodes: [],
+                                });
+                            }
+                        }
+                        else {
+                            altAttr = childElement.getAttribute("aria-label");
+                            if (altAttr) {
+                                const txt = altAttr.trim();
+                                if (txt) {
+                                    pageBreakNeedsDeepDive = false;
+                                    const lang = getLanguage(childElement);
+                                    const dir = undefined;
+                                    ttsQueue.push({
+                                        combinedText: txt,
+                                        combinedTextSentences: undefined,
+                                        combinedTextSentencesRangeBegin: undefined,
+                                        combinedTextSentencesRangeEnd: undefined,
+                                        dir,
+                                        lang,
+                                        parentElement: childElement,
+                                        textNodes: [],
+                                    });
+                                }
+                            }
+                        }
+                    }
+                    const isLink = childTagNameLow === "a" && childElement.href;
+                    let linkNeedsDeepDive = isLink && !hidden;
+                    if (linkNeedsDeepDive) {
+                        let altAttr = childElement.getAttribute("title");
+                        if (altAttr) {
+                            const txt = altAttr.trim();
+                            if (txt) {
+                                linkNeedsDeepDive = false;
+                                const lang = getLanguage(childElement);
+                                const dir = undefined;
+                                ttsQueue.push({
+                                    combinedText: txt,
+                                    combinedTextSentences: undefined,
+                                    combinedTextSentencesRangeBegin: undefined,
+                                    combinedTextSentencesRangeEnd: undefined,
+                                    dir,
+                                    lang,
+                                    parentElement: childElement,
+                                    textNodes: [],
+                                });
+                            }
+                        }
+                        else {
+                            altAttr = childElement.getAttribute("aria-label");
+                            if (altAttr) {
+                                const txt = altAttr.trim();
+                                if (txt) {
+                                    linkNeedsDeepDive = false;
+                                    const lang = getLanguage(childElement);
+                                    const dir = undefined;
+                                    ttsQueue.push({
+                                        combinedText: txt,
+                                        combinedTextSentences: undefined,
+                                        combinedTextSentencesRangeBegin: undefined,
+                                        combinedTextSentencesRangeEnd: undefined,
+                                        dir,
+                                        lang,
+                                        parentElement: childElement,
+                                        textNodes: [],
+                                    });
+                                }
+                            }
+                        }
+                    }
                     const isMathJax = childTagNameLow && childTagNameLow.startsWith("mjx-");
                     const isMathML = childTagNameLow === "math";
-                    const processDeepChild = !isMathJax &&
-                        !isMathML &&
-                        !childElement.matches("svg, img, sup, sub, audio, video, source, button, canvas, del, dialog, embed, form, head, iframe, meter, noscript, object, s, script, select, style, textarea");
+                    const processDeepChild = pageBreakNeedsDeepDive ||
+                        linkNeedsDeepDive ||
+                        (!isPageBreak &&
+                            !isLink &&
+                            !isMathJax &&
+                            !isMathML &&
+                            !childElement.matches("svg, img, sup, sub, audio, video, source, button, canvas, del, dialog, embed, form, head, iframe, meter, noscript, object, s, script, select, style, textarea"));
                     if (processDeepChild) {
                         processElement(childElement);
                     }
-                    else if (!isHidden(childElement)) {
-                        if (isMathML) {
+                    else if (!hidden) {
+                        if (isPageBreak || isLink) {
+                        }
+                        else if (isMathML) {
                             const altAttr = childElement.getAttribute("alttext");
                             if (altAttr) {
                                 const txt = altAttr.trim();
@@ -443,7 +548,7 @@ function generateTtsQueue(rootElement, splitSentences) {
                         }
                         else if (childTagNameLow === "img" &&
                             childElement.src) {
-                            const altAttr = childElement.getAttribute("alt");
+                            let altAttr = childElement.getAttribute("alt");
                             if (altAttr) {
                                 const txt = altAttr.trim();
                                 if (txt) {
@@ -459,6 +564,26 @@ function generateTtsQueue(rootElement, splitSentences) {
                                         parentElement: childElement,
                                         textNodes: [],
                                     });
+                                }
+                            }
+                            else {
+                                altAttr = childElement.getAttribute("aria-label");
+                                if (altAttr) {
+                                    const txt = altAttr.trim();
+                                    if (txt) {
+                                        const lang = getLanguage(childElement);
+                                        const dir = undefined;
+                                        ttsQueue.push({
+                                            combinedText: txt,
+                                            combinedTextSentences: undefined,
+                                            combinedTextSentencesRangeBegin: undefined,
+                                            combinedTextSentencesRangeEnd: undefined,
+                                            dir,
+                                            lang,
+                                            parentElement: childElement,
+                                            textNodes: [],
+                                        });
+                                    }
                                 }
                             }
                         }

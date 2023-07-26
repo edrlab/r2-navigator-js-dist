@@ -6,7 +6,7 @@ var debug_ = require("debug");
 var electron_1 = require("electron");
 var path = require("path");
 var url_1 = require("url");
-var cssselector2_1 = require("./common/cssselector2");
+var cssselector2_3_1 = require("./common/cssselector2-3");
 var metadata_properties_1 = require("r2-shared-js/dist/es5/src/models/metadata-properties");
 var UrlUtils_1 = require("r2-utils-js/dist/es5/src/_utils/http/UrlUtils");
 var audiobook_1 = require("../common/audiobook");
@@ -162,7 +162,7 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_LINK, function (event, payload) {
     debug("R2_EVENT_LINK (ipcRenderer.on)");
     var pay = (!payload && event.url) ? event : payload;
     debug(pay.url);
-    if (pay.url.indexOf("#" + cssselector2_1.FRAG_ID_CSS_SELECTOR) >= 0) {
+    if (pay.url.indexOf("#" + cssselector2_3_1.FRAG_ID_CSS_SELECTOR) >= 0) {
         debug("R2_EVENT_LINK (ipcRenderer.on) SKIP link activation [FRAG_ID_CSS_SELECTOR]");
         return;
     }
@@ -646,8 +646,8 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
     var rcssJsonstr = JSON.stringify(rcssJson, null, "");
     var rcssJsonstrBase64 = Buffer.from(rcssJsonstr).toString("base64");
     var hrefToLoadHttpUri = new URI(hrefToLoadHttp);
-    if ((_h = hrefToLoadHttpUri.fragment()) === null || _h === void 0 ? void 0 : _h.startsWith(cssselector2_1.FRAG_ID_CSS_SELECTOR)) {
-        var cssSelector_1 = decodeURIComponent(hrefToLoadHttpUri.fragment().substring(cssselector2_1.FRAG_ID_CSS_SELECTOR.length));
+    if ((_h = hrefToLoadHttpUri.fragment()) === null || _h === void 0 ? void 0 : _h.startsWith(cssselector2_3_1.FRAG_ID_CSS_SELECTOR)) {
+        var cssSelector_1 = decodeURIComponent(hrefToLoadHttpUri.fragment().substring(cssselector2_3_1.FRAG_ID_CSS_SELECTOR.length));
         debug("FRAG_ID_CSS_SELECTOR: " + cssSelector_1);
         hrefToLoadHttpUri.hash("").normalizeHash();
         hrefToLoadHttpUri.search(function (data) {

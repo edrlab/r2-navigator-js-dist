@@ -4,7 +4,7 @@ exports.generateTtsQueue = exports.findTtsQueueItemIndex = exports.getTtsQueueIt
 var tslib_1 = require("tslib");
 var sentence_splitter_1 = require("sentence-splitter");
 var styles_1 = require("../../common/styles");
-var cssselector2_1 = require("../common/cssselector2");
+var cssselector2_3_1 = require("../common/cssselector2-3");
 var win = global.window;
 function combineTextNodes(textNodes, skipNormalize) {
     var e_1, _a;
@@ -73,7 +73,7 @@ function consoleLogTtsQueueItem(i) {
     console.log("<<----");
     console.log(i.dir);
     console.log(i.lang);
-    var cssSelector = (0, cssselector2_1.uniqueCssSelector)(i.parentElement, i.parentElement.ownerDocument);
+    var cssSelector = (0, cssselector2_3_1.uniqueCssSelector)(i.parentElement, i.parentElement.ownerDocument);
     console.log(cssSelector);
     console.log(i.parentElement.tagName);
     console.log(i.combinedText);
@@ -399,14 +399,17 @@ function generateTtsQueue(rootElement, splitSentences) {
             return;
         }
         function isHidden(el) {
-            var _a;
+            var _a, _b;
             if (el.getAttribute("id") === styles_1.SKIP_LINK_ID) {
+                return true;
+            }
+            if (((_a = el.tagName) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === "rt") {
                 return true;
             }
             var curEl = el;
             do {
                 if (curEl.nodeType === Node.ELEMENT_NODE &&
-                    ((_a = curEl.tagName) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === "details" &&
+                    ((_b = curEl.tagName) === null || _b === void 0 ? void 0 : _b.toLowerCase()) === "details" &&
                     !curEl.open) {
                     return true;
                 }
@@ -449,16 +452,118 @@ function generateTtsQueue(rootElement, splitSentences) {
                     case Node.ELEMENT_NODE:
                         var childElement = childNode;
                         var childTagNameLow = childElement.tagName ? childElement.tagName.toLowerCase() : undefined;
+                        var hidden_1 = isHidden(childElement);
+                        var epubType = childElement.getAttribute("epub:type");
+                        if (!epubType) {
+                            epubType = childElement.getAttributeNS("http://www.idpf.org/2007/ops", "type");
+                            if (!epubType) {
+                                epubType = childElement.getAttribute("role");
+                            }
+                        }
+                        var isPageBreak = epubType ? epubType.indexOf("pagebreak") >= 0 : false;
+                        var pageBreakNeedsDeepDive = isPageBreak && !hidden_1;
+                        if (pageBreakNeedsDeepDive) {
+                            var altAttr = childElement.getAttribute("title");
+                            if (altAttr) {
+                                var txt = altAttr.trim();
+                                if (txt) {
+                                    pageBreakNeedsDeepDive = false;
+                                    var lang = getLanguage(childElement);
+                                    var dir = undefined;
+                                    ttsQueue.push({
+                                        combinedText: txt,
+                                        combinedTextSentences: undefined,
+                                        combinedTextSentencesRangeBegin: undefined,
+                                        combinedTextSentencesRangeEnd: undefined,
+                                        dir: dir,
+                                        lang: lang,
+                                        parentElement: childElement,
+                                        textNodes: [],
+                                    });
+                                }
+                            }
+                            else {
+                                altAttr = childElement.getAttribute("aria-label");
+                                if (altAttr) {
+                                    var txt = altAttr.trim();
+                                    if (txt) {
+                                        pageBreakNeedsDeepDive = false;
+                                        var lang = getLanguage(childElement);
+                                        var dir = undefined;
+                                        ttsQueue.push({
+                                            combinedText: txt,
+                                            combinedTextSentences: undefined,
+                                            combinedTextSentencesRangeBegin: undefined,
+                                            combinedTextSentencesRangeEnd: undefined,
+                                            dir: dir,
+                                            lang: lang,
+                                            parentElement: childElement,
+                                            textNodes: [],
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                        var isLink = childTagNameLow === "a" && childElement.href;
+                        var linkNeedsDeepDive = isLink && !hidden_1;
+                        if (linkNeedsDeepDive) {
+                            var altAttr = childElement.getAttribute("title");
+                            if (altAttr) {
+                                var txt = altAttr.trim();
+                                if (txt) {
+                                    linkNeedsDeepDive = false;
+                                    var lang = getLanguage(childElement);
+                                    var dir = undefined;
+                                    ttsQueue.push({
+                                        combinedText: txt,
+                                        combinedTextSentences: undefined,
+                                        combinedTextSentencesRangeBegin: undefined,
+                                        combinedTextSentencesRangeEnd: undefined,
+                                        dir: dir,
+                                        lang: lang,
+                                        parentElement: childElement,
+                                        textNodes: [],
+                                    });
+                                }
+                            }
+                            else {
+                                altAttr = childElement.getAttribute("aria-label");
+                                if (altAttr) {
+                                    var txt = altAttr.trim();
+                                    if (txt) {
+                                        linkNeedsDeepDive = false;
+                                        var lang = getLanguage(childElement);
+                                        var dir = undefined;
+                                        ttsQueue.push({
+                                            combinedText: txt,
+                                            combinedTextSentences: undefined,
+                                            combinedTextSentencesRangeBegin: undefined,
+                                            combinedTextSentencesRangeEnd: undefined,
+                                            dir: dir,
+                                            lang: lang,
+                                            parentElement: childElement,
+                                            textNodes: [],
+                                        });
+                                    }
+                                }
+                            }
+                        }
                         var isMathJax = childTagNameLow && childTagNameLow.startsWith("mjx-");
                         var isMathML = childTagNameLow === "math";
-                        var processDeepChild = !isMathJax &&
-                            !isMathML &&
-                            !childElement.matches("svg, img, sup, sub, audio, video, source, button, canvas, del, dialog, embed, form, head, iframe, meter, noscript, object, s, script, select, style, textarea");
+                        var processDeepChild = pageBreakNeedsDeepDive ||
+                            linkNeedsDeepDive ||
+                            (!isPageBreak &&
+                                !isLink &&
+                                !isMathJax &&
+                                !isMathML &&
+                                !childElement.matches("svg, img, sup, sub, audio, video, source, button, canvas, del, dialog, embed, form, head, iframe, meter, noscript, object, s, script, select, style, textarea"));
                         if (processDeepChild) {
                             processElement(childElement);
                         }
-                        else if (!isHidden(childElement)) {
-                            if (isMathML) {
+                        else if (!hidden_1) {
+                            if (isPageBreak || isLink) {
+                            }
+                            else if (isMathML) {
                                 var altAttr = childElement.getAttribute("alttext");
                                 if (altAttr) {
                                     var txt = altAttr.trim();
@@ -610,6 +715,26 @@ function generateTtsQueue(rootElement, splitSentences) {
                                             parentElement: childElement,
                                             textNodes: [],
                                         });
+                                    }
+                                }
+                                else {
+                                    altAttr = childElement.getAttribute("aria-label");
+                                    if (altAttr) {
+                                        var txt = altAttr.trim();
+                                        if (txt) {
+                                            var lang = getLanguage(childElement);
+                                            var dir = undefined;
+                                            ttsQueue.push({
+                                                combinedText: txt,
+                                                combinedTextSentences: undefined,
+                                                combinedTextSentencesRangeBegin: undefined,
+                                                combinedTextSentencesRangeEnd: undefined,
+                                                dir: dir,
+                                                lang: lang,
+                                                parentElement: childElement,
+                                                textNodes: [],
+                                            });
+                                        }
                                     }
                                 }
                             }

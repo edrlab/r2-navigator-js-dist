@@ -41,7 +41,7 @@ function isElementInsidePopupDialog(el) {
 }
 exports.isElementInsidePopupDialog = isElementInsidePopupDialog;
 function getFocusables(rootElement) {
-    const tabbables = tabbable(rootElement);
+    const tabbables = tabbable.tabbable(rootElement);
     return tabbables;
 }
 function focusInside(rootElement) {

@@ -7,7 +7,7 @@ const events_1 = require("../../common/events");
 const highlight_1 = require("../../common/highlight");
 const styles_1 = require("../../common/styles");
 const animateProperty_1 = require("../common/animateProperty");
-const cssselector2_1 = require("../common/cssselector2");
+const cssselector2_3_1 = require("../common/cssselector2-3");
 const dom_text_utils_1 = require("../common/dom-text-utils");
 const easings_1 = require("../common/easings");
 const popup_dialog_1 = require("../common/popup-dialog");
@@ -55,6 +55,7 @@ function resetState(stop) {
         win.document.documentElement.classList.remove(styles_1.TTS_CLASS_PLAYING, styles_1.TTS_CLASS_STOPPED);
         win.document.documentElement.classList.add(styles_1.TTS_CLASS_PAUSED);
     }
+    (0, readium_css_1.clearImageZoomOutlineDebounced)();
 }
 function ttsPlay(speed, voice, focusScrollRaw, rootElem, startElem, startTextNode, startTextNodeOffset, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
     ttsStop();
@@ -112,6 +113,7 @@ function ttsPause(doNotReset = false) {
     }
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_TTS_IS_PAUSED);
     win.READIUM2.ttsClickEnabled = true;
+    (0, readium_css_1.clearImageZoomOutlineDebounced)();
     const isOpen = (_dialogState === null || _dialogState === void 0 ? void 0 : _dialogState.hasAttribute("open")) || (_dialogState === null || _dialogState === void 0 ? void 0 : _dialogState.open);
     if ((0, popup_dialog_1.isPopupDialogOpen)(win.document) && isOpen) {
         const diagEl = win.document.getElementById(styles_1.POPUP_DIALOG_CLASS);
@@ -174,6 +176,7 @@ function ttsResume() {
         }
         electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_TTS_IS_PLAYING);
         win.READIUM2.ttsClickEnabled = true;
+        (0, readium_css_1.clearImageZoomOutlineDebounced)();
     }
     else if (_resumableState) {
         setTimeout(() => {
@@ -284,7 +287,7 @@ const _getCssSelectorOptions = {
 };
 function getCssSelector(element) {
     try {
-        return (0, cssselector2_1.uniqueCssSelector)(element, win.document, _getCssSelectorOptions);
+        return (0, cssselector2_3_1.uniqueCssSelector)(element, win.document, _getCssSelectorOptions);
     }
     catch (err) {
         console.log("uniqueCssSelector:");
@@ -863,6 +866,7 @@ function ttsPlayQueueIndex(ttsQueueIndex) {
     }
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_TTS_IS_PLAYING);
     win.READIUM2.ttsClickEnabled = true;
+    (0, readium_css_1.clearImageZoomOutlineDebounced)();
 }
 exports.ttsPlayQueueIndex = ttsPlayQueueIndex;
 function startTTSSession(speed, voice, ttsRootElement, ttsQueue, ttsQueueIndexStart, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {

@@ -13,7 +13,7 @@ var readium_css_inject_1 = require("../../common/readium-css-inject");
 var selection_1 = require("../../common/selection");
 var styles_1 = require("../../common/styles");
 var animateProperty_1 = require("../common/animateProperty");
-var cssselector2_1 = require("../common/cssselector2");
+var cssselector2_3_1 = require("../common/cssselector2-3");
 var dom_text_utils_1 = require("../common/dom-text-utils");
 var easings_1 = require("../common/easings");
 var popup_dialog_1 = require("../common/popup-dialog");
@@ -1224,10 +1224,14 @@ function checkSoundtrack(documant) {
     var epubType = audio.getAttribute("epub:type");
     if (!epubType) {
         epubType = audio.getAttributeNS("http://www.idpf.org/2007/ops", "type");
+        if (!epubType) {
+            epubType = audio.getAttribute("role");
+        }
     }
     if (!epubType) {
         return;
     }
+    epubType = epubType.trim().replace(/\s\s+/g, " ");
     if (epubType.indexOf("ibooks:soundtrack") < 0) {
         return;
     }
@@ -1441,7 +1445,7 @@ function loaded(forced) {
         });
     }); }, true);
     win.document.addEventListener("click", function (ev) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-        var x, y, domPointData, clearImages, linkElement, imageElement, href_src, href_src_image_nested_in_link, isSVG, globalSVGDefs, currentElement, _loop_1, state_1, has, destUrl, hrefStr, payload, done, payload_1;
+        var x, y, domPointData, linkElement, imageElement, href_src, href_src_image_nested_in_link, isSVG, globalSVGDefs, currentElement, _loop_1, state_1, has, destUrl, hrefStr, payload, done, payload_1;
         return tslib_1.__generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -1468,23 +1472,6 @@ function loaded(forced) {
                         debug("!AUX __CLICK skip because TTS playing/paused");
                         return [2];
                     }
-                    win.document.documentElement.classList.forEach(function (c) {
-                        debug(c);
-                    });
-                    clearImages = function () {
-                        var imgs = win.document.querySelectorAll("img[data-".concat(styles_1.POPOUTIMAGE_CONTAINER_ID, "]"));
-                        imgs.forEach(function (img) {
-                            img.removeAttribute("data-".concat(styles_1.POPOUTIMAGE_CONTAINER_ID));
-                        });
-                        var images = win.document.querySelectorAll("image[data-".concat(styles_1.POPOUTIMAGE_CONTAINER_ID, "]"));
-                        images.forEach(function (img) {
-                            img.removeAttribute("data-".concat(styles_1.POPOUTIMAGE_CONTAINER_ID));
-                        });
-                        var svgs = win.document.querySelectorAll("svg[data-".concat(styles_1.POPOUTIMAGE_CONTAINER_ID, "]"));
-                        svgs.forEach(function (svg) {
-                            svg.removeAttribute("data-".concat(styles_1.POPOUTIMAGE_CONTAINER_ID));
-                        });
-                    };
                     isSVG = false;
                     currentElement = ev.target;
                     _loop_1 = function () {
@@ -1625,29 +1612,29 @@ function loaded(forced) {
                     }
                     currentElement = undefined;
                     if (!href_src || (!imageElement && !linkElement)) {
-                        clearImages();
+                        (0, readium_css_1.clearImageZoomOutline)();
                         return [2];
                     }
                     if (href_src_image_nested_in_link && href_src_image_nested_in_link.animVal) {
                         href_src_image_nested_in_link = href_src_image_nested_in_link.animVal;
                         if (!href_src_image_nested_in_link) {
-                            clearImages();
+                            (0, readium_css_1.clearImageZoomOutline)();
                             return [2];
                         }
                     }
                     if (href_src.animVal) {
                         href_src = href_src.animVal;
                         if (!href_src) {
-                            clearImages();
+                            (0, readium_css_1.clearImageZoomOutline)();
                             return [2];
                         }
                     }
                     if (typeof href_src !== "string") {
-                        clearImages();
+                        (0, readium_css_1.clearImageZoomOutline)();
                         return [2];
                     }
                     if (href_src_image_nested_in_link && typeof href_src_image_nested_in_link !== "string") {
-                        clearImages();
+                        (0, readium_css_1.clearImageZoomOutline)();
                         return [2];
                     }
                     debug("HREF SRC: ".concat(href_src, " ").concat(href_src_image_nested_in_link, " (").concat(win.location.href, ")"));
@@ -1657,7 +1644,7 @@ function loaded(forced) {
                         if (linkElement && href_src_image_nested_in_link) {
                             href_src = href_src_image_nested_in_link;
                         }
-                        clearImages();
+                        (0, readium_css_1.clearImageZoomOutline)();
                         ev.preventDefault();
                         ev.stopPropagation();
                         if (has) {
@@ -1676,19 +1663,19 @@ function loaded(forced) {
                         return [2];
                     }
                     if (!linkElement || !href_src) {
-                        clearImages();
+                        (0, readium_css_1.clearImageZoomOutline)();
                         return [2];
                     }
                     hrefStr = href_src;
                     if (/^javascript:/.test(hrefStr)) {
-                        clearImages();
+                        (0, readium_css_1.clearImageZoomOutline)();
                         return [2];
                     }
-                    clearImages();
+                    (0, readium_css_1.clearImageZoomOutline)();
                     ev.preventDefault();
                     ev.stopPropagation();
                     payload = {
-                        url: "#" + cssselector2_1.FRAG_ID_CSS_SELECTOR + (0, UrlUtils_1.encodeURIComponent_RFC3986)(getCssSelector(linkElement)),
+                        url: "#" + cssselector2_3_1.FRAG_ID_CSS_SELECTOR + (0, UrlUtils_1.encodeURIComponent_RFC3986)(getCssSelector(linkElement)),
                     };
                     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_LINK, payload);
                     return [4, (0, popupFootNotes_1.popupFootNote)(linkElement, focusScrollRaw, hrefStr, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable)];
@@ -2476,7 +2463,7 @@ var _getCssSelectorOptions = {
 };
 function getCssSelector(element) {
     try {
-        return (0, cssselector2_1.uniqueCssSelector)(element, win.document, _getCssSelectorOptions);
+        return (0, cssselector2_3_1.uniqueCssSelector)(element, win.document, _getCssSelectorOptions);
     }
     catch (err) {
         debug("uniqueCssSelector:");
@@ -2756,6 +2743,7 @@ if (!win.READIUM2.isAudio) {
         win.READIUM2.ttsOverlayEnabled = payload.doEnable;
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_MEDIA_OVERLAY_STATE, function (_event, payload) {
+        (0, readium_css_1.clearImageZoomOutlineDebounced)();
         win.document.documentElement.classList.remove(styles_1.R2_MO_CLASS_PAUSED, styles_1.R2_MO_CLASS_PLAYING, styles_1.R2_MO_CLASS_STOPPED);
         win.document.documentElement.classList.add(payload.state === events_1.MediaOverlaysStateEnum.PAUSED ? styles_1.R2_MO_CLASS_PAUSED :
             (payload.state === events_1.MediaOverlaysStateEnum.PLAYING ? styles_1.R2_MO_CLASS_PLAYING : styles_1.R2_MO_CLASS_STOPPED));
