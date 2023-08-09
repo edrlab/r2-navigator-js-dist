@@ -230,6 +230,38 @@ function findTtsQueueItemIndex(ttsQueue, element, startTextNode, startTextNodeOf
     return -1;
 }
 exports.findTtsQueueItemIndex = findTtsQueueItemIndex;
+const _putInElementStackTagNames = ["h1", "h2", "h3", "h4", "h5", "h6", "p", "th", "td", "caption", "li", "blockquote", "q", "dt", "dd", "figcaption", "div", "pre"];
+const _doNotProcessDeepChildTagNames = ["svg", "img", "sup", "sub", "audio", "video", "source", "button", "canvas", "del", "dialog", "embed", "form", "head", "iframe", "meter", "noscript", "object", "s", "script", "select", "style", "textarea"];
+const _skippables = [
+    "footnote",
+    "endnote",
+    "pagebreak",
+    "note",
+    "rearnote",
+    "sidebar",
+    "marginalia",
+    "annotation",
+];
+const computeEpubTypes = (childElement) => {
+    let epubType = childElement.getAttribute("epub:type");
+    if (!epubType) {
+        epubType = childElement.getAttributeNS("http://www.idpf.org/2007/ops", "type");
+        if (!epubType) {
+            epubType = childElement.getAttribute("role");
+            if (epubType) {
+                epubType = epubType.replace(/doc-/g, "");
+            }
+        }
+    }
+    if (epubType) {
+        epubType = epubType.replace(/\s\s+/g, " ").trim();
+        if (epubType.length === 0) {
+            epubType = null;
+        }
+    }
+    const epubTypes = epubType ? epubType.split(" ") : [];
+    return epubTypes;
+};
 function generateTtsQueue(rootElement, splitSentences) {
     const ttsQueue = [];
     const elementStack = [];
@@ -244,10 +276,17 @@ function generateTtsQueue(rootElement, splitSentences) {
         if (!parentElement) {
             return;
         }
+        let current = ttsQueue[ttsQueue.length - 1];
         const lang = textNode.parentElement ? getLanguage(textNode.parentElement) : undefined;
         const dir = textNode.parentElement ? getDirection(textNode.parentElement) : undefined;
-        let current = ttsQueue[ttsQueue.length - 1];
         if (!current || current.parentElement !== parentElement || current.lang !== lang || current.dir !== dir) {
+            if (win.READIUM2.ttsSkippabilityEnabled) {
+                const epubTypes = computeEpubTypes(parentElement);
+                const isSkippable = epubTypes.find((et) => _skippables.includes(et)) ? true : undefined;
+                if (isSkippable) {
+                    return;
+                }
+            }
             current = {
                 combinedText: "",
                 combinedTextSentences: undefined,
@@ -310,8 +349,17 @@ function generateTtsQueue(rootElement, splitSentences) {
             first = false;
             return;
         }
+        if (win.READIUM2.ttsSkippabilityEnabled) {
+            const epubTypes = computeEpubTypes(element);
+            const isSkippable = epubTypes.find((et) => _skippables.includes(et)) ? true : undefined;
+            if (isSkippable) {
+                first = false;
+                return;
+            }
+        }
+        const tagNameLow = element.tagName ? element.tagName.toLowerCase() : undefined;
         const putInElementStack = first ||
-            element.matches("h1, h2, h3, h4, h5, h6, p, th, td, caption, li, blockquote, q, dt, dd, figcaption, div, pre");
+            tagNameLow && _putInElementStackTagNames.includes(tagNameLow);
         first = false;
         if (putInElementStack) {
             elementStack.push(element);
@@ -322,14 +370,12 @@ function generateTtsQueue(rootElement, splitSentences) {
                     const childElement = childNode;
                     const childTagNameLow = childElement.tagName ? childElement.tagName.toLowerCase() : undefined;
                     const hidden = isHidden(childElement);
-                    let epubType = childElement.getAttribute("epub:type");
-                    if (!epubType) {
-                        epubType = childElement.getAttributeNS("http://www.idpf.org/2007/ops", "type");
-                        if (!epubType) {
-                            epubType = childElement.getAttribute("role");
-                        }
+                    const epubTypes = computeEpubTypes(childElement);
+                    const isSkippable = epubTypes.find((et) => _skippables.includes(et)) ? true : undefined;
+                    if (win.READIUM2.ttsSkippabilityEnabled && isSkippable) {
+                        continue;
                     }
-                    const isPageBreak = epubType ? epubType.indexOf("pagebreak") >= 0 : false;
+                    const isPageBreak = epubTypes.find((et) => et === "pagebreak") ? true : false;
                     let pageBreakNeedsDeepDive = isPageBreak && !hidden;
                     if (pageBreakNeedsDeepDive) {
                         let altAttr = childElement.getAttribute("title");
@@ -425,7 +471,7 @@ function generateTtsQueue(rootElement, splitSentences) {
                             !isLink &&
                             !isMathJax &&
                             !isMathML &&
-                            !childElement.matches("svg, img, sup, sub, audio, video, source, button, canvas, del, dialog, embed, form, head, iframe, meter, noscript, object, s, script, select, style, textarea"));
+                            childTagNameLow && !_doNotProcessDeepChildTagNames.includes(childTagNameLow));
                     if (processDeepChild) {
                         processElement(childElement);
                     }
@@ -661,7 +707,9 @@ function generateTtsQueue(rootElement, splitSentences) {
             if (parent.tagName) {
                 const tag = parent.tagName.toLowerCase();
                 if (tag === "pre" || tag === "code" ||
-                    tag === "video" || tag === "audio") {
+                    tag === "video" || tag === "audio" ||
+                    tag === "img" || tag === "svg" ||
+                    tag === "math" || tag.startsWith("mjx-")) {
                     skipSplitSentences = true;
                     break;
                 }

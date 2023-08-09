@@ -71,6 +71,7 @@ win.READIUM2 = {
     ttsClickEnabled: false,
     ttsOverlayEnabled: false,
     ttsPlaybackRate: 1,
+    ttsSkippabilityEnabled: false,
     ttsSentenceDetectionEnabled: true,
     ttsVoice: null,
     urlQueryParams: win.location.search ? (0, querystring_1.getURLQueryParams)(win.location.search) : undefined,
@@ -1137,6 +1138,7 @@ win.addEventListener("DOMContentLoaded", function () {
     }
     win.READIUM2.locationHashOverride = undefined;
     win.READIUM2.ttsClickEnabled = false;
+    win.READIUM2.ttsSkippabilityEnabled = false;
     win.READIUM2.ttsSentenceDetectionEnabled = true;
     win.READIUM2.ttsOverlayEnabled = false;
     var readiumcssJson;
@@ -2732,6 +2734,9 @@ if (!win.READIUM2.isAudio) {
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_VOICE, function (_event, payload) {
         (0, readaloud_1.ttsVoice)(payload.voice);
+    });
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_SKIP_ENABLE, function (_event, payload) {
+        win.READIUM2.ttsSkippabilityEnabled = payload.doEnable;
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_SENTENCE_DETECT_ENABLE, function (_event, payload) {
         win.READIUM2.ttsSentenceDetectionEnabled = payload.doEnable;

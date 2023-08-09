@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ttsSentenceDetectionEnable = exports.ttsPlaybackRate = exports.ttsVoice = exports.ttsClickEnable = exports.ttsOverlayEnable = exports.ttsNext = exports.ttsPrevious = exports.ttsResume = exports.ttsStop = exports.ttsPause = exports.ttsPlay = exports.ttsListen = exports.TTSStateEnum = exports.ttsHandleIpcMessage = exports.playTtsOnReadingLocation = exports.checkTtsState = void 0;
+exports.ttsSentenceDetectionEnable = exports.ttsSkippabilityEnable = exports.ttsPlaybackRate = exports.ttsVoice = exports.ttsClickEnable = exports.ttsOverlayEnable = exports.ttsNext = exports.ttsPrevious = exports.ttsResume = exports.ttsStop = exports.ttsPause = exports.ttsPlay = exports.ttsListen = exports.TTSStateEnum = exports.ttsHandleIpcMessage = exports.playTtsOnReadingLocation = exports.checkTtsState = void 0;
 const debounce_1 = require("debounce");
 const events_1 = require("../common/events");
 const location_1 = require("./location");
@@ -332,6 +332,24 @@ function ttsPlaybackRate(speed) {
     }
 }
 exports.ttsPlaybackRate = ttsPlaybackRate;
+function ttsSkippabilityEnable(doEnable) {
+    if (win.READIUM2) {
+        win.READIUM2.ttsSkippabilityEnabled = doEnable;
+    }
+    const activeWebViews = win.READIUM2.getActiveWebViews();
+    for (const activeWebView of activeWebViews) {
+        setTimeout(async () => {
+            var _a;
+            const payload = {
+                doEnable,
+            };
+            if ((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady) {
+                await activeWebView.send(events_1.R2_EVENT_TTS_SKIP_ENABLE, payload);
+            }
+        }, 0);
+    }
+}
+exports.ttsSkippabilityEnable = ttsSkippabilityEnable;
 function ttsSentenceDetectionEnable(doEnable) {
     if (win.READIUM2) {
         win.READIUM2.ttsSentenceDetectionEnabled = doEnable;

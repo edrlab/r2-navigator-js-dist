@@ -834,7 +834,7 @@ function ttsPlayQueueIndex(ttsQueueIndex) {
         }
         updateTTSInfo(ev.charIndex, ev.charLength, utterance.text);
     };
-    utterance.onend = (_ev) => {
+    const onEnd = () => {
         if (utterance.r2_cancel) {
             return;
         }
@@ -846,6 +846,9 @@ function ttsPlayQueueIndex(ttsQueueIndex) {
         }
         highlights(false);
         ttsPlayQueueIndexDebounced(ttsQueueIndex + 1);
+    };
+    utterance.onend = (_ev) => {
+        onEnd();
     };
     _resumableState = {
         ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable: _dialogState.ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable,

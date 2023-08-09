@@ -18,4 +18,5 @@ export declare function ttsOverlayEnable(doEnable: boolean): void;
 export declare function ttsClickEnable(doEnable: boolean): void;
 export declare function ttsVoice(voice: SpeechSynthesisVoice | null): void;
 export declare function ttsPlaybackRate(speed: number): void;
+export declare function ttsSkippabilityEnable(doEnable: boolean): void;
 export declare function ttsSentenceDetectionEnable(doEnable: boolean): void;

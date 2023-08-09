@@ -132,6 +132,10 @@ export declare const R2_EVENT_TTS_VOICE = "R2_EVENT_TTS_VOICE";
 export interface IEventPayload_R2_EVENT_TTS_VOICE {
     voice: SpeechSynthesisVoice | null;
 }
+export declare const R2_EVENT_TTS_SKIP_ENABLE = "R2_EVENT_TTS_SKIP_ENABLE";
+export interface IEventPayload_R2_EVENT_TTS_SKIP_ENABLE {
+    doEnable: boolean;
+}
 export declare const R2_EVENT_TTS_SENTENCE_DETECT_ENABLE = "R2_EVENT_TTS_SENTENCE_DETECT_ENABLE";
 export interface IEventPayload_R2_EVENT_TTS_SENTENCE_DETECT_ENABLE {
     doEnable: boolean;

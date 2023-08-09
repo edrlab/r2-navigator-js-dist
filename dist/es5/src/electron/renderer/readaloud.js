@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ttsSentenceDetectionEnable = exports.ttsPlaybackRate = exports.ttsVoice = exports.ttsClickEnable = exports.ttsOverlayEnable = exports.ttsNext = exports.ttsPrevious = exports.ttsResume = exports.ttsStop = exports.ttsPause = exports.ttsPlay = exports.ttsListen = exports.TTSStateEnum = exports.ttsHandleIpcMessage = exports.playTtsOnReadingLocation = exports.checkTtsState = void 0;
+exports.ttsSentenceDetectionEnable = exports.ttsSkippabilityEnable = exports.ttsPlaybackRate = exports.ttsVoice = exports.ttsClickEnable = exports.ttsOverlayEnable = exports.ttsNext = exports.ttsPrevious = exports.ttsResume = exports.ttsStop = exports.ttsPause = exports.ttsPlay = exports.ttsListen = exports.TTSStateEnum = exports.ttsHandleIpcMessage = exports.playTtsOnReadingLocation = exports.checkTtsState = void 0;
 var tslib_1 = require("tslib");
 var debounce_1 = require("debounce");
 var events_1 = require("../common/events");
@@ -554,11 +554,11 @@ function ttsPlaybackRate(speed) {
     }
 }
 exports.ttsPlaybackRate = ttsPlaybackRate;
-function ttsSentenceDetectionEnable(doEnable) {
+function ttsSkippabilityEnable(doEnable) {
     var e_10, _a;
     var _this = this;
     if (win.READIUM2) {
-        win.READIUM2.ttsSentenceDetectionEnabled = doEnable;
+        win.READIUM2.ttsSkippabilityEnabled = doEnable;
     }
     var activeWebViews = win.READIUM2.getActiveWebViews();
     var _loop_10 = function (activeWebView) {
@@ -572,7 +572,7 @@ function ttsSentenceDetectionEnable(doEnable) {
                             doEnable: doEnable,
                         };
                         if (!((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady)) return [3, 2];
-                        return [4, activeWebView.send(events_1.R2_EVENT_TTS_SENTENCE_DETECT_ENABLE, payload)];
+                        return [4, activeWebView.send(events_1.R2_EVENT_TTS_SKIP_ENABLE, payload)];
                     case 1:
                         _b.sent();
                         _b.label = 2;
@@ -593,6 +593,48 @@ function ttsSentenceDetectionEnable(doEnable) {
             if (activeWebViews_10_1 && !activeWebViews_10_1.done && (_a = activeWebViews_10.return)) _a.call(activeWebViews_10);
         }
         finally { if (e_10) throw e_10.error; }
+    }
+}
+exports.ttsSkippabilityEnable = ttsSkippabilityEnable;
+function ttsSentenceDetectionEnable(doEnable) {
+    var e_11, _a;
+    var _this = this;
+    if (win.READIUM2) {
+        win.READIUM2.ttsSentenceDetectionEnabled = doEnable;
+    }
+    var activeWebViews = win.READIUM2.getActiveWebViews();
+    var _loop_11 = function (activeWebView) {
+        setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+            var payload;
+            var _a;
+            return tslib_1.__generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        payload = {
+                            doEnable: doEnable,
+                        };
+                        if (!((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady)) return [3, 2];
+                        return [4, activeWebView.send(events_1.R2_EVENT_TTS_SENTENCE_DETECT_ENABLE, payload)];
+                    case 1:
+                        _b.sent();
+                        _b.label = 2;
+                    case 2: return [2];
+                }
+            });
+        }); }, 0);
+    };
+    try {
+        for (var activeWebViews_11 = tslib_1.__values(activeWebViews), activeWebViews_11_1 = activeWebViews_11.next(); !activeWebViews_11_1.done; activeWebViews_11_1 = activeWebViews_11.next()) {
+            var activeWebView = activeWebViews_11_1.value;
+            _loop_11(activeWebView);
+        }
+    }
+    catch (e_11_1) { e_11 = { error: e_11_1 }; }
+    finally {
+        try {
+            if (activeWebViews_11_1 && !activeWebViews_11_1.done && (_a = activeWebViews_11.return)) _a.call(activeWebViews_11);
+        }
+        finally { if (e_11) throw e_11.error; }
     }
 }
 exports.ttsSentenceDetectionEnable = ttsSentenceDetectionEnable;
