@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createHighlight = exports.createHighlights = exports.recreateAllHighlights = exports.recreateAllHighlightsDebounced = exports.recreateAllHighlightsRaw = exports.destroyHighlight = exports.destroyAllhighlights = exports.hideAllhighlights = exports.getBoundingClientRectOfDocumentBody = exports.CLASS_HIGHLIGHT_BOUNDING_AREA = exports.CLASS_HIGHLIGHT_AREA = exports.CLASS_HIGHLIGHT_CONTAINER = exports.ID_HIGHLIGHTS_CONTAINER = void 0;
 const crypto = require("crypto");
-const debounce_1 = require("debounce");
+const debounce = require("debounce");
 const electron_1 = require("electron");
 const events_1 = require("../../common/events");
 const highlight_1 = require("../../common/highlight");
@@ -365,7 +365,7 @@ function recreateAllHighlightsRaw(win) {
     highlightsContainer.append(docFrag);
 }
 exports.recreateAllHighlightsRaw = recreateAllHighlightsRaw;
-exports.recreateAllHighlightsDebounced = (0, debounce_1.debounce)((win) => {
+exports.recreateAllHighlightsDebounced = debounce((win) => {
     recreateAllHighlightsRaw(win);
 }, 500);
 function recreateAllHighlights(win) {

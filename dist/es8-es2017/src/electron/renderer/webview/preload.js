@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.computeCFI = exports.computeProgressionData = void 0;
-const debounce_1 = require("debounce");
+const debounce = require("debounce");
 const debug_ = require("debug");
 const electron_1 = require("electron");
 const tabbable_1 = require("tabbable");
@@ -1056,7 +1056,7 @@ const scrollToHashRaw = (animate) => {
     }
     notifyReadingLocationDebounced();
 };
-const scrollToHashDebounced = (0, debounce_1.debounce)((animate) => {
+const scrollToHashDebounced = debounce((animate) => {
     debug("++++ scrollToHashRaw FROM DEBOUNCED");
     scrollToHashRaw(animate);
 }, 100);
@@ -1088,10 +1088,10 @@ function focusScrollRaw(el, doFocus, animate, domRect) {
     win.READIUM2.locationHashOverride = el;
     notifyReadingLocationDebounced();
 }
-const focusScrollDebounced = (0, debounce_1.debounce)((el, doFocus, animate, domRect) => {
+const focusScrollDebounced = debounce((el, doFocus, animate, domRect) => {
     focusScrollRaw(el, doFocus, animate, domRect);
 }, 100);
-const handleFocusInDebounced = (0, debounce_1.debounce)((target, tabKeyDownEvent) => {
+const handleFocusInDebounced = debounce((target, tabKeyDownEvent) => {
     handleFocusInRaw(target, tabKeyDownEvent);
 }, 100);
 function handleFocusInRaw(target, _tabKeyDownEvent) {
@@ -1284,7 +1284,7 @@ const onScrollRaw = () => {
     const x = ((0, readium_css_1.isRTL)() ? win.document.documentElement.offsetWidth - 1 : 0);
     processXYRaw(x, 0, false);
 };
-const onScrollDebounced = (0, debounce_1.debounce)(() => {
+const onScrollDebounced = debounce(() => {
     onScrollRaw();
 }, 300);
 let _loaded = false;
@@ -1685,7 +1685,7 @@ function loaded(forced) {
         debug("++++ scrollToHashDebounced FROM RESIZE");
         scrollToHashDebounced(false);
     };
-    const onResizeDebounced = (0, debounce_1.debounce)(() => {
+    const onResizeDebounced = debounce(() => {
         onResizeRaw();
     }, 200);
     let _firstWindowResize = true;
@@ -2095,9 +2095,9 @@ const processXYRaw = (x, y, reverse, userInteract) => {
         }
     }
 };
-const processXYDebouncedImmediate = (0, debounce_1.debounce)((x, y, reverse, userInteract) => {
+const processXYDebouncedImmediate = debounce((x, y, reverse, userInteract) => {
     processXYRaw(x, y, reverse, userInteract);
-}, 300, true);
+}, 300, { immediate: true });
 const computeProgressionData = () => {
     const isPaged = (0, readium_css_inject_1.isPaginated)(win.document);
     const isTwoPage = (0, readium_css_1.isTwoPageSpread)();
@@ -2558,12 +2558,12 @@ const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays) => {
         win.READIUM2.locationHashOverride.setAttribute(styles_1.readPosCssStylesAttr4, "notifyReadingLocationRaw");
     }
 };
-const notifyReadingLocationDebounced = (0, debounce_1.debounce)((userInteract, ignoreMediaOverlays) => {
+const notifyReadingLocationDebounced = debounce((userInteract, ignoreMediaOverlays) => {
     notifyReadingLocationRaw(userInteract, ignoreMediaOverlays);
 }, 250);
-const notifyReadingLocationDebouncedImmediate = (0, debounce_1.debounce)((userInteract, ignoreMediaOverlays) => {
+const notifyReadingLocationDebouncedImmediate = debounce((userInteract, ignoreMediaOverlays) => {
     notifyReadingLocationRaw(userInteract, ignoreMediaOverlays);
-}, 250, true);
+}, 250, { immediate: true });
 if (!win.READIUM2.isAudio) {
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_PLAY, (_event, payload) => {
         const rootElement = win.document.querySelector(payload.rootElement);

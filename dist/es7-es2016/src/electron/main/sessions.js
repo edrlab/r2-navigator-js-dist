@@ -499,11 +499,9 @@ function clearSession(sess, str) {
             origin: "*",
             quotas: [
                 "temporary",
-                "persistent",
                 "syncable",
             ],
             storages: [
-                "appcache",
                 "serviceworkers",
                 "cachestorage",
             ],

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.setupAudioBook = void 0;
-const debounce_1 = require("debounce");
+const debounce = require("debounce");
 const electron_1 = require("electron");
 const audiobook_1 = require("../../common/audiobook");
 const events_1 = require("../../common/events");
@@ -237,7 +237,7 @@ function setupAudioBook(_docTitle, audioPlaybackRate) {
     const notifyPlaybackLocationThrottled = throttle(() => {
         notifyPlaybackLocation();
     }, 1000);
-    const progressDebounced = (0, debounce_1.debounce)((progress) => {
+    const progressDebounced = debounce((progress) => {
         if (progress) {
             win.document.documentElement.classList.add(styles_1.AUDIO_PROGRESS_CLASS);
         }

@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.setupAudioBook = void 0;
 var tslib_1 = require("tslib");
-var debounce_1 = require("debounce");
+var debounce = require("debounce");
 var electron_1 = require("electron");
 var audiobook_1 = require("../../common/audiobook");
 var events_1 = require("../../common/events");
@@ -251,7 +251,7 @@ function setupAudioBook(_docTitle, audioPlaybackRate) {
     var notifyPlaybackLocationThrottled = throttle(function () {
         notifyPlaybackLocation();
     }, 1000);
-    var progressDebounced = (0, debounce_1.debounce)(function (progress) {
+    var progressDebounced = debounce(function (progress) {
         if (progress) {
             win.document.documentElement.classList.add(styles_1.AUDIO_PROGRESS_CLASS);
         }

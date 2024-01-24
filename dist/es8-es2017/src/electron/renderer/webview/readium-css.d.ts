@@ -1,7 +1,6 @@
+import * as debounce from "debounce";
 import { IEventPayload_R2_EVENT_READIUMCSS } from "../../common/events";
-export declare const clearImageZoomOutlineDebounced: (() => void) & {
-    clear(): void;
-};
+export declare const clearImageZoomOutlineDebounced: debounce.DebouncedFunction<() => void>;
 export declare const clearImageZoomOutline: () => void;
 export declare const getScrollingElement: (documant: Document) => Element;
 export declare const calculateMaxScrollShift: () => {

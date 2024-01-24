@@ -1,13 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.readiumCSS = exports.checkHiddenFootNotes = exports.computeVerticalRTL = exports.isRTL = exports.isVerticalWritingMode = exports.calculateColumnDimension = exports.calculateTotalColumns = exports.isTwoPageSpread = exports.calculateMaxScrollShift = exports.getScrollingElement = exports.clearImageZoomOutline = exports.clearImageZoomOutlineDebounced = void 0;
-var debounce_1 = require("debounce");
+var debounce = require("debounce");
 var readium_css_inject_1 = require("../../common/readium-css-inject");
 var styles_1 = require("../../common/styles");
 var styles_2 = require("../../common/styles");
 var win = global.window;
 var IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
-exports.clearImageZoomOutlineDebounced = (0, debounce_1.debounce)(function () {
+exports.clearImageZoomOutlineDebounced = debounce(function () {
     if (win.document.documentElement.classList.contains(styles_2.R2_MO_CLASS_PAUSED) ||
         win.document.documentElement.classList.contains(styles_2.R2_MO_CLASS_PLAYING) ||
         win.READIUM2.ttsClickEnabled ||

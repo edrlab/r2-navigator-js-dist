@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ttsPlayQueueIndex = exports.ttsPreviewAndEventuallyPlayQueueIndex = exports.ttsPrevious = exports.ttsNext = exports.ttsQueueCurrentText = exports.ttsQueueCurrentIndex = exports.ttsQueueSize = exports.ttsPauseOrResume = exports.isTtsActive = exports.isTtsPlaying = exports.ttsResume = exports.ttsPlaybackRate = exports.ttsVoice = exports.ttsPause = exports.ttsStop = exports.ttsPlay = void 0;
 var tslib_1 = require("tslib");
-var debounce_1 = require("debounce");
+var debounce = require("debounce");
 var electron_1 = require("electron");
 var events_1 = require("../../common/events");
 var highlight_1 = require("../../common/highlight");
@@ -554,7 +554,7 @@ function highlights(doHighlight) {
 }
 var _lastAnimState;
 var animationTime = 400;
-var scrollIntoViewSpokenTextDebounced = (0, debounce_1.debounce)(function (id) {
+var scrollIntoViewSpokenTextDebounced = debounce(function (id) {
     scrollIntoViewSpokenText(id);
 }, 200);
 function scrollIntoViewSpokenText(id) {
@@ -762,7 +762,7 @@ function updateTTSInfo(charIndex, charLength, utteranceText) {
     scrollIntoViewSpokenTextDebounced(isWordBoundary ? styles_1.TTS_ID_ACTIVE_WORD : styles_1.TTS_ID_ACTIVE_UTTERANCE);
     return ttsQueueItemText;
 }
-var ttsPlayQueueIndexDebounced = (0, debounce_1.debounce)(function (ttsQueueIndex) {
+var ttsPlayQueueIndexDebounced = debounce(function (ttsQueueIndex) {
     ttsPlayQueueIndex(ttsQueueIndex);
 }, 150);
 function ttsPlayQueueIndex(ttsQueueIndex) {

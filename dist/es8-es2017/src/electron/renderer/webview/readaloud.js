@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ttsPlayQueueIndex = exports.ttsPreviewAndEventuallyPlayQueueIndex = exports.ttsPrevious = exports.ttsNext = exports.ttsQueueCurrentText = exports.ttsQueueCurrentIndex = exports.ttsQueueSize = exports.ttsPauseOrResume = exports.isTtsActive = exports.isTtsPlaying = exports.ttsResume = exports.ttsPlaybackRate = exports.ttsVoice = exports.ttsPause = exports.ttsStop = exports.ttsPlay = void 0;
-const debounce_1 = require("debounce");
+const debounce = require("debounce");
 const electron_1 = require("electron");
 const events_1 = require("../../common/events");
 const highlight_1 = require("../../common/highlight");
@@ -528,7 +528,7 @@ function highlights(doHighlight) {
 }
 let _lastAnimState;
 const animationTime = 400;
-const scrollIntoViewSpokenTextDebounced = (0, debounce_1.debounce)((id) => {
+const scrollIntoViewSpokenTextDebounced = debounce((id) => {
     scrollIntoViewSpokenText(id);
 }, 200);
 function scrollIntoViewSpokenText(id) {
@@ -736,7 +736,7 @@ function updateTTSInfo(charIndex, charLength, utteranceText) {
     scrollIntoViewSpokenTextDebounced(isWordBoundary ? styles_1.TTS_ID_ACTIVE_WORD : styles_1.TTS_ID_ACTIVE_UTTERANCE);
     return ttsQueueItemText;
 }
-const ttsPlayQueueIndexDebounced = (0, debounce_1.debounce)((ttsQueueIndex) => {
+const ttsPlayQueueIndexDebounced = debounce((ttsQueueIndex) => {
     ttsPlayQueueIndex(ttsQueueIndex);
 }, 150);
 function ttsPlayQueueIndex(ttsQueueIndex) {

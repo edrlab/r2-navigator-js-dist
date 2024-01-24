@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ttsSentenceDetectionEnable = exports.ttsSkippabilityEnable = exports.ttsPlaybackRate = exports.ttsVoice = exports.ttsClickEnable = exports.ttsOverlayEnable = exports.ttsNext = exports.ttsPrevious = exports.ttsResume = exports.ttsStop = exports.ttsPause = exports.ttsPlay = exports.ttsListen = exports.TTSStateEnum = exports.ttsHandleIpcMessage = exports.playTtsOnReadingLocation = exports.checkTtsState = void 0;
 var tslib_1 = require("tslib");
-var debounce_1 = require("debounce");
+var debounce = require("debounce");
 var events_1 = require("../common/events");
 var location_1 = require("./location");
 var readium_css_1 = require("./readium-css");
@@ -30,7 +30,7 @@ function checkTtsState(wv) {
     checkTtsStateDebounced(wasStopped, wv);
 }
 exports.checkTtsState = checkTtsState;
-var checkTtsStateDebounced = (0, debounce_1.debounce)(checkTtsStateRaw, 400);
+var checkTtsStateDebounced = debounce(checkTtsStateRaw, 400);
 function checkTtsStateRaw(wasStopped, wv) {
     var _a;
     if (wasStopped || win.READIUM2.ttsClickEnabled) {
