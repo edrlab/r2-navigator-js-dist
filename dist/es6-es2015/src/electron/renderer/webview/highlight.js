@@ -602,7 +602,8 @@ function createHighlightDom(win, highlight, bodyRect) {
                     extra = `outline-color: rgb(${r}, ${g}, ${b}); outline-style: solid; outline-width: 1px; outline-offset: -1px;`;
                 }
                 else if (drawUnderline) {
-                    extra = `border-bottom: ${underlineThickness * scale}px solid ` +
+                    const side = (0, readium_css_1.isVerticalWritingMode)() ? "left" : "bottom";
+                    extra = `border-${side}: ${underlineThickness * scale}px solid ` +
                         (USE_BLEND_MODE ?
                             `rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}) !important` :
                             `rgba(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}, ${opacity}) !important`);

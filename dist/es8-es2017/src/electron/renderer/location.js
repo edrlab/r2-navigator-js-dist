@@ -1170,6 +1170,9 @@ const _saveReadingLocation = (docHref, locator) => {
         selectionInfo: locator.selectionInfo,
         selectionIsNew: locator.selectionIsNew,
     };
+    if (locator.followingElementIDs) {
+        _lastSavedReadingLocation.followingElementIDs = locator.followingElementIDs;
+    }
     if (IS_DEV) {
         debug(">->->");
         debug(_lastSavedReadingLocation);

@@ -58,6 +58,19 @@ function resetState(stop) {
     }
     (0, readium_css_1.clearImageZoomOutlineDebounced)();
 }
+function documentForward(node) {
+    if (node.firstChild) {
+        return node.firstChild;
+    }
+    var n = node;
+    while (!n.nextSibling) {
+        n = n.parentNode;
+        if (!n) {
+            return null;
+        }
+    }
+    return n.nextSibling;
+}
 function ttsPlay(speed, voice, focusScrollRaw, rootElem, startElem, startTextNode, startTextNodeOffset, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
     ttsStop();
     var rootEl = rootElem;
@@ -74,6 +87,19 @@ function ttsPlay(speed, voice, focusScrollRaw, rootElem, startElem, startTextNod
         var idx = (0, dom_text_utils_1.findTtsQueueItemIndex)(ttsQueue, startElem, startTextNode, startTextNodeOffset, rootEl);
         if (idx >= 0) {
             ttsQueueIndex = idx;
+        }
+        else {
+            var nextEl = startElem;
+            while (nextEl = documentForward(nextEl)) {
+                if (nextEl.nodeType !== Node.ELEMENT_NODE) {
+                    continue;
+                }
+                idx = (0, dom_text_utils_1.findTtsQueueItemIndex)(ttsQueue, nextEl, undefined, 0, rootEl);
+                if (idx >= 0) {
+                    ttsQueueIndex = idx;
+                    break;
+                }
+            }
         }
     }
     if (ttsQueueIndex < 0) {
@@ -299,6 +325,37 @@ function getCssSelector(element) {
         return "";
     }
 }
+function throttle(fn, time) {
+    var called = false;
+    var lastCalled;
+    var func = function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        if (!called) {
+            fn.apply(void 0, tslib_1.__spreadArray([], tslib_1.__read(args), false));
+            called = true;
+            setTimeout(function () {
+                called = false;
+                if (lastCalled) {
+                    var argos = lastCalled;
+                    lastCalled = undefined;
+                    func(argos);
+                }
+            }, time);
+        }
+        else {
+            lastCalled = args;
+        }
+    };
+    return func;
+}
+var focusScrollImmediate = throttle(function (el, doFocus, animate, domRect) {
+    if (_dialogState && _dialogState.focusScrollRaw) {
+        _dialogState.focusScrollRaw(el, doFocus, animate, domRect);
+    }
+}, 500);
 var _ttsQueueItemHighlightsSentence;
 var _ttsQueueItemHighlightsWord;
 function wrapHighlightWord(ttsQueueItemRef, utteranceText, charIndex, charLength, word, start, end) {
@@ -374,7 +431,7 @@ function wrapHighlightWord(ttsQueueItemRef, utteranceText, charIndex, charLength
         range.setEnd(rangeEndNode, rangeEndOffset);
         if (_dialogState && _dialogState.focusScrollRaw) {
             var domRect = range.getBoundingClientRect();
-            _dialogState.focusScrollRaw(ttsQueueItemRef.item.parentElement, false, true, domRect);
+            focusScrollImmediate(ttsQueueItemRef.item.parentElement, false, true, domRect);
         }
         var tuple = (0, selection_1.convertRange)(range, getCssSelector, function (_node) { return ""; });
         if (!tuple) {
@@ -495,7 +552,7 @@ function wrapHighlight(doHighlight, ttsQueueItemRef) {
         if (range) {
             if (_dialogState && _dialogState.focusScrollRaw) {
                 var domRect = range.getBoundingClientRect();
-                _dialogState.focusScrollRaw(ttsQueueItemRef.item.parentElement, false, true, domRect);
+                focusScrollImmediate(ttsQueueItemRef.item.parentElement, false, true, domRect);
             }
             var tuple = (0, selection_1.convertRange)(range, getCssSelector, function (_node) { return ""; });
             if (!tuple) {
@@ -930,7 +987,7 @@ function startTTSSession(speed, voice, ttsRootElement, ttsQueue, ttsQueueIndexSt
         }, 50);
     }
     var outerHTML = "<div id=\"".concat(styles_1.TTS_ID_CONTAINER, "\"\n    class=\"").concat(styles_1.CSS_CLASS_NO_FOCUS_OUTLINE, " ").concat(styles_1.TTS_CLASS_THEME1, "\"\n    dir=\"ltr\"\n    lang=\"en\"\n    xml:lang=\"en\"\n    tabindex=\"0\" autofocus=\"autofocus\"></div>\n").concat(win.READIUM2.ttsOverlayEnabled ?
-        "\n<button id=\"".concat(styles_1.TTS_ID_PREVIOUS, "\" class=\"").concat(styles_1.TTS_NAV_BUTTON_CLASS, "\" title=\"previous\"><span>&#9668;</span></button>\n<button id=\"").concat(styles_1.TTS_ID_NEXT, "\" class=\"").concat(styles_1.TTS_NAV_BUTTON_CLASS, "\" title=\"next\"><span>&#9658;</span></button>\n<input id=\"").concat(styles_1.TTS_ID_SLIDER, "\" type=\"range\" min=\"0\" max=\"").concat(ttsQueueLength - 1, "\" value=\"0\"\n    ").concat((0, readium_css_1.isRTL)() ? "dir=\"rtl\"" : "dir=\"ltr\"", "  title=\"progress\"/>\n")
+        "\n<button id=\"".concat(styles_1.TTS_ID_PREVIOUS, "\" class=\"").concat(styles_1.TTS_NAV_BUTTON_CLASS, "\" title=\"").concat((0, readium_css_1.isRTL)() ? "next" : "previous", "\"><span>&#9668;</span></button>\n<button id=\"").concat(styles_1.TTS_ID_NEXT, "\" class=\"").concat(styles_1.TTS_NAV_BUTTON_CLASS, "\" title=\"").concat((0, readium_css_1.isRTL)() ? "previous" : "next", "\"><span>&#9658;</span></button>\n<input id=\"").concat(styles_1.TTS_ID_SLIDER, "\" type=\"range\" min=\"0\" max=\"").concat(ttsQueueLength - 1, "\" value=\"0\"\n    ").concat((0, readium_css_1.isRTL)() ? "dir=\"rtl\"" : "dir=\"ltr\"", "  title=\"progress\"/>\n")
         : "", "\n");
     var pop = new popup_dialog_1.PopupDialog(win.document, outerHTML, onDialogClosed, "".concat(styles_1.TTS_POPUP_DIALOG_CLASS).concat(win.READIUM2.ttsOverlayEnabled ? "" : " ".concat(styles_1.POPUP_DIALOG_CLASS_COLLAPSE)), true);
     pop.show(ttsQueueItemStart.item.parentElement);

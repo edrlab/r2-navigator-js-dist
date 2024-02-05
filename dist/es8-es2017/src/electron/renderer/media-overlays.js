@@ -3,12 +3,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.mediaOverlaysEnableSkippability = exports.mediaOverlaysPlaybackRate = exports.mediaOverlaysClickEnable = exports.mediaOverlaysEnableCaptionsMode = exports.mediaOverlaysEscape = exports.mediaOverlaysNext = exports.mediaOverlaysPrevious = exports.mediaOverlaysResume = exports.mediaOverlaysStop = exports.mediaOverlaysInterrupt = exports.mediaOverlaysPause = exports.mediaOverlaysPlay = exports.mediaOverlaysListen = exports.mediaOverlaysHandleIpcMessage = exports.publicationHasMediaOverlays = exports.MediaOverlaysStateEnum = void 0;
 const debug_ = require("debug");
 const util = require("util");
+const location_1 = require("./location");
 const serializable_1 = require("r2-lcp-js/dist/es8-es2017/src/serializable");
 const media_overlay_1 = require("r2-shared-js/dist/es8-es2017/src/models/media-overlay");
 const audiobook_1 = require("../common/audiobook");
 const events_1 = require("../common/events");
 Object.defineProperty(exports, "MediaOverlaysStateEnum", { enumerable: true, get: function () { return events_1.MediaOverlaysStateEnum; } });
-const location_1 = require("./location");
+const location_2 = require("./location");
 const readium_css_1 = require("./readium-css");
 const debug = debug_("r2:navigator#electron/renderer/media-overlays");
 const IS_DEV = process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev";
@@ -52,21 +53,75 @@ let _mediaOverlayTextId;
 let _mediaOverlayTextHref;
 let _mediaOverlayActive = false;
 async function playMediaOverlays(textHref, rootMo, textFragmentIDChain, isInteract) {
+    var _a, _b, _c, _d;
     if (IS_DEV) {
-        debug("playMediaOverlays()");
+        debug("playMediaOverlays() : " + textHref + " //// " + decodeURIComponent(textHref));
+        debug(JSON.stringify(textFragmentIDChain, null, 4));
+    }
+    const loc = (0, location_1.getCurrentReadingLocation)();
+    const locationHashOverrideInfo = _lastClickedNotification === null || _lastClickedNotification === void 0 ? void 0 : _lastClickedNotification.locationHashOverrideInfo;
+    if (!textFragmentIDChain) {
+        if (loc) {
+            if (IS_DEV) {
+                debug("playMediaOverlays() CURRENT LOCATOR " + textHref + " -- " + ((_a = loc.locator) === null || _a === void 0 ? void 0 : _a.href));
+                debug(JSON.stringify(loc, null, 4));
+            }
+            const hrefUrlObj = new URL("https://dummy.com/" + ((_b = loc.locator) === null || _b === void 0 ? void 0 : _b.href));
+            if (textHref === hrefUrlObj.pathname.substr(1)) {
+                if ((_c = loc.locator.locations) === null || _c === void 0 ? void 0 : _c.cssSelector) {
+                    debug("playMediaOverlays() CSS SELECTOR: " + loc.locator.locations.cssSelector);
+                    const hashI = loc.locator.locations.cssSelector.lastIndexOf("#");
+                    if (hashI >= 0) {
+                        const after = loc.locator.locations.cssSelector.substring(hashI + 1);
+                        if (after) {
+                            const spaceI = after.indexOf(" ");
+                            let hashID = after;
+                            if (spaceI > 0) {
+                                hashID = after.substring(0, spaceI);
+                            }
+                            debug("playMediaOverlays() CSS SELECTOR ID: " + hashID);
+                        }
+                    }
+                }
+                if ((_d = loc.locator.locations) === null || _d === void 0 ? void 0 : _d.cfi) {
+                    debug("playMediaOverlays() CFI: " + loc.locator.locations.cfi);
+                    let arrayIDs = [];
+                    const regexpr = /\[([^\]]+)\]/g;
+                    const matches = loc.locator.locations.cfi.matchAll(regexpr);
+                    if (matches) {
+                        arrayIDs = Array.from(matches, (m) => m[1]);
+                    }
+                    debug("playMediaOverlays() CFI IDs: " + JSON.stringify(arrayIDs, null, 4));
+                    textFragmentIDChain = arrayIDs;
+                }
+            }
+        }
     }
     let textFragmentIDChain_ = textFragmentIDChain ? textFragmentIDChain.filter((id) => id) : undefined;
     if (textFragmentIDChain_ && textFragmentIDChain_.length === 0) {
         textFragmentIDChain_ = null;
     }
-    let moTextAudioPair = findDepthFirstTextAudioPair(textHref, rootMo, textFragmentIDChain_);
+    let moTextAudioPair = findDepthFirstTextAudioPair(textHref, rootMo, textFragmentIDChain_, false);
     if (!moTextAudioPair && (textFragmentIDChain_ || textFragmentIDChain_ === null && !isInteract)) {
-        if (IS_DEV) {
-            debug("playMediaOverlays() - findDepthFirstTextAudioPair() SECOND CHANCE ");
-            debug(JSON.stringify(textFragmentIDChain_, null, 4));
-            debug(JSON.stringify(rootMo, null, 4));
+        const followingElementIDs = (loc === null || loc === void 0 ? void 0 : loc.followingElementIDs) || (locationHashOverrideInfo === null || locationHashOverrideInfo === void 0 ? void 0 : locationHashOverrideInfo.followingElementIDs);
+        if (followingElementIDs) {
+            if (IS_DEV) {
+                debug("playMediaOverlays() - findDepthFirstTextAudioPair() SECOND CHANCE TRY ... ");
+                debug(JSON.stringify(textFragmentIDChain_, null, 4));
+                debug(JSON.stringify(followingElementIDs, null, 4));
+            }
+            for (const id of followingElementIDs) {
+                moTextAudioPair = findDepthFirstTextAudioPair(textHref, rootMo, [id], false);
+                if (moTextAudioPair) {
+                    debug("playMediaOverlays() - findDepthFirstTextAudioPair() SECOND CHANCE FOUND: " + id);
+                    break;
+                }
+            }
         }
-        moTextAudioPair = findDepthFirstTextAudioPair(textHref, rootMo, undefined);
+        if (!moTextAudioPair) {
+            debug("playMediaOverlays() - findDepthFirstTextAudioPair() SECOND CHANCE FALLBACK...");
+            moTextAudioPair = findDepthFirstTextAudioPair(textHref, rootMo, textFragmentIDChain_, true);
+        }
     }
     if (moTextAudioPair) {
         if (moTextAudioPair.Audio) {
@@ -516,7 +571,8 @@ function findPreviousTextAudioPair(mo, moToMatch, previousMo) {
     }
     return undefined;
 }
-function findDepthFirstTextAudioPair(textHref, mo, textFragmentIDChain) {
+function findDepthFirstTextAudioPair(textHref, mo, textFragmentIDChain, allowFallbackSeek) {
+    var _a;
     if (audiobook_1.DEBUG_AUDIO) {
         debug("findDepthFirstTextAudioPair()");
     }
@@ -547,7 +603,8 @@ function findDepthFirstTextAudioPair(textHref, mo, textFragmentIDChain) {
         debug("isFragmentIDMatch: " + isFragmentIDMatch);
         debug("isTextUrlMatch: " + isTextUrlMatch);
     }
-    if (!mo.Children || !mo.Children.length) {
+    const isLeaf = (_a = mo.Children) === null || _a === void 0 ? void 0 : _a.length;
+    if (!isLeaf) {
         if (audiobook_1.DEBUG_AUDIO) {
             debug("findDepthFirstTextAudioPair() - leaf text/audio pair");
         }
@@ -581,7 +638,7 @@ function findDepthFirstTextAudioPair(textHref, mo, textFragmentIDChain) {
             debug("findDepthFirstTextAudioPair() - child");
             debug(JSON.stringify(child));
         }
-        const match = findDepthFirstTextAudioPair(textHref, child, frags);
+        const match = findDepthFirstTextAudioPair(textHref, child, frags, allowFallbackSeek);
         if (match === null) {
             if (audiobook_1.DEBUG_AUDIO) {
                 debug("findDepthFirstTextAudioPair() - child - match null (skip)");
@@ -596,7 +653,7 @@ function findDepthFirstTextAudioPair(textHref, mo, textFragmentIDChain) {
             return match;
         }
     }
-    if (isFragmentIDMatch) {
+    if (allowFallbackSeek && isFragmentIDMatch) {
         if (isSkip) {
             if (audiobook_1.DEBUG_AUDIO) {
                 debug("findDepthFirstTextAudioPair() - post isFragmentIDMatch (skip)");
@@ -607,7 +664,7 @@ function findDepthFirstTextAudioPair(textHref, mo, textFragmentIDChain) {
             if (audiobook_1.DEBUG_AUDIO) {
                 debug("findDepthFirstTextAudioPair() - post isFragmentIDMatch");
             }
-            const match = findDepthFirstTextAudioPair(textHref, mo, undefined);
+            const match = findDepthFirstTextAudioPair(textHref, mo, undefined, false);
             if (match) {
                 if (audiobook_1.DEBUG_AUDIO) {
                     debug("findDepthFirstTextAudioPair() - post isFragmentIDMatch - match");
@@ -672,7 +729,7 @@ async function playMediaOverlaysForLink(link, textFragmentIDChain, isInteract) {
             _timeoutAutoNext = undefined;
             mediaOverlaysStop(true);
             const rtl = (0, readium_css_1.isRTL)();
-            (0, location_1.navLeftOrRight)(rtl, true, true);
+            (0, location_2.navLeftOrRight)(rtl, true, true);
         }, 600);
         mediaOverlaysStateSet(events_1.MediaOverlaysStateEnum.PLAYING);
         return;
@@ -739,6 +796,7 @@ function mediaOverlaysHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarg
             _lastClickedNotification = {
                 link: activeWebView.READIUM2.link,
                 textFragmentIDChain: payload.textFragmentIDChain,
+                locationHashOverrideInfo: payload.locationHashOverrideInfo,
             };
             if ((payload.userInteract && _mediaOverlaysClickEnabled) ||
                 _mediaOverlayActive) {
@@ -830,6 +888,7 @@ function moHighlight(href, id) {
                 _lastClickedNotification = {
                     link: activeWebView.READIUM2.link,
                     textFragmentIDChain: [id],
+                    locationHashOverrideInfo: undefined,
                 };
             }
             else {
@@ -938,7 +997,7 @@ function mediaOverlaysInterrupt() {
 exports.mediaOverlaysInterrupt = mediaOverlaysInterrupt;
 function mediaOverlaysStop(stayActive) {
     if (IS_DEV) {
-        debug("mediaOverlaysStop()");
+        debug("mediaOverlaysStop() stayActive: " + stayActive);
     }
     if (!win.READIUM2 || !win.READIUM2.publication) {
         return;
@@ -949,6 +1008,7 @@ function mediaOverlaysStop(stayActive) {
     _mediaOverlayTextAudioPair = undefined;
     _mediaOverlayTextId = undefined;
     if (!_mediaOverlayActive) {
+        _lastClickedNotification = undefined;
         mediaOverlaysStateSet(events_1.MediaOverlaysStateEnum.STOPPED);
     }
 }
@@ -1000,7 +1060,7 @@ function mediaOverlaysPrevious() {
             }
             mediaOverlaysStop(true);
             const rtl = (0, readium_css_1.isRTL)();
-            (0, location_1.navLeftOrRight)(!rtl, true, true);
+            (0, location_2.navLeftOrRight)(!rtl, true, true);
         }
         else {
             let switchDoc = false;
@@ -1023,7 +1083,7 @@ function mediaOverlaysPrevious() {
                     debug("mediaOverlaysPrevious() - handleLinkUrl()");
                 }
                 const activeWebView = win.READIUM2.getFirstOrSecondWebView();
-                (0, location_1.handleLinkUrl)(urlFull, activeWebView ? activeWebView.READIUM2.readiumCss : undefined);
+                (0, location_2.handleLinkUrl)(urlFull, activeWebView ? activeWebView.READIUM2.readiumCss : undefined);
             }
             else {
                 if (IS_DEV) {
@@ -1042,7 +1102,7 @@ function mediaOverlaysPrevious() {
         }
         mediaOverlaysStop(true);
         const rtl = (0, readium_css_1.isRTL)();
-        (0, location_1.navLeftOrRight)(!rtl, true, true);
+        (0, location_2.navLeftOrRight)(!rtl, true, true);
     }
 }
 exports.mediaOverlaysPrevious = mediaOverlaysPrevious;
@@ -1062,7 +1122,7 @@ function mediaOverlaysNext(escape) {
             }
             mediaOverlaysStop(true);
             const rtl = (0, readium_css_1.isRTL)();
-            (0, location_1.navLeftOrRight)(rtl, true, true);
+            (0, location_2.navLeftOrRight)(rtl, true, true);
         }
         else {
             let switchDoc = false;
@@ -1085,7 +1145,7 @@ function mediaOverlaysNext(escape) {
                     debug("mediaOverlaysNext() - handleLinkUrl()");
                 }
                 const activeWebView = win.READIUM2.getFirstOrSecondWebView();
-                (0, location_1.handleLinkUrl)(urlFull, activeWebView ? activeWebView.READIUM2.readiumCss : undefined);
+                (0, location_2.handleLinkUrl)(urlFull, activeWebView ? activeWebView.READIUM2.readiumCss : undefined);
             }
             else {
                 if (IS_DEV) {
@@ -1104,7 +1164,7 @@ function mediaOverlaysNext(escape) {
         }
         mediaOverlaysStop(true);
         const rtl = (0, readium_css_1.isRTL)();
-        (0, location_1.navLeftOrRight)(rtl, true, true);
+        (0, location_2.navLeftOrRight)(rtl, true, true);
     }
 }
 exports.mediaOverlaysNext = mediaOverlaysNext;

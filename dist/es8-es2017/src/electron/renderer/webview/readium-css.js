@@ -64,18 +64,19 @@ const calculateMaxScrollShift = () => {
     }
     const isPaged = (0, readium_css_inject_1.isPaginated)(win.document);
     const scrollElement = (0, exports.getScrollingElement)(win.document);
+    const vwm = isVerticalWritingMode();
     const maxScrollShift = isPaged ?
-        ((isVerticalWritingMode() ?
+        ((vwm ?
             (scrollElement.scrollHeight - win.document.documentElement.offsetHeight) :
             (scrollElement.scrollWidth - win.document.documentElement.offsetWidth))) :
-        ((isVerticalWritingMode() ?
+        ((vwm ?
             (scrollElement.scrollWidth - win.document.documentElement.clientWidth) :
             (scrollElement.scrollHeight - win.document.documentElement.clientHeight)));
     const maxScrollShiftAdjusted = isPaged ?
-        ((isVerticalWritingMode() ?
+        ((vwm ?
             maxScrollShift :
             (calculateDocumentColumnizedWidthAdjustedForTwoPageSpread() - win.document.documentElement.offsetWidth))) :
-        ((isVerticalWritingMode() ?
+        ((vwm ?
             maxScrollShift :
             maxScrollShift));
     return { maxScrollShift, maxScrollShiftAdjusted };

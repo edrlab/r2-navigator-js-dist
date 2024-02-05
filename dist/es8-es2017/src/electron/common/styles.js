@@ -1,13 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TTS_POPUP_DIALOG_CLASS = exports.TTS_ID_SPEAKING_DOC_ELEMENT = exports.TTS_NAV_BUTTON_CLASS = exports.TTS_ID_CONTAINER = exports.TTS_CLASS_UTTERANCE_HEADING5 = exports.TTS_CLASS_UTTERANCE_HEADING4 = exports.TTS_CLASS_UTTERANCE_HEADING3 = exports.TTS_CLASS_UTTERANCE_HEADING2 = exports.TTS_CLASS_UTTERANCE_HEADING1 = exports.TTS_CLASS_UTTERANCE = exports.TTS_ID_ACTIVE_UTTERANCE = exports.TTS_ID_ACTIVE_WORD = exports.TTS_ID_SLIDER = exports.TTS_ID_NEXT = exports.TTS_ID_PREVIOUS = exports.TTS_CLASS_STOPPED = exports.TTS_CLASS_PLAYING = exports.TTS_CLASS_PAUSED = exports.TTS_CLASS_IS_ACTIVE = exports.TTS_CLASS_THEME1 = exports.mediaOverlaysCssStyles = exports.R2_MO_CLASS_STOPPED = exports.R2_MO_CLASS_PAUSED = exports.R2_MO_CLASS_PLAYING = exports.R2_MO_CLASS_ACTIVE_PLAYBACK = exports.R2_MO_CLASS_ACTIVE = exports.footnotesCssStyles = exports.CSS_CLASS_NO_FOCUS_OUTLINE = exports.ROOT_CLASS_KEYBOARD_INTERACT = exports.POPUP_DIALOG_CLASS_COLLAPSE = exports.POPUP_DIALOG_CLASS = exports.POPOUTIMAGE_RESET_ID = exports.POPOUTIMAGE_PLUS_ID = exports.POPOUTIMAGE_MINUS_ID = exports.POPOUTIMAGE_CONTROLS_ID = exports.POPOUTIMAGE_CLOSE_ID = exports.POPOUTIMAGE_CONTAINER_ID = exports.FOOTNOTE_FORCE_SHOW = exports.FOOTNOTES_CLOSE_BUTTON_CLASS = exports.FOOTNOTES_CONTAINER_CLASS = exports.ROOT_CLASS_NO_FOOTNOTES = exports.ROOT_CLASS_FIXED_LAYOUT = exports.ROOT_CLASS_MATHJAX = exports.ROOT_CLASS_REDUCE_MOTION = exports.LINK_TARGET_CLASS = exports.SKIP_LINK_ID = exports.ZERO_TRANSFORM_CLASS = exports.HIDE_CURSOR_CLASS = exports.CLASS_PAGINATED = exports.WebViewSlotEnum = void 0;
-exports.audioCssStyles = exports.AUDIO_FORWARD_ID = exports.AUDIO_REWIND_ID = exports.AUDIO_NEXT_ID = exports.AUDIO_PREVIOUS_ID = exports.AUDIO_PLAYPAUSE_ID = exports.AUDIO_RATE_ID = exports.AUDIO_PERCENT_ID = exports.AUDIO_TIME_ID = exports.AUDIO_SLIDER_ID = exports.AUDIO_TITLE_ID = exports.AUDIO_COVER_ID = exports.AUDIO_CONTROLS_ID = exports.AUDIO_SECTION_ID = exports.AUDIO_BODY_ID = exports.AUDIO_ID = exports.AUDIO_PROGRESS_CLASS = exports.AUDIO_BUFFER_CANVAS_ID = exports.readPosCssStyles = exports.readPosCssStylesAttr4 = exports.readPosCssStylesAttr3 = exports.readPosCssStylesAttr2 = exports.readPosCssStylesAttr1 = exports.scrollBarCssStyles = exports.selectionCssStyles = exports.targetCssStyles = exports.focusCssStyles = exports.visibilityMaskCssStyles = exports.ROOT_CLASS_INVISIBLE_MASK_REMOVED = exports.ROOT_CLASS_INVISIBLE_MASK = exports.ttsCssStyles = void 0;
+exports.TTS_ID_SPEAKING_DOC_ELEMENT = exports.TTS_NAV_BUTTON_CLASS = exports.TTS_ID_CONTAINER = exports.TTS_CLASS_UTTERANCE_HEADING5 = exports.TTS_CLASS_UTTERANCE_HEADING4 = exports.TTS_CLASS_UTTERANCE_HEADING3 = exports.TTS_CLASS_UTTERANCE_HEADING2 = exports.TTS_CLASS_UTTERANCE_HEADING1 = exports.TTS_CLASS_UTTERANCE = exports.TTS_ID_ACTIVE_UTTERANCE = exports.TTS_ID_ACTIVE_WORD = exports.TTS_ID_SLIDER = exports.TTS_ID_NEXT = exports.TTS_ID_PREVIOUS = exports.TTS_CLASS_STOPPED = exports.TTS_CLASS_PLAYING = exports.TTS_CLASS_PAUSED = exports.TTS_CLASS_IS_ACTIVE = exports.TTS_CLASS_THEME1 = exports.mediaOverlaysCssStyles = exports.R2_MO_CLASS_STOPPED = exports.R2_MO_CLASS_PAUSED = exports.R2_MO_CLASS_PLAYING = exports.R2_MO_CLASS_ACTIVE_PLAYBACK = exports.R2_MO_CLASS_ACTIVE = exports.footnotesCssStyles = exports.CSS_CLASS_NO_FOCUS_OUTLINE = exports.ROOT_CLASS_KEYBOARD_INTERACT = exports.POPUP_DIALOG_CLASS_COLLAPSE = exports.POPUP_DIALOG_CLASS = exports.POPOUTIMAGE_RESET_ID = exports.POPOUTIMAGE_PLUS_ID = exports.POPOUTIMAGE_MINUS_ID = exports.POPOUTIMAGE_CONTROLS_ID = exports.POPOUTIMAGE_CLOSE_ID = exports.POPOUTIMAGE_CONTAINER_ID = exports.FOOTNOTE_FORCE_SHOW = exports.FOOTNOTES_CLOSE_BUTTON_CLASS = exports.FOOTNOTES_CONTAINER_CLASS = exports.ROOT_CLASS_NO_FOOTNOTES = exports.ROOT_CLASS_FIXED_LAYOUT = exports.ROOT_CLASS_MATHJAX = exports.ROOT_CLASS_REDUCE_MOTION = exports.LINK_TARGET_CLASS = exports.SKIP_LINK_ID = exports.ZERO_TRANSFORM_CLASS = exports.HIDE_CURSOR_CLASS = exports.CLASS_PAGINATED = exports.CLASS_VWM = exports.WebViewSlotEnum = void 0;
+exports.audioCssStyles = exports.AUDIO_FORWARD_ID = exports.AUDIO_REWIND_ID = exports.AUDIO_NEXT_ID = exports.AUDIO_PREVIOUS_ID = exports.AUDIO_PLAYPAUSE_ID = exports.AUDIO_RATE_ID = exports.AUDIO_PERCENT_ID = exports.AUDIO_TIME_ID = exports.AUDIO_SLIDER_ID = exports.AUDIO_TITLE_ID = exports.AUDIO_COVER_ID = exports.AUDIO_CONTROLS_ID = exports.AUDIO_SECTION_ID = exports.AUDIO_BODY_ID = exports.AUDIO_ID = exports.AUDIO_PROGRESS_CLASS = exports.AUDIO_BUFFER_CANVAS_ID = exports.readPosCssStyles = exports.readPosCssStylesAttr4 = exports.readPosCssStylesAttr3 = exports.readPosCssStylesAttr2 = exports.readPosCssStylesAttr1 = exports.scrollBarCssStyles = exports.selectionCssStyles = exports.targetCssStyles = exports.focusCssStyles = exports.visibilityMaskCssStyles = exports.ROOT_CLASS_INVISIBLE_MASK_REMOVED = exports.ROOT_CLASS_INVISIBLE_MASK = exports.ttsCssStyles = exports.TTS_POPUP_DIALOG_CLASS = void 0;
 var WebViewSlotEnum;
 (function (WebViewSlotEnum) {
     WebViewSlotEnum["center"] = "center";
     WebViewSlotEnum["left"] = "left";
     WebViewSlotEnum["right"] = "right";
 })(WebViewSlotEnum || (exports.WebViewSlotEnum = WebViewSlotEnum = {}));
+exports.CLASS_VWM = "r2-class-VWM";
 exports.CLASS_PAGINATED = "r2-css-paginated";
 exports.HIDE_CURSOR_CLASS = "r2-hideCursor";
 exports.ZERO_TRANSFORM_CLASS = "r2-zeroTransform";
@@ -792,8 +793,8 @@ no new stacking context, otherwise massive performance degradation with CSS Colu
 :root.${exports.CLASS_PAGINATED}:not(.${exports.ROOT_CLASS_FIXED_LAYOUT}) {
     overflow: visible !important;
 }
-:root[style].${exports.CLASS_PAGINATED}:not(.${exports.ROOT_CLASS_FIXED_LAYOUT}) > body,
-:root.${exports.CLASS_PAGINATED}:not(.${exports.ROOT_CLASS_FIXED_LAYOUT}) > body {
+:root[style].${exports.CLASS_PAGINATED}:not(.${exports.ROOT_CLASS_FIXED_LAYOUT}):not(.${exports.CLASS_VWM}) > body,
+:root.${exports.CLASS_PAGINATED}:not(.${exports.ROOT_CLASS_FIXED_LAYOUT}):not(.${exports.CLASS_VWM}) > body {
     /*
     Electron v19 --> v21 breaking change :(
     ("hidden" is now "clip")
@@ -802,6 +803,17 @@ no new stacking context, otherwise massive performance degradation with CSS Colu
     */
     overflow-x: clip !important;
     overflow-y: visible !important;
+}
+:root[style].${exports.CLASS_PAGINATED}:not(.${exports.ROOT_CLASS_FIXED_LAYOUT}).${exports.CLASS_VWM} > body,
+:root.${exports.CLASS_PAGINATED}:not(.${exports.ROOT_CLASS_FIXED_LAYOUT}).${exports.CLASS_VWM} > body {
+    /*
+    Electron v19 --> v21 breaking change :(
+    ("hidden" is now "clip")
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+    */
+    overflow-x: visible !important;
+    overflow-y: clip !important;
 }
 
 /*
@@ -839,9 +851,14 @@ We cannot completely disable "scroll" event (prevent default) because we need to
     /* display: block; */
 }
 
-:root[style]:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}),
-:root:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}) {
+:root[style]:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}):not(.${exports.CLASS_VWM}),
+:root:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}):not(.${exports.CLASS_VWM}) {
     height: 100vh !important;
+}
+:root[style]:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}).${exports.CLASS_VWM},
+:root:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}).${exports.CLASS_VWM} {
+    overflow-y: clip !important;
+    width: 100vw !important;
 }
 
 :root[style].${exports.CLASS_PAGINATED}:not(.${exports.ROOT_CLASS_FIXED_LAYOUT}),

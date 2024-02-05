@@ -639,7 +639,8 @@ function createHighlightDom(win, highlight, bodyRect) {
                         extra = "outline-color: rgb(".concat(r, ", ").concat(g, ", ").concat(b, "); outline-style: solid; outline-width: 1px; outline-offset: -1px;");
                     }
                     else if (drawUnderline) {
-                        extra = "border-bottom: ".concat(underlineThickness * scale, "px solid ") +
+                        var side = (0, readium_css_1.isVerticalWritingMode)() ? "left" : "bottom";
+                        extra = "border-".concat(side, ": ").concat(underlineThickness * scale, "px solid ") +
                             (USE_BLEND_MODE ?
                                 "rgb(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ") !important") :
                                 "rgba(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ", ").concat(opacity, ") !important"));

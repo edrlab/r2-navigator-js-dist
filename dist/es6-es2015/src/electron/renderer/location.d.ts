@@ -31,6 +31,7 @@ export interface LocatorExtended {
         level: number;
     }> | undefined;
     secondWebViewHref: string | undefined;
+    followingElementIDs?: string[];
 }
 export declare function getCurrentReadingLocation(): LocatorExtended | undefined;
 export declare function setReadingLocationSaver(func: (locator: LocatorExtended) => void): void;

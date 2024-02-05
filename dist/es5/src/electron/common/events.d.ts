@@ -64,6 +64,7 @@ export interface IEventPayload_R2_EVENT_READING_LOCATION extends Locator {
     }> | undefined;
     userInteract: boolean;
     secondWebViewHref: string | undefined;
+    followingElementIDs?: string[];
 }
 export declare const R2_EVENT_LINK = "R2_EVENT_LINK";
 export interface IEventPayload_R2_EVENT_LINK {
@@ -76,6 +77,7 @@ export interface IEventPayload_R2_EVENT_AUDIO_SOUNDTRACK {
 }
 export declare const R2_EVENT_MEDIA_OVERLAY_CLICK = "R2_EVENT_MEDIA_OVERLAY_CLICK";
 export interface IEventPayload_R2_EVENT_MEDIA_OVERLAY_CLICK {
+    locationHashOverrideInfo: IEventPayload_R2_EVENT_READING_LOCATION | undefined;
     textFragmentIDChain: Array<string | null> | undefined;
     userInteract: boolean;
 }

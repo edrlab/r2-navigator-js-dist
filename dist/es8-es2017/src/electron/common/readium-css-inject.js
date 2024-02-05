@@ -120,6 +120,10 @@ function readiumCSSSet(documant, messageJson, isVerticalWritingMode, isRTL) {
         });
         return;
     }
+    if (isVerticalWritingMode) {
+        docElement.classList.add(styles_1.CLASS_VWM);
+        setCSS.paged = false;
+    }
     if (!docElement.hasAttribute("data-readiumcss")) {
         docElement.setAttribute("data-readiumcss", "yes");
         let needsDefaultCSS = true;
@@ -291,7 +295,7 @@ function readiumCSSSet(documant, messageJson, isVerticalWritingMode, isRTL) {
         docElement.style.removeProperty("--USER__letterSpacing");
         if (isVerticalWritingMode || isCJK) {
             if (isVerticalWritingMode) {
-                docElement.style.removeProperty("--USER__colCount");
+                docElement.style.setProperty("--USER__colCount", "1");
             }
             docElement.style.removeProperty("--USER__paraIndent");
             docElement.style.removeProperty("--USER__textAlign");

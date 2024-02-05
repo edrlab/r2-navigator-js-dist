@@ -4,12 +4,13 @@ exports.mediaOverlaysEnableSkippability = exports.mediaOverlaysPlaybackRate = ex
 var tslib_1 = require("tslib");
 var debug_ = require("debug");
 var util = require("util");
+var location_1 = require("./location");
 var serializable_1 = require("r2-lcp-js/dist/es5/src/serializable");
 var media_overlay_1 = require("r2-shared-js/dist/es5/src/models/media-overlay");
 var audiobook_1 = require("../common/audiobook");
 var events_1 = require("../common/events");
 Object.defineProperty(exports, "MediaOverlaysStateEnum", { enumerable: true, get: function () { return events_1.MediaOverlaysStateEnum; } });
-var location_1 = require("./location");
+var location_2 = require("./location");
 var readium_css_1 = require("./readium-css");
 var debug = debug_("r2:navigator#electron/renderer/media-overlays");
 var IS_DEV = process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev";
@@ -64,26 +65,91 @@ var _mediaOverlayTextId;
 var _mediaOverlayTextHref;
 var _mediaOverlayActive = false;
 function playMediaOverlays(textHref, rootMo, textFragmentIDChain, isInteract) {
+    var _a, _b, _c, _d;
     return tslib_1.__awaiter(this, void 0, void 0, function () {
-        var textFragmentIDChain_, moTextAudioPair;
-        return tslib_1.__generator(this, function (_a) {
-            switch (_a.label) {
+        var loc, locationHashOverrideInfo, hrefUrlObj, hashI, after, spaceI, hashID, arrayIDs, regexpr, matches, textFragmentIDChain_, moTextAudioPair, followingElementIDs, followingElementIDs_1, followingElementIDs_1_1, id;
+        var e_2, _e;
+        return tslib_1.__generator(this, function (_f) {
+            switch (_f.label) {
                 case 0:
                     if (IS_DEV) {
-                        debug("playMediaOverlays()");
+                        debug("playMediaOverlays() : " + textHref + " //// " + decodeURIComponent(textHref));
+                        debug(JSON.stringify(textFragmentIDChain, null, 4));
+                    }
+                    loc = (0, location_1.getCurrentReadingLocation)();
+                    locationHashOverrideInfo = _lastClickedNotification === null || _lastClickedNotification === void 0 ? void 0 : _lastClickedNotification.locationHashOverrideInfo;
+                    if (!textFragmentIDChain) {
+                        if (loc) {
+                            if (IS_DEV) {
+                                debug("playMediaOverlays() CURRENT LOCATOR " + textHref + " -- " + ((_a = loc.locator) === null || _a === void 0 ? void 0 : _a.href));
+                                debug(JSON.stringify(loc, null, 4));
+                            }
+                            hrefUrlObj = new URL("https://dummy.com/" + ((_b = loc.locator) === null || _b === void 0 ? void 0 : _b.href));
+                            if (textHref === hrefUrlObj.pathname.substr(1)) {
+                                if ((_c = loc.locator.locations) === null || _c === void 0 ? void 0 : _c.cssSelector) {
+                                    debug("playMediaOverlays() CSS SELECTOR: " + loc.locator.locations.cssSelector);
+                                    hashI = loc.locator.locations.cssSelector.lastIndexOf("#");
+                                    if (hashI >= 0) {
+                                        after = loc.locator.locations.cssSelector.substring(hashI + 1);
+                                        if (after) {
+                                            spaceI = after.indexOf(" ");
+                                            hashID = after;
+                                            if (spaceI > 0) {
+                                                hashID = after.substring(0, spaceI);
+                                            }
+                                            debug("playMediaOverlays() CSS SELECTOR ID: " + hashID);
+                                        }
+                                    }
+                                }
+                                if ((_d = loc.locator.locations) === null || _d === void 0 ? void 0 : _d.cfi) {
+                                    debug("playMediaOverlays() CFI: " + loc.locator.locations.cfi);
+                                    arrayIDs = [];
+                                    regexpr = /\[([^\]]+)\]/g;
+                                    matches = loc.locator.locations.cfi.matchAll(regexpr);
+                                    if (matches) {
+                                        arrayIDs = Array.from(matches, function (m) { return m[1]; });
+                                    }
+                                    debug("playMediaOverlays() CFI IDs: " + JSON.stringify(arrayIDs, null, 4));
+                                    textFragmentIDChain = arrayIDs;
+                                }
+                            }
+                        }
                     }
                     textFragmentIDChain_ = textFragmentIDChain ? textFragmentIDChain.filter(function (id) { return id; }) : undefined;
                     if (textFragmentIDChain_ && textFragmentIDChain_.length === 0) {
                         textFragmentIDChain_ = null;
                     }
-                    moTextAudioPair = findDepthFirstTextAudioPair(textHref, rootMo, textFragmentIDChain_);
+                    moTextAudioPair = findDepthFirstTextAudioPair(textHref, rootMo, textFragmentIDChain_, false);
                     if (!moTextAudioPair && (textFragmentIDChain_ || textFragmentIDChain_ === null && !isInteract)) {
-                        if (IS_DEV) {
-                            debug("playMediaOverlays() - findDepthFirstTextAudioPair() SECOND CHANCE ");
-                            debug(JSON.stringify(textFragmentIDChain_, null, 4));
-                            debug(JSON.stringify(rootMo, null, 4));
+                        followingElementIDs = (loc === null || loc === void 0 ? void 0 : loc.followingElementIDs) || (locationHashOverrideInfo === null || locationHashOverrideInfo === void 0 ? void 0 : locationHashOverrideInfo.followingElementIDs);
+                        if (followingElementIDs) {
+                            if (IS_DEV) {
+                                debug("playMediaOverlays() - findDepthFirstTextAudioPair() SECOND CHANCE TRY ... ");
+                                debug(JSON.stringify(textFragmentIDChain_, null, 4));
+                                debug(JSON.stringify(followingElementIDs, null, 4));
+                            }
+                            try {
+                                for (followingElementIDs_1 = tslib_1.__values(followingElementIDs), followingElementIDs_1_1 = followingElementIDs_1.next(); !followingElementIDs_1_1.done; followingElementIDs_1_1 = followingElementIDs_1.next()) {
+                                    id = followingElementIDs_1_1.value;
+                                    moTextAudioPair = findDepthFirstTextAudioPair(textHref, rootMo, [id], false);
+                                    if (moTextAudioPair) {
+                                        debug("playMediaOverlays() - findDepthFirstTextAudioPair() SECOND CHANCE FOUND: " + id);
+                                        break;
+                                    }
+                                }
+                            }
+                            catch (e_2_1) { e_2 = { error: e_2_1 }; }
+                            finally {
+                                try {
+                                    if (followingElementIDs_1_1 && !followingElementIDs_1_1.done && (_e = followingElementIDs_1.return)) _e.call(followingElementIDs_1);
+                                }
+                                finally { if (e_2) throw e_2.error; }
+                            }
                         }
-                        moTextAudioPair = findDepthFirstTextAudioPair(textHref, rootMo, undefined);
+                        if (!moTextAudioPair) {
+                            debug("playMediaOverlays() - findDepthFirstTextAudioPair() SECOND CHANCE FALLBACK...");
+                            moTextAudioPair = findDepthFirstTextAudioPair(textHref, rootMo, textFragmentIDChain_, true);
+                        }
                     }
                     if (!moTextAudioPair) return [3, 3];
                     if (!moTextAudioPair.Audio) return [3, 2];
@@ -93,15 +159,15 @@ function playMediaOverlays(textHref, rootMo, textFragmentIDChain, isInteract) {
                     _mediaOverlayRoot = rootMo;
                     return [4, playMediaOverlaysAudio(moTextAudioPair, undefined, undefined)];
                 case 1:
-                    _a.sent();
+                    _f.sent();
                     mediaOverlaysStateSet(events_1.MediaOverlaysStateEnum.PLAYING);
-                    _a.label = 2;
+                    _f.label = 2;
                 case 2: return [3, 4];
                 case 3:
                     if (IS_DEV) {
                         debug("playMediaOverlays() - !moTextAudioPair " + textHref);
                     }
-                    _a.label = 4;
+                    _f.label = 4;
                 case 4: return [2];
             }
         });
@@ -488,7 +554,7 @@ function isSkippable(mo) {
     }) >= 0;
 }
 function findNextTextAudioPair(mo, moToMatch, previousMo, escape) {
-    var e_2, _a;
+    var e_3, _a;
     if (audiobook_1.DEBUG_AUDIO) {
         debug("findNextTextAudioPair()");
         debug(JSON.stringify(moToMatch));
@@ -539,17 +605,17 @@ function findNextTextAudioPair(mo, moToMatch, previousMo, escape) {
             }
         }
     }
-    catch (e_2_1) { e_2 = { error: e_2_1 }; }
+    catch (e_3_1) { e_3 = { error: e_3_1 }; }
     finally {
         try {
             if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
         }
-        finally { if (e_2) throw e_2.error; }
+        finally { if (e_3) throw e_3.error; }
     }
     return undefined;
 }
 function findPreviousTextAudioPair(mo, moToMatch, previousMo) {
-    var e_3, _a;
+    var e_4, _a;
     if (audiobook_1.DEBUG_AUDIO) {
         debug("findPreviousTextAudioPair()");
         debug(JSON.stringify(moToMatch));
@@ -602,17 +668,18 @@ function findPreviousTextAudioPair(mo, moToMatch, previousMo) {
             }
         }
     }
-    catch (e_3_1) { e_3 = { error: e_3_1 }; }
+    catch (e_4_1) { e_4 = { error: e_4_1 }; }
     finally {
         try {
             if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
         }
-        finally { if (e_3) throw e_3.error; }
+        finally { if (e_4) throw e_4.error; }
     }
     return undefined;
 }
-function findDepthFirstTextAudioPair(textHref, mo, textFragmentIDChain) {
-    var e_4, _a, e_5, _b;
+function findDepthFirstTextAudioPair(textHref, mo, textFragmentIDChain, allowFallbackSeek) {
+    var e_5, _a, e_6, _b;
+    var _c;
     if (audiobook_1.DEBUG_AUDIO) {
         debug("findDepthFirstTextAudioPair()");
     }
@@ -635,12 +702,12 @@ function findDepthFirstTextAudioPair(textHref, mo, textFragmentIDChain) {
                         }
                     }
                 }
-                catch (e_4_1) { e_4 = { error: e_4_1 }; }
+                catch (e_5_1) { e_5 = { error: e_5_1 }; }
                 finally {
                     try {
                         if (textFragmentIDChain_1_1 && !textFragmentIDChain_1_1.done && (_a = textFragmentIDChain_1.return)) _a.call(textFragmentIDChain_1);
                     }
-                    finally { if (e_4) throw e_4.error; }
+                    finally { if (e_5) throw e_5.error; }
                 }
             }
         }
@@ -653,7 +720,8 @@ function findDepthFirstTextAudioPair(textHref, mo, textFragmentIDChain) {
         debug("isFragmentIDMatch: " + isFragmentIDMatch);
         debug("isTextUrlMatch: " + isTextUrlMatch);
     }
-    if (!mo.Children || !mo.Children.length) {
+    var isLeaf = (_c = mo.Children) === null || _c === void 0 ? void 0 : _c.length;
+    if (!isLeaf) {
         if (audiobook_1.DEBUG_AUDIO) {
             debug("findDepthFirstTextAudioPair() - leaf text/audio pair");
         }
@@ -683,13 +751,13 @@ function findDepthFirstTextAudioPair(textHref, mo, textFragmentIDChain) {
     var textFragmentIDChainOriginal = textFragmentIDChain;
     var frags = textFragmentIDChain;
     try {
-        for (var _c = tslib_1.__values(mo.Children), _d = _c.next(); !_d.done; _d = _c.next()) {
-            var child = _d.value;
+        for (var _d = tslib_1.__values(mo.Children), _e = _d.next(); !_e.done; _e = _d.next()) {
+            var child = _e.value;
             if (audiobook_1.DEBUG_AUDIO) {
                 debug("findDepthFirstTextAudioPair() - child");
                 debug(JSON.stringify(child));
             }
-            var match = findDepthFirstTextAudioPair(textHref, child, frags);
+            var match = findDepthFirstTextAudioPair(textHref, child, frags, allowFallbackSeek);
             if (match === null) {
                 if (audiobook_1.DEBUG_AUDIO) {
                     debug("findDepthFirstTextAudioPair() - child - match null (skip)");
@@ -705,14 +773,14 @@ function findDepthFirstTextAudioPair(textHref, mo, textFragmentIDChain) {
             }
         }
     }
-    catch (e_5_1) { e_5 = { error: e_5_1 }; }
+    catch (e_6_1) { e_6 = { error: e_6_1 }; }
     finally {
         try {
-            if (_d && !_d.done && (_b = _c.return)) _b.call(_c);
+            if (_e && !_e.done && (_b = _d.return)) _b.call(_d);
         }
-        finally { if (e_5) throw e_5.error; }
+        finally { if (e_6) throw e_6.error; }
     }
-    if (isFragmentIDMatch) {
+    if (allowFallbackSeek && isFragmentIDMatch) {
         if (isSkip) {
             if (audiobook_1.DEBUG_AUDIO) {
                 debug("findDepthFirstTextAudioPair() - post isFragmentIDMatch (skip)");
@@ -723,7 +791,7 @@ function findDepthFirstTextAudioPair(textHref, mo, textFragmentIDChain) {
             if (audiobook_1.DEBUG_AUDIO) {
                 debug("findDepthFirstTextAudioPair() - post isFragmentIDMatch");
             }
-            var match = findDepthFirstTextAudioPair(textHref, mo, undefined);
+            var match = findDepthFirstTextAudioPair(textHref, mo, undefined, false);
             if (match) {
                 if (audiobook_1.DEBUG_AUDIO) {
                     debug("findDepthFirstTextAudioPair() - post isFragmentIDMatch - match");
@@ -751,8 +819,8 @@ function ensureKillAutoNextTimeout() {
 function playMediaOverlaysForLink(link, textFragmentIDChain, isInteract) {
     var _a;
     return tslib_1.__awaiter(this, void 0, void 0, function () {
-        var moUrl, _b, _c, altLink, publicationURL, moUrlObjFull, moUrlFull, response, e_6, moJson, e_7, href, hrefUrlObj;
-        var e_8, _d;
+        var moUrl, _b, _c, altLink, publicationURL, moUrlObjFull, moUrlFull, response, e_7, moJson, e_8, href, hrefUrlObj;
+        var e_9, _d;
         return tslib_1.__generator(this, function (_e) {
             switch (_e.label) {
                 case 0:
@@ -786,12 +854,12 @@ function playMediaOverlaysForLink(link, textFragmentIDChain, isInteract) {
                                 }
                             }
                         }
-                        catch (e_8_1) { e_8 = { error: e_8_1 }; }
+                        catch (e_9_1) { e_9 = { error: e_9_1 }; }
                         finally {
                             try {
                                 if (_c && !_c.done && (_d = _b.return)) _d.call(_b);
                             }
-                            finally { if (e_8) throw e_8.error; }
+                            finally { if (e_9) throw e_9.error; }
                         }
                     }
                     ensureKillAutoNextTimeout();
@@ -803,7 +871,7 @@ function playMediaOverlaysForLink(link, textFragmentIDChain, isInteract) {
                             _timeoutAutoNext = undefined;
                             mediaOverlaysStop(true);
                             var rtl = (0, readium_css_1.isRTL)();
-                            (0, location_1.navLeftOrRight)(rtl, true, true);
+                            (0, location_2.navLeftOrRight)(rtl, true, true);
                         }, 600);
                         mediaOverlaysStateSet(events_1.MediaOverlaysStateEnum.PLAYING);
                         return [2];
@@ -821,8 +889,8 @@ function playMediaOverlaysForLink(link, textFragmentIDChain, isInteract) {
                     response = _e.sent();
                     return [3, 4];
                 case 3:
-                    e_6 = _e.sent();
-                    debug(e_6);
+                    e_7 = _e.sent();
+                    debug(e_7);
                     debug(moUrlFull);
                     return [2];
                 case 4:
@@ -838,8 +906,8 @@ function playMediaOverlaysForLink(link, textFragmentIDChain, isInteract) {
                     moJson = _e.sent();
                     return [3, 8];
                 case 7:
-                    e_7 = _e.sent();
-                    debug(e_7);
+                    e_8 = _e.sent();
+                    debug(e_8);
                     return [3, 8];
                 case 8:
                     if (!moJson) {
@@ -889,6 +957,7 @@ function mediaOverlaysHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarg
             _lastClickedNotification = {
                 link: activeWebView.READIUM2.link,
                 textFragmentIDChain: payload_1.textFragmentIDChain,
+                locationHashOverrideInfo: payload_1.locationHashOverrideInfo,
             };
             if ((payload_1.userInteract && _mediaOverlaysClickEnabled) ||
                 _mediaOverlayActive) {
@@ -966,7 +1035,7 @@ function moHighlight_(moTextAudioPair) {
     }
 }
 function moHighlight(href, id) {
-    var e_9, _a;
+    var e_10, _a;
     var _this = this;
     var _b, _c, _d, _e, _f;
     if (IS_DEV) {
@@ -990,6 +1059,7 @@ function moHighlight(href, id) {
                 _lastClickedNotification = {
                     link: activeWebView.READIUM2.link,
                     textFragmentIDChain: [id],
+                    locationHashOverrideInfo: undefined,
                 };
             }
             else {
@@ -1017,17 +1087,17 @@ function moHighlight(href, id) {
             _loop_1(activeWebView);
         }
     }
-    catch (e_9_1) { e_9 = { error: e_9_1 }; }
+    catch (e_10_1) { e_10 = { error: e_10_1 }; }
     finally {
         try {
             if (activeWebViews_1_1 && !activeWebViews_1_1.done && (_a = activeWebViews_1.return)) _a.call(activeWebViews_1);
         }
-        finally { if (e_9) throw e_9.error; }
+        finally { if (e_10) throw e_10.error; }
     }
 }
 var _mediaOverlaysState = events_1.MediaOverlaysStateEnum.STOPPED;
 var mediaOverlaysStateSet = function (mediaOverlaysState) {
-    var e_10, _a;
+    var e_11, _a;
     _mediaOverlaysState = mediaOverlaysState;
     debug("mediaOverlaysStateSet", mediaOverlaysState);
     var payload = {
@@ -1056,12 +1126,12 @@ var mediaOverlaysStateSet = function (mediaOverlaysState) {
             _loop_2(activeWebView);
         }
     }
-    catch (e_10_1) { e_10 = { error: e_10_1 }; }
+    catch (e_11_1) { e_11 = { error: e_11_1 }; }
     finally {
         try {
             if (activeWebViews_2_1 && !activeWebViews_2_1.done && (_a = activeWebViews_2.return)) _a.call(activeWebViews_2);
         }
-        finally { if (e_10) throw e_10.error; }
+        finally { if (e_11) throw e_11.error; }
     }
     if (_mediaOverlaysListener) {
         _mediaOverlaysListener(mediaOverlaysState);
@@ -1150,7 +1220,7 @@ function mediaOverlaysInterrupt() {
 exports.mediaOverlaysInterrupt = mediaOverlaysInterrupt;
 function mediaOverlaysStop(stayActive) {
     if (IS_DEV) {
-        debug("mediaOverlaysStop()");
+        debug("mediaOverlaysStop() stayActive: " + stayActive);
     }
     if (!win.READIUM2 || !win.READIUM2.publication) {
         return;
@@ -1161,6 +1231,7 @@ function mediaOverlaysStop(stayActive) {
     _mediaOverlayTextAudioPair = undefined;
     _mediaOverlayTextId = undefined;
     if (!_mediaOverlayActive) {
+        _lastClickedNotification = undefined;
         mediaOverlaysStateSet(events_1.MediaOverlaysStateEnum.STOPPED);
     }
 }
@@ -1222,7 +1293,7 @@ function mediaOverlaysPrevious() {
             }
             mediaOverlaysStop(true);
             var rtl = (0, readium_css_1.isRTL)();
-            (0, location_1.navLeftOrRight)(!rtl, true, true);
+            (0, location_2.navLeftOrRight)(!rtl, true, true);
         }
         else {
             var switchDoc = false;
@@ -1245,7 +1316,7 @@ function mediaOverlaysPrevious() {
                     debug("mediaOverlaysPrevious() - handleLinkUrl()");
                 }
                 var activeWebView = win.READIUM2.getFirstOrSecondWebView();
-                (0, location_1.handleLinkUrl)(urlFull, activeWebView ? activeWebView.READIUM2.readiumCss : undefined);
+                (0, location_2.handleLinkUrl)(urlFull, activeWebView ? activeWebView.READIUM2.readiumCss : undefined);
             }
             else {
                 if (IS_DEV) {
@@ -1271,7 +1342,7 @@ function mediaOverlaysPrevious() {
         }
         mediaOverlaysStop(true);
         var rtl = (0, readium_css_1.isRTL)();
-        (0, location_1.navLeftOrRight)(!rtl, true, true);
+        (0, location_2.navLeftOrRight)(!rtl, true, true);
     }
 }
 exports.mediaOverlaysPrevious = mediaOverlaysPrevious;
@@ -1292,7 +1363,7 @@ function mediaOverlaysNext(escape) {
             }
             mediaOverlaysStop(true);
             var rtl = (0, readium_css_1.isRTL)();
-            (0, location_1.navLeftOrRight)(rtl, true, true);
+            (0, location_2.navLeftOrRight)(rtl, true, true);
         }
         else {
             var switchDoc = false;
@@ -1315,7 +1386,7 @@ function mediaOverlaysNext(escape) {
                     debug("mediaOverlaysNext() - handleLinkUrl()");
                 }
                 var activeWebView = win.READIUM2.getFirstOrSecondWebView();
-                (0, location_1.handleLinkUrl)(urlFull, activeWebView ? activeWebView.READIUM2.readiumCss : undefined);
+                (0, location_2.handleLinkUrl)(urlFull, activeWebView ? activeWebView.READIUM2.readiumCss : undefined);
             }
             else {
                 if (IS_DEV) {
@@ -1341,7 +1412,7 @@ function mediaOverlaysNext(escape) {
         }
         mediaOverlaysStop(true);
         var rtl = (0, readium_css_1.isRTL)();
-        (0, location_1.navLeftOrRight)(rtl, true, true);
+        (0, location_2.navLeftOrRight)(rtl, true, true);
     }
 }
 exports.mediaOverlaysNext = mediaOverlaysNext;
