@@ -423,7 +423,8 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, function (_event, payload)
         win.READIUM2.locationHashOverride = win.document.body;
         resetLocationHashOverrideInfo();
         debug("processXYRaw BODY");
-        processXYRaw(0, 0, false);
+        var x = ((0, readium_css_1.isRTL)() ? win.document.documentElement.offsetWidth - 1 : 0);
+        processXYRaw(x, 0, false);
         notifyReadingLocationDebounced();
         return;
     }
@@ -967,7 +968,8 @@ var scrollToHashRaw = function (animate) {
                 win.READIUM2.locationHashOverride = undefined;
                 resetLocationHashOverrideInfo();
                 setTimeout(function () {
-                    processXYRaw(0, 0, false);
+                    var x = ((0, readium_css_1.isRTL)() ? win.document.documentElement.offsetWidth - 1 : 0);
+                    processXYRaw(x, 0, false);
                     showHideContentMask(false, win.READIUM2.isFixedLayout);
                     if (!win.READIUM2.locationHashOverride) {
                         notifyReadingLocationDebounced();
@@ -1054,7 +1056,8 @@ var scrollToHashRaw = function (animate) {
                     win.READIUM2.locationHashOverride = win.document.body;
                     resetLocationHashOverrideInfo();
                     focusElement(win.READIUM2.locationHashOverride);
-                    processXYRaw(0, 0, false);
+                    var x_1 = ((0, readium_css_1.isRTL)() ? win.document.documentElement.offsetWidth - 1 : 0);
+                    processXYRaw(x_1, 0, false);
                     if (!win.READIUM2.locationHashOverride) {
                         notifyReadingLocationDebounced();
                     }
@@ -1074,8 +1077,8 @@ var scrollToHashRaw = function (animate) {
                 win.READIUM2.locationHashOverride = win.document.body;
                 resetLocationHashOverrideInfo();
                 focusElement(win.READIUM2.locationHashOverride);
-                var x = ((0, readium_css_1.isRTL)() ? win.document.documentElement.offsetWidth - 1 : 0);
-                processXYRaw(x, 0, false);
+                var x_2 = ((0, readium_css_1.isRTL)() ? win.document.documentElement.offsetWidth - 1 : 0);
+                processXYRaw(x_2, 0, false);
                 if (!win.READIUM2.locationHashOverride) {
                     notifyReadingLocationDebounced();
                 }
@@ -1092,7 +1095,8 @@ var scrollToHashRaw = function (animate) {
         resetLocationHashOverrideInfo();
         focusElement(win.READIUM2.locationHashOverride);
         debug("processXYRaw BODY");
-        processXYRaw(0, 0, false);
+        var x = ((0, readium_css_1.isRTL)() ? win.document.documentElement.offsetWidth - 1 : 0);
+        processXYRaw(x, 0, false);
     }
     notifyReadingLocationDebounced();
 };

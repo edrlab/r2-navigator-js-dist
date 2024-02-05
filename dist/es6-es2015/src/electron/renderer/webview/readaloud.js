@@ -350,7 +350,7 @@ const focusScrollImmediate = throttle((el, doFocus, animate, domRect) => {
 }, 500);
 let _ttsQueueItemHighlightsSentence;
 let _ttsQueueItemHighlightsWord;
-function wrapHighlightWord(ttsQueueItemRef, utteranceText, charIndex, charLength, word, start, end) {
+function wrapHighlightWord(ttsQueueItemRef, utteranceText, charIndex, charLength) {
     if (_dialogState && _dialogState.ttsOverlayEnabled) {
         return;
     }
@@ -376,10 +376,6 @@ function wrapHighlightWord(ttsQueueItemRef, utteranceText, charIndex, charLength
     if (IS_DEV) {
         if (utteranceText !== txtToCheck) {
             console.log("TTS utteranceText DIFF?? ", `[[${utteranceText}]]`, `[[${txtToCheck}]]`);
-        }
-        const ttsWord = utteranceText.substr(charIndex, charLength);
-        if (ttsWord !== word) {
-            console.log("TTS word DIFF?? ", `[[${ttsWord}]]`, `[[${word}]]`, `${charIndex}--${charLength}`, `${start}--${end - start}`);
         }
     }
     let acc = 0;
@@ -637,22 +633,19 @@ function updateTTSInfo(charIndex, charLength, utteranceText) {
     const ttsQueueItemText = utteranceText ? utteranceText : (0, dom_text_utils_1.getTtsQueueItemRefText)(ttsQueueItem);
     let ttsQueueItemMarkup = (0, dom_text_utils_1.normalizeHtmlText)(ttsQueueItemText);
     if (charIndex >= 0 && utteranceText) {
-        const start = utteranceText.slice(0, charIndex + 1).search(/\S+$/);
-        const right = utteranceText.slice(charIndex).search(/\s/);
-        const word = right < 0 ? utteranceText.slice(start) : utteranceText.slice(start, right + charIndex);
-        const end = start + word.length;
+        const word = utteranceText.substr(charIndex, charLength);
         if (_dialogState && _dialogState.ttsOverlayEnabled) {
             const prefix = `<span id="${styles_1.TTS_ID_ACTIVE_WORD}">`;
             const suffix = "</span>";
-            const before = utteranceText.substr(0, start);
-            const after = utteranceText.substr(end);
+            const before = utteranceText.substr(0, charIndex);
+            const after = utteranceText.substr(charIndex + charLength);
             const l = before.length + word.length + after.length;
             ttsQueueItemMarkup = (l === utteranceText.length) ?
                 `${(0, dom_text_utils_1.normalizeHtmlText)(before)}${prefix}${(0, dom_text_utils_1.normalizeHtmlText)(word)}${suffix}${(0, dom_text_utils_1.normalizeHtmlText)(after)}` :
                 (0, dom_text_utils_1.normalizeHtmlText)(utteranceText);
         }
         else {
-            wrapHighlightWord(ttsQueueItem, utteranceText, charIndex, charLength, word, start, end);
+            wrapHighlightWord(ttsQueueItem, utteranceText, charIndex, charLength);
         }
     }
     if (!(_dialogState && _dialogState.ttsOverlayEnabled)) {

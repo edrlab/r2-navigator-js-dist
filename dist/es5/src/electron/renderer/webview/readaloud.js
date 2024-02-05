@@ -358,7 +358,7 @@ var focusScrollImmediate = throttle(function (el, doFocus, animate, domRect) {
 }, 500);
 var _ttsQueueItemHighlightsSentence;
 var _ttsQueueItemHighlightsWord;
-function wrapHighlightWord(ttsQueueItemRef, utteranceText, charIndex, charLength, word, start, end) {
+function wrapHighlightWord(ttsQueueItemRef, utteranceText, charIndex, charLength) {
     var e_1, _a;
     if (_dialogState && _dialogState.ttsOverlayEnabled) {
         return;
@@ -385,10 +385,6 @@ function wrapHighlightWord(ttsQueueItemRef, utteranceText, charIndex, charLength
     if (IS_DEV) {
         if (utteranceText !== txtToCheck) {
             console.log("TTS utteranceText DIFF?? ", "[[".concat(utteranceText, "]]"), "[[".concat(txtToCheck, "]]"));
-        }
-        var ttsWord = utteranceText.substr(charIndex, charLength);
-        if (ttsWord !== word) {
-            console.log("TTS word DIFF?? ", "[[".concat(ttsWord, "]]"), "[[".concat(word, "]]"), "".concat(charIndex, "--").concat(charLength), "".concat(start, "--").concat(end - start));
         }
     }
     var acc = 0;
@@ -667,22 +663,19 @@ function updateTTSInfo(charIndex, charLength, utteranceText) {
     var ttsQueueItemText = utteranceText ? utteranceText : (0, dom_text_utils_1.getTtsQueueItemRefText)(ttsQueueItem);
     var ttsQueueItemMarkup = (0, dom_text_utils_1.normalizeHtmlText)(ttsQueueItemText);
     if (charIndex >= 0 && utteranceText) {
-        var start = utteranceText.slice(0, charIndex + 1).search(/\S+$/);
-        var right = utteranceText.slice(charIndex).search(/\s/);
-        var word = right < 0 ? utteranceText.slice(start) : utteranceText.slice(start, right + charIndex);
-        var end = start + word.length;
+        var word = utteranceText.substr(charIndex, charLength);
         if (_dialogState && _dialogState.ttsOverlayEnabled) {
             var prefix = "<span id=\"".concat(styles_1.TTS_ID_ACTIVE_WORD, "\">");
             var suffix = "</span>";
-            var before = utteranceText.substr(0, start);
-            var after = utteranceText.substr(end);
+            var before = utteranceText.substr(0, charIndex);
+            var after = utteranceText.substr(charIndex + charLength);
             var l = before.length + word.length + after.length;
             ttsQueueItemMarkup = (l === utteranceText.length) ?
                 "".concat((0, dom_text_utils_1.normalizeHtmlText)(before)).concat(prefix).concat((0, dom_text_utils_1.normalizeHtmlText)(word)).concat(suffix).concat((0, dom_text_utils_1.normalizeHtmlText)(after)) :
                 (0, dom_text_utils_1.normalizeHtmlText)(utteranceText);
         }
         else {
-            wrapHighlightWord(ttsQueueItem, utteranceText, charIndex, charLength, word, start, end);
+            wrapHighlightWord(ttsQueueItem, utteranceText, charIndex, charLength);
         }
     }
     if (!(_dialogState && _dialogState.ttsOverlayEnabled)) {

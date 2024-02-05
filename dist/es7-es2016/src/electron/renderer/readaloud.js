@@ -40,9 +40,11 @@ function checkTtsStateRaw(wasStopped, wv) {
                 _ttsAutoPlayTimeout = undefined;
             }
             _ttsAutoPlayTimeout = win.setTimeout(() => {
-                var _a;
+                var _a, _b;
                 _ttsAutoPlayTimeout = undefined;
-                if (!_lastTTSWebView && ((_a = wv.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href)) {
+                if (((_a = wv.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href) &&
+                    (!_lastTTSWebView ||
+                        (wasStopped && _lastTTSWebViewHref === ((_b = wv.READIUM2.link) === null || _b === void 0 ? void 0 : _b.Href)))) {
                     _lastTTSWebView = wv;
                     _lastTTSWebViewHref = wv.READIUM2.link.Href;
                     playTtsOnReadingLocation(wv.READIUM2.link.Href);

@@ -411,7 +411,8 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, (_event, payload) => {
         win.READIUM2.locationHashOverride = win.document.body;
         resetLocationHashOverrideInfo();
         debug("processXYRaw BODY");
-        processXYRaw(0, 0, false);
+        const x = ((0, readium_css_1.isRTL)() ? win.document.documentElement.offsetWidth - 1 : 0);
+        processXYRaw(x, 0, false);
         notifyReadingLocationDebounced();
         return;
     }
@@ -955,7 +956,8 @@ const scrollToHashRaw = (animate) => {
                 win.READIUM2.locationHashOverride = undefined;
                 resetLocationHashOverrideInfo();
                 setTimeout(() => {
-                    processXYRaw(0, 0, false);
+                    const x = ((0, readium_css_1.isRTL)() ? win.document.documentElement.offsetWidth - 1 : 0);
+                    processXYRaw(x, 0, false);
                     showHideContentMask(false, win.READIUM2.isFixedLayout);
                     if (!win.READIUM2.locationHashOverride) {
                         notifyReadingLocationDebounced();
@@ -1042,7 +1044,8 @@ const scrollToHashRaw = (animate) => {
                     win.READIUM2.locationHashOverride = win.document.body;
                     resetLocationHashOverrideInfo();
                     focusElement(win.READIUM2.locationHashOverride);
-                    processXYRaw(0, 0, false);
+                    const x = ((0, readium_css_1.isRTL)() ? win.document.documentElement.offsetWidth - 1 : 0);
+                    processXYRaw(x, 0, false);
                     if (!win.READIUM2.locationHashOverride) {
                         notifyReadingLocationDebounced();
                     }
@@ -1080,7 +1083,8 @@ const scrollToHashRaw = (animate) => {
         resetLocationHashOverrideInfo();
         focusElement(win.READIUM2.locationHashOverride);
         debug("processXYRaw BODY");
-        processXYRaw(0, 0, false);
+        const x = ((0, readium_css_1.isRTL)() ? win.document.documentElement.offsetWidth - 1 : 0);
+        processXYRaw(x, 0, false);
     }
     notifyReadingLocationDebounced();
 };
