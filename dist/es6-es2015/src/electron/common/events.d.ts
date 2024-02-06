@@ -38,7 +38,6 @@ export interface IEventPayload_R2_EVENT_SCROLLTO {
 export declare const R2_EVENT_PAGE_TURN = "R2_EVENT_PAGE_TURN";
 export declare const R2_EVENT_PAGE_TURN_RES = "R2_EVENT_PAGE_TURN_RES";
 export interface IEventPayload_R2_EVENT_PAGE_TURN {
-    direction: string;
     go: string;
     nav?: boolean;
 }

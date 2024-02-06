@@ -335,8 +335,7 @@ function createWebViewInternal(preloadScriptPath) {
             }
         }
         else if (event.channel === events_1.R2_EVENT_PAGE_TURN_RES &&
-            event.args[0].go === "" &&
-            event.args[0].direction === "") {
+            event.args[0].go === "") {
             (0, readaloud_1.checkTtsState)(wv);
         }
         else if (!(0, highlight_1.highlightsHandleIpcMessage)(event.channel, event.args, webview) &&

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isLocatorVisible = exports.setReadingLocationSaver = exports.getCurrentReadingLocation = exports.reloadContent = exports.handleLinkLocator = exports.handleLinkUrl = exports.handleLink = exports.navLeftOrRight = exports.shiftWebview = exports.locationHandleIpcMessage = exports.setWebViewStyle = void 0;
+exports.isLocatorVisible = exports.setReadingLocationSaver = exports.getCurrentReadingLocation = exports.reloadContent = exports.handleLinkLocator = exports.handleLinkUrl = exports.handleLink = exports.navLeftOrRight = exports.navPreviousOrNext = exports.shiftWebview = exports.locationHandleIpcMessage = exports.setWebViewStyle = void 0;
 const tslib_1 = require("tslib");
 const debug_ = require("debug");
 const electron_1 = require("electron");
@@ -77,8 +77,7 @@ function locationHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
     else if (eventChannel === events_1.R2_EVENT_PAGE_TURN_RES) {
         const payload = eventArgs[0];
         if (payload.nav) {
-            const rtl = payload.direction === "LTR" && payload.go === "PREVIOUS" || payload.direction === "RTL" && payload.go === "NEXT";
-            navLeftOrRight(!rtl);
+            navPreviousOrNext(payload.go === "PREVIOUS");
             return true;
         }
         const publication = win.READIUM2.publication;
@@ -86,7 +85,7 @@ function locationHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
         if (!publication) {
             return true;
         }
-        const doNothing = payload.go === "" && payload.direction === "";
+        const doNothing = payload.go === "";
         if (doNothing) {
             return true;
         }
@@ -183,7 +182,7 @@ function shiftWebview(webview, offset, backgroundColor) {
     }
 }
 exports.shiftWebview = shiftWebview;
-function navLeftOrRight(left, spineNav, ignorePageSpreadHandling) {
+function navPreviousOrNext(goPREVIOUS, spineNav, ignorePageSpreadHandling) {
     const publication = win.READIUM2.publication;
     const publicationURL = win.READIUM2.publicationURL;
     if (!publication || !publicationURL) {
@@ -192,8 +191,6 @@ function navLeftOrRight(left, spineNav, ignorePageSpreadHandling) {
     if (!publication.Spine) {
         return undefined;
     }
-    const rtl = (0, readium_css_1.isRTL)();
-    const goPREVIOUS = left ? !rtl : rtl;
     const loc = _lastSavedReadingLocation;
     let href = loc ? loc.locator.href : undefined;
     if (!ignorePageSpreadHandling) {
@@ -224,13 +221,7 @@ function navLeftOrRight(left, spineNav, ignorePageSpreadHandling) {
         if (!href) {
             return undefined;
         }
-        if (IS_DEV) {
-            const rtl_ = loc ? (loc.docInfo && loc.docInfo.isRightToLeft) : rtl;
-            if (rtl_ !== rtl) {
-                debug(`RTL differ?! METADATA ${rtl} vs. DOCUMENT ${rtl_}`);
-            }
-        }
-        const offset = (left ? -1 : 1) * (rtl ? -1 : 1);
+        const offset = goPREVIOUS ? -1 : 1;
         const currentSpineIndex = publication.Spine.findIndex((link) => {
             return link.Href === href;
         });
@@ -256,7 +247,6 @@ function navLeftOrRight(left, spineNav, ignorePageSpreadHandling) {
     else {
         (0, media_overlays_1.mediaOverlaysInterrupt)();
         const payload = {
-            direction: rtl ? "RTL" : "LTR",
             go: goPREVIOUS ? "PREVIOUS" : "NEXT",
         };
         const activeWebView = win.READIUM2.getFirstOrSecondWebView();
@@ -270,6 +260,17 @@ function navLeftOrRight(left, spineNav, ignorePageSpreadHandling) {
         }
     }
     return undefined;
+}
+exports.navPreviousOrNext = navPreviousOrNext;
+function navLeftOrRight(left, spineNav, ignorePageSpreadHandling) {
+    var _a;
+    const loc = _lastSavedReadingLocation;
+    const rtl = (0, readium_css_1.isRTL_PackageMeta)() ||
+        (typeof ((_a = loc === null || loc === void 0 ? void 0 : loc.docInfo) === null || _a === void 0 ? void 0 : _a.isRightToLeft) !== "undefined" ?
+            loc.docInfo.isRightToLeft :
+            (0, readium_css_1.isRTL_PackageMeta)());
+    const goPREVIOUS = left ? !rtl : rtl;
+    return navPreviousOrNext(goPREVIOUS, spineNav, ignorePageSpreadHandling);
 }
 exports.navLeftOrRight = navLeftOrRight;
 function handleLink(href, previous, useGoto, rcss) {
@@ -499,7 +500,7 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
     if (publication.Spine &&
         linkIndex >= 0 &&
         (0, readium_css_1.isFixedLayout)(pubLink)) {
-        const rtl = (0, readium_css_1.isRTL)();
+        const rtl = (0, readium_css_1.isRTL_PackageMeta)();
         const publicationSpreadNone = ((_b = (_a = publication.Metadata) === null || _a === void 0 ? void 0 : _a.Rendition) === null || _b === void 0 ? void 0 : _b.Spread) === metadata_properties_1.SpreadEnum.None;
         const slotOfFirstPageInSpread = rtl ? metadata_properties_1.PageEnum.Right : metadata_properties_1.PageEnum.Left;
         const slotOfSecondPageInSpread = slotOfFirstPageInSpread === metadata_properties_1.PageEnum.Right ? metadata_properties_1.PageEnum.Left : metadata_properties_1.PageEnum.Right;

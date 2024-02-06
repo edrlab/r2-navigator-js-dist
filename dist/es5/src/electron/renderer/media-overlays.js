@@ -11,7 +11,6 @@ var audiobook_1 = require("../common/audiobook");
 var events_1 = require("../common/events");
 Object.defineProperty(exports, "MediaOverlaysStateEnum", { enumerable: true, get: function () { return events_1.MediaOverlaysStateEnum; } });
 var location_2 = require("./location");
-var readium_css_1 = require("./readium-css");
 var debug = debug_("r2:navigator#electron/renderer/media-overlays");
 var IS_DEV = process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev";
 var win = global.window;
@@ -870,8 +869,7 @@ function playMediaOverlaysForLink(link, textFragmentIDChain, isInteract) {
                         _timeoutAutoNext = win.setTimeout(function () {
                             _timeoutAutoNext = undefined;
                             mediaOverlaysStop(true);
-                            var rtl = (0, readium_css_1.isRTL)();
-                            (0, location_2.navLeftOrRight)(rtl, true, true);
+                            (0, location_2.navPreviousOrNext)(false, true, true);
                         }, 600);
                         mediaOverlaysStateSet(events_1.MediaOverlaysStateEnum.PLAYING);
                         return [2];
@@ -1292,8 +1290,7 @@ function mediaOverlaysPrevious() {
                 debug("mediaOverlaysPrevious() - navLeftOrRight()");
             }
             mediaOverlaysStop(true);
-            var rtl = (0, readium_css_1.isRTL)();
-            (0, location_2.navLeftOrRight)(!rtl, true, true);
+            (0, location_2.navPreviousOrNext)(true, true, true);
         }
         else {
             var switchDoc = false;
@@ -1341,8 +1338,7 @@ function mediaOverlaysPrevious() {
             debug("mediaOverlaysPrevious() - navLeftOrRight() 2");
         }
         mediaOverlaysStop(true);
-        var rtl = (0, readium_css_1.isRTL)();
-        (0, location_2.navLeftOrRight)(!rtl, true, true);
+        (0, location_2.navPreviousOrNext)(true, true, true);
     }
 }
 exports.mediaOverlaysPrevious = mediaOverlaysPrevious;
@@ -1362,8 +1358,7 @@ function mediaOverlaysNext(escape) {
                 debug("mediaOverlaysNext() - navLeftOrRight()");
             }
             mediaOverlaysStop(true);
-            var rtl = (0, readium_css_1.isRTL)();
-            (0, location_2.navLeftOrRight)(rtl, true, true);
+            (0, location_2.navPreviousOrNext)(false, true, true);
         }
         else {
             var switchDoc = false;
@@ -1411,8 +1406,7 @@ function mediaOverlaysNext(escape) {
             debug("mediaOverlaysNext() - navLeftOrRight() 2");
         }
         mediaOverlaysStop(true);
-        var rtl = (0, readium_css_1.isRTL)();
-        (0, location_2.navLeftOrRight)(rtl, true, true);
+        (0, location_2.navPreviousOrNext)(false, true, true);
     }
 }
 exports.mediaOverlaysNext = mediaOverlaysNext;

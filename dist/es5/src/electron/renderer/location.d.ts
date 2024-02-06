@@ -11,6 +11,7 @@ import { IReadiumElectronWebview } from "./webview/state";
 export declare function setWebViewStyle(wv: IReadiumElectronWebview, wvSlot: WebViewSlotEnum, fxl?: IwidthHeight | null): void;
 export declare function locationHandleIpcMessage(eventChannel: string, eventArgs: any[], eventCurrentTarget: IReadiumElectronWebview): boolean;
 export declare function shiftWebview(webview: IReadiumElectronWebview, offset: number, backgroundColor: string | undefined): void;
+export declare function navPreviousOrNext(goPREVIOUS: boolean, spineNav?: boolean, ignorePageSpreadHandling?: boolean): Link | undefined;
 export declare function navLeftOrRight(left: boolean, spineNav?: boolean, ignorePageSpreadHandling?: boolean): Link | undefined;
 export declare function handleLink(href: string, previous: boolean | undefined, useGoto: boolean, rcss?: IEventPayload_R2_EVENT_READIUMCSS): void;
 export declare function handleLinkUrl(href: string, rcss?: IEventPayload_R2_EVENT_READIUMCSS): void;

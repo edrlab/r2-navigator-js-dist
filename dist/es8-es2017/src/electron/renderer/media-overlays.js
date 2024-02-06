@@ -10,7 +10,6 @@ const audiobook_1 = require("../common/audiobook");
 const events_1 = require("../common/events");
 Object.defineProperty(exports, "MediaOverlaysStateEnum", { enumerable: true, get: function () { return events_1.MediaOverlaysStateEnum; } });
 const location_2 = require("./location");
-const readium_css_1 = require("./readium-css");
 const debug = debug_("r2:navigator#electron/renderer/media-overlays");
 const IS_DEV = process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev";
 const win = global.window;
@@ -728,8 +727,7 @@ async function playMediaOverlaysForLink(link, textFragmentIDChain, isInteract) {
         _timeoutAutoNext = win.setTimeout(() => {
             _timeoutAutoNext = undefined;
             mediaOverlaysStop(true);
-            const rtl = (0, readium_css_1.isRTL)();
-            (0, location_2.navLeftOrRight)(rtl, true, true);
+            (0, location_2.navPreviousOrNext)(false, true, true);
         }, 600);
         mediaOverlaysStateSet(events_1.MediaOverlaysStateEnum.PLAYING);
         return;
@@ -1059,8 +1057,7 @@ function mediaOverlaysPrevious() {
                 debug("mediaOverlaysPrevious() - navLeftOrRight()");
             }
             mediaOverlaysStop(true);
-            const rtl = (0, readium_css_1.isRTL)();
-            (0, location_2.navLeftOrRight)(!rtl, true, true);
+            (0, location_2.navPreviousOrNext)(true, true, true);
         }
         else {
             let switchDoc = false;
@@ -1101,8 +1098,7 @@ function mediaOverlaysPrevious() {
             debug("mediaOverlaysPrevious() - navLeftOrRight() 2");
         }
         mediaOverlaysStop(true);
-        const rtl = (0, readium_css_1.isRTL)();
-        (0, location_2.navLeftOrRight)(!rtl, true, true);
+        (0, location_2.navPreviousOrNext)(true, true, true);
     }
 }
 exports.mediaOverlaysPrevious = mediaOverlaysPrevious;
@@ -1121,8 +1117,7 @@ function mediaOverlaysNext(escape) {
                 debug("mediaOverlaysNext() - navLeftOrRight()");
             }
             mediaOverlaysStop(true);
-            const rtl = (0, readium_css_1.isRTL)();
-            (0, location_2.navLeftOrRight)(rtl, true, true);
+            (0, location_2.navPreviousOrNext)(false, true, true);
         }
         else {
             let switchDoc = false;
@@ -1163,8 +1158,7 @@ function mediaOverlaysNext(escape) {
             debug("mediaOverlaysNext() - navLeftOrRight() 2");
         }
         mediaOverlaysStop(true);
-        const rtl = (0, readium_css_1.isRTL)();
-        (0, location_2.navLeftOrRight)(rtl, true, true);
+        (0, location_2.navPreviousOrNext)(false, true, true);
     }
 }
 exports.mediaOverlaysNext = mediaOverlaysNext;

@@ -152,18 +152,17 @@ win.document.addEventListener("touchend", (event) => {
         touchstartEvent = undefined;
         return;
     }
+    const rtl = (0, readium_css_1.isRTL)();
     if (deltaX < 0) {
         const payload = {
-            direction: "LTR",
-            go: "NEXT",
+            go: rtl ? "PREVIOUS" : "NEXT",
             nav: true,
         };
         electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, payload);
     }
     else {
         const payload = {
-            direction: "LTR",
-            go: "PREVIOUS",
+            go: rtl ? "NEXT" : "PREVIOUS",
             nav: true,
         };
         electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, payload);
@@ -633,7 +632,6 @@ function onEventPageTurn(payload) {
                     }, targetProp, animationTime, targetObj, scrollOffset, win.requestAnimationFrame, easings_1.easings.easeInOutQuad);
                 }
                 payload.go = "";
-                payload.direction = "";
                 electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, payload);
                 return;
             }
@@ -658,7 +656,6 @@ function onEventPageTurn(payload) {
                     }, targetProp, animationTime, targetObj, newVal, win.requestAnimationFrame, easings_1.easings.easeInOutQuad);
                 }
                 payload.go = "";
-                payload.direction = "";
                 electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, payload);
                 return;
             }
@@ -706,7 +703,6 @@ function onEventPageTurn(payload) {
                     }, targetProp, animationTime, targetObj, scrollOffset, win.requestAnimationFrame, easings_1.easings.easeInOutQuad);
                 }
                 payload.go = "";
-                payload.direction = "";
                 electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, payload);
                 return;
             }
@@ -731,7 +727,6 @@ function onEventPageTurn(payload) {
                     }, targetProp, animationTime, targetObj, newVal, win.requestAnimationFrame, easings_1.easings.easeInOutQuad);
                 }
                 payload.go = "";
-                payload.direction = "";
                 electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, payload);
                 return;
             }
@@ -1407,6 +1402,9 @@ function loaded(forced) {
             if (ev.target && elementCapturesKeyboardArrowKeys(ev.target)) {
                 ev.target.r2_leftrightKeyboardTimeStamp = new Date();
             }
+            else {
+                ev.preventDefault();
+            }
         }
     }, true);
     win.document.documentElement.addEventListener("mousedown", (_ev) => {
@@ -1819,7 +1817,6 @@ function loaded(forced) {
                 if (vwm && (scrollElementOffsetAbs >= maxScrollShiftTolerated) ||
                     !vwm && (scrollElementOffsetAbs >= maxScrollShiftTolerated)) {
                     const payload = {
-                        direction: "LTR",
                         go: "NEXT",
                     };
                     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, payload);
@@ -1830,7 +1827,6 @@ function loaded(forced) {
                 if (vwm && (Math.abs(scrollElement.scrollLeft) >= maxScrollShiftTolerated) ||
                     !vwm && (Math.abs(scrollElement.scrollTop) >= maxScrollShiftTolerated)) {
                     const payload = {
-                        direction: "LTR",
                         go: "NEXT",
                     };
                     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, payload);
@@ -1861,7 +1857,6 @@ function loaded(forced) {
                 if (vwm && (scrollElementOffsetAbs <= 0) ||
                     !vwm && (scrollElementOffsetAbs <= 0)) {
                     const payload = {
-                        direction: "LTR",
                         go: "PREVIOUS",
                     };
                     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, payload);
@@ -1872,7 +1867,6 @@ function loaded(forced) {
                 if (vwm && (Math.abs(scrollElement.scrollLeft) <= 0) ||
                     !vwm && (Math.abs(scrollElement.scrollTop) <= 0)) {
                     const payload = {
-                        direction: "LTR",
                         go: "PREVIOUS",
                     };
                     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, payload);

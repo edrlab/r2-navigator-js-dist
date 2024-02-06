@@ -125,14 +125,12 @@ function setupAudioBook(_docTitle, audioPlaybackRate) {
     });
     previousElement.addEventListener("click", () => {
         const payload = {
-            direction: "LTR",
             go: "PREVIOUS",
         };
         electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, payload);
     });
     nextElement.addEventListener("click", () => {
         const payload = {
-            direction: "LTR",
             go: "NEXT",
         };
         electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, payload);
@@ -152,7 +150,6 @@ function setupAudioBook(_docTitle, audioPlaybackRate) {
             else {
                 if (audioElement.currentTime >= audioElement.duration - 0.5) {
                     const payload = {
-                        direction: "LTR",
                         go: "NEXT",
                     };
                     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, payload);
@@ -267,7 +264,6 @@ function setupAudioBook(_docTitle, audioPlaybackRate) {
         playPauseElement.classList.remove("pause");
         notifyPlaybackLocation();
         const payload = {
-            direction: "LTR",
             go: "NEXT",
         };
         electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, payload);

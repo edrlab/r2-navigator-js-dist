@@ -5,7 +5,6 @@ var tslib_1 = require("tslib");
 var debounce = require("debounce");
 var events_1 = require("../common/events");
 var location_1 = require("./location");
-var readium_css_1 = require("./readium-css");
 var win = global.window;
 var _lastTTSWebView;
 var _lastTTSWebViewHref;
@@ -121,7 +120,7 @@ function ttsHandleIpcMessage(eventChannel, _eventArgs, eventCurrentTarget) {
         }
     }
     else if (eventChannel === events_1.R2_EVENT_TTS_DOC_END) {
-        (0, location_1.navLeftOrRight)((0, readium_css_1.isRTL)(), true, true);
+        (0, location_1.navPreviousOrNext)(false, true, true);
     }
     else {
         return false;

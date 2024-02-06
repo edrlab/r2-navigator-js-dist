@@ -5,6 +5,8 @@ var debounce = require("debounce");
 var readium_css_inject_1 = require("../../common/readium-css-inject");
 var styles_1 = require("../../common/styles");
 var styles_2 = require("../../common/styles");
+var styles_3 = require("../../common/styles");
+var highlight_1 = require("./highlight");
 var win = global.window;
 var IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 exports.clearImageZoomOutlineDebounced = debounce(function () {
@@ -142,7 +144,11 @@ function computeVerticalRTL() {
     var vertical = (0, readium_css_inject_1.isDocVertical)(win.document);
     var htmlStyle = win.getComputedStyle(win.document.documentElement);
     if (htmlStyle) {
-        var prop = htmlStyle.getPropertyValue("writing-mode");
+        var prop = htmlStyle.getPropertyValue("direction");
+        if (prop && prop.indexOf("rtl") >= 0) {
+            rtl = true;
+        }
+        prop = htmlStyle.getPropertyValue("writing-mode");
         if (!prop) {
             prop = htmlStyle.getPropertyValue("-epub-writing-mode");
         }
@@ -152,32 +158,54 @@ function computeVerticalRTL() {
         if (prop && prop.indexOf("-rl") > 0) {
             rtl = true;
         }
-        if (!rtl) {
-            prop = htmlStyle.getPropertyValue("direction");
+    }
+    if (win.document.body) {
+        var bodyStyle = win.getComputedStyle(win.document.body);
+        if (bodyStyle) {
+            var prop = bodyStyle.getPropertyValue("direction");
             if (prop && prop.indexOf("rtl") >= 0) {
                 rtl = true;
             }
+            prop = bodyStyle.getPropertyValue("writing-mode");
+            if (!prop) {
+                prop = bodyStyle.getPropertyValue("-epub-writing-mode");
+            }
+            if (prop && prop.indexOf("vertical") >= 0) {
+                vertical = true;
+            }
+            if (prop && prop.indexOf("-rl") > 0) {
+                rtl = true;
+            }
         }
-    }
-    if ((!vertical || !rtl) && win.document.body) {
-        var bodyStyle = win.getComputedStyle(win.document.body);
-        if (bodyStyle) {
-            var prop = void 0;
-            if (!vertical) {
-                prop = bodyStyle.getPropertyValue("writing-mode");
+        var singleChild = void 0;
+        var childEl = win.document.body.firstElementChild;
+        while (childEl) {
+            if (singleChild) {
+                singleChild = undefined;
+                break;
+            }
+            var id = childEl.id || childEl.getAttribute("id");
+            if (id === styles_3.SKIP_LINK_ID || id === highlight_1.ID_HIGHLIGHTS_CONTAINER) {
+                continue;
+            }
+            singleChild = childEl;
+            childEl = childEl.nextElementSibling;
+        }
+        if (singleChild) {
+            var singleChildStyle = win.getComputedStyle(singleChild);
+            if (singleChildStyle) {
+                var prop = singleChildStyle.getPropertyValue("direction");
+                if (prop && prop.indexOf("rtl") >= 0) {
+                    rtl = true;
+                }
+                prop = singleChildStyle.getPropertyValue("writing-mode");
                 if (!prop) {
-                    prop = bodyStyle.getPropertyValue("-epub-writing-mode");
+                    prop = singleChildStyle.getPropertyValue("-epub-writing-mode");
                 }
                 if (prop && prop.indexOf("vertical") >= 0) {
                     vertical = true;
                 }
                 if (prop && prop.indexOf("-rl") > 0) {
-                    rtl = true;
-                }
-            }
-            if (!rtl) {
-                prop = bodyStyle.getPropertyValue("direction");
-                if (prop && prop.indexOf("rtl") >= 0) {
                     rtl = true;
                 }
             }

@@ -4,7 +4,6 @@ exports.ttsSentenceDetectionEnable = exports.ttsSkippabilityEnable = exports.tts
 const debounce = require("debounce");
 const events_1 = require("../common/events");
 const location_1 = require("./location");
-const readium_css_1 = require("./readium-css");
 const win = global.window;
 let _lastTTSWebView;
 let _lastTTSWebViewHref;
@@ -120,7 +119,7 @@ function ttsHandleIpcMessage(eventChannel, _eventArgs, eventCurrentTarget) {
         }
     }
     else if (eventChannel === events_1.R2_EVENT_TTS_DOC_END) {
-        (0, location_1.navLeftOrRight)((0, readium_css_1.isRTL)(), true, true);
+        (0, location_1.navPreviousOrNext)(false, true, true);
     }
     else {
         return false;
