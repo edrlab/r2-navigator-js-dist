@@ -271,7 +271,7 @@ if (IS_DEV) {
         }
     });
 }
-function computeVisibility_(element, domRect) {
+function isVisible(element, domRect) {
     if (win.READIUM2.isFixedLayout) {
         return true;
     }
@@ -335,7 +335,7 @@ function computeVisibility_(element, domRect) {
     }
     return false;
 }
-function computeVisibility(location) {
+function isVisible_(location) {
     let visible = false;
     if (win.READIUM2.isAudio) {
         visible = true;
@@ -358,13 +358,13 @@ function computeVisibility(location) {
             debug(err);
         }
         if (selected) {
-            visible = computeVisibility_(selected, undefined);
+            visible = isVisible(selected, undefined);
         }
     }
     return visible;
 }
 electron_1.ipcRenderer.on(events_1.R2_EVENT_LOCATOR_VISIBLE, (_event, payload) => {
-    payload.visible = computeVisibility(payload.location);
+    payload.visible = isVisible_(payload.location);
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_LOCATOR_VISIBLE, payload);
 });
 electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, (_event, payload) => {
@@ -1123,8 +1123,7 @@ function showHideContentMask(doHide, isFixedLayout) {
     }
 }
 function focusScrollRaw(el, doFocus, animate, domRect) {
-    const visible = win.READIUM2.isFixedLayout || (0, readium_css_inject_1.isPaginated)(win.document) || computeVisibility_(el, domRect);
-    if (!visible) {
+    if (!isVisible(el, domRect)) {
         scrollElementIntoView(el, doFocus, animate, domRect);
     }
     if (win.READIUM2.locationHashOverride === el) {
@@ -1336,7 +1335,7 @@ const onScrollRaw = () => {
         !win.document.documentElement.classList.contains(styles_1.TTS_CLASS_PLAYING) &&
         !win.document.documentElement.classList.contains(styles_1.TTS_CLASS_PAUSED)) {
         const el = win.READIUM2.locationHashOverride;
-        if (el && computeVisibility_(el, undefined)) {
+        if (el && isVisible(el, undefined)) {
             debug("onScrollRaw VISIBLE SKIP");
             return;
         }
@@ -1493,6 +1492,8 @@ function loaded(forced) {
         debug(`!AUX __CLICK: ${ev.button} ...`);
         if (win.document.documentElement.classList.contains(styles_1.R2_MO_CLASS_PAUSED) || win.document.documentElement.classList.contains(styles_1.R2_MO_CLASS_PLAYING)) {
             debug("!AUX __CLICK skip because MO playing/paused");
+            ev.preventDefault();
+            ev.stopPropagation();
             return;
         }
         if (!(0, popup_dialog_1.isPopupDialogOpen)(win.document)) {
@@ -1501,6 +1502,8 @@ function loaded(forced) {
             const domPointData = domDataFromPoint(x, y);
             if (domPointData.element && win.READIUM2.ttsClickEnabled) {
                 debug("!AUX __CLICK domPointData.element && win.READIUM2.ttsClickEnabled");
+                ev.preventDefault();
+                ev.stopPropagation();
                 if (ev.altKey) {
                     (0, readaloud_1.ttsPlay)(win.READIUM2.ttsPlaybackRate, win.READIUM2.ttsVoice, focusScrollRaw, domPointData.element, undefined, undefined, -1, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
                     return;
@@ -1511,6 +1514,7 @@ function loaded(forced) {
         }
         if (win.READIUM2.ttsClickEnabled || win.document.documentElement.classList.contains(styles_1.TTS_CLASS_PAUSED) || win.document.documentElement.classList.contains(styles_1.TTS_CLASS_PLAYING)) {
             debug("!AUX __CLICK skip because TTS playing/paused");
+            ev.preventDefault();
             return;
         }
         let linkElement;
@@ -2025,8 +2029,7 @@ function findFirstVisibleElement(rootElement) {
     }
     if (rootElement !== win.document.body &&
         rootElement !== win.document.documentElement) {
-        const visible = computeVisibility_(rootElement, undefined);
-        if (visible) {
+        if (isVisible(rootElement, undefined)) {
             return rootElement;
         }
     }
@@ -2090,7 +2093,8 @@ const processXYRaw = (x, y, reverse, userInteract) => {
             domPointData.element = win.document.body;
         }
     }
-    else if (!userInteract && domPointData.element && !computeVisibility_(domPointData.element, undefined)) {
+    else if (!userInteract &&
+        domPointData.element && !isVisible(domPointData.element, undefined)) {
         let next = domPointData.element;
         let found;
         while (next) {
@@ -2133,10 +2137,7 @@ const processXYRaw = (x, y, reverse, userInteract) => {
             win.READIUM2.locationHashOverride = domPointData.element;
         }
         else {
-            const visible = win.READIUM2.isFixedLayout ||
-                win.READIUM2.locationHashOverride === win.document.body ||
-                computeVisibility_(win.READIUM2.locationHashOverride, undefined);
-            if (!visible) {
+            if (!isVisible(win.READIUM2.locationHashOverride, undefined)) {
                 debug(".hashElement = 6");
                 win.READIUM2.hashElement = userInteract ? domPointData.element : win.READIUM2.hashElement;
                 win.READIUM2.locationHashOverride = domPointData.element;
@@ -2214,8 +2215,7 @@ const computeProgressionData = () => {
         const element = win.READIUM2.locationHashOverride;
         let offset = 0;
         if (isPaged) {
-            const visible = computeVisibility_(element, undefined);
-            if (visible) {
+            if (isVisible(element, undefined)) {
                 const curCol = extraShift ? (currentColumn - 1) : currentColumn;
                 const columnDimension = (0, readium_css_1.calculateColumnDimension)();
                 if (vwm) {
@@ -2807,8 +2807,7 @@ if (!win.READIUM2.isAudio) {
                 debug(".hashElement = 7");
                 win.READIUM2.hashElement = targetEl;
                 win.READIUM2.locationHashOverride = targetEl;
-                const visible = win.READIUM2.isFixedLayout || (0, readium_css_inject_1.isPaginated)(win.document) || computeVisibility_(targetEl, undefined);
-                if (!visible) {
+                if (!isVisible(targetEl, undefined)) {
                     scrollElementIntoView(targetEl, false, true, undefined);
                 }
                 scrollToHashDebounced.clear();
