@@ -333,7 +333,7 @@ function throttle(fn, time) {
                 if (lastCalled) {
                     const argos = lastCalled;
                     lastCalled = undefined;
-                    func(argos);
+                    func(...argos);
                 }
             }, time);
         }

@@ -341,7 +341,7 @@ function throttle(fn, time) {
                 if (lastCalled) {
                     var argos = lastCalled;
                     lastCalled = undefined;
-                    func(argos);
+                    func.apply(void 0, tslib_1.__spreadArray([], tslib_1.__read(argos), false));
                 }
             }, time);
         }
