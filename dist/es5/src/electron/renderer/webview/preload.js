@@ -440,7 +440,14 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, function (_event, payload)
         delayScrollIntoView = true;
     }
     else {
+        var scrollElement_1 = (0, readium_css_1.getScrollingElement)(win.document);
+        var scrollTop_1 = scrollElement_1.scrollTop;
+        var scrollLeft_1 = scrollElement_1.scrollLeft;
         win.location.href = "#";
+        setTimeout(function () {
+            scrollElement_1.scrollTop = scrollTop_1;
+            scrollElement_1.scrollLeft = scrollLeft_1;
+        }, 0);
         win.READIUM2.hashElement = null;
     }
     win.READIUM2.locationHashOverride = undefined;
@@ -843,55 +850,60 @@ function scrollElementIntoView(element, doFocus, animate, domRect) {
         else {
             var scrollElement = (0, readium_css_1.getScrollingElement)(win.document);
             var rect = domRect || element.getBoundingClientRect();
-            var vwm = (0, readium_css_1.isVerticalWritingMode)();
-            var scrollTopMax = vwm ?
-                ((0, readium_css_1.isRTL)() ? -1 : 1) * (scrollElement.scrollWidth - win.document.documentElement.clientWidth) :
-                scrollElement.scrollHeight - win.document.documentElement.clientHeight;
-            var offset = vwm ?
-                scrollElement.scrollLeft + (rect.left - (win.document.documentElement.clientWidth / 2)) :
-                scrollElement.scrollTop + (rect.top - (win.document.documentElement.clientHeight / 2));
-            if (vwm && (0, readium_css_1.isRTL)()) {
-                if (offset < scrollTopMax) {
-                    offset = scrollTopMax;
-                }
-                else if (offset > 0) {
-                    offset = 0;
-                }
+            if (isVisible(element, domRect)) {
+                console.log("scrollElementIntoView already visible");
             }
             else {
-                if (offset > scrollTopMax) {
-                    offset = scrollTopMax;
-                }
-                else if (offset < 0) {
-                    offset = 0;
-                }
-            }
-            var diff = Math.abs((vwm ? scrollElement.scrollLeft : scrollElement.scrollTop) - offset);
-            if (diff < 10) {
-                return;
-            }
-            var targetProp = vwm ? "scrollLeft" : "scrollTop";
-            if (animate) {
-                var reduceMotion = win.document.documentElement.classList.contains(styles_1.ROOT_CLASS_REDUCE_MOTION);
-                if (_lastAnimState2 && _lastAnimState2.animating) {
-                    win.cancelAnimationFrame(_lastAnimState2.id);
-                    _lastAnimState2.object[_lastAnimState2.property] = _lastAnimState2.destVal;
-                }
-                var targetObj = scrollElement;
-                if (reduceMotion) {
-                    _lastAnimState2 = undefined;
-                    targetObj[targetProp] = offset;
+                var vwm = (0, readium_css_1.isVerticalWritingMode)();
+                var scrollTopMax = vwm ?
+                    ((0, readium_css_1.isRTL)() ? -1 : 1) * (scrollElement.scrollWidth - win.document.documentElement.clientWidth) :
+                    scrollElement.scrollHeight - win.document.documentElement.clientHeight;
+                var offset = vwm ?
+                    scrollElement.scrollLeft + (rect.left - (win.document.documentElement.clientWidth / 2)) :
+                    scrollElement.scrollTop + (rect.top - (win.document.documentElement.clientHeight / 2));
+                if (vwm && (0, readium_css_1.isRTL)()) {
+                    if (offset < scrollTopMax) {
+                        offset = scrollTopMax;
+                    }
+                    else if (offset > 0) {
+                        offset = 0;
+                    }
                 }
                 else {
-                    _ignoreScrollEvent = true;
-                    _lastAnimState2 = (0, animateProperty_1.animateProperty)(win.cancelAnimationFrame, function (_cancelled) {
-                        _ignoreScrollEvent = false;
-                        onScrollDebounced();
-                    }, targetProp, animationTime2, targetObj, offset, win.requestAnimationFrame, easings_1.easings.easeInOutQuad);
+                    if (offset > scrollTopMax) {
+                        offset = scrollTopMax;
+                    }
+                    else if (offset < 0) {
+                        offset = 0;
+                    }
                 }
-            }
-            else {
-                scrollElement[targetProp] = offset;
+                var diff = Math.abs((vwm ? scrollElement.scrollLeft : scrollElement.scrollTop) - offset);
+                if (diff < 10) {
+                    return;
+                }
+                var targetProp = vwm ? "scrollLeft" : "scrollTop";
+                if (animate) {
+                    var reduceMotion = win.document.documentElement.classList.contains(styles_1.ROOT_CLASS_REDUCE_MOTION);
+                    if (_lastAnimState2 && _lastAnimState2.animating) {
+                        win.cancelAnimationFrame(_lastAnimState2.id);
+                        _lastAnimState2.object[_lastAnimState2.property] = _lastAnimState2.destVal;
+                    }
+                    var targetObj = scrollElement;
+                    if (reduceMotion) {
+                        _lastAnimState2 = undefined;
+                        targetObj[targetProp] = offset;
+                    }
+                    else {
+                        _ignoreScrollEvent = true;
+                        _lastAnimState2 = (0, animateProperty_1.animateProperty)(win.cancelAnimationFrame, function (_cancelled) {
+                            _ignoreScrollEvent = false;
+                            onScrollDebounced();
+                        }, targetProp, animationTime2, targetObj, offset, win.requestAnimationFrame, easings_1.easings.easeInOutQuad);
+                    }
+                }
+                else {
+                    scrollElement[targetProp] = offset;
+                }
             }
         }
     }, doFocus ? 100 : 0);
@@ -2414,9 +2426,9 @@ var computeProgressionData = function () {
     };
 };
 exports.computeProgressionData = computeProgressionData;
-var _blacklistIdClassForCssSelectors = [styles_1.LINK_TARGET_CLASS, styles_1.CSS_CLASS_NO_FOCUS_OUTLINE, styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, highlight_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA, styles_1.TTS_ID_SPEAKING_DOC_ELEMENT, styles_1.ROOT_CLASS_KEYBOARD_INTERACT, styles_1.ROOT_CLASS_INVISIBLE_MASK, styles_1.ROOT_CLASS_INVISIBLE_MASK_REMOVED, styles_1.CLASS_PAGINATED, styles_1.ROOT_CLASS_NO_FOOTNOTES];
+var _blacklistIdClassForCssSelectors = [styles_1.LINK_TARGET_CLASS, styles_1.CSS_CLASS_NO_FOCUS_OUTLINE, styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, highlight_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA_MARGIN, styles_1.TTS_ID_SPEAKING_DOC_ELEMENT, styles_1.ROOT_CLASS_KEYBOARD_INTERACT, styles_1.ROOT_CLASS_INVISIBLE_MASK, styles_1.ROOT_CLASS_INVISIBLE_MASK_REMOVED, styles_1.CLASS_PAGINATED, styles_1.ROOT_CLASS_NO_FOOTNOTES];
 var _blacklistIdClassForCssSelectorsMathJax = ["mathjax", "ctxt", "mjx"];
-var _blacklistIdClassForCFI = [styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, highlight_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA];
+var _blacklistIdClassForCFI = [styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, highlight_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA_MARGIN];
 var _blacklistIdClassForCFIMathJax = ["mathjax", "ctxt", "mjx"];
 var computeCFI = function (node) {
     if (node.nodeType !== Node.ELEMENT_NODE) {

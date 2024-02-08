@@ -850,17 +850,85 @@ We cannot completely disable "scroll" event (prevent default) because we need to
     /* see ensureHighlightsContainer() */
     position: relative !important;
     /* display: block; */
+
+    /* background-color: yellow !important; */
 }
 
 :root[style]:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}):not(.${exports.CLASS_VWM}),
 :root:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}):not(.${exports.CLASS_VWM}) {
-    height: 100vh !important;
+    /* overflow-x: clip !important; */
+
+    padding: 0 !important;
+    margin: 0 !important;
+
+    height: inherit !important;
+    min-height: 0 !important;
+    max-height: none !important;
 }
+:root[style]:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}):not(.${exports.CLASS_VWM}) > body,
+:root:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}):not(.${exports.CLASS_VWM}) > body {
+    margin: 0 !important;
+    margin: 0 auto !important;
+    padding: 20px !important;
+    --RS__maxLineLength: 60em !important;
+
+    height: inherit !important;
+    min-height: 0 !important;
+    max-height: none !important;
+}
+:root[style]:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}):not(.${exports.CLASS_VWM}) div,
+:root:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}):not(.${exports.CLASS_VWM}) div {
+    max-width: none !important;
+    max-height: none !important;
+}
+
+:root[style]:not(.${exports.ROOT_CLASS_FIXED_LAYOUT}):not(.${exports.CLASS_VWM}) > body,
+:root:not(.${exports.ROOT_CLASS_FIXED_LAYOUT}):not(.${exports.CLASS_VWM}) > body {
+    min-height: inherit !important;
+}
+
 :root[style]:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}).${exports.CLASS_VWM},
 :root:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}).${exports.CLASS_VWM} {
     overflow-y: clip !important;
-    width: 100vw !important;
+
+    padding: 0 !important;
+    margin: 0 !important;
+
+    width: inherit !important;
+    min-width: 0 !important;
+    max-width: none !important;
+
+    height: inherit !important;
+    min-height: 0 !important;
+    max-height: none !important;
 }
+:root[style]:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}).${exports.CLASS_VWM} > body,
+:root:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}).${exports.CLASS_VWM} > body {
+    margin: 0 !important;
+    padding: 20px !important;
+    /* padding-bottom: 40px !important; */
+
+    --RS__maxLineLength: 1000em !important;
+
+    width: inherit !important;
+    min-width: 0 !important;
+    max-width: none !important;
+
+    height: inherit !important;
+    min-height: 0 !important;
+    max-height: none !important;
+}
+:root[style]:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}).${exports.CLASS_VWM} div,
+:root:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}).${exports.CLASS_VWM} div {
+    max-width: none !important;
+    max-height: none !important;
+}
+/*
+:root[style]:not(.${exports.ROOT_CLASS_FIXED_LAYOUT}).${exports.CLASS_VWM} > body,
+:root:not(.${exports.ROOT_CLASS_FIXED_LAYOUT}).${exports.CLASS_VWM} > body {
+    min-width: inherit;
+}
+*/
 
 :root[style].${exports.CLASS_PAGINATED}:not(.${exports.ROOT_CLASS_FIXED_LAYOUT}),
 :root.${exports.CLASS_PAGINATED}:not(.${exports.ROOT_CLASS_FIXED_LAYOUT}) {
@@ -871,14 +939,6 @@ We cannot completely disable "scroll" event (prevent default) because we need to
     See SKIP_LINK_ID rules below :(
     (hacky, but works without regressions or layout shift)
     */
-}
-:root[style]:not(.${exports.ROOT_CLASS_FIXED_LAYOUT}) > body,
-:root:not(.${exports.ROOT_CLASS_FIXED_LAYOUT}) > body {
-    min-height: inherit;
-}
-:root[style]:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}) > body,
-:root:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}) > body {
-    height: inherit;
 }
 
 /*

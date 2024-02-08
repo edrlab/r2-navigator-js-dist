@@ -95,6 +95,18 @@ function readiumCSSSet(documant, messageJson, isVerticalWritingMode, isRTL) {
             }
         }
     }
+    if (!messageJson.urlRoot) {
+        var elBefore = documant.getElementById("ReadiumCSS-before");
+        if (elBefore) {
+            var elHref = elBefore.getAttribute("href");
+            if (elHref) {
+                var iHref = elHref.indexOf("/" + readium_css_settings_1.READIUM_CSS_URL_PATH);
+                if (iHref >= 0) {
+                    messageJson.urlRoot = elHref.substring(0, iHref);
+                }
+            }
+        }
+    }
     if (IS_DEV) {
         debug("_____ readiumCssJson.urlRoot (readiumCSSSet()): ", messageJson.urlRoot);
     }
@@ -124,8 +136,35 @@ function readiumCSSSet(documant, messageJson, isVerticalWritingMode, isRTL) {
         docElement.classList.add(styles_1.CLASS_VWM);
         setCSS.paged = false;
     }
+    if (docElement.hasAttribute("data-readiumcss")) {
+        var reset = false;
+        var isV = docElement.hasAttribute("data-rss-isVWM");
+        if (isV !== isVerticalWritingMode) {
+            reset = true;
+            if (isV) {
+                docElement.removeAttribute("data-rss-isVWM");
+            }
+        }
+        var isR = docElement.hasAttribute("data-rss-isRTL");
+        if (isR !== isRTL) {
+            reset = true;
+            if (isR) {
+                docElement.removeAttribute("data-rss-isRTL");
+            }
+        }
+        if (reset) {
+            docElement.removeAttribute("data-readiumcss");
+            removeAllCSS(documant);
+        }
+    }
     if (!docElement.hasAttribute("data-readiumcss")) {
         docElement.setAttribute("data-readiumcss", "yes");
+        if (isVerticalWritingMode) {
+            docElement.setAttribute("data-rss-isVWM", "true");
+        }
+        if (isRTL) {
+            docElement.setAttribute("data-rss-isRTL", "true");
+        }
         var needsDefaultCSS = true;
         if (documant.head && documant.head.childNodes && documant.head.childNodes.length) {
             for (var i = 0; i < documant.head.childNodes.length; i++) {
@@ -150,7 +189,25 @@ function readiumCSSSet(documant, messageJson, isVerticalWritingMode, isRTL) {
                 needsDefaultCSS = false;
             }
         }
-        var urlRoot = messageJson.urlRoot + "/" + readium_css_settings_1.READIUM_CSS_URL_PATH + "/";
+        var isCJK_1 = false;
+        var langAttr = documant.documentElement.getAttribute("lang");
+        if (!langAttr) {
+            langAttr = documant.documentElement.getAttribute("xml:lang");
+        }
+        if (!langAttr) {
+            langAttr = documant.documentElement.getAttributeNS("http://www.w3.org/XML/1998/", "lang");
+        }
+        if (langAttr &&
+            (langAttr === "ja" || langAttr.startsWith("ja-") ||
+                langAttr === "zh" || langAttr.startsWith("zh-") ||
+                langAttr === "ko" || langAttr.startsWith("ko-"))) {
+            isCJK_1 = true;
+        }
+        var custom = isVerticalWritingMode && isCJK_1 ?
+            "cjk-vertical/" : (isCJK_1 ?
+            "cjk-horizontal/" : (isRTL ?
+            "rtl/" : ""));
+        var urlRoot = messageJson.urlRoot + "/" + readium_css_settings_1.READIUM_CSS_URL_PATH + "/" + custom;
         appendCSS(documant, "before", urlRoot);
         if (needsDefaultCSS) {
             appendCSS(documant, "default", urlRoot);
@@ -586,6 +643,10 @@ function removeCSS(documant, mod) {
     var linkElement = documant.getElementById("ReadiumCSS-" + mod);
     if (linkElement && linkElement.parentNode) {
         linkElement.parentNode.removeChild(linkElement);
+    }
+    var styleElement = documant.getElementById("ReadiumCSS-" + mod + "-PATCH");
+    if (styleElement && styleElement.parentNode) {
+        styleElement.parentNode.removeChild(styleElement);
     }
 }
 exports.removeCSS = removeCSS;
