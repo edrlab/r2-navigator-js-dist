@@ -6,7 +6,6 @@ const readium_css_inject_1 = require("../../common/readium-css-inject");
 const styles_1 = require("../../common/styles");
 const styles_2 = require("../../common/styles");
 const styles_3 = require("../../common/styles");
-const highlight_1 = require("./highlight");
 const win = global.window;
 const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 exports.clearImageZoomOutlineDebounced = debounce(() => {
@@ -185,7 +184,7 @@ function computeVerticalRTL() {
                 break;
             }
             const id = childEl.id || childEl.getAttribute("id");
-            if (id === styles_3.SKIP_LINK_ID || id === highlight_1.ID_HIGHLIGHTS_CONTAINER) {
+            if (id === styles_3.SKIP_LINK_ID || id === styles_3.ID_HIGHLIGHTS_CONTAINER) {
                 continue;
             }
             singleChild = childEl;

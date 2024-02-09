@@ -2,7 +2,6 @@ import * as debounce from "debounce";
 import { IColor, IHighlight, IHighlightDefinition } from "../../common/highlight";
 import { ISelectionInfo } from "../../common/selection";
 import { ReadiumElectronWebviewWindow } from "./state";
-export declare const ID_HIGHLIGHTS_CONTAINER = "R2_ID_HIGHLIGHTS_CONTAINER";
 export declare const CLASS_HIGHLIGHT_CONTAINER = "R2_CLASS_HIGHLIGHT_CONTAINER";
 export declare const CLASS_HIGHLIGHT_AREA = "R2_CLASS_HIGHLIGHT_AREA";
 export declare const CLASS_HIGHLIGHT_BOUNDING_AREA = "R2_CLASS_HIGHLIGHT_BOUNDING_AREA";
