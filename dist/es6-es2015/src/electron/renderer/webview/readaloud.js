@@ -631,8 +631,11 @@ function updateTTSInfo(charIndex, charLength, utteranceText) {
         _dialogState.focusScrollRaw(ttsQueueItem.item.parentElement, false, true, undefined);
     }
     const ttsQueueItemText = utteranceText ? utteranceText : (0, dom_text_utils_1.getTtsQueueItemRefText)(ttsQueueItem);
+    if (!ttsQueueItemText.trim().length) {
+        return "";
+    }
     let ttsQueueItemMarkup = (0, dom_text_utils_1.normalizeHtmlText)(ttsQueueItemText);
-    if (charIndex >= 0 && utteranceText) {
+    if (isWordBoundary) {
         const word = utteranceText.substr(charIndex, charLength);
         if (_dialogState && _dialogState.ttsOverlayEnabled) {
             const prefix = `<span id="${styles_1.TTS_ID_ACTIVE_WORD}">`;
@@ -761,7 +764,9 @@ function updateTTSInfo(charIndex, charLength, utteranceText) {
             if (ttsQItem.item.lang) {
                 ttsQItemMarkupAttributes += ` lang="${ttsQItem.item.lang}" xml:lang="${ttsQItem.item.lang}" `;
             }
-            fullMarkup += `${imageMarkup}<div ${ttsQItemMarkupAttributes}>${ttsQItemMarkup}</div>`;
+            if (imageMarkup || (ttsQItemMarkup === null || ttsQItemMarkup === void 0 ? void 0 : ttsQItemMarkup.trim().length)) {
+                fullMarkup += `${imageMarkup}<div ${ttsQItemMarkupAttributes}>${ttsQItemMarkup}</div>`;
+            }
         }
         try {
             _dialogState.domText.insertAdjacentHTML("beforeend", fullMarkup);
@@ -821,6 +826,11 @@ function ttsPlayQueueIndex(ttsQueueIndex) {
     _dialogState.ttsQueueItem = ttsQueueItem;
     highlights(true);
     const txtStr = updateTTSInfo(-1, -1, undefined);
+    if (txtStr === "") {
+        highlights(false);
+        ttsPlayQueueIndexDebounced(ttsQueueIndex + 1);
+        return;
+    }
     if (!txtStr) {
         ttsStop();
         return;
@@ -928,7 +938,7 @@ function startTTSSession(speed, voice, ttsRootElement, ttsQueue, ttsQueueIndexSt
     }
     const ttsQueueLength = (0, dom_text_utils_1.getTtsQueueLength)(ttsQueue);
     const val = win.READIUM2.ttsOverlayEnabled ? ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable() : undefined;
-    function onDialogClosed(el) {
+    function onDialogClosed(thiz, el) {
         ttsPause(true);
         if (_dialogState && _dialogState.focusScrollRaw) {
             let toScrollTo = el;
@@ -948,6 +958,39 @@ function startTTSSession(speed, voice, ttsRootElement, ttsQueue, ttsQueueIndexSt
         setTimeout(() => {
             resetState(false);
         }, 50);
+        setTimeout(() => {
+            if (thiz.clickCloseXY.clickX >= 0 && thiz.clickCloseXY.clickY >= 0) {
+                const ev = new MouseEvent("click", {
+                    button: 0,
+                    buttons: 0,
+                    clientX: thiz.clickCloseXY.clickX,
+                    clientY: thiz.clickCloseXY.clickY,
+                    movementX: thiz.clickCloseXY.clickX,
+                    movementY: thiz.clickCloseXY.clickY,
+                    relatedTarget: null,
+                    screenX: thiz.clickCloseXY.clickX,
+                    screenY: thiz.clickCloseXY.clickY,
+                    altKey: false,
+                    ctrlKey: false,
+                    metaKey: false,
+                    modifierAltGraph: false,
+                    modifierCapsLock: false,
+                    modifierFn: false,
+                    modifierFnLock: false,
+                    modifierHyper: false,
+                    modifierNumLock: false,
+                    modifierScrollLock: false,
+                    modifierSuper: false,
+                    modifierSymbol: false,
+                    modifierSymbolLock: false,
+                    shiftKey: false,
+                    detail: 0,
+                    view: win.document.defaultView,
+                    which: 0,
+                });
+                win.document.dispatchEvent(ev);
+            }
+        }, 100);
     }
     const outerHTML = `<div id="${styles_1.TTS_ID_CONTAINER}"
     class="${styles_1.CSS_CLASS_NO_FOCUS_OUTLINE} ${styles_1.TTS_CLASS_THEME1}"

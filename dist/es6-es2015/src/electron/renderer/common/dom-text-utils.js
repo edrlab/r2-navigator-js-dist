@@ -9,8 +9,15 @@ function combineTextNodes(textNodes, skipNormalize) {
     if (textNodes && textNodes.length) {
         let str = "";
         for (const textNode of textNodes) {
-            if (textNode.nodeValue) {
-                str += (skipNormalize ? textNode.nodeValue : normalizeText(textNode.nodeValue));
+            let txt = textNode.nodeValue;
+            if (txt) {
+                if (!txt.trim().length) {
+                    txt = " ";
+                    str += txt;
+                }
+                else {
+                    str += (skipNormalize ? txt : normalizeText(txt));
+                }
             }
         }
         return str;
@@ -53,7 +60,7 @@ function normalizeHtmlText(str) {
 }
 exports.normalizeHtmlText = normalizeHtmlText;
 function normalizeText(str) {
-    return normalizeHtmlText(str).replace(/\n/g, " ").replace(/\s\s+/g, " ");
+    return normalizeHtmlText(str).replace(/[\r\n]/g, " ").replace(/\s\s+/g, " ");
 }
 exports.normalizeText = normalizeText;
 function consoleLogTtsQueueItem(i) {
@@ -263,13 +270,13 @@ const computeEpubTypes = (childElement) => {
     return epubTypes;
 };
 function generateTtsQueue(rootElement, splitSentences) {
-    const ttsQueue = [];
+    let ttsQueue = [];
     const elementStack = [];
     function processTextNode(textNode) {
         if (textNode.nodeType !== Node.TEXT_NODE) {
             return;
         }
-        if (!textNode.nodeValue || !textNode.nodeValue.trim().length) {
+        if (!textNode.nodeValue) {
             return;
         }
         const parentElement = elementStack[elementStack.length - 1];
@@ -701,6 +708,11 @@ function generateTtsQueue(rootElement, splitSentences) {
             return;
         }
         ttsQueueItem.combinedText = combineTextNodes(ttsQueueItem.textNodes, true).replace(/[\r\n]/g, " ");
+        if (!ttsQueueItem.combinedText.trim().length) {
+            ttsQueueItem.combinedText = "";
+            ttsQueueItem.combinedTextSentences = undefined;
+            return;
+        }
         let skipSplitSentences = false;
         let parent = ttsQueueItem.parentElement;
         while (parent) {
@@ -750,6 +762,9 @@ function generateTtsQueue(rootElement, splitSentences) {
     for (const ttsQueueItem of ttsQueue) {
         finalizeTextNodes(ttsQueueItem);
     }
+    ttsQueue = ttsQueue.filter((item) => {
+        return !!item.combinedText.length;
+    });
     return ttsQueue;
 }
 exports.generateTtsQueue = generateTtsQueue;

@@ -13,8 +13,15 @@ function combineTextNodes(textNodes, skipNormalize) {
         try {
             for (var textNodes_1 = tslib_1.__values(textNodes), textNodes_1_1 = textNodes_1.next(); !textNodes_1_1.done; textNodes_1_1 = textNodes_1.next()) {
                 var textNode = textNodes_1_1.value;
-                if (textNode.nodeValue) {
-                    str += (skipNormalize ? textNode.nodeValue : normalizeText(textNode.nodeValue));
+                var txt = textNode.nodeValue;
+                if (txt) {
+                    if (!txt.trim().length) {
+                        txt = " ";
+                        str += txt;
+                    }
+                    else {
+                        str += (skipNormalize ? txt : normalizeText(txt));
+                    }
                 }
             }
         }
@@ -65,7 +72,7 @@ function normalizeHtmlText(str) {
 }
 exports.normalizeHtmlText = normalizeHtmlText;
 function normalizeText(str) {
-    return normalizeHtmlText(str).replace(/\n/g, " ").replace(/\s\s+/g, " ");
+    return normalizeHtmlText(str).replace(/[\r\n]/g, " ").replace(/\s\s+/g, " ");
 }
 exports.normalizeText = normalizeText;
 function consoleLogTtsQueueItem(i) {
@@ -397,7 +404,7 @@ function generateTtsQueue(rootElement, splitSentences) {
         if (textNode.nodeType !== Node.TEXT_NODE) {
             return;
         }
-        if (!textNode.nodeValue || !textNode.nodeValue.trim().length) {
+        if (!textNode.nodeValue) {
             return;
         }
         var parentElement = elementStack[elementStack.length - 1];
@@ -871,6 +878,11 @@ function generateTtsQueue(rootElement, splitSentences) {
             return;
         }
         ttsQueueItem.combinedText = combineTextNodes(ttsQueueItem.textNodes, true).replace(/[\r\n]/g, " ");
+        if (!ttsQueueItem.combinedText.trim().length) {
+            ttsQueueItem.combinedText = "";
+            ttsQueueItem.combinedTextSentences = undefined;
+            return;
+        }
         var skipSplitSentences = false;
         var parent = ttsQueueItem.parentElement;
         while (parent) {
@@ -940,6 +952,9 @@ function generateTtsQueue(rootElement, splitSentences) {
         }
         finally { if (e_13) throw e_13.error; }
     }
+    ttsQueue = ttsQueue.filter(function (item) {
+        return !!item.combinedText.length;
+    });
     return ttsQueue;
 }
 exports.generateTtsQueue = generateTtsQueue;

@@ -57,7 +57,7 @@ function clearCurrentSelection(win) {
 }
 exports.clearCurrentSelection = clearCurrentSelection;
 const collapseWhitespaces = (str) => {
-    return str.replace(/\n/g, " ").replace(/\s\s+/g, " ");
+    return str.replace(/[\r\n]/g, " ").replace(/\s\s+/g, " ");
 };
 exports.collapseWhitespaces = collapseWhitespaces;
 const cleanupStr = (str) => {
@@ -281,7 +281,7 @@ function convertRange(range, getCssSelector, computeElementCFI) {
         let i = rawBefore.length - 1;
         let wasWhiteSpace = false;
         for (; i >= 0; i--) {
-            const isWhiteSpace = /[\n\s]/.test(rawBefore[i]);
+            const isWhiteSpace = /[\r\n\s]/.test(rawBefore[i]);
             if (isWhiteSpace && i !== 0 && i !== rawBefore.length - 1 && wasWhiteSpace) {
                 wasWhiteSpace = isWhiteSpace;
                 continue;
@@ -299,7 +299,7 @@ function convertRange(range, getCssSelector, computeElementCFI) {
         let i = 0;
         let wasWhiteSpace = false;
         for (; i < rawAfter.length; i++) {
-            const isWhiteSpace = /[\n\s]/.test(rawAfter[i]);
+            const isWhiteSpace = /[\r\n\s]/.test(rawAfter[i]);
             if (isWhiteSpace && i !== 0 && i !== rawAfter.length - 1 && wasWhiteSpace) {
                 wasWhiteSpace = isWhiteSpace;
                 continue;

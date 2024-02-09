@@ -320,7 +320,7 @@ function popoutImage(win, element, href_src, focusScrollRaw, ensureTwoPageSpread
     <button id="${styles_1.POPOUTIMAGE_CLOSE_ID}">X</button>
 </div>`;
     const val = ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable();
-    function onDialogClosed(el) {
+    function onDialogClosed(_thiz, el) {
         win.READIUM2.ignorekeyDownUpEvents = false;
         if (el) {
             focusScrollRaw(el, true, true, undefined);

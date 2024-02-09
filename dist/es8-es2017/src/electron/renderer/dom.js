@@ -36,7 +36,7 @@ const captionsOverlayCssStyles = `
     padding: 2em;
     line-height: initial;
     user-select: none;
-`.replace(/\n/g, " ").replace(/\s\s+/g, " ").trim();
+`.replace(/[\r\n]/g, " ").replace(/\s\s+/g, " ").trim();
 const captionsOverlayParaCssStyles = `
     margin: 0;
     margin-top: auto;
@@ -45,7 +45,7 @@ const captionsOverlayParaCssStyles = `
     max-width: 900px;
     font-weight: bolder;
     text-align: center;
-`.replace(/\n/g, " ").replace(/\s\s+/g, " ").trim();
+`.replace(/[\r\n]/g, " ").replace(/\s\s+/g, " ").trim();
 const readiumCssStyle = `
 @font-face {
 font-family: AccessibleDfA;

@@ -91,8 +91,13 @@ function onKeyDown(ev) {
 }
 var PopupDialog = (function () {
     function PopupDialog(documant, outerHTML, onDialogClosed, optionalCssClass, doNotTrapKeyboardFocusTabIndexCycling) {
+        var _this = this;
         this.documant = documant;
         this.onDialogClosed = onDialogClosed;
+        this.clickCloseXY = {
+            clickX: -1,
+            clickY: -1,
+        };
         closePopupDialogs(documant);
         var that = this;
         this._onKeyUp = onKeyUp.bind(this);
@@ -194,6 +199,8 @@ var PopupDialog = (function () {
             if (!inside) {
                 if (that.dialog.hasAttribute("open") || that.dialog.open) {
                     console.log("...DIALOG CLICK event => close()");
+                    that.clickCloseXY.clickX = ev.clientX;
+                    that.clickCloseXY.clickY = ev.clientY;
                     that.dialog.close();
                 }
             }
@@ -202,11 +209,17 @@ var PopupDialog = (function () {
             console.log("...DIALOG CLOSE event => hide()");
             that.hide();
         });
+        this.dialog.addEventListener("open", function (_ev) {
+            _this.clickCloseXY.clickX = -1;
+            _this.clickCloseXY.clickY = -1;
+        });
         this.documant = this.dialog.ownerDocument;
         this.role = this.dialog.getAttribute("role") || "dialog";
     }
     PopupDialog.prototype.show = function (toRefocus) {
         console.log("...DIALOG show()");
+        this.clickCloseXY.clickX = -1;
+        this.clickCloseXY.clickY = -1;
         electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_MEDIA_OVERLAY_INTERRUPT);
         var el = this.documant.documentElement;
         el.classList.add(styles_1.POPUP_DIALOG_CLASS);
@@ -231,7 +244,7 @@ var PopupDialog = (function () {
         el.classList.remove(styles_1.POPUP_DIALOG_CLASS);
         this.documant.body.removeEventListener("keyup", this._onKeyUp, true);
         this.documant.body.removeEventListener("keydown", this._onKeyDown, true);
-        this.onDialogClosed(_focusedBeforeDialog);
+        this.onDialogClosed(this, _focusedBeforeDialog);
         _focusedBeforeDialog = null;
         if (this.dialog.hasAttribute("open") || this.dialog.open) {
             console.log("...DIALOG hide().close()");

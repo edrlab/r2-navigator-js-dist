@@ -7,7 +7,7 @@ var styles_1 = require("../../common/styles");
 var popup_dialog_1 = require("../common/popup-dialog");
 function popupFootNote(element, focusScrollRaw, href, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
     return tslib_1.__awaiter(this, void 0, void 0, function () {
-        function onDialogClosed(el) {
+        function onDialogClosed(_thiz, el) {
             if (el) {
                 focusScrollRaw(el, true, true, undefined);
             }

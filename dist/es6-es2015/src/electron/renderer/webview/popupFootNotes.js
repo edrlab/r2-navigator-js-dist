@@ -82,7 +82,7 @@ function popupFootNote(element, focusScrollRaw, href, ensureTwoPageSpreadWithOdd
         htmltxt = htmltxt.replace(/id=["']([^"']+)["']/g, "idvoid=\"$1\"");
         htmltxt = `<div id="${id_}" class="${styles_1.FOOTNOTES_CONTAINER_CLASS} ${styles_1.CSS_CLASS_NO_FOCUS_OUTLINE}" tabindex="0" autofocus="autofocus">${htmltxt}</div>`;
         const val = ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable();
-        function onDialogClosed(el) {
+        function onDialogClosed(_thiz, el) {
             if (el) {
                 focusScrollRaw(el, true, true, undefined);
             }

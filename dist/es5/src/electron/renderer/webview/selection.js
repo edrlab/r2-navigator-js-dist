@@ -57,7 +57,7 @@ function clearCurrentSelection(win) {
 }
 exports.clearCurrentSelection = clearCurrentSelection;
 var collapseWhitespaces = function (str) {
-    return str.replace(/\n/g, " ").replace(/\s\s+/g, " ");
+    return str.replace(/[\r\n]/g, " ").replace(/\s\s+/g, " ");
 };
 exports.collapseWhitespaces = collapseWhitespaces;
 var cleanupStr = function (str) {
@@ -281,7 +281,7 @@ function convertRange(range, getCssSelector, computeElementCFI) {
         var i = rawBefore.length - 1;
         var wasWhiteSpace = false;
         for (; i >= 0; i--) {
-            var isWhiteSpace = /[\n\s]/.test(rawBefore[i]);
+            var isWhiteSpace = /[\r\n\s]/.test(rawBefore[i]);
             if (isWhiteSpace && i !== 0 && i !== rawBefore.length - 1 && wasWhiteSpace) {
                 wasWhiteSpace = isWhiteSpace;
                 continue;
@@ -299,7 +299,7 @@ function convertRange(range, getCssSelector, computeElementCFI) {
         var i = 0;
         var wasWhiteSpace = false;
         for (; i < rawAfter.length; i++) {
-            var isWhiteSpace = /[\n\s]/.test(rawAfter[i]);
+            var isWhiteSpace = /[\r\n\s]/.test(rawAfter[i]);
             if (isWhiteSpace && i !== 0 && i !== rawAfter.length - 1 && wasWhiteSpace) {
                 wasWhiteSpace = isWhiteSpace;
                 continue;

@@ -661,8 +661,11 @@ function updateTTSInfo(charIndex, charLength, utteranceText) {
         _dialogState.focusScrollRaw(ttsQueueItem.item.parentElement, false, true, undefined);
     }
     var ttsQueueItemText = utteranceText ? utteranceText : (0, dom_text_utils_1.getTtsQueueItemRefText)(ttsQueueItem);
+    if (!ttsQueueItemText.trim().length) {
+        return "";
+    }
     var ttsQueueItemMarkup = (0, dom_text_utils_1.normalizeHtmlText)(ttsQueueItemText);
-    if (charIndex >= 0 && utteranceText) {
+    if (isWordBoundary) {
         var word = utteranceText.substr(charIndex, charLength);
         if (_dialogState && _dialogState.ttsOverlayEnabled) {
             var prefix = "<span id=\"".concat(styles_1.TTS_ID_ACTIVE_WORD, "\">");
@@ -791,7 +794,9 @@ function updateTTSInfo(charIndex, charLength, utteranceText) {
             if (ttsQItem.item.lang) {
                 ttsQItemMarkupAttributes += " lang=\"".concat(ttsQItem.item.lang, "\" xml:lang=\"").concat(ttsQItem.item.lang, "\" ");
             }
-            fullMarkup += "".concat(imageMarkup, "<div ").concat(ttsQItemMarkupAttributes, ">").concat(ttsQItemMarkup, "</div>");
+            if (imageMarkup || (ttsQItemMarkup === null || ttsQItemMarkup === void 0 ? void 0 : ttsQItemMarkup.trim().length)) {
+                fullMarkup += "".concat(imageMarkup, "<div ").concat(ttsQItemMarkupAttributes, ">").concat(ttsQItemMarkup, "</div>");
+            }
         }
         try {
             _dialogState.domText.insertAdjacentHTML("beforeend", fullMarkup);
@@ -851,6 +856,11 @@ function ttsPlayQueueIndex(ttsQueueIndex) {
     _dialogState.ttsQueueItem = ttsQueueItem;
     highlights(true);
     var txtStr = updateTTSInfo(-1, -1, undefined);
+    if (txtStr === "") {
+        highlights(false);
+        ttsPlayQueueIndexDebounced(ttsQueueIndex + 1);
+        return;
+    }
     if (!txtStr) {
         ttsStop();
         return;
@@ -958,7 +968,7 @@ function startTTSSession(speed, voice, ttsRootElement, ttsQueue, ttsQueueIndexSt
     }
     var ttsQueueLength = (0, dom_text_utils_1.getTtsQueueLength)(ttsQueue);
     var val = win.READIUM2.ttsOverlayEnabled ? ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable() : undefined;
-    function onDialogClosed(el) {
+    function onDialogClosed(thiz, el) {
         ttsPause(true);
         if (_dialogState && _dialogState.focusScrollRaw) {
             var toScrollTo = el;
@@ -978,6 +988,39 @@ function startTTSSession(speed, voice, ttsRootElement, ttsQueue, ttsQueueIndexSt
         setTimeout(function () {
             resetState(false);
         }, 50);
+        setTimeout(function () {
+            if (thiz.clickCloseXY.clickX >= 0 && thiz.clickCloseXY.clickY >= 0) {
+                var ev = new MouseEvent("click", {
+                    button: 0,
+                    buttons: 0,
+                    clientX: thiz.clickCloseXY.clickX,
+                    clientY: thiz.clickCloseXY.clickY,
+                    movementX: thiz.clickCloseXY.clickX,
+                    movementY: thiz.clickCloseXY.clickY,
+                    relatedTarget: null,
+                    screenX: thiz.clickCloseXY.clickX,
+                    screenY: thiz.clickCloseXY.clickY,
+                    altKey: false,
+                    ctrlKey: false,
+                    metaKey: false,
+                    modifierAltGraph: false,
+                    modifierCapsLock: false,
+                    modifierFn: false,
+                    modifierFnLock: false,
+                    modifierHyper: false,
+                    modifierNumLock: false,
+                    modifierScrollLock: false,
+                    modifierSuper: false,
+                    modifierSymbol: false,
+                    modifierSymbolLock: false,
+                    shiftKey: false,
+                    detail: 0,
+                    view: win.document.defaultView,
+                    which: 0,
+                });
+                win.document.dispatchEvent(ev);
+            }
+        }, 100);
     }
     var outerHTML = "<div id=\"".concat(styles_1.TTS_ID_CONTAINER, "\"\n    class=\"").concat(styles_1.CSS_CLASS_NO_FOCUS_OUTLINE, " ").concat(styles_1.TTS_CLASS_THEME1, "\"\n    dir=\"ltr\"\n    lang=\"en\"\n    xml:lang=\"en\"\n    tabindex=\"0\" autofocus=\"autofocus\"></div>\n").concat(win.READIUM2.ttsOverlayEnabled ?
         "\n<button id=\"".concat(styles_1.TTS_ID_PREVIOUS, "\" class=\"").concat(styles_1.TTS_NAV_BUTTON_CLASS, "\" title=\"").concat((0, readium_css_1.isRTL)() ? "next" : "previous", "\"><span>&#9668;</span></button>\n<button id=\"").concat(styles_1.TTS_ID_NEXT, "\" class=\"").concat(styles_1.TTS_NAV_BUTTON_CLASS, "\" title=\"").concat((0, readium_css_1.isRTL)() ? "previous" : "next", "\"><span>&#9658;</span></button>\n<input id=\"").concat(styles_1.TTS_ID_SLIDER, "\" type=\"range\" min=\"0\" max=\"").concat(ttsQueueLength - 1, "\" value=\"0\"\n    ").concat((0, readium_css_1.isRTL)() ? "dir=\"rtl\"" : "dir=\"ltr\"", "  title=\"progress\"/>\n")

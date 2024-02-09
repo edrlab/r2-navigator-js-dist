@@ -282,7 +282,7 @@ if (IS_DEV) {
         }
     });
 }
-function isVisible(element, domRect) {
+function isVisible(allowPartial, element, domRect) {
     if (win.READIUM2.isFixedLayout) {
         return true;
     }
@@ -322,10 +322,16 @@ function isVisible(element, domRect) {
                 (rect.left + rect.width) <= win.document.documentElement.clientWidth) {
                 return true;
             }
+            if (allowPartial && (rect.left >= 0 || (rect.left + rect.width) <= win.document.documentElement.clientWidth)) {
+                return true;
+            }
         }
         else {
             if (rect.top >= 0 &&
                 (rect.top + rect.height) <= win.document.documentElement.clientHeight) {
+                return true;
+            }
+            if (allowPartial && (rect.top >= 0 || (rect.top + rect.height) <= win.document.documentElement.clientWidth)) {
                 return true;
             }
         }
@@ -369,7 +375,7 @@ function isVisible_(location) {
             debug(err);
         }
         if (selected) {
-            visible = isVisible(selected, undefined);
+            visible = isVisible(false, selected, undefined);
         }
     }
     return visible;
@@ -850,7 +856,7 @@ function scrollElementIntoView(element, doFocus, animate, domRect) {
         else {
             var scrollElement = (0, readium_css_1.getScrollingElement)(win.document);
             var rect = domRect || element.getBoundingClientRect();
-            if (isVisible(element, domRect)) {
+            if (isVisible(false, element, domRect)) {
                 console.log("scrollElementIntoView already visible");
             }
             else {
@@ -1142,7 +1148,7 @@ function showHideContentMask(doHide, isFixedLayout) {
     }
 }
 function focusScrollRaw(el, doFocus, animate, domRect) {
-    if (!isVisible(el, domRect)) {
+    if (!isVisible(false, el, domRect)) {
         scrollElementIntoView(el, doFocus, animate, domRect);
     }
     if (win.READIUM2.locationHashOverride === el) {
@@ -1354,7 +1360,7 @@ var onScrollRaw = function () {
         !win.document.documentElement.classList.contains(styles_1.TTS_CLASS_PLAYING) &&
         !win.document.documentElement.classList.contains(styles_1.TTS_CLASS_PAUSED)) {
         var el = win.READIUM2.locationHashOverride;
-        if (el && isVisible(el, undefined)) {
+        if (el && isVisible(false, el, undefined)) {
             debug("onScrollRaw VISIBLE SKIP");
             return;
         }
@@ -1530,7 +1536,7 @@ function loaded(forced) {
                         x = ev.clientX;
                         y = ev.clientY;
                         domPointData = domDataFromPoint(x, y);
-                        if (domPointData.element && win.READIUM2.ttsClickEnabled) {
+                        if (domPointData.element && win.READIUM2.ttsClickEnabled && isVisible(true, domPointData.element, undefined)) {
                             debug("!AUX __CLICK domPointData.element && win.READIUM2.ttsClickEnabled");
                             ev.preventDefault();
                             ev.stopPropagation();
@@ -1653,7 +1659,7 @@ function loaded(forced) {
                                     debug("SVG URL REPLACE: ", match, ret);
                                     return ret;
                                 });
-                                href_src = href_src.replace(/\n/g, " ").replace(/\s\s+/g, " ").trim();
+                                href_src = href_src.replace(/[\r\n]/g, " ").replace(/\s\s+/g, " ").trim();
                                 href_src = href_src.replace(/<desc[^<]+<\/desc>/g, "");
                                 debug("SVG CLICK: ".concat(href_src));
                             }
@@ -2123,7 +2129,7 @@ function findFirstVisibleElement(rootElement) {
     }
     if (rootElement !== win.document.body &&
         rootElement !== win.document.documentElement) {
-        if (isVisible(rootElement, undefined)) {
+        if (isVisible(false, rootElement, undefined)) {
             return rootElement;
         }
     }
@@ -2188,7 +2194,7 @@ var processXYRaw = function (x, y, reverse, userInteract) {
         }
     }
     else if (!userInteract &&
-        domPointData.element && !isVisible(domPointData.element, undefined)) {
+        domPointData.element && !isVisible(false, domPointData.element, undefined)) {
         var next = domPointData.element;
         var found = void 0;
         while (next) {
@@ -2231,7 +2237,7 @@ var processXYRaw = function (x, y, reverse, userInteract) {
             win.READIUM2.locationHashOverride = domPointData.element;
         }
         else {
-            if (!isVisible(win.READIUM2.locationHashOverride, undefined)) {
+            if (!isVisible(false, win.READIUM2.locationHashOverride, undefined)) {
                 debug(".hashElement = 6");
                 win.READIUM2.hashElement = userInteract ? domPointData.element : win.READIUM2.hashElement;
                 win.READIUM2.locationHashOverride = domPointData.element;
@@ -2310,7 +2316,7 @@ var computeProgressionData = function () {
         var element = win.READIUM2.locationHashOverride;
         var offset = 0;
         if (isPaged) {
-            if (isVisible(element, undefined)) {
+            if (isVisible(false, element, undefined)) {
                 var curCol = extraShift ? (currentColumn - 1) : currentColumn;
                 var columnDimension = (0, readium_css_1.calculateColumnDimension)();
                 if (vwm) {
@@ -2697,7 +2703,7 @@ var findFollowingDescendantSiblingElementsWithID = function (el) {
     if (true) {
         followingElementIDs = [];
         if (!_elementsWithID) {
-            _elementsWithID = Array.from(win.document.querySelectorAll("*[id]"));
+            _elementsWithID = Array.from(win.document.querySelectorAll(":not(#".concat(styles_1.ID_HIGHLIGHTS_CONTAINER, "):not(#").concat(styles_1.POPUP_DIALOG_CLASS, "):not(#").concat(styles_1.SKIP_LINK_ID, ") *[id]:not(#").concat(styles_1.ID_HIGHLIGHTS_CONTAINER, "):not(#").concat(styles_1.POPUP_DIALOG_CLASS, "):not(#").concat(styles_1.SKIP_LINK_ID, ")")));
         }
         for (var i = 0; i < _elementsWithID.length; i++) {
             var elementWithID = _elementsWithID[i];
@@ -2956,7 +2962,7 @@ if (!win.READIUM2.isAudio) {
                 debug(".hashElement = 7");
                 win.READIUM2.hashElement = targetEl;
                 win.READIUM2.locationHashOverride = targetEl;
-                if (!isVisible(targetEl, undefined)) {
+                if (!isVisible(false, targetEl, undefined)) {
                     scrollElementIntoView(targetEl, false, true, undefined);
                 }
                 scrollToHashDebounced.clear();
