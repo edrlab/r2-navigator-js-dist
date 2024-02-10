@@ -437,7 +437,9 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, (_event, payload) => {
         const scrollTop = scrollElement.scrollTop;
         const scrollLeft = scrollElement.scrollLeft;
         win.location.href = "#";
+        delayScrollIntoView = true;
         setTimeout(() => {
+            debug("location HREF # hash, reset scroll left/top: ", scrollTop, scrollLeft);
             scrollElement.scrollTop = scrollTop;
             scrollElement.scrollLeft = scrollLeft;
         }, 0);
@@ -448,12 +450,12 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, (_event, payload) => {
     if (delayScrollIntoView) {
         setTimeout(() => {
             debug("++++ scrollToHashRaw FROM DELAYED SCROLL_TO");
-            scrollToHashRaw(false);
+            scrollToHashRaw(false, true);
         }, 100);
     }
     else {
         debug("++++ scrollToHashRaw FROM SCROLL_TO");
-        scrollToHashRaw(false);
+        scrollToHashRaw(false, true);
     }
 });
 function resetLocationHashOverrideInfo() {
@@ -931,11 +933,13 @@ function scrollIntoView(element, domRect) {
         Math.min(Math.abs(scrollLeftPotentiallyExcessive), maxScrollShift);
     scrollElement.scrollLeft = scrollOffset;
 }
-const scrollToHashRaw = (animate) => {
+const scrollToHashRaw = (animate, skipRedraw) => {
     if (!win.document || !win.document.body || !win.document.documentElement) {
         return;
     }
-    (0, highlight_1.recreateAllHighlightsRaw)(win);
+    if (!skipRedraw) {
+        (0, highlight_1.recreateAllHighlightsRaw)(win);
+    }
     debug("++++ scrollToHashRaw");
     const isPaged = (0, readium_css_inject_1.isPaginated)(win.document);
     const vwm = (0, readium_css_1.isVerticalWritingMode)();
@@ -1043,7 +1047,7 @@ const scrollToHashRaw = (animate) => {
                     return;
                 }
             }
-            else if (gotoProgression) {
+            else if (typeof gotoProgression !== "undefined") {
                 const { maxScrollShift } = (0, readium_css_1.calculateMaxScrollShift)();
                 if (isPaged) {
                     const isTwoPage = (0, readium_css_1.isTwoPageSpread)();
@@ -1059,6 +1063,7 @@ const scrollToHashRaw = (animate) => {
                     ensureTwoPageSpreadWithOddColumnsIsOffset(scrollOffsetPotentiallyExcessive, maxScrollShift);
                     const scrollOffsetPaged = (scrollOffsetPotentiallyExcessive < 0 ? -1 : 1) *
                         Math.min(Math.abs(scrollOffsetPotentiallyExcessive), maxScrollShift);
+                    debug("gotoProgression, set scroll left/top (paged): ", scrollOffsetPaged);
                     _ignoreScrollEvent = true;
                     if (vwm) {
                         scrollElement.scrollTop = scrollOffsetPaged;
@@ -1080,6 +1085,7 @@ const scrollToHashRaw = (animate) => {
                     return;
                 }
                 const scrollOffset = gotoProgression * maxScrollShift;
+                debug("gotoProgression, set scroll left/top (scrolled): ", scrollOffset);
                 _ignoreScrollEvent = true;
                 if (vwm) {
                     scrollElement.scrollLeft = ((0, readium_css_1.isRTL)() ? -1 : 1) * scrollOffset;
@@ -2861,9 +2867,10 @@ if (!win.READIUM2.isAudio) {
                 },
             ] :
             payloadPing.highlightDefinitions;
+        const selInfo = (0, selection_2.getCurrentSelectionInfo)(win, getCssSelector, exports.computeCFI);
         for (const highlightDefinition of highlightDefinitions) {
             if (!highlightDefinition.selectionInfo) {
-                highlightDefinition.selectionInfo = (0, selection_2.getCurrentSelectionInfo)(win, getCssSelector, exports.computeCFI);
+                highlightDefinition.selectionInfo = selInfo;
             }
         }
         const highlights = (0, highlight_1.createHighlights)(win, highlightDefinitions, true);

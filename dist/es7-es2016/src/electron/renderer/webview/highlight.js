@@ -285,7 +285,7 @@ function processMouseEvent(win, ev) {
         }
         return;
     }
-    if (foundElement.getAttribute("data-click")) {
+    if (foundHighlight.pointerInteraction || foundElement.getAttribute("data-click")) {
         if (isMouseMove) {
             if (changeCursor) {
                 documant.documentElement.classList.add(_drawMarginMarkers ? styles_1.CLASS_HIGHLIGHT_CURSOR1 : styles_1.CLASS_HIGHLIGHT_CURSOR2);
@@ -451,11 +451,11 @@ function createHighlights(win, highDefs, pointerInteraction) {
     const bodyWidth = parseInt(win.getComputedStyle(win.document.body).width, 10);
     const docFrag = documant.createDocumentFragment();
     for (const highDef of highDefs) {
-        if (!highDef.selectionInfo) {
+        if (!highDef.selectionInfo && !highDef.range) {
             highlights.push(null);
             continue;
         }
-        const [high, div] = createHighlight(win, highDef.selectionInfo, highDef.color, pointerInteraction, highDef.drawType, highDef.expand, bodyRect, bodyWidth);
+        const [high, div] = createHighlight(win, highDef.selectionInfo, highDef.range, highDef.color, pointerInteraction, highDef.drawType, highDef.expand, bodyRect, bodyWidth);
         highlights.push(high);
         if (div) {
             docFrag.append(div);
@@ -466,8 +466,36 @@ function createHighlights(win, highDefs, pointerInteraction) {
     return highlights;
 }
 exports.createHighlights = createHighlights;
-function createHighlight(win, selectionInfo, color, pointerInteraction, drawType, expand, bodyRect, bodyWidth) {
-    const uniqueStr = `${selectionInfo.rangeInfo.startContainerElementCssSelector}${selectionInfo.rangeInfo.startContainerChildTextNodeIndex}${selectionInfo.rangeInfo.startOffset}${selectionInfo.rangeInfo.endContainerElementCssSelector}${selectionInfo.rangeInfo.endContainerChildTextNodeIndex}${selectionInfo.rangeInfo.endOffset}`;
+const computeCFI = (node) => {
+    if (node.nodeType !== Node.ELEMENT_NODE) {
+        if (node.parentNode) {
+            return computeCFI(node.parentNode);
+        }
+        return undefined;
+    }
+    let cfi = "";
+    let currentElement = node;
+    while (currentElement.parentNode && currentElement.parentNode.nodeType === Node.ELEMENT_NODE) {
+        const currentElementParentChildren = currentElement.parentNode.children;
+        let currentElementIndex = -1;
+        for (let i = 0; i < currentElementParentChildren.length; i++) {
+            if (currentElement === currentElementParentChildren[i]) {
+                currentElementIndex = i;
+                break;
+            }
+        }
+        if (currentElementIndex >= 0) {
+            const cfiIndex = (currentElementIndex + 1) * 2;
+            cfi = cfiIndex +
+                (currentElement.id ? ("[" + currentElement.id + "]") : "") +
+                (cfi.length ? ("/" + cfi) : "");
+        }
+        currentElement = currentElement.parentNode;
+    }
+    return "/" + cfi;
+};
+function createHighlight(win, selectionInfo, range, color, pointerInteraction, drawType, expand, bodyRect, bodyWidth) {
+    const uniqueStr = selectionInfo ? `${selectionInfo.rangeInfo.startContainerElementCssSelector}${selectionInfo.rangeInfo.startContainerChildTextNodeIndex}${selectionInfo.rangeInfo.startOffset}${selectionInfo.rangeInfo.endContainerElementCssSelector}${selectionInfo.rangeInfo.endContainerChildTextNodeIndex}${selectionInfo.rangeInfo.endOffset}` : range ? `${range.startOffset}-${range.endOffset}-${computeCFI(range.startContainer)}-${computeCFI(range.endContainer)}` : "_RANGE_";
     const checkSum = crypto.createHash("sha1");
     checkSum.update(uniqueStr);
     const shaHex = checkSum.digest("hex");
@@ -477,7 +505,7 @@ function createHighlight(win, selectionInfo, color, pointerInteraction, drawType
     while (_highlights.find((h) => h.id === id) ||
         win.document.getElementById(id)) {
         if (IS_DEV) {
-            console.log("HIGHLIGHT ID already exists, increment: " + id);
+            console.log("HIGHLIGHT ID already exists, increment: " + uniqueStr + " ==> " + id);
         }
         id = `${idBase}_${idIdx++}`;
     }
@@ -488,6 +516,7 @@ function createHighlight(win, selectionInfo, color, pointerInteraction, drawType
         id,
         pointerInteraction,
         selectionInfo,
+        range,
     };
     _highlights.push(highlight);
     const div = createHighlightDom(win, highlight, bodyRect, bodyWidth);
@@ -497,7 +526,7 @@ exports.createHighlight = createHighlight;
 function createHighlightDom(win, highlight, bodyRect, bodyWidth) {
     const documant = win.document;
     const scrollElement = (0, readium_css_1.getScrollingElement)(documant);
-    const range = (0, selection_1.convertRangeInfo)(documant, highlight.selectionInfo.rangeInfo);
+    const range = highlight.selectionInfo ? (0, selection_1.convertRangeInfo)(documant, highlight.selectionInfo.rangeInfo) : highlight.range;
     if (!range) {
         return null;
     }
@@ -514,8 +543,10 @@ function createHighlightDom(win, highlight, bodyRect, bodyWidth) {
     if (highlight.pointerInteraction) {
         highlightParent.setAttribute("data-click", "1");
     }
-    if (USE_BLEND_MODE && !_drawMarginMarkers) {
-        highlightParent.style.setProperty("mix-blend-mode", "multiply", "important");
+    if (USE_BLEND_MODE && (!_drawMarginMarkers || !highlight.pointerInteraction)) {
+        const styleAttr = win.document.documentElement.getAttribute("style");
+        const isNight = styleAttr ? styleAttr.indexOf("readium-night-on") > 0 : false;
+        highlightParent.style.setProperty("mix-blend-mode", isNight ? "difference" : "multiply", "important");
         highlightParent.style.setProperty("opacity", `${opacity}`, "important");
     }
     const xOffset = paginated ? (-scrollElement.scrollLeft) : bodyRect.left;
@@ -556,7 +587,7 @@ function createHighlightDom(win, highlight, bodyRect, bodyWidth) {
     highlightBounding.style.setProperty("left", `${highlightBounding.rect.left * scale}px`, "important");
     highlightBounding.style.setProperty("top", `${highlightBounding.rect.top * scale}px`, "important");
     highlightParent.append(highlightBounding);
-    if (_drawMarginMarkers) {
+    if (_drawMarginMarkers && highlight.pointerInteraction) {
         const MARGIN_MARKER_THICKNESS = 8;
         const MARGIN_MARKER_OFFSET = 2;
         const highlightBoundingMargin = documant.createElement("div");

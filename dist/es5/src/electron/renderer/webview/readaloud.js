@@ -8,13 +8,11 @@ var events_1 = require("../../common/events");
 var highlight_1 = require("../../common/highlight");
 var styles_1 = require("../../common/styles");
 var animateProperty_1 = require("../common/animateProperty");
-var cssselector2_3_1 = require("../common/cssselector2-3");
 var dom_text_utils_1 = require("../common/dom-text-utils");
 var easings_1 = require("../common/easings");
 var popup_dialog_1 = require("../common/popup-dialog");
 var highlight_2 = require("./highlight");
 var readium_css_1 = require("./readium-css");
-var selection_1 = require("./selection");
 var IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 var win = global.window;
 var _dialogState;
@@ -304,27 +302,6 @@ function ttsPreviewAndEventuallyPlayQueueIndex(n) {
     ttsPlayQueueIndexDebounced(n);
 }
 exports.ttsPreviewAndEventuallyPlayQueueIndex = ttsPreviewAndEventuallyPlayQueueIndex;
-var _getCssSelectorOptions = {
-    className: function (_str) {
-        return true;
-    },
-    idName: function (_str) {
-        return true;
-    },
-    tagName: function (_str) {
-        return true;
-    },
-};
-function getCssSelector(element) {
-    try {
-        return (0, cssselector2_3_1.uniqueCssSelector)(element, win.document, _getCssSelectorOptions);
-    }
-    catch (err) {
-        console.log("uniqueCssSelector:");
-        console.log(err);
-        return "";
-    }
-}
 function throttle(fn, time) {
     var called = false;
     var lastCalled;
@@ -356,6 +333,17 @@ var focusScrollImmediate = throttle(function (el, doFocus, animate, domRect) {
         _dialogState.focusScrollRaw(el, doFocus, animate, domRect);
     }
 }, 500);
+var isOnlyWhiteSpace = function (str) {
+    for (var i = 0; i < str.length; i++) {
+        if (str[i] !== " " &&
+            str[i] !== "\t" &&
+            str[i] !== "\n" &&
+            str[i] !== "\r") {
+            return false;
+        }
+    }
+    return true;
+};
 var _ttsQueueItemHighlightsSentence;
 var _ttsQueueItemHighlightsWord;
 function wrapHighlightWord(ttsQueueItemRef, utteranceText, charIndex, charLength) {
@@ -399,7 +387,7 @@ function wrapHighlightWord(ttsQueueItemRef, utteranceText, charIndex, charLength
             if (!txtNode.nodeValue && txtNode.nodeValue !== "") {
                 continue;
             }
-            var l = txtNode.nodeValue.length;
+            var l = isOnlyWhiteSpace(txtNode.nodeValue) ? 1 : txtNode.nodeValue.length;
             acc += l;
             if (!rangeStartNode) {
                 if (charIndexAdjusted < acc) {
@@ -429,12 +417,6 @@ function wrapHighlightWord(ttsQueueItemRef, utteranceText, charIndex, charLength
             var domRect = range.getBoundingClientRect();
             focusScrollImmediate(ttsQueueItemRef.item.parentElement, false, true, domRect);
         }
-        var tuple = (0, selection_1.convertRange)(range, getCssSelector, function (_node) { return ""; });
-        if (!tuple) {
-            return;
-        }
-        var rangeInfo = tuple[0];
-        var textInfo = tuple[1];
         var highlightDefinitions = [
             {
                 color: {
@@ -444,15 +426,8 @@ function wrapHighlightWord(ttsQueueItemRef, utteranceText, charIndex, charLength
                 },
                 drawType: highlight_1.HighlightDrawTypeUnderline,
                 expand: 2,
-                selectionInfo: {
-                    rawBefore: textInfo.rawBefore,
-                    rawText: textInfo.rawText,
-                    rawAfter: textInfo.rawAfter,
-                    cleanBefore: textInfo.cleanBefore,
-                    cleanText: textInfo.cleanText,
-                    cleanAfter: textInfo.cleanAfter,
-                    rangeInfo: rangeInfo,
-                },
+                selectionInfo: undefined,
+                range: range,
             },
         ];
         _ttsQueueItemHighlightsWord = (0, highlight_2.createHighlights)(win, highlightDefinitions, false);
@@ -504,7 +479,7 @@ function wrapHighlight(doHighlight, ttsQueueItemRef) {
                     if (!txtNode.nodeValue && txtNode.nodeValue !== "") {
                         continue;
                     }
-                    var l = txtNode.nodeValue.length;
+                    var l = isOnlyWhiteSpace(txtNode.nodeValue) ? 1 : txtNode.nodeValue.length;
                     acc += l;
                     if (!rangeStartNode) {
                         if (sentBegin < acc) {
@@ -538,24 +513,18 @@ function wrapHighlight(doHighlight, ttsQueueItemRef) {
             if (!firstTextNode.nodeValue && firstTextNode.nodeValue !== "") {
                 return;
             }
-            range.setStart(firstTextNode, 0);
+            range.setStart(firstTextNode, isOnlyWhiteSpace(firstTextNode.nodeValue) ? firstTextNode.nodeValue.length - 1 : 0);
             var lastTextNode = ttsQueueItem.textNodes[ttsQueueItem.textNodes.length - 1];
             if (!lastTextNode.nodeValue && lastTextNode.nodeValue !== "") {
                 return;
             }
-            range.setEnd(lastTextNode, lastTextNode.nodeValue.length);
+            range.setEnd(lastTextNode, isOnlyWhiteSpace(lastTextNode.nodeValue) ? 1 : lastTextNode.nodeValue.length);
         }
         if (range) {
             if (_dialogState && _dialogState.focusScrollRaw) {
                 var domRect = range.getBoundingClientRect();
                 focusScrollImmediate(ttsQueueItemRef.item.parentElement, false, true, domRect);
             }
-            var tuple = (0, selection_1.convertRange)(range, getCssSelector, function (_node) { return ""; });
-            if (!tuple) {
-                return;
-            }
-            var rangeInfo = tuple[0];
-            var textInfo = tuple[1];
             var highlightDefinitions = [
                 {
                     color: {
@@ -565,15 +534,8 @@ function wrapHighlight(doHighlight, ttsQueueItemRef) {
                     },
                     drawType: highlight_1.HighlightDrawTypeBackground,
                     expand: 4,
-                    selectionInfo: {
-                        rawBefore: textInfo.rawBefore,
-                        rawText: textInfo.rawText,
-                        rawAfter: textInfo.rawAfter,
-                        cleanBefore: textInfo.cleanBefore,
-                        cleanText: textInfo.cleanText,
-                        cleanAfter: textInfo.cleanAfter,
-                        rangeInfo: rangeInfo,
-                    },
+                    selectionInfo: undefined,
+                    range: range,
                 },
             ];
             _ttsQueueItemHighlightsSentence = (0, highlight_2.createHighlights)(win, highlightDefinitions, false);

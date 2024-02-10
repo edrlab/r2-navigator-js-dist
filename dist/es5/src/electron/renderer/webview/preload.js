@@ -450,7 +450,9 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, function (_event, payload)
         var scrollTop_1 = scrollElement_1.scrollTop;
         var scrollLeft_1 = scrollElement_1.scrollLeft;
         win.location.href = "#";
+        delayScrollIntoView = true;
         setTimeout(function () {
+            debug("location HREF # hash, reset scroll left/top: ", scrollTop_1, scrollLeft_1);
             scrollElement_1.scrollTop = scrollTop_1;
             scrollElement_1.scrollLeft = scrollLeft_1;
         }, 0);
@@ -461,12 +463,12 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, function (_event, payload)
     if (delayScrollIntoView) {
         setTimeout(function () {
             debug("++++ scrollToHashRaw FROM DELAYED SCROLL_TO");
-            scrollToHashRaw(false);
+            scrollToHashRaw(false, true);
         }, 100);
     }
     else {
         debug("++++ scrollToHashRaw FROM SCROLL_TO");
-        scrollToHashRaw(false);
+        scrollToHashRaw(false, true);
     }
 });
 function resetLocationHashOverrideInfo() {
@@ -944,11 +946,13 @@ function scrollIntoView(element, domRect) {
         Math.min(Math.abs(scrollLeftPotentiallyExcessive), maxScrollShift);
     scrollElement.scrollLeft = scrollOffset;
 }
-var scrollToHashRaw = function (animate) {
+var scrollToHashRaw = function (animate, skipRedraw) {
     if (!win.document || !win.document.body || !win.document.documentElement) {
         return;
     }
-    (0, highlight_1.recreateAllHighlightsRaw)(win);
+    if (!skipRedraw) {
+        (0, highlight_1.recreateAllHighlightsRaw)(win);
+    }
     debug("++++ scrollToHashRaw");
     var isPaged = (0, readium_css_inject_1.isPaginated)(win.document);
     var vwm = (0, readium_css_1.isVerticalWritingMode)();
@@ -1056,7 +1060,7 @@ var scrollToHashRaw = function (animate) {
                     return;
                 }
             }
-            else if (gotoProgression) {
+            else if (typeof gotoProgression !== "undefined") {
                 var maxScrollShift = (0, readium_css_1.calculateMaxScrollShift)().maxScrollShift;
                 if (isPaged) {
                     var isTwoPage = (0, readium_css_1.isTwoPageSpread)();
@@ -1072,6 +1076,7 @@ var scrollToHashRaw = function (animate) {
                     ensureTwoPageSpreadWithOddColumnsIsOffset(scrollOffsetPotentiallyExcessive, maxScrollShift);
                     var scrollOffsetPaged = (scrollOffsetPotentiallyExcessive < 0 ? -1 : 1) *
                         Math.min(Math.abs(scrollOffsetPotentiallyExcessive), maxScrollShift);
+                    debug("gotoProgression, set scroll left/top (paged): ", scrollOffsetPaged);
                     _ignoreScrollEvent = true;
                     if (vwm) {
                         scrollElement.scrollTop = scrollOffsetPaged;
@@ -1093,6 +1098,7 @@ var scrollToHashRaw = function (animate) {
                     return;
                 }
                 var scrollOffset = gotoProgression * maxScrollShift;
+                debug("gotoProgression, set scroll left/top (scrolled): ", scrollOffset);
                 _ignoreScrollEvent = true;
                 if (vwm) {
                     scrollElement.scrollLeft = ((0, readium_css_1.isRTL)() ? -1 : 1) * scrollOffset;
@@ -3006,11 +3012,12 @@ if (!win.READIUM2.isAudio) {
                 },
             ] :
             payloadPing.highlightDefinitions;
+        var selInfo = (0, selection_2.getCurrentSelectionInfo)(win, getCssSelector, exports.computeCFI);
         try {
             for (var highlightDefinitions_1 = tslib_1.__values(highlightDefinitions), highlightDefinitions_1_1 = highlightDefinitions_1.next(); !highlightDefinitions_1_1.done; highlightDefinitions_1_1 = highlightDefinitions_1.next()) {
                 var highlightDefinition = highlightDefinitions_1_1.value;
                 if (!highlightDefinition.selectionInfo) {
-                    highlightDefinition.selectionInfo = (0, selection_2.getCurrentSelectionInfo)(win, getCssSelector, exports.computeCFI);
+                    highlightDefinition.selectionInfo = selInfo;
                 }
             }
         }

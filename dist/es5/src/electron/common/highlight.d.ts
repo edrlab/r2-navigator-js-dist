@@ -9,7 +9,8 @@ export declare const HighlightDrawTypeUnderline = 1;
 export declare const HighlightDrawTypeStrikethrough = 2;
 export interface IHighlight {
     id: string;
-    selectionInfo: ISelectionInfo;
+    selectionInfo?: ISelectionInfo;
+    range?: Range;
     color: IColor;
     pointerInteraction: boolean;
     drawType?: number;
@@ -17,6 +18,7 @@ export interface IHighlight {
 }
 export interface IHighlightDefinition {
     selectionInfo: ISelectionInfo | undefined;
+    range?: Range;
     color: IColor | undefined;
     drawType?: number;
     expand?: number;

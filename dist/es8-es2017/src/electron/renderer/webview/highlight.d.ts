@@ -14,4 +14,4 @@ export declare function recreateAllHighlightsRaw(win: ReadiumElectronWebviewWind
 export declare const recreateAllHighlightsDebounced: debounce.DebouncedFunction<(win: ReadiumElectronWebviewWindow) => void>;
 export declare function recreateAllHighlights(win: ReadiumElectronWebviewWindow): void;
 export declare function createHighlights(win: ReadiumElectronWebviewWindow, highDefs: IHighlightDefinition[], pointerInteraction: boolean): Array<IHighlight | null>;
-export declare function createHighlight(win: ReadiumElectronWebviewWindow, selectionInfo: ISelectionInfo, color: IColor | undefined, pointerInteraction: boolean, drawType: number | undefined, expand: number | undefined, bodyRect: DOMRect, bodyWidth: number): [IHighlight, HTMLDivElement | null];
+export declare function createHighlight(win: ReadiumElectronWebviewWindow, selectionInfo: ISelectionInfo | undefined, range: Range | undefined, color: IColor | undefined, pointerInteraction: boolean, drawType: number | undefined, expand: number | undefined, bodyRect: DOMRect, bodyWidth: number): [IHighlight, HTMLDivElement | null];

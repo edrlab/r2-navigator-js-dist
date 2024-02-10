@@ -297,7 +297,7 @@ function processMouseEvent(win, ev) {
         }
         return;
     }
-    if (foundElement.getAttribute("data-click")) {
+    if (foundHighlight.pointerInteraction || foundElement.getAttribute("data-click")) {
         if (isMouseMove) {
             if (changeCursor) {
                 documant.documentElement.classList.add(_drawMarginMarkers ? styles_1.CLASS_HIGHLIGHT_CURSOR1 : styles_1.CLASS_HIGHLIGHT_CURSOR2);
@@ -477,11 +477,11 @@ function createHighlights(win, highDefs, pointerInteraction) {
     try {
         for (var highDefs_1 = tslib_1.__values(highDefs), highDefs_1_1 = highDefs_1.next(); !highDefs_1_1.done; highDefs_1_1 = highDefs_1.next()) {
             var highDef = highDefs_1_1.value;
-            if (!highDef.selectionInfo) {
+            if (!highDef.selectionInfo && !highDef.range) {
                 highlights.push(null);
                 continue;
             }
-            var _b = tslib_1.__read(createHighlight(win, highDef.selectionInfo, highDef.color, pointerInteraction, highDef.drawType, highDef.expand, bodyRect, bodyWidth), 2), high = _b[0], div = _b[1];
+            var _b = tslib_1.__read(createHighlight(win, highDef.selectionInfo, highDef.range, highDef.color, pointerInteraction, highDef.drawType, highDef.expand, bodyRect, bodyWidth), 2), high = _b[0], div = _b[1];
             highlights.push(high);
             if (div) {
                 docFrag.append(div);
@@ -500,8 +500,36 @@ function createHighlights(win, highDefs, pointerInteraction) {
     return highlights;
 }
 exports.createHighlights = createHighlights;
-function createHighlight(win, selectionInfo, color, pointerInteraction, drawType, expand, bodyRect, bodyWidth) {
-    var uniqueStr = "".concat(selectionInfo.rangeInfo.startContainerElementCssSelector).concat(selectionInfo.rangeInfo.startContainerChildTextNodeIndex).concat(selectionInfo.rangeInfo.startOffset).concat(selectionInfo.rangeInfo.endContainerElementCssSelector).concat(selectionInfo.rangeInfo.endContainerChildTextNodeIndex).concat(selectionInfo.rangeInfo.endOffset);
+var computeCFI = function (node) {
+    if (node.nodeType !== Node.ELEMENT_NODE) {
+        if (node.parentNode) {
+            return computeCFI(node.parentNode);
+        }
+        return undefined;
+    }
+    var cfi = "";
+    var currentElement = node;
+    while (currentElement.parentNode && currentElement.parentNode.nodeType === Node.ELEMENT_NODE) {
+        var currentElementParentChildren = currentElement.parentNode.children;
+        var currentElementIndex = -1;
+        for (var i = 0; i < currentElementParentChildren.length; i++) {
+            if (currentElement === currentElementParentChildren[i]) {
+                currentElementIndex = i;
+                break;
+            }
+        }
+        if (currentElementIndex >= 0) {
+            var cfiIndex = (currentElementIndex + 1) * 2;
+            cfi = cfiIndex +
+                (currentElement.id ? ("[" + currentElement.id + "]") : "") +
+                (cfi.length ? ("/" + cfi) : "");
+        }
+        currentElement = currentElement.parentNode;
+    }
+    return "/" + cfi;
+};
+function createHighlight(win, selectionInfo, range, color, pointerInteraction, drawType, expand, bodyRect, bodyWidth) {
+    var uniqueStr = selectionInfo ? "".concat(selectionInfo.rangeInfo.startContainerElementCssSelector).concat(selectionInfo.rangeInfo.startContainerChildTextNodeIndex).concat(selectionInfo.rangeInfo.startOffset).concat(selectionInfo.rangeInfo.endContainerElementCssSelector).concat(selectionInfo.rangeInfo.endContainerChildTextNodeIndex).concat(selectionInfo.rangeInfo.endOffset) : range ? "".concat(range.startOffset, "-").concat(range.endOffset, "-").concat(computeCFI(range.startContainer), "-").concat(computeCFI(range.endContainer)) : "_RANGE_";
     var checkSum = crypto.createHash("sha1");
     checkSum.update(uniqueStr);
     var shaHex = checkSum.digest("hex");
@@ -511,7 +539,7 @@ function createHighlight(win, selectionInfo, color, pointerInteraction, drawType
     while (_highlights.find(function (h) { return h.id === id; }) ||
         win.document.getElementById(id)) {
         if (IS_DEV) {
-            console.log("HIGHLIGHT ID already exists, increment: " + id);
+            console.log("HIGHLIGHT ID already exists, increment: " + uniqueStr + " ==> " + id);
         }
         id = "".concat(idBase, "_").concat(idIdx++);
     }
@@ -522,6 +550,7 @@ function createHighlight(win, selectionInfo, color, pointerInteraction, drawType
         id: id,
         pointerInteraction: pointerInteraction,
         selectionInfo: selectionInfo,
+        range: range,
     };
     _highlights.push(highlight);
     var div = createHighlightDom(win, highlight, bodyRect, bodyWidth);
@@ -532,7 +561,7 @@ function createHighlightDom(win, highlight, bodyRect, bodyWidth) {
     var e_4, _a;
     var documant = win.document;
     var scrollElement = (0, readium_css_1.getScrollingElement)(documant);
-    var range = (0, selection_1.convertRangeInfo)(documant, highlight.selectionInfo.rangeInfo);
+    var range = highlight.selectionInfo ? (0, selection_1.convertRangeInfo)(documant, highlight.selectionInfo.rangeInfo) : highlight.range;
     if (!range) {
         return null;
     }
@@ -549,8 +578,10 @@ function createHighlightDom(win, highlight, bodyRect, bodyWidth) {
     if (highlight.pointerInteraction) {
         highlightParent.setAttribute("data-click", "1");
     }
-    if (USE_BLEND_MODE && !_drawMarginMarkers) {
-        highlightParent.style.setProperty("mix-blend-mode", "multiply", "important");
+    if (USE_BLEND_MODE && (!_drawMarginMarkers || !highlight.pointerInteraction)) {
+        var styleAttr = win.document.documentElement.getAttribute("style");
+        var isNight = styleAttr ? styleAttr.indexOf("readium-night-on") > 0 : false;
+        highlightParent.style.setProperty("mix-blend-mode", isNight ? "difference" : "multiply", "important");
         highlightParent.style.setProperty("opacity", "".concat(opacity), "important");
     }
     var xOffset = paginated ? (-scrollElement.scrollLeft) : bodyRect.left;
@@ -591,7 +622,7 @@ function createHighlightDom(win, highlight, bodyRect, bodyWidth) {
     highlightBounding.style.setProperty("left", "".concat(highlightBounding.rect.left * scale, "px"), "important");
     highlightBounding.style.setProperty("top", "".concat(highlightBounding.rect.top * scale, "px"), "important");
     highlightParent.append(highlightBounding);
-    if (_drawMarginMarkers) {
+    if (_drawMarginMarkers && highlight.pointerInteraction) {
         var MARGIN_MARKER_THICKNESS = 8;
         var MARGIN_MARKER_OFFSET = 2;
         var highlightBoundingMargin = documant.createElement("div");
