@@ -26,22 +26,37 @@ function highlightsClickListen(highlightsClickListener) {
     _highlightsClickListener = highlightsClickListener;
 }
 exports.highlightsClickListen = highlightsClickListen;
-function highlightsRemoveAll(href) {
+function highlightsRemoveAll(href, groups) {
     var e_1, _a;
     var _this = this;
     var _b;
+    console.log("--HIGH-- highlightsRemoveAll: " + href + " ... " + JSON.stringify(groups));
     var activeWebViews = win.READIUM2.getActiveWebViews();
     var _loop_1 = function (activeWebView) {
         if (((_b = activeWebView.READIUM2.link) === null || _b === void 0 ? void 0 : _b.Href) !== href) {
             return "continue";
         }
         setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+            var payload;
             var _a;
             return tslib_1.__generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
                         if (!((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady)) return [3, 2];
-                        return [4, activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_REMOVE_ALL)];
+                        payload = {
+                            groups: groups,
+                        };
+                        if (groups) {
+                            if (activeWebView.READIUM2.highlights) {
+                                activeWebView.READIUM2.highlights = activeWebView.READIUM2.highlights.filter(function (h) {
+                                    return !h.group || !groups.includes(h.group);
+                                });
+                            }
+                        }
+                        else {
+                            activeWebView.READIUM2.highlights = undefined;
+                        }
+                        return [4, activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_REMOVE_ALL, payload)];
                     case 1:
                         _b.sent();
                         _b.label = 2;
@@ -69,6 +84,7 @@ function highlightsRemove(href, highlightIDs) {
     var e_2, _a;
     var _this = this;
     var _b;
+    console.log("--HIGH-- highlightsRemove: " + href + " ==> " + highlightIDs.length);
     var activeWebViews = win.READIUM2.getActiveWebViews();
     var _loop_2 = function (activeWebView) {
         if (((_b = activeWebView.READIUM2.link) === null || _b === void 0 ? void 0 : _b.Href) !== href) {
@@ -83,6 +99,11 @@ function highlightsRemove(href, highlightIDs) {
                 switch (_b.label) {
                     case 0:
                         if (!((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady)) return [3, 2];
+                        if (activeWebView.READIUM2.highlights) {
+                            activeWebView.READIUM2.highlights = activeWebView.READIUM2.highlights.filter(function (h) {
+                                return !highlightIDs.includes(h.id);
+                            });
+                        }
                         return [4, activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_REMOVE, payload)];
                     case 1:
                         _b.sent();
@@ -114,12 +135,14 @@ function highlightsCreate(href, highlightDefinitions) {
             return [2, new Promise(function (resolve, reject) {
                     var e_3, _a;
                     var _b;
+                    console.log("--HIGH-- highlightsCreate: " + href + " ==> " + (highlightDefinitions === null || highlightDefinitions === void 0 ? void 0 : highlightDefinitions.length));
                     var activeWebViews = win.READIUM2.getActiveWebViews();
                     var _loop_3 = function (activeWebView) {
                         if (((_b = activeWebView.READIUM2.link) === null || _b === void 0 ? void 0 : _b.Href) !== href) {
                             return "continue";
                         }
                         var cb = function (event) {
+                            var _a;
                             if (event.channel === events_1.R2_EVENT_HIGHLIGHT_CREATE) {
                                 var webview = event.currentTarget;
                                 if (webview !== activeWebView) {
@@ -132,6 +155,10 @@ function highlightsCreate(href, highlightDefinitions) {
                                     reject("highlightCreate fail?!");
                                 }
                                 else {
+                                    if (!webview.READIUM2.highlights) {
+                                        webview.READIUM2.highlights = [];
+                                    }
+                                    (_a = webview.READIUM2.highlights).push.apply(_a, tslib_1.__spreadArray([], tslib_1.__read(payloadPong.highlights.filter(function (h) { return !!h; })), false));
                                     resolve(payloadPong.highlights);
                                 }
                             }

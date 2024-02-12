@@ -310,7 +310,7 @@ function generateTtsQueue(rootElement, splitSentences) {
     }
     let first = true;
     function processElement(element) {
-        var _a, _b, _c, _d, _e, _f, _g;
+        var _a, _b, _c, _d, _e, _f, _g, _h;
         if (element.nodeType !== Node.ELEMENT_NODE) {
             first = false;
             return;
@@ -641,10 +641,12 @@ function generateTtsQueue(rootElement, splitSentences) {
                             }
                         }
                         else if (childTagNameLow === "svg") {
+                            let done = false;
                             const altAttr = childElement.getAttribute("aria-label");
                             if (altAttr) {
                                 const txt = altAttr.trim();
                                 if (txt) {
+                                    done = true;
                                     const lang = getLanguage(childElement);
                                     const dir = undefined;
                                     ttsQueue.push({
@@ -665,6 +667,7 @@ function generateTtsQueue(rootElement, splitSentences) {
                                     if (((_f = svgChild.tagName) === null || _f === void 0 ? void 0 : _f.toLowerCase()) === "title") {
                                         const txt = (_g = svgChild.textContent) === null || _g === void 0 ? void 0 : _g.trim();
                                         if (txt) {
+                                            done = true;
                                             const lang = getLanguage(svgChild);
                                             const dir = getDirection(svgChild);
                                             ttsQueue.push({
@@ -679,6 +682,37 @@ function generateTtsQueue(rootElement, splitSentences) {
                                             });
                                         }
                                         break;
+                                    }
+                                }
+                            }
+                            if (!done) {
+                                const iter = win.document.createNodeIterator(childElement, NodeFilter.SHOW_ELEMENT, {
+                                    acceptNode: (node) => node.nodeName.toLowerCase() === "text" ?
+                                        NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT,
+                                });
+                                let n;
+                                while (n = iter.nextNode()) {
+                                    const el = n;
+                                    try {
+                                        processElement(el);
+                                    }
+                                    catch (err) {
+                                        console.log("SVG TTS error: ", err);
+                                        const txt = (_h = el.textContent) === null || _h === void 0 ? void 0 : _h.trim();
+                                        if (txt) {
+                                            const lang = getLanguage(el);
+                                            const dir = getDirection(el);
+                                            ttsQueue.push({
+                                                combinedText: txt,
+                                                combinedTextSentences: undefined,
+                                                combinedTextSentencesRangeBegin: undefined,
+                                                combinedTextSentencesRangeEnd: undefined,
+                                                dir,
+                                                lang,
+                                                parentElement: el,
+                                                textNodes: [],
+                                            });
+                                        }
                                     }
                                 }
                             }

@@ -43,11 +43,11 @@ function obtainReadiumCss(rcss) {
     return r;
 }
 exports.obtainReadiumCss = obtainReadiumCss;
-function adjustReadiumCssJsonMessageForFixedLayout(webview, rcss) {
+function adjustReadiumCssJsonMessageForFixedLayout(webview, pubLink, rcss) {
     if (!webview) {
         return rcss;
     }
-    if (isFixedLayout(webview.READIUM2.link)) {
+    if (isFixedLayout(pubLink)) {
         return {
             fixedLayoutWebViewHeight: webview.clientHeight,
             fixedLayoutWebViewWidth: webview.clientWidth,

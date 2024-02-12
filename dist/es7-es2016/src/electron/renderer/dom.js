@@ -70,11 +70,20 @@ let _resizeSkip = 0;
 let _resizeWebviewsNeedReset = true;
 let _resizeTimeout;
 win.addEventListener("resize", () => {
-    var _a, _b, _c;
+    var _a;
     if (!win.READIUM2) {
         return;
     }
-    if (((_c = (_b = (_a = win.READIUM2.publication) === null || _a === void 0 ? void 0 : _a.Metadata) === null || _b === void 0 ? void 0 : _b.Rendition) === null || _c === void 0 ? void 0 : _c.Layout) !== "fixed") {
+    let atLeastOneFXL = false;
+    const actives = win.READIUM2.getActiveWebViews();
+    for (const activeWebView of actives) {
+        if ((0, readium_css_1.isFixedLayout)((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.link)) {
+            atLeastOneFXL = true;
+            break;
+        }
+    }
+    if (!atLeastOneFXL) {
+        debug("Window resize (TOP), !FXL SKIP ...");
         return;
     }
     if (_resizeSkip > 0) {
@@ -97,7 +106,7 @@ win.addEventListener("resize", () => {
         clearTimeout(_resizeTimeout);
     }
     _resizeTimeout = win.setTimeout(() => tslib_1.__awaiter(void 0, void 0, void 0, function* () {
-        var _d;
+        var _b;
         debug("Window resize (TOP), DEFERRED");
         _resizeTimeout = undefined;
         _resizeWebviewsNeedReset = true;
@@ -107,7 +116,7 @@ win.addEventListener("resize", () => {
             const wvSlot = activeWebView.getAttribute("data-wv-slot");
             if (wvSlot) {
                 try {
-                    if ((_d = activeWebView.READIUM2) === null || _d === void 0 ? void 0 : _d.DOMisReady) {
+                    if ((_b = activeWebView.READIUM2) === null || _b === void 0 ? void 0 : _b.DOMisReady) {
                         yield activeWebView.send("R2_EVENT_WINDOW_RESIZE", win.READIUM2.fixedLayoutZoomPercent);
                     }
                 }
@@ -125,11 +134,11 @@ electron_1.ipcRenderer.on("accessibility-support-changed", (_e, accessibilitySup
     debug("accessibility-support-changed event received in WebView ", accessibilitySupportEnabled);
     win.READIUM2.isScreenReaderMounted = accessibilitySupportEnabled;
 });
-function readiumCssApplyToWebview(loc, activeWebView, rcss) {
+function readiumCssApplyToWebview(loc, activeWebView, pubLink, rcss) {
     var _a;
     const actualReadiumCss = (0, readium_css_1.obtainReadiumCss)(rcss);
     activeWebView.READIUM2.readiumCss = actualReadiumCss;
-    const payloadRcss = (0, readium_css_1.adjustReadiumCssJsonMessageForFixedLayout)(activeWebView, actualReadiumCss);
+    const payloadRcss = (0, readium_css_1.adjustReadiumCssJsonMessageForFixedLayout)(activeWebView, pubLink || activeWebView.READIUM2.link, actualReadiumCss);
     if (activeWebView.style.transform &&
         activeWebView.style.transform !== "none" &&
         !activeWebView.hasAttribute("data-wv-fxl")) {
@@ -193,7 +202,7 @@ function readiumCssOnOff(rcss) {
     const loc = (0, location_1.getCurrentReadingLocation)();
     const activeWebViews = win.READIUM2.getActiveWebViews();
     for (const activeWebView of activeWebViews) {
-        readiumCssApplyToWebview(loc, activeWebView, rcss);
+        readiumCssApplyToWebview(loc, activeWebView, undefined, rcss);
     }
 }
 exports.readiumCssOnOff = readiumCssOnOff;
@@ -362,6 +371,7 @@ function createWebView(second) {
             id: 2,
             link: undefined,
             readiumCss: undefined,
+            highlights: undefined,
         };
         _webview2.setAttribute("id", "r2_webview2");
         domSlidingViewport.appendChild(_webview2);
@@ -375,6 +385,7 @@ function createWebView(second) {
             id: 1,
             link: undefined,
             readiumCss: undefined,
+            highlights: undefined,
         };
         _webview1.setAttribute("id", "r2_webview1");
         domSlidingViewport.appendChild(_webview1);

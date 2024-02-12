@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createHighlight = exports.createHighlights = exports.recreateAllHighlights = exports.recreateAllHighlightsDebounced = exports.recreateAllHighlightsRaw = exports.destroyHighlight = exports.destroyAllhighlights = exports.hideAllhighlights = exports.getBoundingClientRectOfDocumentBody = exports.CLASS_HIGHLIGHT_BOUNDING_AREA_MARGIN = exports.CLASS_HIGHLIGHT_BOUNDING_AREA = exports.CLASS_HIGHLIGHT_AREA = exports.CLASS_HIGHLIGHT_CONTAINER = void 0;
+exports.createHighlight = exports.createHighlights = exports.recreateAllHighlights = exports.recreateAllHighlightsDebounced = exports.recreateAllHighlightsRaw = exports.destroyHighlightsGroup = exports.destroyHighlight = exports.destroyAllhighlights = exports.hideAllhighlights = exports.getBoundingClientRectOfDocumentBody = exports.CLASS_HIGHLIGHT_BOUNDING_AREA_MARGIN = exports.CLASS_HIGHLIGHT_BOUNDING_AREA = exports.CLASS_HIGHLIGHT_AREA = exports.CLASS_HIGHLIGHT_CONTAINER = void 0;
 const crypto = require("crypto");
 const debounce = require("debounce");
 const electron_1 = require("electron");
@@ -394,6 +394,9 @@ function ensureHighlightsContainer(win) {
     return _highlightsContainer;
 }
 function hideAllhighlights(_documant) {
+    if (IS_DEV) {
+        console.log("--HIGH WEBVIEW-- hideAllhighlights: " + _highlights.length);
+    }
     if (_highlightsContainer) {
         _highlightsContainer.remove();
         _highlightsContainer = null;
@@ -401,11 +404,17 @@ function hideAllhighlights(_documant) {
 }
 exports.hideAllhighlights = hideAllhighlights;
 function destroyAllhighlights(documant) {
+    if (IS_DEV) {
+        console.log("--HIGH WEBVIEW-- destroyAllhighlights: " + _highlights.length);
+    }
     hideAllhighlights(documant);
     _highlights.splice(0, _highlights.length);
 }
 exports.destroyAllhighlights = destroyAllhighlights;
 function destroyHighlight(documant, id) {
+    if (IS_DEV) {
+        console.log("--HIGH WEBVIEW-- destroyHighlight: " + id + " ... " + _highlights.length);
+    }
     let i = -1;
     const highlight = _highlights.find((h, j) => {
         i = j;
@@ -420,11 +429,58 @@ function destroyHighlight(documant, id) {
     }
 }
 exports.destroyHighlight = destroyHighlight;
-function recreateAllHighlightsRaw(win) {
+function destroyHighlightsGroup(documant, group) {
+    if (IS_DEV) {
+        console.log("--HIGH WEBVIEW-- destroyHighlightsGroup: " + group + " ... " + _highlights.length);
+    }
+    while (true) {
+        let i = -1;
+        const highlight = _highlights.find((h, j) => {
+            i = j;
+            return h.group === group;
+        });
+        if (highlight) {
+            if (i >= 0 && i < _highlights.length) {
+                _highlights.splice(i, 1);
+            }
+            const highlightContainer = documant.getElementById(highlight.id);
+            if (highlightContainer) {
+                highlightContainer.remove();
+            }
+        }
+        else {
+            break;
+        }
+    }
+}
+exports.destroyHighlightsGroup = destroyHighlightsGroup;
+function recreateAllHighlightsRaw(win, highlights) {
+    if (IS_DEV) {
+        console.log("--HIGH WEBVIEW-- recreateAllHighlightsRaw: " + _highlights.length + " ==> " + (highlights === null || highlights === void 0 ? void 0 : highlights.length));
+    }
     const documant = win.document;
+    if (highlights) {
+        if (_highlights.length) {
+            if (IS_DEV) {
+                console.log("--HIGH WEBVIEW-- recreateAllHighlightsRaw DESTROY OLD BEFORE RESTORE BACKUP: " + _highlights.length + " ==> " + highlights.length);
+            }
+            destroyAllhighlights(documant);
+        }
+        if (IS_DEV) {
+            console.log("--HIGH WEBVIEW-- recreateAllHighlightsRaw RESTORE BACKUP: " + _highlights.length + " ==> " + highlights.length);
+        }
+        _highlights.push(...highlights);
+    }
+    if (!documant.body) {
+        if (IS_DEV) {
+            console.log("--HIGH WEBVIEW-- NO BODY?! (retrying...): " + _highlights.length);
+        }
+        (0, exports.recreateAllHighlightsDebounced)(win);
+        return;
+    }
     hideAllhighlights(documant);
     const bodyRect = getBoundingClientRectOfDocumentBody(win);
-    const bodyWidth = parseInt(win.getComputedStyle(win.document.body).width, 10);
+    const bodyWidth = parseInt(win.getComputedStyle(documant.body).width, 10);
     const docFrag = documant.createDocumentFragment();
     for (const highlight of _highlights) {
         const div = createHighlightDom(win, highlight, bodyRect, bodyWidth);
@@ -437,14 +493,23 @@ function recreateAllHighlightsRaw(win) {
 }
 exports.recreateAllHighlightsRaw = recreateAllHighlightsRaw;
 exports.recreateAllHighlightsDebounced = debounce((win) => {
+    if (IS_DEV) {
+        console.log("--HIGH WEBVIEW-- recreateAllHighlightsDebounced: " + _highlights.length);
+    }
     recreateAllHighlightsRaw(win);
 }, 500);
 function recreateAllHighlights(win) {
+    if (IS_DEV) {
+        console.log("--HIGH WEBVIEW-- recreateAllHighlights: " + _highlights.length);
+    }
     hideAllhighlights(win.document);
     (0, exports.recreateAllHighlightsDebounced)(win);
 }
 exports.recreateAllHighlights = recreateAllHighlights;
 function createHighlights(win, highDefs, pointerInteraction) {
+    if (IS_DEV) {
+        console.log("--HIGH WEBVIEW-- createHighlights: " + highDefs.length + " ... " + _highlights.length);
+    }
     const documant = win.document;
     const highlights = [];
     const bodyRect = getBoundingClientRectOfDocumentBody(win);
@@ -455,7 +520,7 @@ function createHighlights(win, highDefs, pointerInteraction) {
             highlights.push(null);
             continue;
         }
-        const [high, div] = createHighlight(win, highDef.selectionInfo, highDef.range, highDef.color, pointerInteraction, highDef.drawType, highDef.expand, bodyRect, bodyWidth);
+        const [high, div] = createHighlight(win, highDef.selectionInfo, highDef.range, highDef.color, pointerInteraction, highDef.drawType, highDef.expand, highDef.group, bodyRect, bodyWidth);
         highlights.push(high);
         if (div) {
             docFrag.append(div);
@@ -494,7 +559,7 @@ const computeCFI = (node) => {
     }
     return "/" + cfi;
 };
-function createHighlight(win, selectionInfo, range, color, pointerInteraction, drawType, expand, bodyRect, bodyWidth) {
+function createHighlight(win, selectionInfo, range, color, pointerInteraction, drawType, expand, group, bodyRect, bodyWidth) {
     const uniqueStr = selectionInfo ? `${selectionInfo.rangeInfo.startContainerElementCssSelector}${selectionInfo.rangeInfo.startContainerChildTextNodeIndex}${selectionInfo.rangeInfo.startOffset}${selectionInfo.rangeInfo.endContainerElementCssSelector}${selectionInfo.rangeInfo.endContainerChildTextNodeIndex}${selectionInfo.rangeInfo.endOffset}` : range ? `${range.startOffset}-${range.endOffset}-${computeCFI(range.startContainer)}-${computeCFI(range.endContainer)}` : "_RANGE_";
     const checkSum = crypto.createHash("sha1");
     checkSum.update(uniqueStr);
@@ -517,6 +582,7 @@ function createHighlight(win, selectionInfo, range, color, pointerInteraction, d
         pointerInteraction,
         selectionInfo,
         range,
+        group,
     };
     _highlights.push(highlight);
     const div = createHighlightDom(win, highlight, bodyRect, bodyWidth);

@@ -439,7 +439,7 @@ function generateTtsQueue(rootElement, splitSentences) {
     var first = true;
     function processElement(element) {
         var e_14, _a, e_15, _b, e_16, _c, e_17, _d;
-        var _e, _f, _g, _h, _j, _k, _l;
+        var _e, _f, _g, _h, _j, _k, _l, _m;
         if (element.nodeType !== Node.ELEMENT_NODE) {
             first = false;
             return;
@@ -501,8 +501,8 @@ function generateTtsQueue(rootElement, splitSentences) {
             elementStack.push(element);
         }
         try {
-            for (var _m = tslib_1.__values(element.childNodes), _o = _m.next(); !_o.done; _o = _m.next()) {
-                var childNode = _o.value;
+            for (var _o = tslib_1.__values(element.childNodes), _p = _o.next(); !_p.done; _p = _o.next()) {
+                var childNode = _p.value;
                 switch (childNode.nodeType) {
                     case Node.ELEMENT_NODE:
                         var childElement = childNode;
@@ -792,10 +792,12 @@ function generateTtsQueue(rootElement, splitSentences) {
                                 }
                             }
                             else if (childTagNameLow === "svg") {
+                                var done = false;
                                 var altAttr = childElement.getAttribute("aria-label");
                                 if (altAttr) {
                                     var txt = altAttr.trim();
                                     if (txt) {
+                                        done = true;
                                         var lang = getLanguage(childElement);
                                         var dir = undefined;
                                         ttsQueue.push({
@@ -818,6 +820,7 @@ function generateTtsQueue(rootElement, splitSentences) {
                                             if (((_k = svgChild.tagName) === null || _k === void 0 ? void 0 : _k.toLowerCase()) === "title") {
                                                 var txt = (_l = svgChild.textContent) === null || _l === void 0 ? void 0 : _l.trim();
                                                 if (txt) {
+                                                    done = true;
                                                     var lang = getLanguage(svgChild);
                                                     var dir = getDirection(svgChild);
                                                     ttsQueue.push({
@@ -843,6 +846,37 @@ function generateTtsQueue(rootElement, splitSentences) {
                                         finally { if (e_17) throw e_17.error; }
                                     }
                                 }
+                                if (!done) {
+                                    var iter = win.document.createNodeIterator(childElement, NodeFilter.SHOW_ELEMENT, {
+                                        acceptNode: function (node) { return node.nodeName.toLowerCase() === "text" ?
+                                            NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT; },
+                                    });
+                                    var n = void 0;
+                                    while (n = iter.nextNode()) {
+                                        var el = n;
+                                        try {
+                                            processElement(el);
+                                        }
+                                        catch (err) {
+                                            console.log("SVG TTS error: ", err);
+                                            var txt = (_m = el.textContent) === null || _m === void 0 ? void 0 : _m.trim();
+                                            if (txt) {
+                                                var lang = getLanguage(el);
+                                                var dir = getDirection(el);
+                                                ttsQueue.push({
+                                                    combinedText: txt,
+                                                    combinedTextSentences: undefined,
+                                                    combinedTextSentencesRangeBegin: undefined,
+                                                    combinedTextSentencesRangeEnd: undefined,
+                                                    dir: dir,
+                                                    lang: lang,
+                                                    parentElement: el,
+                                                    textNodes: [],
+                                                });
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                         break;
@@ -859,7 +893,7 @@ function generateTtsQueue(rootElement, splitSentences) {
         catch (e_14_1) { e_14 = { error: e_14_1 }; }
         finally {
             try {
-                if (_o && !_o.done && (_a = _m.return)) _a.call(_m);
+                if (_p && !_p.done && (_a = _o.return)) _a.call(_o);
             }
             finally { if (e_14) throw e_14.error; }
         }

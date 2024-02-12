@@ -1377,6 +1377,31 @@ function loaded(forced) {
     else {
         debug(">>> LOAD EVENT was not forced.");
     }
+    if (win.READIUM2.urlQueryParams) {
+        const b64Highlights = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_HIGHLIGHTS];
+        if (b64Highlights) {
+            setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+                let jsonStr;
+                try {
+                    const buff = Buffer.from(b64Highlights, "base64");
+                    const cs = new DecompressionStream("gzip");
+                    const csWriter = cs.writable.getWriter();
+                    csWriter.write(buff);
+                    csWriter.close();
+                    const buffer = Buffer.from(yield new Response(cs.readable).arrayBuffer());
+                    const jsonStr = new TextDecoder().decode(buffer);
+                    const highlights = JSON.parse(jsonStr);
+                    (0, highlight_1.recreateAllHighlightsRaw)(win, highlights);
+                }
+                catch (err) {
+                    debug("################## HIGHLIGHTS PARSE ERROR?!");
+                    debug(b64Highlights);
+                    debug(err);
+                    debug(jsonStr);
+                }
+            }), 10);
+        }
+    }
     if (win.READIUM2.isAudio) {
         showHideContentMask(false, win.READIUM2.isFixedLayout);
     }
@@ -1762,6 +1787,7 @@ function loaded(forced) {
             };
             electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_FXL_CONFIGURE, payload);
         }
+        (0, highlight_1.recreateAllHighlightsRaw)(win);
     });
     const onResizeRaw = () => {
         if (win.READIUM2.isFixedLayout) {
@@ -2566,8 +2592,11 @@ const findFollowingDescendantSiblingElementsWithID = (el) => {
     if (true) {
         followingElementIDs = [];
         if (!_elementsWithID) {
-            _elementsWithID = Array.from(win.document.querySelectorAll(`:not(#${styles_1.ID_HIGHLIGHTS_CONTAINER}):not(#${styles_1.POPUP_DIALOG_CLASS}):not(#${styles_1.SKIP_LINK_ID}) *[id]:not(#${styles_1.ID_HIGHLIGHTS_CONTAINER}):not(#${styles_1.POPUP_DIALOG_CLASS}):not(#${styles_1.SKIP_LINK_ID})`));
+            _elementsWithID = Array.from(win.document.querySelectorAll(`*:not(#${styles_1.ID_HIGHLIGHTS_CONTAINER}):not(#${styles_1.POPUP_DIALOG_CLASS}):not(#${styles_1.SKIP_LINK_ID}) *[id]:not(#${styles_1.ID_HIGHLIGHTS_CONTAINER}):not(#${styles_1.POPUP_DIALOG_CLASS}):not(#${styles_1.SKIP_LINK_ID})`));
         }
+        const elHighlightsContainer = win.document.getElementById(styles_1.ID_HIGHLIGHTS_CONTAINER);
+        const elPopupDialog = win.document.getElementById(styles_1.POPUP_DIALOG_CLASS);
+        const elSkipLink = win.document.getElementById(styles_1.SKIP_LINK_ID);
         for (let i = 0; i < _elementsWithID.length; i++) {
             const elementWithID = _elementsWithID[i];
             const id = elementWithID.id || elementWithID.getAttribute("id");
@@ -2576,7 +2605,31 @@ const findFollowingDescendantSiblingElementsWithID = (el) => {
             }
             const c = el.compareDocumentPosition(elementWithID);
             if ((c & Node.DOCUMENT_POSITION_FOLLOWING) || (c & Node.DOCUMENT_POSITION_CONTAINED_BY)) {
-                followingElementIDs.push(id);
+                let doPush = true;
+                if (elHighlightsContainer) {
+                    const c1 = elHighlightsContainer.compareDocumentPosition(elementWithID);
+                    if (c1 === 0 || (c1 & Node.DOCUMENT_POSITION_CONTAINED_BY)) {
+                        doPush = false;
+                        debug("findFollowingDescendantSiblingElementsWithID CSS selector failed? (highlights) " + id);
+                    }
+                }
+                if (elPopupDialog) {
+                    const c2 = elPopupDialog.compareDocumentPosition(elementWithID);
+                    if (c2 === 0 || (c2 & Node.DOCUMENT_POSITION_CONTAINED_BY)) {
+                        doPush = false;
+                        debug("findFollowingDescendantSiblingElementsWithID CSS selector failed? (popup dialog) " + id);
+                    }
+                }
+                if (elSkipLink) {
+                    const c3 = elSkipLink.compareDocumentPosition(elementWithID);
+                    if (c3 === 0 || (c3 & Node.DOCUMENT_POSITION_CONTAINED_BY)) {
+                        doPush = false;
+                        debug("findFollowingDescendantSiblingElementsWithID CSS selector failed? (skip link) " + id);
+                    }
+                }
+                if (doPush) {
+                    followingElementIDs.push(id);
+                }
             }
         }
     }
@@ -2630,12 +2683,15 @@ const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays) => {
     const { epubPage, epubPageID } = findPrecedingAncestorSiblingEpubPageBreak(win.READIUM2.locationHashOverride);
     const headings = findPrecedingAncestorSiblingHeadings(win.READIUM2.locationHashOverride);
     const followingElementIDs = findFollowingDescendantSiblingElementsWithID(win.READIUM2.locationHashOverride);
-    const secondWebViewHref = win.READIUM2.urlQueryParams &&
+    let secondWebViewHref = win.READIUM2.urlQueryParams &&
         win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_SECOND_WEBVIEW] &&
         win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_SECOND_WEBVIEW].length > 1 &&
         win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_SECOND_WEBVIEW].startsWith("0") ?
         win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_SECOND_WEBVIEW].substr(1) :
         undefined;
+    if (!secondWebViewHref) {
+        secondWebViewHref = undefined;
+    }
     win.READIUM2.locationHashOverrideInfo = {
         audioPlaybackInfo: undefined,
         docInfo: {
@@ -2865,6 +2921,7 @@ if (!win.READIUM2.isAudio) {
                     drawType: undefined,
                     expand: undefined,
                     selectionInfo: undefined,
+                    group: undefined,
                 },
             ] :
             payloadPing.highlightDefinitions;
@@ -2886,8 +2943,15 @@ if (!win.READIUM2.isAudio) {
             (0, highlight_1.destroyHighlight)(win.document, highlightID);
         });
     });
-    electron_1.ipcRenderer.on(events_1.R2_EVENT_HIGHLIGHT_REMOVE_ALL, (_event) => {
-        (0, highlight_1.destroyAllhighlights)(win.document);
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_HIGHLIGHT_REMOVE_ALL, (_event, payload) => {
+        if (payload.groups) {
+            for (const group of payload.groups) {
+                (0, highlight_1.destroyHighlightsGroup)(win.document, group);
+            }
+        }
+        else {
+            (0, highlight_1.destroyAllhighlights)(win.document);
+        }
     });
 }
 //# sourceMappingURL=preload.js.map

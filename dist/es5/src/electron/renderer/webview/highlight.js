@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createHighlight = exports.createHighlights = exports.recreateAllHighlights = exports.recreateAllHighlightsDebounced = exports.recreateAllHighlightsRaw = exports.destroyHighlight = exports.destroyAllhighlights = exports.hideAllhighlights = exports.getBoundingClientRectOfDocumentBody = exports.CLASS_HIGHLIGHT_BOUNDING_AREA_MARGIN = exports.CLASS_HIGHLIGHT_BOUNDING_AREA = exports.CLASS_HIGHLIGHT_AREA = exports.CLASS_HIGHLIGHT_CONTAINER = void 0;
+exports.createHighlight = exports.createHighlights = exports.recreateAllHighlights = exports.recreateAllHighlightsDebounced = exports.recreateAllHighlightsRaw = exports.destroyHighlightsGroup = exports.destroyHighlight = exports.destroyAllhighlights = exports.hideAllhighlights = exports.getBoundingClientRectOfDocumentBody = exports.CLASS_HIGHLIGHT_BOUNDING_AREA_MARGIN = exports.CLASS_HIGHLIGHT_BOUNDING_AREA = exports.CLASS_HIGHLIGHT_AREA = exports.CLASS_HIGHLIGHT_CONTAINER = void 0;
 var tslib_1 = require("tslib");
 var crypto = require("crypto");
 var debounce = require("debounce");
@@ -406,6 +406,9 @@ function ensureHighlightsContainer(win) {
     return _highlightsContainer;
 }
 function hideAllhighlights(_documant) {
+    if (IS_DEV) {
+        console.log("--HIGH WEBVIEW-- hideAllhighlights: " + _highlights.length);
+    }
     if (_highlightsContainer) {
         _highlightsContainer.remove();
         _highlightsContainer = null;
@@ -413,11 +416,17 @@ function hideAllhighlights(_documant) {
 }
 exports.hideAllhighlights = hideAllhighlights;
 function destroyAllhighlights(documant) {
+    if (IS_DEV) {
+        console.log("--HIGH WEBVIEW-- destroyAllhighlights: " + _highlights.length);
+    }
     hideAllhighlights(documant);
     _highlights.splice(0, _highlights.length);
 }
 exports.destroyAllhighlights = destroyAllhighlights;
 function destroyHighlight(documant, id) {
+    if (IS_DEV) {
+        console.log("--HIGH WEBVIEW-- destroyHighlight: " + id + " ... " + _highlights.length);
+    }
     var i = -1;
     var highlight = _highlights.find(function (h, j) {
         i = j;
@@ -432,12 +441,64 @@ function destroyHighlight(documant, id) {
     }
 }
 exports.destroyHighlight = destroyHighlight;
-function recreateAllHighlightsRaw(win) {
+function destroyHighlightsGroup(documant, group) {
+    if (IS_DEV) {
+        console.log("--HIGH WEBVIEW-- destroyHighlightsGroup: " + group + " ... " + _highlights.length);
+    }
+    var _loop_1 = function () {
+        var i = -1;
+        var highlight = _highlights.find(function (h, j) {
+            i = j;
+            return h.group === group;
+        });
+        if (highlight) {
+            if (i >= 0 && i < _highlights.length) {
+                _highlights.splice(i, 1);
+            }
+            var highlightContainer = documant.getElementById(highlight.id);
+            if (highlightContainer) {
+                highlightContainer.remove();
+            }
+        }
+        else {
+            return "break";
+        }
+    };
+    while (true) {
+        var state_1 = _loop_1();
+        if (state_1 === "break")
+            break;
+    }
+}
+exports.destroyHighlightsGroup = destroyHighlightsGroup;
+function recreateAllHighlightsRaw(win, highlights) {
     var e_2, _a;
+    if (IS_DEV) {
+        console.log("--HIGH WEBVIEW-- recreateAllHighlightsRaw: " + _highlights.length + " ==> " + (highlights === null || highlights === void 0 ? void 0 : highlights.length));
+    }
     var documant = win.document;
+    if (highlights) {
+        if (_highlights.length) {
+            if (IS_DEV) {
+                console.log("--HIGH WEBVIEW-- recreateAllHighlightsRaw DESTROY OLD BEFORE RESTORE BACKUP: " + _highlights.length + " ==> " + highlights.length);
+            }
+            destroyAllhighlights(documant);
+        }
+        if (IS_DEV) {
+            console.log("--HIGH WEBVIEW-- recreateAllHighlightsRaw RESTORE BACKUP: " + _highlights.length + " ==> " + highlights.length);
+        }
+        _highlights.push.apply(_highlights, tslib_1.__spreadArray([], tslib_1.__read(highlights), false));
+    }
+    if (!documant.body) {
+        if (IS_DEV) {
+            console.log("--HIGH WEBVIEW-- NO BODY?! (retrying...): " + _highlights.length);
+        }
+        (0, exports.recreateAllHighlightsDebounced)(win);
+        return;
+    }
     hideAllhighlights(documant);
     var bodyRect = getBoundingClientRectOfDocumentBody(win);
-    var bodyWidth = parseInt(win.getComputedStyle(win.document.body).width, 10);
+    var bodyWidth = parseInt(win.getComputedStyle(documant.body).width, 10);
     var docFrag = documant.createDocumentFragment();
     try {
         for (var _highlights_1 = tslib_1.__values(_highlights), _highlights_1_1 = _highlights_1.next(); !_highlights_1_1.done; _highlights_1_1 = _highlights_1.next()) {
@@ -460,15 +521,24 @@ function recreateAllHighlightsRaw(win) {
 }
 exports.recreateAllHighlightsRaw = recreateAllHighlightsRaw;
 exports.recreateAllHighlightsDebounced = debounce(function (win) {
+    if (IS_DEV) {
+        console.log("--HIGH WEBVIEW-- recreateAllHighlightsDebounced: " + _highlights.length);
+    }
     recreateAllHighlightsRaw(win);
 }, 500);
 function recreateAllHighlights(win) {
+    if (IS_DEV) {
+        console.log("--HIGH WEBVIEW-- recreateAllHighlights: " + _highlights.length);
+    }
     hideAllhighlights(win.document);
     (0, exports.recreateAllHighlightsDebounced)(win);
 }
 exports.recreateAllHighlights = recreateAllHighlights;
 function createHighlights(win, highDefs, pointerInteraction) {
     var e_3, _a;
+    if (IS_DEV) {
+        console.log("--HIGH WEBVIEW-- createHighlights: " + highDefs.length + " ... " + _highlights.length);
+    }
     var documant = win.document;
     var highlights = [];
     var bodyRect = getBoundingClientRectOfDocumentBody(win);
@@ -481,7 +551,7 @@ function createHighlights(win, highDefs, pointerInteraction) {
                 highlights.push(null);
                 continue;
             }
-            var _b = tslib_1.__read(createHighlight(win, highDef.selectionInfo, highDef.range, highDef.color, pointerInteraction, highDef.drawType, highDef.expand, bodyRect, bodyWidth), 2), high = _b[0], div = _b[1];
+            var _b = tslib_1.__read(createHighlight(win, highDef.selectionInfo, highDef.range, highDef.color, pointerInteraction, highDef.drawType, highDef.expand, highDef.group, bodyRect, bodyWidth), 2), high = _b[0], div = _b[1];
             highlights.push(high);
             if (div) {
                 docFrag.append(div);
@@ -528,7 +598,7 @@ var computeCFI = function (node) {
     }
     return "/" + cfi;
 };
-function createHighlight(win, selectionInfo, range, color, pointerInteraction, drawType, expand, bodyRect, bodyWidth) {
+function createHighlight(win, selectionInfo, range, color, pointerInteraction, drawType, expand, group, bodyRect, bodyWidth) {
     var uniqueStr = selectionInfo ? "".concat(selectionInfo.rangeInfo.startContainerElementCssSelector).concat(selectionInfo.rangeInfo.startContainerChildTextNodeIndex).concat(selectionInfo.rangeInfo.startOffset).concat(selectionInfo.rangeInfo.endContainerElementCssSelector).concat(selectionInfo.rangeInfo.endContainerChildTextNodeIndex).concat(selectionInfo.rangeInfo.endOffset) : range ? "".concat(range.startOffset, "-").concat(range.endOffset, "-").concat(computeCFI(range.startContainer), "-").concat(computeCFI(range.endContainer)) : "_RANGE_";
     var checkSum = crypto.createHash("sha1");
     checkSum.update(uniqueStr);
@@ -551,6 +621,7 @@ function createHighlight(win, selectionInfo, range, color, pointerInteraction, d
         pointerInteraction: pointerInteraction,
         selectionInfo: selectionInfo,
         range: range,
+        group: group,
     };
     _highlights.push(highlight);
     var div = createHighlightDom(win, highlight, bodyRect, bodyWidth);

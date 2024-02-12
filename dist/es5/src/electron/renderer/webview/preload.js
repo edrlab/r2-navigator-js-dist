@@ -1390,6 +1390,41 @@ function loaded(forced) {
     else {
         debug(">>> LOAD EVENT was not forced.");
     }
+    if (win.READIUM2.urlQueryParams) {
+        var b64Highlights_1 = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_HIGHLIGHTS];
+        if (b64Highlights_1) {
+            setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                var jsonStr, buff, cs, csWriter, buffer, _a, _b, jsonStr_1, highlights, err_1;
+                return tslib_1.__generator(this, function (_c) {
+                    switch (_c.label) {
+                        case 0:
+                            _c.trys.push([0, 2, , 3]);
+                            buff = Buffer.from(b64Highlights_1, "base64");
+                            cs = new DecompressionStream("gzip");
+                            csWriter = cs.writable.getWriter();
+                            csWriter.write(buff);
+                            csWriter.close();
+                            _b = (_a = Buffer).from;
+                            return [4, new Response(cs.readable).arrayBuffer()];
+                        case 1:
+                            buffer = _b.apply(_a, [_c.sent()]);
+                            jsonStr_1 = new TextDecoder().decode(buffer);
+                            highlights = JSON.parse(jsonStr_1);
+                            (0, highlight_1.recreateAllHighlightsRaw)(win, highlights);
+                            return [3, 3];
+                        case 2:
+                            err_1 = _c.sent();
+                            debug("################## HIGHLIGHTS PARSE ERROR?!");
+                            debug(b64Highlights_1);
+                            debug(err_1);
+                            debug(jsonStr);
+                            return [3, 3];
+                        case 3: return [2];
+                    }
+                });
+            }); }, 10);
+        }
+    }
     if (win.READIUM2.isAudio) {
         showHideContentMask(false, win.READIUM2.isFixedLayout);
     }
@@ -1809,6 +1844,7 @@ function loaded(forced) {
             };
             electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_FXL_CONFIGURE, payload);
         }
+        (0, highlight_1.recreateAllHighlightsRaw)(win);
     });
     var onResizeRaw = function () {
         if (win.READIUM2.isFixedLayout) {
@@ -2709,8 +2745,11 @@ var findFollowingDescendantSiblingElementsWithID = function (el) {
     if (true) {
         followingElementIDs = [];
         if (!_elementsWithID) {
-            _elementsWithID = Array.from(win.document.querySelectorAll(":not(#".concat(styles_1.ID_HIGHLIGHTS_CONTAINER, "):not(#").concat(styles_1.POPUP_DIALOG_CLASS, "):not(#").concat(styles_1.SKIP_LINK_ID, ") *[id]:not(#").concat(styles_1.ID_HIGHLIGHTS_CONTAINER, "):not(#").concat(styles_1.POPUP_DIALOG_CLASS, "):not(#").concat(styles_1.SKIP_LINK_ID, ")")));
+            _elementsWithID = Array.from(win.document.querySelectorAll("*:not(#".concat(styles_1.ID_HIGHLIGHTS_CONTAINER, "):not(#").concat(styles_1.POPUP_DIALOG_CLASS, "):not(#").concat(styles_1.SKIP_LINK_ID, ") *[id]:not(#").concat(styles_1.ID_HIGHLIGHTS_CONTAINER, "):not(#").concat(styles_1.POPUP_DIALOG_CLASS, "):not(#").concat(styles_1.SKIP_LINK_ID, ")")));
         }
+        var elHighlightsContainer = win.document.getElementById(styles_1.ID_HIGHLIGHTS_CONTAINER);
+        var elPopupDialog = win.document.getElementById(styles_1.POPUP_DIALOG_CLASS);
+        var elSkipLink = win.document.getElementById(styles_1.SKIP_LINK_ID);
         for (var i = 0; i < _elementsWithID.length; i++) {
             var elementWithID = _elementsWithID[i];
             var id = elementWithID.id || elementWithID.getAttribute("id");
@@ -2719,7 +2758,31 @@ var findFollowingDescendantSiblingElementsWithID = function (el) {
             }
             var c = el.compareDocumentPosition(elementWithID);
             if ((c & Node.DOCUMENT_POSITION_FOLLOWING) || (c & Node.DOCUMENT_POSITION_CONTAINED_BY)) {
-                followingElementIDs.push(id);
+                var doPush = true;
+                if (elHighlightsContainer) {
+                    var c1 = elHighlightsContainer.compareDocumentPosition(elementWithID);
+                    if (c1 === 0 || (c1 & Node.DOCUMENT_POSITION_CONTAINED_BY)) {
+                        doPush = false;
+                        debug("findFollowingDescendantSiblingElementsWithID CSS selector failed? (highlights) " + id);
+                    }
+                }
+                if (elPopupDialog) {
+                    var c2 = elPopupDialog.compareDocumentPosition(elementWithID);
+                    if (c2 === 0 || (c2 & Node.DOCUMENT_POSITION_CONTAINED_BY)) {
+                        doPush = false;
+                        debug("findFollowingDescendantSiblingElementsWithID CSS selector failed? (popup dialog) " + id);
+                    }
+                }
+                if (elSkipLink) {
+                    var c3 = elSkipLink.compareDocumentPosition(elementWithID);
+                    if (c3 === 0 || (c3 & Node.DOCUMENT_POSITION_CONTAINED_BY)) {
+                        doPush = false;
+                        debug("findFollowingDescendantSiblingElementsWithID CSS selector failed? (skip link) " + id);
+                    }
+                }
+                if (doPush) {
+                    followingElementIDs.push(id);
+                }
             }
         }
     }
@@ -2779,6 +2842,9 @@ var notifyReadingLocationRaw = function (userInteract, ignoreMediaOverlays) {
         win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_SECOND_WEBVIEW].startsWith("0") ?
         win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_SECOND_WEBVIEW].substr(1) :
         undefined;
+    if (!secondWebViewHref) {
+        secondWebViewHref = undefined;
+    }
     win.READIUM2.locationHashOverrideInfo = {
         audioPlaybackInfo: undefined,
         docInfo: {
@@ -3009,6 +3075,7 @@ if (!win.READIUM2.isAudio) {
                     drawType: undefined,
                     expand: undefined,
                     selectionInfo: undefined,
+                    group: undefined,
                 },
             ] :
             payloadPing.highlightDefinitions;
@@ -3040,8 +3107,26 @@ if (!win.READIUM2.isAudio) {
             (0, highlight_1.destroyHighlight)(win.document, highlightID);
         });
     });
-    electron_1.ipcRenderer.on(events_1.R2_EVENT_HIGHLIGHT_REMOVE_ALL, function (_event) {
-        (0, highlight_1.destroyAllhighlights)(win.document);
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_HIGHLIGHT_REMOVE_ALL, function (_event, payload) {
+        var e_12, _a;
+        if (payload.groups) {
+            try {
+                for (var _b = tslib_1.__values(payload.groups), _c = _b.next(); !_c.done; _c = _b.next()) {
+                    var group = _c.value;
+                    (0, highlight_1.destroyHighlightsGroup)(win.document, group);
+                }
+            }
+            catch (e_12_1) { e_12 = { error: e_12_1 }; }
+            finally {
+                try {
+                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                }
+                finally { if (e_12) throw e_12.error; }
+            }
+        }
+        else {
+            (0, highlight_1.destroyAllhighlights)(win.document);
+        }
     });
 }
 //# sourceMappingURL=preload.js.map

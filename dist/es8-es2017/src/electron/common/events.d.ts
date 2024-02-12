@@ -176,6 +176,9 @@ export interface IEventPayload_R2_EVENT_HIGHLIGHT_REMOVE {
     highlightIDs: string[];
 }
 export declare const R2_EVENT_HIGHLIGHT_REMOVE_ALL = "R2_EVENT_HIGHLIGHT_REMOVE_ALL";
+export interface IEventPayload_R2_EVENT_HIGHLIGHT_REMOVE_ALL {
+    groups: string[] | undefined;
+}
 export declare const R2_EVENT_HIGHLIGHT_CLICK = "R2_EVENT_HIGHLIGHT_CLICK";
 export interface IEventPayload_R2_EVENT_HIGHLIGHT_CLICK {
     highlight: IHighlight;

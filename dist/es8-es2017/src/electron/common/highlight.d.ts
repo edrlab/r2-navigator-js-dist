@@ -15,6 +15,7 @@ export interface IHighlight {
     pointerInteraction: boolean;
     drawType?: number;
     expand?: number;
+    group: string | undefined;
 }
 export interface IHighlightDefinition {
     selectionInfo: ISelectionInfo | undefined;
@@ -22,5 +23,6 @@ export interface IHighlightDefinition {
     color: IColor | undefined;
     drawType?: number;
     expand?: number;
+    group: string | undefined;
 }
 export declare function convertColorHexadecimalToRGBA(cssHex: string, alpha?: number): string | undefined;
