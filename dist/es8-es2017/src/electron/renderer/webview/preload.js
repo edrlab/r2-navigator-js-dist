@@ -1376,6 +1376,9 @@ function loaded(forced) {
     else {
         debug(">>> LOAD EVENT was not forced.");
     }
+    _elementsWithID = undefined;
+    _allEpubPageBreaks = undefined;
+    _allHeadings = undefined;
     if (win.READIUM2.urlQueryParams) {
         const b64Highlights = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_HIGHLIGHTS];
         if (b64Highlights) {
@@ -1390,7 +1393,8 @@ function loaded(forced) {
                     const buffer = Buffer.from(await new Response(cs.readable).arrayBuffer());
                     const jsonStr = new TextDecoder().decode(buffer);
                     const highlights = JSON.parse(jsonStr);
-                    (0, highlight_1.recreateAllHighlightsRaw)(win, highlights);
+                    (0, highlight_1.setDrawMargin)(win, highlights.margin);
+                    (0, highlight_1.recreateAllHighlightsRaw)(win, highlights.list);
                 }
                 catch (err) {
                     debug("################## HIGHLIGHTS PARSE ERROR?!");
@@ -2364,9 +2368,9 @@ const computeProgressionData = () => {
     };
 };
 exports.computeProgressionData = computeProgressionData;
-const _blacklistIdClassForCssSelectors = [styles_1.LINK_TARGET_CLASS, styles_1.CSS_CLASS_NO_FOCUS_OUTLINE, styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, styles_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA_MARGIN, styles_1.TTS_ID_SPEAKING_DOC_ELEMENT, styles_1.ROOT_CLASS_KEYBOARD_INTERACT, styles_1.ROOT_CLASS_INVISIBLE_MASK, styles_1.ROOT_CLASS_INVISIBLE_MASK_REMOVED, styles_1.CLASS_PAGINATED, styles_1.ROOT_CLASS_NO_FOOTNOTES];
+const _blacklistIdClassForCssSelectors = [styles_1.LINK_TARGET_CLASS, styles_1.LINK_TARGET_ALT_CLASS, styles_1.CSS_CLASS_NO_FOCUS_OUTLINE, styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, styles_1.ID_HIGHLIGHTS_CONTAINER, styles_1.CLASS_HIGHLIGHT_CONTAINER, styles_1.CLASS_HIGHLIGHT_AREA, styles_1.CLASS_HIGHLIGHT_BOUNDING_AREA, styles_1.CLASS_HIGHLIGHT_BOUNDING_AREA_MARGIN, styles_1.TTS_ID_SPEAKING_DOC_ELEMENT, styles_1.ROOT_CLASS_KEYBOARD_INTERACT, styles_1.ROOT_CLASS_INVISIBLE_MASK, styles_1.ROOT_CLASS_INVISIBLE_MASK_REMOVED, styles_1.CLASS_PAGINATED, styles_1.ROOT_CLASS_NO_FOOTNOTES];
 const _blacklistIdClassForCssSelectorsMathJax = ["mathjax", "ctxt", "mjx"];
-const _blacklistIdClassForCFI = [styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, styles_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA_MARGIN];
+const _blacklistIdClassForCFI = [styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, styles_1.ID_HIGHLIGHTS_CONTAINER, styles_1.CLASS_HIGHLIGHT_CONTAINER, styles_1.CLASS_HIGHLIGHT_AREA, styles_1.CLASS_HIGHLIGHT_BOUNDING_AREA, styles_1.CLASS_HIGHLIGHT_BOUNDING_AREA_MARGIN];
 const _blacklistIdClassForCFIMathJax = ["mathjax", "ctxt", "mjx"];
 const computeCFI = (node) => {
     if (node.nodeType !== Node.ELEMENT_NODE) {
@@ -2715,10 +2719,8 @@ const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays) => {
         text,
         title: _docTitle,
         userInteract: userInteract ? true : false,
+        followingElementIDs,
     };
-    if (followingElementIDs) {
-        win.READIUM2.locationHashOverrideInfo.followingElementIDs = followingElementIDs;
-    }
     const payload = win.READIUM2.locationHashOverrideInfo;
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_READING_LOCATION, payload);
     if (!ignoreMediaOverlays) {
@@ -2810,6 +2812,12 @@ if (!win.READIUM2.isAudio) {
             win.document.documentElement.classList.remove(styles_1.R2_MO_CLASS_ACTIVE_PLAYBACK, activeClassPlayback);
         }
         else {
+            if (true || !payload.captionsMode) {
+                (0, selection_2.clearCurrentSelection)(win);
+                if ((0, popup_dialog_1.isPopupDialogOpen)(win.document)) {
+                    (0, popup_dialog_1.closePopupDialogs)(win.document);
+                }
+            }
             win.document.documentElement.classList.add(activeClassPlayback);
             const targetEl = win.document.getElementById(payload.id);
             if (targetEl) {
@@ -2908,10 +2916,7 @@ if (!win.READIUM2.isAudio) {
         if (payloadPing.highlightDefinitions &&
             payloadPing.highlightDefinitions.length === 1 &&
             payloadPing.highlightDefinitions[0].selectionInfo) {
-            const selection = win.getSelection();
-            if (selection) {
-                selection.removeAllRanges();
-            }
+            (0, selection_2.clearCurrentSelection)(win);
         }
         const highlightDefinitions = !payloadPing.highlightDefinitions ?
             [
@@ -2941,6 +2946,9 @@ if (!win.READIUM2.isAudio) {
         payload.highlightIDs.forEach((highlightID) => {
             (0, highlight_1.destroyHighlight)(win.document, highlightID);
         });
+    });
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_HIGHLIGHT_DRAW_MARGIN, (_event, payload) => {
+        (0, highlight_1.setDrawMargin)(win, payload.drawMargin);
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_HIGHLIGHT_REMOVE_ALL, (_event, payload) => {
         if (payload.groups) {

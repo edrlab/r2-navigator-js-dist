@@ -122,6 +122,9 @@ function ttsHandleIpcMessage(eventChannel, _eventArgs, eventCurrentTarget) {
     else if (eventChannel === events_1.R2_EVENT_TTS_DOC_END) {
         (0, location_1.navPreviousOrNext)(false, true, true);
     }
+    else if (eventChannel === events_1.R2_EVENT_TTS_DOC_BACK) {
+        (0, location_1.navPreviousOrNext)(true, true, true);
+    }
     else {
         return false;
     }

@@ -120,6 +120,11 @@ function locationHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
             handleLink(urlNoQueryParams, goPREVIOUS, false, activeWebView.READIUM2.readiumCss);
         }
     }
+    else if (eventChannel === events_1.R2_EVENT_READING_LOCATION_CLEAR_SELECTION) {
+        if (_lastSavedReadingLocation === null || _lastSavedReadingLocation === void 0 ? void 0 : _lastSavedReadingLocation.selectionInfo) {
+            _lastSavedReadingLocation.selectionInfo = undefined;
+        }
+    }
     else if (eventChannel === events_1.R2_EVENT_READING_LOCATION) {
         const payload = eventArgs[0];
         if (activeWebView.READIUM2.link) {
@@ -1059,7 +1064,10 @@ ${coverLink ? `<img id="${styles_1.AUDIO_COVER_ID}" src="${coverLink.Href}" alt=
             const highlights = activeWebView.READIUM2.link === pubLink ? activeWebView.READIUM2.highlights : undefined;
             setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
                 if (highlights) {
-                    const jsonStr = JSON.stringify(highlights);
+                    const jsonStr = JSON.stringify({
+                        margin: win.READIUM2.highlightsDrawMargin,
+                        list: highlights,
+                    });
                     const cs = new CompressionStream("gzip");
                     const csWriter = cs.writable.getWriter();
                     csWriter.write(new TextEncoder().encode(jsonStr));
@@ -1102,7 +1110,10 @@ ${coverLink ? `<img id="${styles_1.AUDIO_COVER_ID}" src="${coverLink.Href}" alt=
             const highlights = activeWebView.READIUM2.link === pubLink ? activeWebView.READIUM2.highlights : undefined;
             setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
                 if (highlights) {
-                    const jsonStr = JSON.stringify(highlights);
+                    const jsonStr = JSON.stringify({
+                        margin: win.READIUM2.highlightsDrawMargin,
+                        list: highlights,
+                    });
                     const cs = new CompressionStream("gzip");
                     const csWriter = cs.writable.getWriter();
                     csWriter.write(new TextEncoder().encode(jsonStr));
@@ -1222,10 +1233,8 @@ const _saveReadingLocation = (activeWebView, locator) => {
         secondWebViewHref: locator.secondWebViewHref || ((_b = otherActive === null || otherActive === void 0 ? void 0 : otherActive.READIUM2.link) === null || _b === void 0 ? void 0 : _b.Href),
         selectionInfo: locator.selectionInfo,
         selectionIsNew: locator.selectionIsNew,
+        followingElementIDs: locator.followingElementIDs,
     };
-    if (locator.followingElementIDs) {
-        _lastSavedReadingLocation.followingElementIDs = locator.followingElementIDs;
-    }
     if (IS_DEV) {
         debug(">->->");
         debug(_lastSavedReadingLocation);

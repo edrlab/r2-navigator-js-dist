@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.highlightsCreate = exports.highlightsRemove = exports.highlightsRemoveAll = exports.highlightsClickListen = exports.highlightsHandleIpcMessage = void 0;
+exports.highlightsDrawMargin = exports.highlightsCreate = exports.highlightsRemove = exports.highlightsRemoveAll = exports.highlightsClickListen = exports.highlightsHandleIpcMessage = void 0;
 var tslib_1 = require("tslib");
 var events_1 = require("../common/events");
 var win = global.window;
@@ -9,7 +9,7 @@ function highlightsHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget)
         var activeWebView = eventCurrentTarget;
         var payload = eventArgs[0];
         if (_highlightsClickListener && activeWebView.READIUM2.link) {
-            _highlightsClickListener(activeWebView.READIUM2.link.Href, payload.highlight);
+            _highlightsClickListener(activeWebView.READIUM2.link.Href, payload.highlight, payload.event);
         }
         return true;
     }
@@ -205,4 +205,44 @@ function highlightsCreate(href, highlightDefinitions) {
     });
 }
 exports.highlightsCreate = highlightsCreate;
+function highlightsDrawMargin(drawMargin) {
+    var e_4, _a;
+    var _this = this;
+    console.log("--HIGH-- highlightsDrawMargin: " + JSON.stringify(drawMargin, null, 4));
+    win.READIUM2.highlightsDrawMargin = drawMargin;
+    var activeWebViews = win.READIUM2.getActiveWebViews();
+    var _loop_4 = function (activeWebView) {
+        var payload = {
+            drawMargin: drawMargin,
+        };
+        setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+            var _a;
+            return tslib_1.__generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        if (!((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady)) return [3, 2];
+                        return [4, activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_DRAW_MARGIN, payload)];
+                    case 1:
+                        _b.sent();
+                        _b.label = 2;
+                    case 2: return [2];
+                }
+            });
+        }); }, 0);
+    };
+    try {
+        for (var activeWebViews_4 = tslib_1.__values(activeWebViews), activeWebViews_4_1 = activeWebViews_4.next(); !activeWebViews_4_1.done; activeWebViews_4_1 = activeWebViews_4.next()) {
+            var activeWebView = activeWebViews_4_1.value;
+            _loop_4(activeWebView);
+        }
+    }
+    catch (e_4_1) { e_4 = { error: e_4_1 }; }
+    finally {
+        try {
+            if (activeWebViews_4_1 && !activeWebViews_4_1.done && (_a = activeWebViews_4.return)) _a.call(activeWebViews_4);
+        }
+        finally { if (e_4) throw e_4.error; }
+    }
+}
+exports.highlightsDrawMargin = highlightsDrawMargin;
 //# sourceMappingURL=highlight.js.map

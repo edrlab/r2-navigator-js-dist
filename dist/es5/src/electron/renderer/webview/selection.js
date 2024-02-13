@@ -1,6 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.normalizeRange = exports.convertRangeInfo = exports.convertRange = exports.createOrderedRange = exports.getCurrentSelectionInfo = exports.cleanupStr = exports.collapseWhitespaces = exports.clearCurrentSelection = void 0;
+var electron_1 = require("electron");
+var events_1 = require("../../common/events");
 var IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 function dumpDebug(msg, startNode, startOffset, endNode, endOffset, getCssSelector) {
     console.log("$$$$$$$$$$$$$$$$$ " + msg);
@@ -49,11 +51,16 @@ function dumpDebug(msg, startNode, startOffset, endNode, endOffset, getCssSelect
     console.log("$$$$$$$$$$$$$$$$$");
 }
 function clearCurrentSelection(win) {
+    var _a;
     var selection = win.getSelection();
     if (!selection) {
         return;
     }
     selection.removeAllRanges();
+    if ((_a = win.READIUM2.locationHashOverrideInfo) === null || _a === void 0 ? void 0 : _a.selectionInfo) {
+        win.READIUM2.locationHashOverrideInfo.selectionInfo = undefined;
+    }
+    electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_READING_LOCATION_CLEAR_SELECTION);
 }
 exports.clearCurrentSelection = clearCurrentSelection;
 var collapseWhitespaces = function (str) {

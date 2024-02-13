@@ -120,6 +120,11 @@ function locationHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
             handleLink(urlNoQueryParams, goPREVIOUS, false, activeWebView.READIUM2.readiumCss);
         }
     }
+    else if (eventChannel === events_1.R2_EVENT_READING_LOCATION_CLEAR_SELECTION) {
+        if (_lastSavedReadingLocation === null || _lastSavedReadingLocation === void 0 ? void 0 : _lastSavedReadingLocation.selectionInfo) {
+            _lastSavedReadingLocation.selectionInfo = undefined;
+        }
+    }
     else if (eventChannel === events_1.R2_EVENT_READING_LOCATION) {
         var payload = eventArgs[0];
         if (activeWebView.READIUM2.link) {
@@ -861,7 +866,10 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
                     switch (_c.label) {
                         case 0:
                             if (!highlights_1) return [3, 2];
-                            jsonStr = JSON.stringify(highlights_1);
+                            jsonStr = JSON.stringify({
+                                margin: win.READIUM2.highlightsDrawMargin,
+                                list: highlights_1,
+                            });
                             cs = new CompressionStream("gzip");
                             csWriter = cs.writable.getWriter();
                             csWriter.write(new TextEncoder().encode(jsonStr));
@@ -915,7 +923,10 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
                     switch (_c.label) {
                         case 0:
                             if (!highlights_2) return [3, 2];
-                            jsonStr = JSON.stringify(highlights_2);
+                            jsonStr = JSON.stringify({
+                                margin: win.READIUM2.highlightsDrawMargin,
+                                list: highlights_2,
+                            });
                             cs = new CompressionStream("gzip");
                             csWriter = cs.writable.getWriter();
                             csWriter.write(new TextEncoder().encode(jsonStr));
@@ -1063,10 +1074,8 @@ var _saveReadingLocation = function (activeWebView, locator) {
         secondWebViewHref: locator.secondWebViewHref || ((_d = otherActive === null || otherActive === void 0 ? void 0 : otherActive.READIUM2.link) === null || _d === void 0 ? void 0 : _d.Href),
         selectionInfo: locator.selectionInfo,
         selectionIsNew: locator.selectionIsNew,
+        followingElementIDs: locator.followingElementIDs,
     };
-    if (locator.followingElementIDs) {
-        _lastSavedReadingLocation.followingElementIDs = locator.followingElementIDs;
-    }
     if (IS_DEV) {
         debug(">->->");
         debug(_lastSavedReadingLocation);

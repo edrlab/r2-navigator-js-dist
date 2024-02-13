@@ -465,6 +465,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
         ttsSkippabilityEnabled: false,
         ttsSentenceDetectionEnabled: true,
         ttsVoice: null,
+        highlightsDrawMargin: false,
     };
     electron_1.ipcRenderer.send("accessibility-support-changed");
     if (IS_DEV) {

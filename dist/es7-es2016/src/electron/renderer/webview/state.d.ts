@@ -68,6 +68,7 @@ export interface IReadiumElectronBrowserWindow {
     getActiveWebViews: () => IReadiumElectronWebview[];
     enableScreenReaderAccessibilityWebViewHardRefresh: boolean;
     isScreenReaderMounted: boolean;
+    highlightsDrawMargin: boolean | string[];
 }
 export interface IWithIReadiumElectronBrowserWindow {
     READIUM2: IReadiumElectronBrowserWindow;

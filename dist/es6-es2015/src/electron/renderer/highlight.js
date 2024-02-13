@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.highlightsCreate = exports.highlightsRemove = exports.highlightsRemoveAll = exports.highlightsClickListen = exports.highlightsHandleIpcMessage = void 0;
+exports.highlightsDrawMargin = exports.highlightsCreate = exports.highlightsRemove = exports.highlightsRemoveAll = exports.highlightsClickListen = exports.highlightsHandleIpcMessage = void 0;
 const tslib_1 = require("tslib");
 const events_1 = require("../common/events");
 const win = global.window;
@@ -9,7 +9,7 @@ function highlightsHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget)
         const activeWebView = eventCurrentTarget;
         const payload = eventArgs[0];
         if (_highlightsClickListener && activeWebView.READIUM2.link) {
-            _highlightsClickListener(activeWebView.READIUM2.link.Href, payload.highlight);
+            _highlightsClickListener(activeWebView.READIUM2.link.Href, payload.highlight, payload.event);
         }
         return true;
     }
@@ -130,4 +130,21 @@ function highlightsCreate(href, highlightDefinitions) {
     });
 }
 exports.highlightsCreate = highlightsCreate;
+function highlightsDrawMargin(drawMargin) {
+    console.log("--HIGH-- highlightsDrawMargin: " + JSON.stringify(drawMargin, null, 4));
+    win.READIUM2.highlightsDrawMargin = drawMargin;
+    const activeWebViews = win.READIUM2.getActiveWebViews();
+    for (const activeWebView of activeWebViews) {
+        const payload = {
+            drawMargin,
+        };
+        setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+            var _a;
+            if ((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady) {
+                yield activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_DRAW_MARGIN, payload);
+            }
+        }), 0);
+    }
+}
+exports.highlightsDrawMargin = highlightsDrawMargin;
 //# sourceMappingURL=highlight.js.map

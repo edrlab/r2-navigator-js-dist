@@ -48,6 +48,7 @@ export interface IEventPayload_R2_EVENT_FXL_CONFIGURE {
 export declare const R2_EVENT_SHOW = "R2_EVENT_SHOW";
 export declare const R2_EVENT_KEYBOARD_FOCUS_REQUEST = "R2_EVENT_KEYBOARD_FOCUS_REQUEST";
 export declare const R2_EVENT_READING_LOCATION = "R2_EVENT_READING_LOCATION";
+export declare const R2_EVENT_READING_LOCATION_CLEAR_SELECTION = "R2_EVENT_READING_LOCATION_CLEAR_SELECTION";
 export interface IEventPayload_R2_EVENT_READING_LOCATION extends Locator {
     audioPlaybackInfo: IAudioPlaybackInfo | undefined;
     paginationInfo: IPaginationInfo | undefined;
@@ -155,6 +156,7 @@ export declare const R2_EVENT_TTS_IS_STOPPED = "R2_EVENT_TTS_IS_STOPPED";
 export declare const R2_EVENT_TTS_IS_PAUSED = "R2_EVENT_TTS_IS_PAUSED";
 export declare const R2_EVENT_TTS_IS_PLAYING = "R2_EVENT_TTS_IS_PLAYING";
 export declare const R2_EVENT_TTS_DOC_END = "R2_EVENT_TTS_DOC_END";
+export declare const R2_EVENT_TTS_DOC_BACK = "R2_EVENT_TTS_DOC_BACK";
 export declare const R2_EVENT_TTS_DO_NEXT = "R2_EVENT_TTS_DO_NEXT";
 export declare const R2_EVENT_TTS_DO_PREVIOUS = "R2_EVENT_TTS_DO_PREVIOUS";
 export interface IEventPayload_R2_EVENT_TTS_DO_NEXT_OR_PREVIOUS {
@@ -175,6 +177,10 @@ export declare const R2_EVENT_HIGHLIGHT_REMOVE = "R2_EVENT_HIGHLIGHT_REMOVE";
 export interface IEventPayload_R2_EVENT_HIGHLIGHT_REMOVE {
     highlightIDs: string[];
 }
+export declare const R2_EVENT_HIGHLIGHT_DRAW_MARGIN = "R2_EVENT_HIGHLIGHT_DRAW_MARGIN";
+export interface IEventPayload_R2_EVENT_HIGHLIGHT_DRAW_MARGIN {
+    drawMargin: boolean | string[];
+}
 export declare const R2_EVENT_HIGHLIGHT_REMOVE_ALL = "R2_EVENT_HIGHLIGHT_REMOVE_ALL";
 export interface IEventPayload_R2_EVENT_HIGHLIGHT_REMOVE_ALL {
     groups: string[] | undefined;
@@ -182,6 +188,16 @@ export interface IEventPayload_R2_EVENT_HIGHLIGHT_REMOVE_ALL {
 export declare const R2_EVENT_HIGHLIGHT_CLICK = "R2_EVENT_HIGHLIGHT_CLICK";
 export interface IEventPayload_R2_EVENT_HIGHLIGHT_CLICK {
     highlight: IHighlight;
+    event: {
+        type: string;
+        button: number;
+        alt: boolean;
+        shift: boolean;
+        ctrl: boolean;
+        meta: boolean;
+        x: number;
+        y: number;
+    };
 }
 export declare const R2_EVENT_WEBVIEW_KEYDOWN = "R2_EVENT_WEBVIEW_KEYDOWN";
 export declare const R2_EVENT_WEBVIEW_KEYUP = "R2_EVENT_WEBVIEW_KEYUP";

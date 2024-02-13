@@ -264,6 +264,10 @@ function ttsNext(skipSentences = false) {
                     _dialogState.ttsQueueItem.iSentence);
         }
         if (j >= _dialogState.ttsQueueLength || j < 0) {
+            ttsStop();
+            setTimeout(() => {
+                electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_TTS_DOC_END);
+            }, 400);
             return;
         }
         ttsPause(true);
@@ -283,6 +287,10 @@ function ttsPrevious(skipSentences = false) {
             j = _dialogState.ttsQueueItem.iGlobal - _dialogState.ttsQueueItem.iSentence - 1;
         }
         if (j >= _dialogState.ttsQueueLength || j < 0) {
+            ttsStop();
+            setTimeout(() => {
+                electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_TTS_DOC_BACK);
+            }, 400);
             return;
         }
         ttsPause(true);

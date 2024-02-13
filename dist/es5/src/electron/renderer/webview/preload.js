@@ -1390,6 +1390,9 @@ function loaded(forced) {
     else {
         debug(">>> LOAD EVENT was not forced.");
     }
+    _elementsWithID = undefined;
+    _allEpubPageBreaks = undefined;
+    _allHeadings = undefined;
     if (win.READIUM2.urlQueryParams) {
         var b64Highlights_1 = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_HIGHLIGHTS];
         if (b64Highlights_1) {
@@ -1410,7 +1413,8 @@ function loaded(forced) {
                             buffer = _b.apply(_a, [_c.sent()]);
                             jsonStr_1 = new TextDecoder().decode(buffer);
                             highlights = JSON.parse(jsonStr_1);
-                            (0, highlight_1.recreateAllHighlightsRaw)(win, highlights);
+                            (0, highlight_1.setDrawMargin)(win, highlights.margin);
+                            (0, highlight_1.recreateAllHighlightsRaw)(win, highlights.list);
                             return [3, 3];
                         case 2:
                             err_1 = _c.sent();
@@ -2474,9 +2478,9 @@ var computeProgressionData = function () {
     };
 };
 exports.computeProgressionData = computeProgressionData;
-var _blacklistIdClassForCssSelectors = [styles_1.LINK_TARGET_CLASS, styles_1.CSS_CLASS_NO_FOCUS_OUTLINE, styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, styles_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA_MARGIN, styles_1.TTS_ID_SPEAKING_DOC_ELEMENT, styles_1.ROOT_CLASS_KEYBOARD_INTERACT, styles_1.ROOT_CLASS_INVISIBLE_MASK, styles_1.ROOT_CLASS_INVISIBLE_MASK_REMOVED, styles_1.CLASS_PAGINATED, styles_1.ROOT_CLASS_NO_FOOTNOTES];
+var _blacklistIdClassForCssSelectors = [styles_1.LINK_TARGET_CLASS, styles_1.LINK_TARGET_ALT_CLASS, styles_1.CSS_CLASS_NO_FOCUS_OUTLINE, styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, styles_1.ID_HIGHLIGHTS_CONTAINER, styles_1.CLASS_HIGHLIGHT_CONTAINER, styles_1.CLASS_HIGHLIGHT_AREA, styles_1.CLASS_HIGHLIGHT_BOUNDING_AREA, styles_1.CLASS_HIGHLIGHT_BOUNDING_AREA_MARGIN, styles_1.TTS_ID_SPEAKING_DOC_ELEMENT, styles_1.ROOT_CLASS_KEYBOARD_INTERACT, styles_1.ROOT_CLASS_INVISIBLE_MASK, styles_1.ROOT_CLASS_INVISIBLE_MASK_REMOVED, styles_1.CLASS_PAGINATED, styles_1.ROOT_CLASS_NO_FOOTNOTES];
 var _blacklistIdClassForCssSelectorsMathJax = ["mathjax", "ctxt", "mjx"];
-var _blacklistIdClassForCFI = [styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, styles_1.ID_HIGHLIGHTS_CONTAINER, highlight_1.CLASS_HIGHLIGHT_CONTAINER, highlight_1.CLASS_HIGHLIGHT_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA, highlight_1.CLASS_HIGHLIGHT_BOUNDING_AREA_MARGIN];
+var _blacklistIdClassForCFI = [styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, styles_1.ID_HIGHLIGHTS_CONTAINER, styles_1.CLASS_HIGHLIGHT_CONTAINER, styles_1.CLASS_HIGHLIGHT_AREA, styles_1.CLASS_HIGHLIGHT_BOUNDING_AREA, styles_1.CLASS_HIGHLIGHT_BOUNDING_AREA_MARGIN];
 var _blacklistIdClassForCFIMathJax = ["mathjax", "ctxt", "mjx"];
 var computeCFI = function (node) {
     if (node.nodeType !== Node.ELEMENT_NODE) {
@@ -2869,10 +2873,8 @@ var notifyReadingLocationRaw = function (userInteract, ignoreMediaOverlays) {
         text: text,
         title: _docTitle,
         userInteract: userInteract ? true : false,
+        followingElementIDs: followingElementIDs,
     };
-    if (followingElementIDs) {
-        win.READIUM2.locationHashOverrideInfo.followingElementIDs = followingElementIDs;
-    }
     var payload = win.READIUM2.locationHashOverrideInfo;
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_READING_LOCATION, payload);
     if (!ignoreMediaOverlays) {
@@ -2964,6 +2966,12 @@ if (!win.READIUM2.isAudio) {
             win.document.documentElement.classList.remove(styles_1.R2_MO_CLASS_ACTIVE_PLAYBACK, activeClassPlayback);
         }
         else {
+            if (true || !payload.captionsMode) {
+                (0, selection_2.clearCurrentSelection)(win);
+                if ((0, popup_dialog_1.isPopupDialogOpen)(win.document)) {
+                    (0, popup_dialog_1.closePopupDialogs)(win.document);
+                }
+            }
             win.document.documentElement.classList.add(activeClassPlayback);
             var targetEl = win.document.getElementById(payload.id);
             if (targetEl) {
@@ -3063,10 +3071,7 @@ if (!win.READIUM2.isAudio) {
         if (payloadPing.highlightDefinitions &&
             payloadPing.highlightDefinitions.length === 1 &&
             payloadPing.highlightDefinitions[0].selectionInfo) {
-            var selection = win.getSelection();
-            if (selection) {
-                selection.removeAllRanges();
-            }
+            (0, selection_2.clearCurrentSelection)(win);
         }
         var highlightDefinitions = !payloadPing.highlightDefinitions ?
             [
@@ -3106,6 +3111,9 @@ if (!win.READIUM2.isAudio) {
         payload.highlightIDs.forEach(function (highlightID) {
             (0, highlight_1.destroyHighlight)(win.document, highlightID);
         });
+    });
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_HIGHLIGHT_DRAW_MARGIN, function (_event, payload) {
+        (0, highlight_1.setDrawMargin)(win, payload.drawMargin);
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_HIGHLIGHT_REMOVE_ALL, function (_event, payload) {
         var e_12, _a;
