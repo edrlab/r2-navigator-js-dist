@@ -112,6 +112,7 @@ function processMouseEvent(win, ev) {
             documant.documentElement.classList.add(styles_1.CLASS_HIGHLIGHT_CURSOR2);
         }
         else if (ev.type === "mouseup" || ev.type === "click") {
+            documant.documentElement.classList.remove(styles_1.CLASS_HIGHLIGHT_CURSOR2);
             ev.preventDefault();
             ev.stopPropagation();
             const payload = {
@@ -363,6 +364,7 @@ function createHighlight(win, selectionInfo, range, color, pointerInteraction, d
 }
 exports.createHighlight = createHighlight;
 function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
+    var _a;
     const documant = win.document;
     const scrollElement = (0, readium_css_1.getScrollingElement)(documant);
     const range = highlight.selectionInfo ? (0, selection_1.convertRangeInfo)(documant, highlight.selectionInfo.rangeInfo) : highlight.range;
@@ -392,77 +394,128 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     const yOffset = paginated ? (-scrollElement.scrollTop) : bodyRect.top;
     const scale = 1 / ((win.READIUM2 && win.READIUM2.isFixedLayout) ? win.READIUM2.fxlViewportScale : 1);
     const doNotMergeHorizontallyAlignedRects = drawUnderline || drawStrikeThrough;
-    const expand = highlight.expand ? highlight.expand : 0;
     const rangeClientRects = range.getClientRects();
-    const clientRects = (0, rect_utils_1.getClientRectsNoOverlap_)(rangeClientRects, doNotMergeHorizontallyAlignedRects, expand);
+    const clientRects = (0, rect_utils_1.getClientRectsNoOverlap_)(rangeClientRects, doNotMergeHorizontallyAlignedRects, vertical, highlight.expand ? highlight.expand : 0);
     const underlineThickness = 3;
     const strikeThroughLineThickness = 4;
     const bodyWidth = parseInt(bodyComputedStyle.width, 10);
     const paginatedTwo = paginated && (0, readium_css_1.isTwoPageSpread)();
     const paginatedWidth = scrollElement.clientWidth / (paginatedTwo ? 2 : 1);
     const paginatedOffset = (paginatedWidth - bodyWidth) / 2 + parseInt(bodyComputedStyle.paddingLeft, 10);
-    const gap = 4;
-    const polygonsWithoutGap = [];
-    const polygonsWithGap = [];
+    const gap = 2;
+    const boxesNoGapExpanded = [];
+    const boxesGapExpanded = [];
     for (const clientRect of clientRects) {
-        {
-            const rect = {
-                height: clientRect.height,
-                left: clientRect.left - xOffset,
-                top: clientRect.top - yOffset,
-                width: clientRect.width,
-            };
-            const w = rect.width * scale;
-            const h = rect.height * scale;
-            const x = rect.left * scale;
-            const y = rect.top * scale;
-            if (drawStrikeThrough) {
-                const ww = (vertical ? strikeThroughLineThickness : rect.width) * scale;
-                const hh = (vertical ? rect.height : strikeThroughLineThickness) * scale;
-                const xx = (vertical ? (rect.left + (rect.width / 2) - (strikeThroughLineThickness / 2)) : rect.left) * scale;
-                const yy = (vertical ? rect.top : (rect.top + (rect.height / 2) - (strikeThroughLineThickness / 2))) * scale;
-                polygonsWithoutGap.push(new core_1.Polygon(new core_1.Box(Number((xx).toPrecision(12)), Number((yy).toPrecision(12)), Number((xx + ww).toPrecision(12)), Number((yy + hh).toPrecision(12)))));
+        const rect = {
+            height: clientRect.height,
+            left: clientRect.left - xOffset,
+            top: clientRect.top - yOffset,
+            width: clientRect.width,
+        };
+        const w = rect.width * scale;
+        const h = rect.height * scale;
+        const x = rect.left * scale;
+        const y = rect.top * scale;
+        boxesGapExpanded.push(new core_1.Box(Number((x - gap).toPrecision(12)), Number((y - gap).toPrecision(12)), Number((x + w + gap).toPrecision(12)), Number((y + h + gap).toPrecision(12))));
+        if (drawStrikeThrough) {
+            const ww = (vertical ? strikeThroughLineThickness : rect.width) * scale;
+            const hh = (vertical ? rect.height : strikeThroughLineThickness) * scale;
+            const xx = (vertical ? (rect.left + (rect.width / 2) - (strikeThroughLineThickness / 2)) : rect.left) * scale;
+            const yy = (vertical ? rect.top : (rect.top + (rect.height / 2) - (strikeThroughLineThickness / 2))) * scale;
+            boxesNoGapExpanded.push(new core_1.Box(Number((xx).toPrecision(12)), Number((yy).toPrecision(12)), Number((xx + ww).toPrecision(12)), Number((yy + hh).toPrecision(12))));
+        }
+        else {
+            if (drawUnderline) {
+                const ww = (vertical ? underlineThickness : rect.width) * scale;
+                const hh = (vertical ? rect.height : underlineThickness) * scale;
+                const xx = (vertical ? (rect.left - (underlineThickness / 2)) : rect.left) * scale;
+                const yy = (vertical ? rect.top : (rect.top + rect.height - (underlineThickness / 2))) * scale;
+                boxesNoGapExpanded.push(new core_1.Box(Number((xx).toPrecision(12)), Number((yy).toPrecision(12)), Number((xx + ww).toPrecision(12)), Number((yy + hh).toPrecision(12))));
             }
             else {
-                if (drawUnderline) {
-                    const ww = (vertical ? underlineThickness : rect.width) * scale;
-                    const hh = (vertical ? rect.height : underlineThickness) * scale;
-                    const xx = (vertical ? (rect.left - (underlineThickness / 2)) : rect.left) * scale;
-                    const yy = (vertical ? rect.top : (rect.top + rect.height - (underlineThickness / 2))) * scale;
-                    polygonsWithoutGap.push(new core_1.Polygon(new core_1.Box(Number((xx).toPrecision(12)), Number((yy).toPrecision(12)), Number((xx + ww).toPrecision(12)), Number((yy + hh).toPrecision(12)))));
-                }
-                else {
-                    polygonsWithoutGap.push(new core_1.Polygon(new core_1.Box(Number((x).toPrecision(12)), Number((y).toPrecision(12)), Number((x + w).toPrecision(12)), Number((y + h).toPrecision(12)))));
-                }
+                boxesNoGapExpanded.push(new core_1.Box(Number((x).toPrecision(12)), Number((y).toPrecision(12)), Number((x + w).toPrecision(12)), Number((y + h).toPrecision(12))));
             }
-            polygonsWithGap.push(new core_1.Polygon(new core_1.Box(Number((x - gap).toPrecision(12)), Number((y - gap).toPrecision(12)), Number((x + w + gap).toPrecision(12)), Number((y + h + gap).toPrecision(12)))));
         }
     }
-    const polygonCountour = polygonsWithGap.reduce((previous, current) => unify(previous, current), new core_1.Polygon());
-    const polygonSurface = polygonsWithoutGap.reduce((previous, current) => unify(previous, current), new core_1.Polygon());
+    const polygonCountourUnionPoly = boxesGapExpanded.reduce((previous, current) => unify(previous, new core_1.Polygon(current)), new core_1.Polygon());
+    Array.from(polygonCountourUnionPoly.faces).forEach((face) => {
+        if (face.orientation() !== core_1.ORIENTATION.CCW) {
+            if (IS_DEV) {
+                console.log("--HIGH WEBVIEW-- removing polygon clockwise face / inner hole (contour))");
+            }
+            polygonCountourUnionPoly.deleteFace(face);
+        }
+    });
+    let polygonSurface;
+    if (doNotMergeHorizontallyAlignedRects) {
+        const singleSVGPath = true;
+        if (singleSVGPath) {
+            polygonSurface = new core_1.Polygon();
+            for (const box of boxesNoGapExpanded) {
+                polygonSurface.addFace(box);
+            }
+        }
+        else {
+            polygonSurface = [];
+            for (const box of boxesNoGapExpanded) {
+                const poly = new core_1.Polygon();
+                poly.addFace(box);
+                polygonSurface.push(poly);
+            }
+        }
+    }
+    else {
+        polygonSurface = boxesNoGapExpanded.reduce((previous, current) => unify(previous, new core_1.Polygon(current)), new core_1.Polygon());
+        Array.from(polygonSurface.faces).forEach((face) => {
+            if (face.orientation() !== core_1.ORIENTATION.CCW) {
+                if (IS_DEV) {
+                    console.log("--HIGH WEBVIEW-- removing polygon clockwise face / inner hole (surface))");
+                }
+                polygonSurface.deleteFace(face);
+            }
+        });
+    }
     const highlightAreaSVG = documant.createElementNS(SVG_XML_NAMESPACE, "svg");
     highlightAreaSVG.setAttribute("class", `${styles_1.CLASS_HIGHLIGHT_COMMON} ${styles_1.CLASS_HIGHLIGHT_CONTOUR}`);
-    highlightAreaSVG.polygon = polygonCountour;
-    highlightAreaSVG.innerHTML = polygonSurface.svg({
-        fill: `rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue})`,
-        fillRule: "evenodd",
-        stroke: "transparent",
-        strokeWidth: 0,
-        fillOpacity: 1,
-        className: undefined,
-    }) + polygonCountour.svg({
-        fill: "transparent",
-        fillRule: "evenodd",
-        stroke: "transparent",
-        strokeWidth: 1,
-        fillOpacity: 1,
-    });
+    highlightAreaSVG.polygon = polygonCountourUnionPoly;
+    highlightAreaSVG.innerHTML =
+        (Array.isArray(polygonSurface)
+            ?
+                polygonSurface.reduce((prev, cur) => {
+                    return prev + cur.svg({
+                        fill: `rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue})`,
+                        fillRule: "evenodd",
+                        stroke: "transparent",
+                        strokeWidth: 0,
+                        fillOpacity: 1,
+                        className: undefined,
+                    });
+                }, "")
+            :
+                polygonSurface.svg({
+                    fill: `rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue})`,
+                    fillRule: "evenodd",
+                    stroke: "transparent",
+                    strokeWidth: 0,
+                    fillOpacity: 1,
+                    className: undefined,
+                }))
+            +
+                polygonCountourUnionPoly.svg({
+                    fill: "transparent",
+                    fillRule: "evenodd",
+                    stroke: "transparent",
+                    strokeWidth: 1,
+                    fillOpacity: 1,
+                    className: undefined,
+                });
     highlightParent.append(highlightAreaSVG);
     if (doDrawMargin && highlight.pointerInteraction) {
         const MARGIN_MARKER_THICKNESS = 14 * (win.READIUM2.isFixedLayout ? scale : 1);
         const MARGIN_MARKER_OFFSET = 6 * (win.READIUM2.isFixedLayout ? scale : 1);
         const paginatedOffset_ = paginatedOffset - MARGIN_MARKER_OFFSET - MARGIN_MARKER_THICKNESS;
-        const polygonCountourMarginBoxes = Array.from(polygonCountour.faces).map((face) => {
+        let boundingRect;
+        const polygonCountourMarginRects = Array.from(polygonCountourUnionPoly.faces).map((face) => {
             const b = face.box;
             const left = vertical ?
                 b.xmin :
@@ -497,13 +550,77 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
                     b.ymin;
             const width = vertical ? b.width : MARGIN_MARKER_THICKNESS;
             const height = vertical ? MARGIN_MARKER_THICKNESS : b.height;
-            return new core_1.Box(left, top, left + width, top + height);
+            const extra = 0;
+            const r = {
+                left: left - (vertical ? extra : 0),
+                top: top - (vertical ? 0 : extra),
+                right: left + width + (vertical ? extra : 0),
+                bottom: top + height + (vertical ? 0 : extra),
+                width: width + extra * 2,
+                height: height + extra * 2,
+            };
+            boundingRect = boundingRect ? (0, rect_utils_1.getBoundingRect)(boundingRect, r) : r;
+            return r;
         });
-        const polygonCountourMarginUnionPoly = polygonCountourMarginBoxes.reduce((previous, current) => unify(previous, new core_1.Polygon(current)), new core_1.Polygon());
+        const useFastBoundingRect = true;
+        let polygonMarginUnionPoly;
+        if (paginated) {
+            const tolerance = 1;
+            const groups = [];
+            for (const r of polygonCountourMarginRects) {
+                const group = groups.find((g) => {
+                    return !(r.left < (g.x - tolerance) || r.left > (g.x + tolerance));
+                });
+                if (!group) {
+                    groups.push({
+                        x: r.left,
+                        boxes: [r],
+                    });
+                }
+                else {
+                    (_a = group.boxes) === null || _a === void 0 ? void 0 : _a.push(r);
+                }
+            }
+            boundingRect = groups.map((g) => {
+                return g.boxes.reduce((prev, cur) => {
+                    if (prev === cur) {
+                        return cur;
+                    }
+                    return (0, rect_utils_1.getBoundingRect)(prev, cur);
+                }, g.boxes[0]);
+            });
+            if (boundingRect.length === 1) {
+                boundingRect = boundingRect[0];
+            }
+        }
+        if (useFastBoundingRect) {
+            if (boundingRect) {
+                polygonMarginUnionPoly = new core_1.Polygon();
+                if (Array.isArray(boundingRect)) {
+                    for (const b of boundingRect) {
+                        polygonMarginUnionPoly.addFace(new core_1.Box(b.left, b.top, b.right, b.bottom));
+                    }
+                }
+                else {
+                    polygonMarginUnionPoly.addFace(new core_1.Box(boundingRect.left, boundingRect.top, boundingRect.right, boundingRect.bottom));
+                }
+            }
+            else {
+                const poly = new core_1.Polygon();
+                for (const r of polygonCountourMarginRects) {
+                    poly.addFace(new core_1.Box(r.left, r.top, r.right, r.bottom));
+                }
+                polygonMarginUnionPoly = new core_1.Polygon();
+                polygonMarginUnionPoly.addFace(poly.box);
+            }
+        }
+        else {
+            polygonMarginUnionPoly = polygonCountourMarginRects.reduce((previous, r) => unify(previous, new core_1.Polygon(new core_1.Box(r.left, r.top, r.right, r.bottom))), new core_1.Polygon());
+        }
         const highlightMarginSVG = documant.createElementNS(SVG_XML_NAMESPACE, "svg");
         highlightMarginSVG.setAttribute("class", `${styles_1.CLASS_HIGHLIGHT_COMMON} ${styles_1.CLASS_HIGHLIGHT_CONTOUR_MARGIN}`);
-        highlightMarginSVG.polygon = polygonCountourMarginUnionPoly;
-        highlightMarginSVG.innerHTML = polygonCountourMarginUnionPoly.svg({
+        highlightMarginSVG.polygon = polygonMarginUnionPoly;
+        highlightMarginSVG.innerHTML = polygonMarginUnionPoly.svg({
             fill: `rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue})`,
             fillRule: "evenodd",
             stroke: "transparent",

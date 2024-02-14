@@ -2273,7 +2273,7 @@ const computeProgressionData = () => {
                 }
                 else {
                     const boundingRect = element.getBoundingClientRect();
-                    const clientRects = (0, rect_utils_1.getClientRectsNoOverlap_)(element.getClientRects(), false);
+                    const clientRects = (0, rect_utils_1.getClientRectsNoOverlap_)(element.getClientRects(), false, vwm);
                     let rectangle;
                     for (const rect of clientRects) {
                         if (!rectangle) {

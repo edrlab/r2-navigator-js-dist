@@ -113,6 +113,7 @@ function processMouseEvent(win, ev) {
             documant.documentElement.classList.add(styles_1.CLASS_HIGHLIGHT_CURSOR2);
         }
         else if (ev.type === "mouseup" || ev.type === "click") {
+            documant.documentElement.classList.remove(styles_1.CLASS_HIGHLIGHT_CURSOR2);
             ev.preventDefault();
             ev.stopPropagation();
             var payload = {
@@ -391,7 +392,8 @@ function createHighlight(win, selectionInfo, range, color, pointerInteraction, d
 }
 exports.createHighlight = createHighlight;
 function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
-    var e_3, _a;
+    var e_3, _a, e_4, _b, e_5, _c, e_6, _d, e_7, _e, e_8, _f;
+    var _g;
     var documant = win.document;
     var scrollElement = (0, readium_css_1.getScrollingElement)(documant);
     var range = highlight.selectionInfo ? (0, selection_1.convertRangeInfo)(documant, highlight.selectionInfo.rangeInfo) : highlight.range;
@@ -421,52 +423,49 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     var yOffset = paginated ? (-scrollElement.scrollTop) : bodyRect.top;
     var scale = 1 / ((win.READIUM2 && win.READIUM2.isFixedLayout) ? win.READIUM2.fxlViewportScale : 1);
     var doNotMergeHorizontallyAlignedRects = drawUnderline || drawStrikeThrough;
-    var expand = highlight.expand ? highlight.expand : 0;
     var rangeClientRects = range.getClientRects();
-    var clientRects = (0, rect_utils_1.getClientRectsNoOverlap_)(rangeClientRects, doNotMergeHorizontallyAlignedRects, expand);
+    var clientRects = (0, rect_utils_1.getClientRectsNoOverlap_)(rangeClientRects, doNotMergeHorizontallyAlignedRects, vertical, highlight.expand ? highlight.expand : 0);
     var underlineThickness = 3;
     var strikeThroughLineThickness = 4;
     var bodyWidth = parseInt(bodyComputedStyle.width, 10);
     var paginatedTwo = paginated && (0, readium_css_1.isTwoPageSpread)();
     var paginatedWidth = scrollElement.clientWidth / (paginatedTwo ? 2 : 1);
     var paginatedOffset = (paginatedWidth - bodyWidth) / 2 + parseInt(bodyComputedStyle.paddingLeft, 10);
-    var gap = 4;
-    var polygonsWithoutGap = [];
-    var polygonsWithGap = [];
+    var gap = 2;
+    var boxesNoGapExpanded = [];
+    var boxesGapExpanded = [];
     try {
         for (var clientRects_1 = tslib_1.__values(clientRects), clientRects_1_1 = clientRects_1.next(); !clientRects_1_1.done; clientRects_1_1 = clientRects_1.next()) {
             var clientRect = clientRects_1_1.value;
-            {
-                var rect = {
-                    height: clientRect.height,
-                    left: clientRect.left - xOffset,
-                    top: clientRect.top - yOffset,
-                    width: clientRect.width,
-                };
-                var w = rect.width * scale;
-                var h = rect.height * scale;
-                var x = rect.left * scale;
-                var y = rect.top * scale;
-                if (drawStrikeThrough) {
-                    var ww = (vertical ? strikeThroughLineThickness : rect.width) * scale;
-                    var hh = (vertical ? rect.height : strikeThroughLineThickness) * scale;
-                    var xx = (vertical ? (rect.left + (rect.width / 2) - (strikeThroughLineThickness / 2)) : rect.left) * scale;
-                    var yy = (vertical ? rect.top : (rect.top + (rect.height / 2) - (strikeThroughLineThickness / 2))) * scale;
-                    polygonsWithoutGap.push(new core_1.Polygon(new core_1.Box(Number((xx).toPrecision(12)), Number((yy).toPrecision(12)), Number((xx + ww).toPrecision(12)), Number((yy + hh).toPrecision(12)))));
+            var rect = {
+                height: clientRect.height,
+                left: clientRect.left - xOffset,
+                top: clientRect.top - yOffset,
+                width: clientRect.width,
+            };
+            var w = rect.width * scale;
+            var h = rect.height * scale;
+            var x = rect.left * scale;
+            var y = rect.top * scale;
+            boxesGapExpanded.push(new core_1.Box(Number((x - gap).toPrecision(12)), Number((y - gap).toPrecision(12)), Number((x + w + gap).toPrecision(12)), Number((y + h + gap).toPrecision(12))));
+            if (drawStrikeThrough) {
+                var ww = (vertical ? strikeThroughLineThickness : rect.width) * scale;
+                var hh = (vertical ? rect.height : strikeThroughLineThickness) * scale;
+                var xx = (vertical ? (rect.left + (rect.width / 2) - (strikeThroughLineThickness / 2)) : rect.left) * scale;
+                var yy = (vertical ? rect.top : (rect.top + (rect.height / 2) - (strikeThroughLineThickness / 2))) * scale;
+                boxesNoGapExpanded.push(new core_1.Box(Number((xx).toPrecision(12)), Number((yy).toPrecision(12)), Number((xx + ww).toPrecision(12)), Number((yy + hh).toPrecision(12))));
+            }
+            else {
+                if (drawUnderline) {
+                    var ww = (vertical ? underlineThickness : rect.width) * scale;
+                    var hh = (vertical ? rect.height : underlineThickness) * scale;
+                    var xx = (vertical ? (rect.left - (underlineThickness / 2)) : rect.left) * scale;
+                    var yy = (vertical ? rect.top : (rect.top + rect.height - (underlineThickness / 2))) * scale;
+                    boxesNoGapExpanded.push(new core_1.Box(Number((xx).toPrecision(12)), Number((yy).toPrecision(12)), Number((xx + ww).toPrecision(12)), Number((yy + hh).toPrecision(12))));
                 }
                 else {
-                    if (drawUnderline) {
-                        var ww = (vertical ? underlineThickness : rect.width) * scale;
-                        var hh = (vertical ? rect.height : underlineThickness) * scale;
-                        var xx = (vertical ? (rect.left - (underlineThickness / 2)) : rect.left) * scale;
-                        var yy = (vertical ? rect.top : (rect.top + rect.height - (underlineThickness / 2))) * scale;
-                        polygonsWithoutGap.push(new core_1.Polygon(new core_1.Box(Number((xx).toPrecision(12)), Number((yy).toPrecision(12)), Number((xx + ww).toPrecision(12)), Number((yy + hh).toPrecision(12)))));
-                    }
-                    else {
-                        polygonsWithoutGap.push(new core_1.Polygon(new core_1.Box(Number((x).toPrecision(12)), Number((y).toPrecision(12)), Number((x + w).toPrecision(12)), Number((y + h).toPrecision(12)))));
-                    }
+                    boxesNoGapExpanded.push(new core_1.Box(Number((x).toPrecision(12)), Number((y).toPrecision(12)), Number((x + w).toPrecision(12)), Number((y + h).toPrecision(12))));
                 }
-                polygonsWithGap.push(new core_1.Polygon(new core_1.Box(Number((x - gap).toPrecision(12)), Number((y - gap).toPrecision(12)), Number((x + w + gap).toPrecision(12)), Number((y + h + gap).toPrecision(12)))));
             }
         }
     }
@@ -477,31 +476,105 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
         }
         finally { if (e_3) throw e_3.error; }
     }
-    var polygonCountour = polygonsWithGap.reduce(function (previous, current) { return unify(previous, current); }, new core_1.Polygon());
-    var polygonSurface = polygonsWithoutGap.reduce(function (previous, current) { return unify(previous, current); }, new core_1.Polygon());
+    var polygonCountourUnionPoly = boxesGapExpanded.reduce(function (previous, current) { return unify(previous, new core_1.Polygon(current)); }, new core_1.Polygon());
+    Array.from(polygonCountourUnionPoly.faces).forEach(function (face) {
+        if (face.orientation() !== core_1.ORIENTATION.CCW) {
+            if (IS_DEV) {
+                console.log("--HIGH WEBVIEW-- removing polygon clockwise face / inner hole (contour))");
+            }
+            polygonCountourUnionPoly.deleteFace(face);
+        }
+    });
+    var polygonSurface;
+    if (doNotMergeHorizontallyAlignedRects) {
+        var singleSVGPath = true;
+        if (singleSVGPath) {
+            polygonSurface = new core_1.Polygon();
+            try {
+                for (var boxesNoGapExpanded_1 = tslib_1.__values(boxesNoGapExpanded), boxesNoGapExpanded_1_1 = boxesNoGapExpanded_1.next(); !boxesNoGapExpanded_1_1.done; boxesNoGapExpanded_1_1 = boxesNoGapExpanded_1.next()) {
+                    var box = boxesNoGapExpanded_1_1.value;
+                    polygonSurface.addFace(box);
+                }
+            }
+            catch (e_4_1) { e_4 = { error: e_4_1 }; }
+            finally {
+                try {
+                    if (boxesNoGapExpanded_1_1 && !boxesNoGapExpanded_1_1.done && (_b = boxesNoGapExpanded_1.return)) _b.call(boxesNoGapExpanded_1);
+                }
+                finally { if (e_4) throw e_4.error; }
+            }
+        }
+        else {
+            polygonSurface = [];
+            try {
+                for (var boxesNoGapExpanded_2 = tslib_1.__values(boxesNoGapExpanded), boxesNoGapExpanded_2_1 = boxesNoGapExpanded_2.next(); !boxesNoGapExpanded_2_1.done; boxesNoGapExpanded_2_1 = boxesNoGapExpanded_2.next()) {
+                    var box = boxesNoGapExpanded_2_1.value;
+                    var poly = new core_1.Polygon();
+                    poly.addFace(box);
+                    polygonSurface.push(poly);
+                }
+            }
+            catch (e_5_1) { e_5 = { error: e_5_1 }; }
+            finally {
+                try {
+                    if (boxesNoGapExpanded_2_1 && !boxesNoGapExpanded_2_1.done && (_c = boxesNoGapExpanded_2.return)) _c.call(boxesNoGapExpanded_2);
+                }
+                finally { if (e_5) throw e_5.error; }
+            }
+        }
+    }
+    else {
+        polygonSurface = boxesNoGapExpanded.reduce(function (previous, current) { return unify(previous, new core_1.Polygon(current)); }, new core_1.Polygon());
+        Array.from(polygonSurface.faces).forEach(function (face) {
+            if (face.orientation() !== core_1.ORIENTATION.CCW) {
+                if (IS_DEV) {
+                    console.log("--HIGH WEBVIEW-- removing polygon clockwise face / inner hole (surface))");
+                }
+                polygonSurface.deleteFace(face);
+            }
+        });
+    }
     var highlightAreaSVG = documant.createElementNS(SVG_XML_NAMESPACE, "svg");
     highlightAreaSVG.setAttribute("class", "".concat(styles_1.CLASS_HIGHLIGHT_COMMON, " ").concat(styles_1.CLASS_HIGHLIGHT_CONTOUR));
-    highlightAreaSVG.polygon = polygonCountour;
-    highlightAreaSVG.innerHTML = polygonSurface.svg({
-        fill: "rgb(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ")"),
-        fillRule: "evenodd",
-        stroke: "transparent",
-        strokeWidth: 0,
-        fillOpacity: 1,
-        className: undefined,
-    }) + polygonCountour.svg({
-        fill: "transparent",
-        fillRule: "evenodd",
-        stroke: "transparent",
-        strokeWidth: 1,
-        fillOpacity: 1,
-    });
+    highlightAreaSVG.polygon = polygonCountourUnionPoly;
+    highlightAreaSVG.innerHTML =
+        (Array.isArray(polygonSurface)
+            ?
+                polygonSurface.reduce(function (prev, cur) {
+                    return prev + cur.svg({
+                        fill: "rgb(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ")"),
+                        fillRule: "evenodd",
+                        stroke: "transparent",
+                        strokeWidth: 0,
+                        fillOpacity: 1,
+                        className: undefined,
+                    });
+                }, "")
+            :
+                polygonSurface.svg({
+                    fill: "rgb(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ")"),
+                    fillRule: "evenodd",
+                    stroke: "transparent",
+                    strokeWidth: 0,
+                    fillOpacity: 1,
+                    className: undefined,
+                }))
+            +
+                polygonCountourUnionPoly.svg({
+                    fill: "transparent",
+                    fillRule: "evenodd",
+                    stroke: "transparent",
+                    strokeWidth: 1,
+                    fillOpacity: 1,
+                    className: undefined,
+                });
     highlightParent.append(highlightAreaSVG);
     if (doDrawMargin && highlight.pointerInteraction) {
         var MARGIN_MARKER_THICKNESS_1 = 14 * (win.READIUM2.isFixedLayout ? scale : 1);
         var MARGIN_MARKER_OFFSET_1 = 6 * (win.READIUM2.isFixedLayout ? scale : 1);
         var paginatedOffset_1 = paginatedOffset - MARGIN_MARKER_OFFSET_1 - MARGIN_MARKER_THICKNESS_1;
-        var polygonCountourMarginBoxes = Array.from(polygonCountour.faces).map(function (face) {
+        var boundingRect_2;
+        var polygonCountourMarginRects = Array.from(polygonCountourUnionPoly.faces).map(function (face) {
             var b = face.box;
             var left = vertical ?
                 b.xmin :
@@ -536,13 +609,110 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
                     b.ymin;
             var width = vertical ? b.width : MARGIN_MARKER_THICKNESS_1;
             var height = vertical ? MARGIN_MARKER_THICKNESS_1 : b.height;
-            return new core_1.Box(left, top, left + width, top + height);
+            var extra = 0;
+            var r = {
+                left: left - (vertical ? extra : 0),
+                top: top - (vertical ? 0 : extra),
+                right: left + width + (vertical ? extra : 0),
+                bottom: top + height + (vertical ? 0 : extra),
+                width: width + extra * 2,
+                height: height + extra * 2,
+            };
+            boundingRect_2 = boundingRect_2 ? (0, rect_utils_1.getBoundingRect)(boundingRect_2, r) : r;
+            return r;
         });
-        var polygonCountourMarginUnionPoly = polygonCountourMarginBoxes.reduce(function (previous, current) { return unify(previous, new core_1.Polygon(current)); }, new core_1.Polygon());
+        var useFastBoundingRect = true;
+        var polygonMarginUnionPoly = void 0;
+        if (paginated) {
+            var tolerance_1 = 1;
+            var groups = [];
+            var _loop_2 = function (r) {
+                var group = groups.find(function (g) {
+                    return !(r.left < (g.x - tolerance_1) || r.left > (g.x + tolerance_1));
+                });
+                if (!group) {
+                    groups.push({
+                        x: r.left,
+                        boxes: [r],
+                    });
+                }
+                else {
+                    (_g = group.boxes) === null || _g === void 0 ? void 0 : _g.push(r);
+                }
+            };
+            try {
+                for (var polygonCountourMarginRects_1 = tslib_1.__values(polygonCountourMarginRects), polygonCountourMarginRects_1_1 = polygonCountourMarginRects_1.next(); !polygonCountourMarginRects_1_1.done; polygonCountourMarginRects_1_1 = polygonCountourMarginRects_1.next()) {
+                    var r = polygonCountourMarginRects_1_1.value;
+                    _loop_2(r);
+                }
+            }
+            catch (e_6_1) { e_6 = { error: e_6_1 }; }
+            finally {
+                try {
+                    if (polygonCountourMarginRects_1_1 && !polygonCountourMarginRects_1_1.done && (_d = polygonCountourMarginRects_1.return)) _d.call(polygonCountourMarginRects_1);
+                }
+                finally { if (e_6) throw e_6.error; }
+            }
+            boundingRect_2 = groups.map(function (g) {
+                return g.boxes.reduce(function (prev, cur) {
+                    if (prev === cur) {
+                        return cur;
+                    }
+                    return (0, rect_utils_1.getBoundingRect)(prev, cur);
+                }, g.boxes[0]);
+            });
+            if (boundingRect_2.length === 1) {
+                boundingRect_2 = boundingRect_2[0];
+            }
+        }
+        if (useFastBoundingRect) {
+            if (boundingRect_2) {
+                polygonMarginUnionPoly = new core_1.Polygon();
+                if (Array.isArray(boundingRect_2)) {
+                    try {
+                        for (var boundingRect_1 = tslib_1.__values(boundingRect_2), boundingRect_1_1 = boundingRect_1.next(); !boundingRect_1_1.done; boundingRect_1_1 = boundingRect_1.next()) {
+                            var b = boundingRect_1_1.value;
+                            polygonMarginUnionPoly.addFace(new core_1.Box(b.left, b.top, b.right, b.bottom));
+                        }
+                    }
+                    catch (e_7_1) { e_7 = { error: e_7_1 }; }
+                    finally {
+                        try {
+                            if (boundingRect_1_1 && !boundingRect_1_1.done && (_e = boundingRect_1.return)) _e.call(boundingRect_1);
+                        }
+                        finally { if (e_7) throw e_7.error; }
+                    }
+                }
+                else {
+                    polygonMarginUnionPoly.addFace(new core_1.Box(boundingRect_2.left, boundingRect_2.top, boundingRect_2.right, boundingRect_2.bottom));
+                }
+            }
+            else {
+                var poly = new core_1.Polygon();
+                try {
+                    for (var polygonCountourMarginRects_2 = tslib_1.__values(polygonCountourMarginRects), polygonCountourMarginRects_2_1 = polygonCountourMarginRects_2.next(); !polygonCountourMarginRects_2_1.done; polygonCountourMarginRects_2_1 = polygonCountourMarginRects_2.next()) {
+                        var r = polygonCountourMarginRects_2_1.value;
+                        poly.addFace(new core_1.Box(r.left, r.top, r.right, r.bottom));
+                    }
+                }
+                catch (e_8_1) { e_8 = { error: e_8_1 }; }
+                finally {
+                    try {
+                        if (polygonCountourMarginRects_2_1 && !polygonCountourMarginRects_2_1.done && (_f = polygonCountourMarginRects_2.return)) _f.call(polygonCountourMarginRects_2);
+                    }
+                    finally { if (e_8) throw e_8.error; }
+                }
+                polygonMarginUnionPoly = new core_1.Polygon();
+                polygonMarginUnionPoly.addFace(poly.box);
+            }
+        }
+        else {
+            polygonMarginUnionPoly = polygonCountourMarginRects.reduce(function (previous, r) { return unify(previous, new core_1.Polygon(new core_1.Box(r.left, r.top, r.right, r.bottom))); }, new core_1.Polygon());
+        }
         var highlightMarginSVG = documant.createElementNS(SVG_XML_NAMESPACE, "svg");
         highlightMarginSVG.setAttribute("class", "".concat(styles_1.CLASS_HIGHLIGHT_COMMON, " ").concat(styles_1.CLASS_HIGHLIGHT_CONTOUR_MARGIN));
-        highlightMarginSVG.polygon = polygonCountourMarginUnionPoly;
-        highlightMarginSVG.innerHTML = polygonCountourMarginUnionPoly.svg({
+        highlightMarginSVG.polygon = polygonMarginUnionPoly;
+        highlightMarginSVG.innerHTML = polygonMarginUnionPoly.svg({
             fill: "rgb(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ")"),
             fillRule: "evenodd",
             stroke: "transparent",
