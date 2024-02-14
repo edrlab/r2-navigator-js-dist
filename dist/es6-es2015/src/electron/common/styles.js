@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TTS_NAV_BUTTON_CLASS = exports.TTS_ID_CONTAINER = exports.TTS_CLASS_UTTERANCE_HEADING5 = exports.TTS_CLASS_UTTERANCE_HEADING4 = exports.TTS_CLASS_UTTERANCE_HEADING3 = exports.TTS_CLASS_UTTERANCE_HEADING2 = exports.TTS_CLASS_UTTERANCE_HEADING1 = exports.TTS_CLASS_UTTERANCE = exports.TTS_ID_ACTIVE_UTTERANCE = exports.TTS_ID_ACTIVE_WORD = exports.TTS_ID_SLIDER = exports.TTS_ID_NEXT = exports.TTS_ID_PREVIOUS = exports.TTS_CLASS_STOPPED = exports.TTS_CLASS_PLAYING = exports.TTS_CLASS_PAUSED = exports.TTS_CLASS_IS_ACTIVE = exports.TTS_CLASS_THEME1 = exports.mediaOverlaysCssStyles = exports.R2_MO_CLASS_STOPPED = exports.R2_MO_CLASS_PAUSED = exports.R2_MO_CLASS_PLAYING = exports.R2_MO_CLASS_ACTIVE_PLAYBACK = exports.R2_MO_CLASS_ACTIVE = exports.footnotesCssStyles = exports.CSS_CLASS_NO_FOCUS_OUTLINE = exports.ROOT_CLASS_KEYBOARD_INTERACT = exports.POPUP_DIALOG_CLASS_COLLAPSE = exports.POPUP_DIALOG_CLASS = exports.POPOUTIMAGE_RESET_ID = exports.POPOUTIMAGE_PLUS_ID = exports.POPOUTIMAGE_MINUS_ID = exports.POPOUTIMAGE_CONTROLS_ID = exports.POPOUTIMAGE_CLOSE_ID = exports.POPOUTIMAGE_CONTAINER_ID = exports.FOOTNOTE_FORCE_SHOW = exports.FOOTNOTES_CLOSE_BUTTON_CLASS = exports.FOOTNOTES_CONTAINER_CLASS = exports.ROOT_CLASS_NO_FOOTNOTES = exports.ROOT_CLASS_FIXED_LAYOUT = exports.ROOT_CLASS_MATHJAX = exports.ROOT_CLASS_REDUCE_MOTION = exports.LINK_TARGET_ALT_CLASS = exports.LINK_TARGET_CLASS = exports.SKIP_LINK_ID = exports.ZERO_TRANSFORM_CLASS = exports.HIDE_CURSOR_CLASS = exports.CLASS_PAGINATED = exports.CLASS_VWM = exports.WebViewSlotEnum = void 0;
-exports.audioCssStyles = exports.AUDIO_FORWARD_ID = exports.AUDIO_REWIND_ID = exports.AUDIO_NEXT_ID = exports.AUDIO_PREVIOUS_ID = exports.AUDIO_PLAYPAUSE_ID = exports.AUDIO_RATE_ID = exports.AUDIO_PERCENT_ID = exports.AUDIO_TIME_ID = exports.AUDIO_SLIDER_ID = exports.AUDIO_TITLE_ID = exports.AUDIO_COVER_ID = exports.AUDIO_CONTROLS_ID = exports.AUDIO_SECTION_ID = exports.AUDIO_BODY_ID = exports.AUDIO_ID = exports.AUDIO_PROGRESS_CLASS = exports.AUDIO_BUFFER_CANVAS_ID = exports.readPosCssStyles = exports.readPosCssStylesAttr4 = exports.readPosCssStylesAttr3 = exports.readPosCssStylesAttr2 = exports.readPosCssStylesAttr1 = exports.scrollBarCssStyles = exports.selectionCssStyles = exports.targetCssStyles = exports.focusCssStyles = exports.visibilityMaskCssStyles = exports.ROOT_CLASS_INVISIBLE_MASK_REMOVED = exports.ROOT_CLASS_INVISIBLE_MASK = exports.CLASS_HIGHLIGHT_HOVER = exports.CLASS_HIGHLIGHT_MARGIN = exports.CLASS_HIGHLIGHT_AREA = exports.CLASS_HIGHLIGHT_CONTAINER = exports.CLASS_HIGHLIGHT_CONTOUR_MARGIN = exports.CLASS_HIGHLIGHT_CONTOUR = exports.CLASS_HIGHLIGHT_COMMON = exports.CLASS_HIGHLIGHT_CURSOR2 = exports.ID_HIGHLIGHTS_CONTAINER = exports.ttsCssStyles = exports.TTS_POPUP_DIALOG_CLASS = exports.TTS_ID_SPEAKING_DOC_ELEMENT = void 0;
+exports.audioCssStyles = exports.AUDIO_FORWARD_ID = exports.AUDIO_REWIND_ID = exports.AUDIO_NEXT_ID = exports.AUDIO_PREVIOUS_ID = exports.AUDIO_PLAYPAUSE_ID = exports.AUDIO_RATE_ID = exports.AUDIO_PERCENT_ID = exports.AUDIO_TIME_ID = exports.AUDIO_SLIDER_ID = exports.AUDIO_TITLE_ID = exports.AUDIO_COVER_ID = exports.AUDIO_CONTROLS_ID = exports.AUDIO_SECTION_ID = exports.AUDIO_BODY_ID = exports.AUDIO_ID = exports.AUDIO_PROGRESS_CLASS = exports.AUDIO_BUFFER_CANVAS_ID = exports.readPosCssStyles = exports.readPosCssStylesAttr4 = exports.readPosCssStylesAttr3 = exports.readPosCssStylesAttr2 = exports.readPosCssStylesAttr1 = exports.scrollBarCssStyles = exports.selectionCssStyles = exports.targetCssStyles = exports.focusCssStyles = exports.visibilityMaskCssStyles = exports.ROOT_CLASS_INVISIBLE_MASK_REMOVED = exports.ROOT_CLASS_INVISIBLE_MASK = exports.CLASS_HIGHLIGHT_HOVER = exports.CLASS_HIGHLIGHT_MARGIN = exports.CLASS_HIGHLIGHT_CONTAINER = exports.CLASS_HIGHLIGHT_CONTOUR_MARGIN = exports.CLASS_HIGHLIGHT_CONTOUR = exports.CLASS_HIGHLIGHT_COMMON = exports.CLASS_HIGHLIGHT_CURSOR2 = exports.ID_HIGHLIGHTS_CONTAINER = exports.ttsCssStyles = exports.TTS_POPUP_DIALOG_CLASS = exports.TTS_ID_SPEAKING_DOC_ELEMENT = void 0;
 var WebViewSlotEnum;
 (function (WebViewSlotEnum) {
     WebViewSlotEnum["center"] = "center";
@@ -769,49 +769,13 @@ exports.CLASS_HIGHLIGHT_COMMON = "R2_CLASS_HIGHLIGHT_COMMON";
 exports.CLASS_HIGHLIGHT_CONTOUR = "R2_CLASS_HIGHLIGHT_CONTOUR";
 exports.CLASS_HIGHLIGHT_CONTOUR_MARGIN = "R2_CLASS_HIGHLIGHT_CONTOUR_MARGIN";
 exports.CLASS_HIGHLIGHT_CONTAINER = "R2_CLASS_HIGHLIGHT_CONTAINER";
-exports.CLASS_HIGHLIGHT_AREA = "R2_CLASS_HIGHLIGHT_AREA";
 exports.CLASS_HIGHLIGHT_MARGIN = "R2_CLASS_HIGHLIGHT_MARGIN";
 exports.CLASS_HIGHLIGHT_HOVER = "R2_CLASS_HIGHLIGHT_HOVER";
 exports.ROOT_CLASS_INVISIBLE_MASK = "r2-visibility-mask-class";
 exports.ROOT_CLASS_INVISIBLE_MASK_REMOVED = "r2-visibility-mask-removed-class";
 const hover = true ? `.${exports.CLASS_HIGHLIGHT_HOVER}` : "";
 exports.visibilityMaskCssStyles = `
-/*
-:root[style] > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > .${exports.CLASS_HIGHLIGHT_CONTAINER} > svg.${exports.CLASS_HIGHLIGHT_CONTOUR} > path:nth-child(1),
-:root > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > .${exports.CLASS_HIGHLIGHT_CONTAINER} > svg.${exports.CLASS_HIGHLIGHT_CONTOUR} > path:nth-child(1)
-{
-fill: blue !important;
-}
-*/
-:root[style] > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > .${exports.CLASS_HIGHLIGHT_CONTAINER} > svg.${exports.CLASS_HIGHLIGHT_CONTOUR} > path:nth-child(2),
-:root > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > .${exports.CLASS_HIGHLIGHT_CONTAINER} > svg.${exports.CLASS_HIGHLIGHT_CONTOUR} > path:nth-child(2)
-{
-stroke: #dddddd !important;
-}
-:root[style*="readium-night-on"] > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > .${exports.CLASS_HIGHLIGHT_CONTAINER} > svg.${exports.CLASS_HIGHLIGHT_CONTOUR} > path:nth-child(2)
-{
-stroke: #aaaaaa !important;
-}
 
-:root[style] > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > .${exports.CLASS_HIGHLIGHT_CONTAINER}:not(${hover}):not(.${exports.CLASS_HIGHLIGHT_MARGIN})[data-type="0"],
-:root > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > .${exports.CLASS_HIGHLIGHT_CONTAINER}:not(${hover}):not(.${exports.CLASS_HIGHLIGHT_MARGIN})[data-type="0"]
-{
-opacity: 0.5 !important;
-}
-/*
-:root[style] > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > .${exports.CLASS_HIGHLIGHT_CONTAINER}${hover}.${exports.CLASS_HIGHLIGHT_MARGIN}[data-type="0"] > .${exports.CLASS_HIGHLIGHT_AREA},
-:root > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > .${exports.CLASS_HIGHLIGHT_CONTAINER}${hover}.${exports.CLASS_HIGHLIGHT_MARGIN}[data-type="0"] > .${exports.CLASS_HIGHLIGHT_AREA},
-*/
-:root[style] > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > .${exports.CLASS_HIGHLIGHT_CONTAINER}${hover}.${exports.CLASS_HIGHLIGHT_MARGIN}[data-type="0"] > svg.${exports.CLASS_HIGHLIGHT_CONTOUR},
-:root > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > .${exports.CLASS_HIGHLIGHT_CONTAINER}${hover}.${exports.CLASS_HIGHLIGHT_MARGIN}[data-type="0"] > svg.${exports.CLASS_HIGHLIGHT_CONTOUR}
-{
-opacity: 0.5 !important;
-}
-
-/*
-:root[style] > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > .${exports.CLASS_HIGHLIGHT_CONTAINER}.${exports.CLASS_HIGHLIGHT_MARGIN}:not(${hover}) > .${exports.CLASS_HIGHLIGHT_AREA},
-:root > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > .${exports.CLASS_HIGHLIGHT_CONTAINER}.${exports.CLASS_HIGHLIGHT_MARGIN}:not(${hover}) > .${exports.CLASS_HIGHLIGHT_AREA},
-*/
 :root[style] > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > .${exports.CLASS_HIGHLIGHT_CONTAINER}.${exports.CLASS_HIGHLIGHT_MARGIN}:not(${hover}) > svg.${exports.CLASS_HIGHLIGHT_CONTOUR},
 :root > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > .${exports.CLASS_HIGHLIGHT_CONTAINER}.${exports.CLASS_HIGHLIGHT_MARGIN}:not(${hover}) > svg.${exports.CLASS_HIGHLIGHT_CONTOUR}
 {
@@ -834,12 +798,12 @@ stroke: #555555 !important;
 :root[style*="readium-night-on"] > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > .${exports.CLASS_HIGHLIGHT_CONTAINER}${hover}:not(.${exports.CLASS_HIGHLIGHT_MARGIN}) > svg.${exports.CLASS_HIGHLIGHT_CONTOUR} > path:nth-child(2)
 {
 stroke: yellow !important;
-stroke-width: 2 !important;
+/* stroke-width: 2 !important; */
 }
 :root[style*="readium-night-on"] > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > .${exports.CLASS_HIGHLIGHT_CONTAINER}${hover}.${exports.CLASS_HIGHLIGHT_MARGIN} > svg.${exports.CLASS_HIGHLIGHT_CONTOUR} > path:nth-child(2)
 {
 stroke: yellow !important;
-stroke-width: 2 !important;
+/* stroke-width: 2 !important; */
 }
 
 :root[style].${exports.CLASS_PAGINATED} > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > .${exports.CLASS_HIGHLIGHT_CONTAINER} > svg.${exports.CLASS_HIGHLIGHT_CONTOUR},
@@ -857,16 +821,6 @@ position: fixed !important;
 {
 position: absolute !important;
 }
-
-/*
-:root[style] > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > .${exports.CLASS_HIGHLIGHT_CONTAINER} > .${exports.CLASS_HIGHLIGHT_AREA},
-:root > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > .${exports.CLASS_HIGHLIGHT_CONTAINER} > .${exports.CLASS_HIGHLIGHT_AREA},
-:root[style] > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > .${exports.CLASS_HIGHLIGHT_CONTAINER} > svg.${exports.CLASS_HIGHLIGHT_CONTOUR},
-:root > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > .${exports.CLASS_HIGHLIGHT_CONTAINER} > svg.${exports.CLASS_HIGHLIGHT_CONTOUR}
-{
-transform: translate3d(0px, 0px, 0px) !important;
-}
-*/
 
 :root[style] > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > .${exports.CLASS_HIGHLIGHT_CONTAINER},
 :root > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > .${exports.CLASS_HIGHLIGHT_CONTAINER}
@@ -923,13 +877,6 @@ no new stacking context, otherwise massive performance degradation with CSS Colu
 :root.${exports.CLASS_PAGINATED}:not(.${exports.ROOT_CLASS_FIXED_LAYOUT}) {
     overflow: visible !important;
 }
-/*
-https://developer.mozilla.org/en-US/docs/Web/CSS/overflow
-hidden
-    Overflow content is clipped at the element's padding box. There are no scroll bars, and the clipped content is not visible (i.e., clipped content is hidden), but the content still exists. User agents do not add scroll bars and also do not allow users to view the content outside the clipped region by actions such as dragging on a touch screen or using the scroll wheel on a mouse. The content can be scrolled programmatically (for example, by setting the value of the scrollLeft property or the scrollTo() method), in which case the element box is a scroll container.
-clip
-    Overflow content is clipped at the element's overflow clip edge that is defined using the overflow-clip-margin property. As a result, content overflows the element's padding box by the <length> value of overflow-clip-margin or by 0px if not set. Overflow content outside the clipped region is not visible, user agents do not add a scroll bar, and programmatic scrolling is also not supported. No new formatting context is created. To establish a formatting context, use overflow: clip along with display: flow-root. The element box is not a scroll container.
-*/
 :root[style].${exports.CLASS_PAGINATED}:not(.${exports.ROOT_CLASS_FIXED_LAYOUT}):not(.${exports.CLASS_VWM}) > body,
 :root.${exports.CLASS_PAGINATED}:not(.${exports.ROOT_CLASS_FIXED_LAYOUT}):not(.${exports.CLASS_VWM}) > body {
     /*
