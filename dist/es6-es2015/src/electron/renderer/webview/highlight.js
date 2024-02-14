@@ -12,6 +12,8 @@ const readium_css_1 = require("./readium-css");
 const selection_1 = require("./selection");
 const styles_1 = require("../../common/styles");
 const readium_css_2 = require("./readium-css");
+const core_1 = require("@flatten-js/core");
+const { unify } = core_1.BooleanOperations;
 const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 const DEFAULT_BACKGROUND_COLOR = {
     blue: 0,
@@ -37,6 +39,7 @@ const setDrawMargin = (win, drawMargin) => {
     recreateAllHighlightsRaw(win);
 };
 exports.setDrawMargin = setDrawMargin;
+const SVG_XML_NAMESPACE = "http://www.w3.org/2000/svg";
 function getBoundingClientRectOfDocumentBody(win) {
     return win.document.body.getBoundingClientRect();
 }
@@ -62,19 +65,8 @@ function processMouseEvent(win, ev) {
     const bodyRect = getBoundingClientRectOfDocumentBody(win);
     const xOffset = paginated ? (-scrollElement.scrollLeft) : bodyRect.left;
     const yOffset = paginated ? (-scrollElement.scrollTop) : bodyRect.top;
-    const testHit = (highlightFragment) => {
-        const withRect = highlightFragment;
-        const left = withRect.rect.left + xOffset;
-        const top = withRect.rect.top + yOffset;
-        if (x >= left &&
-            x < (left + withRect.rect.width) &&
-            y >= top &&
-            y < (top + withRect.rect.height)) {
-            return true;
-        }
-        return false;
-    };
-    let changeCursor = false;
+    const scale = 1 / ((win.READIUM2 && win.READIUM2.isFixedLayout) ? win.READIUM2.fxlViewportScale : 1);
+    let hit = false;
     let foundHighlight;
     let foundElement;
     for (let i = _highlights.length - 1; i >= 0; i--) {
@@ -86,20 +78,12 @@ function processMouseEvent(win, ev) {
         if (!highlightParent) {
             continue;
         }
-        let hit = false;
         let highlightFragment = highlightParent.firstElementChild;
         while (highlightFragment) {
-            if (highlightFragment.classList.contains(styles_1.CLASS_HIGHLIGHT_AREA)) {
-                if (testHit(highlightFragment)) {
-                    changeCursor = true;
-                    hit = true;
-                    break;
-                }
-            }
-            else if (highlightFragment.classList.contains(styles_1.CLASS_HIGHLIGHT_BOUNDING_AREA_MARGIN)) {
-                if (testHit(highlightFragment)) {
-                    changeCursor = true;
-                    hit = true;
+            if (highlightFragment.namespaceURI === SVG_XML_NAMESPACE) {
+                const svg = highlightFragment;
+                hit = svg.polygon.contains(new core_1.Point((x - xOffset) * scale, (y - yOffset) * scale));
+                if (hit) {
                     break;
                 }
             }
@@ -111,23 +95,21 @@ function processMouseEvent(win, ev) {
             break;
         }
     }
-    if (!foundHighlight || !foundElement) {
-        documant.documentElement.classList.remove(styles_1.CLASS_HIGHLIGHT_CURSOR1);
-        documant.documentElement.classList.remove(styles_1.CLASS_HIGHLIGHT_CURSOR2);
-        let highlightContainer = _highlightsContainer.firstElementChild;
-        while (highlightContainer) {
+    let highlightContainer = _highlightsContainer.firstElementChild;
+    while (highlightContainer) {
+        if (!foundElement || foundElement !== highlightContainer) {
             highlightContainer.classList.remove(styles_1.CLASS_HIGHLIGHT_HOVER);
-            highlightContainer = highlightContainer.nextElementSibling;
         }
+        highlightContainer = highlightContainer.nextElementSibling;
+    }
+    if (!hit) {
+        documant.documentElement.classList.remove(styles_1.CLASS_HIGHLIGHT_CURSOR2);
         return;
     }
-    if (foundHighlight.pointerInteraction) {
+    if (foundElement && (foundHighlight === null || foundHighlight === void 0 ? void 0 : foundHighlight.pointerInteraction)) {
         if (isMouseMove) {
-            const doDrawMargin = drawMargin(foundHighlight);
             foundElement.classList.add(styles_1.CLASS_HIGHLIGHT_HOVER);
-            if (changeCursor) {
-                documant.documentElement.classList.add(doDrawMargin ? styles_1.CLASS_HIGHLIGHT_CURSOR1 : styles_1.CLASS_HIGHLIGHT_CURSOR2);
-            }
+            documant.documentElement.classList.add(styles_1.CLASS_HIGHLIGHT_CURSOR2);
         }
         else if (ev.type === "mouseup" || ev.type === "click") {
             ev.preventDefault();
@@ -390,7 +372,6 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     const drawUnderline = highlight.drawType === highlight_1.HighlightDrawTypeUnderline;
     const drawStrikeThrough = highlight.drawType === highlight_1.HighlightDrawTypeStrikethrough;
     const paginated = (0, readium_css_inject_1.isPaginated)(documant);
-    const paginatedTwo = paginated && (0, readium_css_1.isTwoPageSpread)();
     const rtl = (0, readium_css_2.isRTL)();
     const vertical = (0, readium_css_1.isVerticalWritingMode)();
     const doDrawMargin = drawMargin(highlight);
@@ -416,78 +397,75 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     const clientRects = (0, rect_utils_1.getClientRectsNoOverlap_)(rangeClientRects, doNotMergeHorizontallyAlignedRects, expand);
     const underlineThickness = 3;
     const strikeThroughLineThickness = 4;
-    const rangeBoundingClientRect = range.getBoundingClientRect();
     const bodyWidth = parseInt(bodyComputedStyle.width, 10);
+    const paginatedTwo = paginated && (0, readium_css_1.isTwoPageSpread)();
     const paginatedWidth = scrollElement.clientWidth / (paginatedTwo ? 2 : 1);
     const paginatedOffset = (paginatedWidth - bodyWidth) / 2 + parseInt(bodyComputedStyle.paddingLeft, 10);
+    const gap = 4;
+    const polygonsWithoutGap = [];
+    const polygonsWithGap = [];
     for (const clientRect of clientRects) {
         {
+            const rect = {
+                height: clientRect.height,
+                left: clientRect.left - xOffset,
+                top: clientRect.top - yOffset,
+                width: clientRect.width,
+            };
+            const w = rect.width * scale;
+            const h = rect.height * scale;
+            const x = rect.left * scale;
+            const y = rect.top * scale;
             if (drawStrikeThrough) {
-                const highlightAreaLine = documant.createElement("div");
-                highlightAreaLine.setAttribute("class", `${styles_1.CLASS_HIGHLIGHT_AREA} ${styles_1.CLASS_HIGHLIGHT_COMMON}`);
-                highlightAreaLine.setAttribute("style", `background-color: rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}) !important;`);
-                highlightAreaLine.scale = scale;
-                highlightAreaLine.rect = {
-                    height: clientRect.height,
-                    left: clientRect.left - xOffset,
-                    top: clientRect.top - yOffset,
-                    width: clientRect.width,
-                };
-                highlightAreaLine.style.setProperty("width", `${(vertical ? strikeThroughLineThickness : highlightAreaLine.rect.width) * scale}px`, "important");
-                highlightAreaLine.style.setProperty("height", `${(vertical ? highlightAreaLine.rect.height : strikeThroughLineThickness) * scale}px`, "important");
-                highlightAreaLine.style.setProperty("min-width", highlightAreaLine.style.width, "important");
-                highlightAreaLine.style.setProperty("min-height", highlightAreaLine.style.height, "important");
-                highlightAreaLine.style.setProperty("left", `${(vertical ? (highlightAreaLine.rect.left + (highlightAreaLine.rect.width / 2) - (strikeThroughLineThickness / 2)) : highlightAreaLine.rect.left) * scale}px`, "important");
-                highlightAreaLine.style.setProperty("top", `${(vertical ? highlightAreaLine.rect.top : (highlightAreaLine.rect.top + (highlightAreaLine.rect.height / 2) - (strikeThroughLineThickness / 2))) * scale}px`, "important");
-                highlightParent.append(highlightAreaLine);
+                const ww = (vertical ? strikeThroughLineThickness : rect.width) * scale;
+                const hh = (vertical ? rect.height : strikeThroughLineThickness) * scale;
+                const xx = (vertical ? (rect.left + (rect.width / 2) - (strikeThroughLineThickness / 2)) : rect.left) * scale;
+                const yy = (vertical ? rect.top : (rect.top + (rect.height / 2) - (strikeThroughLineThickness / 2))) * scale;
+                polygonsWithoutGap.push(new core_1.Polygon(new core_1.Box(Number((xx).toPrecision(12)), Number((yy).toPrecision(12)), Number((xx + ww).toPrecision(12)), Number((yy + hh).toPrecision(12)))));
             }
             else {
-                const highlightArea = documant.createElement("div");
-                highlightArea.setAttribute("class", `${styles_1.CLASS_HIGHLIGHT_AREA} ${styles_1.CLASS_HIGHLIGHT_COMMON}`);
-                let extra = "";
                 if (drawUnderline) {
-                    const side = (0, readium_css_1.isVerticalWritingMode)() ? "left" : "bottom";
-                    extra = `border-${side}: ${underlineThickness * scale}px solid ` +
-                        `rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}) !important`;
+                    const ww = (vertical ? underlineThickness : rect.width) * scale;
+                    const hh = (vertical ? rect.height : underlineThickness) * scale;
+                    const xx = (vertical ? (rect.left - (underlineThickness / 2)) : rect.left) * scale;
+                    const yy = (vertical ? rect.top : (rect.top + rect.height - (underlineThickness / 2))) * scale;
+                    polygonsWithoutGap.push(new core_1.Polygon(new core_1.Box(Number((xx).toPrecision(12)), Number((yy).toPrecision(12)), Number((xx + ww).toPrecision(12)), Number((yy + hh).toPrecision(12)))));
                 }
-                highlightArea.setAttribute("style", (drawUnderline ?
-                    "" :
-                    ("background-color: " +
-                        `rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}) !important;`)) + ` ${extra}`);
-                highlightArea.scale = scale;
-                highlightArea.rect = {
-                    height: clientRect.height,
-                    left: clientRect.left - xOffset,
-                    top: clientRect.top - yOffset,
-                    width: clientRect.width,
-                };
-                highlightArea.style.setProperty("width", `${highlightArea.rect.width * scale}px`, "important");
-                highlightArea.style.setProperty("height", `${highlightArea.rect.height * scale}px`, "important");
-                highlightArea.style.setProperty("min-width", highlightArea.style.width, "important");
-                highlightArea.style.setProperty("min-height", highlightArea.style.height, "important");
-                highlightArea.style.setProperty("left", `${highlightArea.rect.left * scale}px`, "important");
-                highlightArea.style.setProperty("top", `${highlightArea.rect.top * scale}px`, "important");
-                highlightParent.append(highlightArea);
+                else {
+                    polygonsWithoutGap.push(new core_1.Polygon(new core_1.Box(Number((x).toPrecision(12)), Number((y).toPrecision(12)), Number((x + w).toPrecision(12)), Number((y + h).toPrecision(12)))));
+                }
             }
+            polygonsWithGap.push(new core_1.Polygon(new core_1.Box(Number((x - gap).toPrecision(12)), Number((y - gap).toPrecision(12)), Number((x + w + gap).toPrecision(12)), Number((y + h + gap).toPrecision(12)))));
         }
     }
+    const polygonCountour = polygonsWithGap.reduce((previous, current) => unify(previous, current), new core_1.Polygon());
+    const polygonSurface = polygonsWithoutGap.reduce((previous, current) => unify(previous, current), new core_1.Polygon());
+    const highlightAreaSVG = documant.createElementNS(SVG_XML_NAMESPACE, "svg");
+    highlightAreaSVG.setAttribute("class", `${styles_1.CLASS_HIGHLIGHT_COMMON} ${styles_1.CLASS_HIGHLIGHT_CONTOUR}`);
+    highlightAreaSVG.polygon = polygonCountour;
+    highlightAreaSVG.innerHTML = polygonSurface.svg({
+        fill: `rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue})`,
+        fillRule: "evenodd",
+        stroke: "transparent",
+        strokeWidth: 0,
+        fillOpacity: 1,
+        className: undefined,
+    }) + polygonCountour.svg({
+        fill: "transparent",
+        fillRule: "evenodd",
+        stroke: "red",
+        strokeWidth: 1,
+        fillOpacity: 1,
+    });
+    highlightParent.append(highlightAreaSVG);
     if (doDrawMargin && highlight.pointerInteraction) {
-        const MARGIN_MARKER_THICKNESS = 18 / (win.READIUM2.isFixedLayout ? scale : 1);
-        const MARGIN_MARKER_OFFSET = 4 / (win.READIUM2.isFixedLayout ? scale : 1);
-        const highlightBoundingMargin = documant.createElement("div");
-        highlightBoundingMargin.setAttribute("class", `${styles_1.CLASS_HIGHLIGHT_BOUNDING_AREA_MARGIN} ${styles_1.CLASS_HIGHLIGHT_COMMON}`);
-        const round = MARGIN_MARKER_THICKNESS / 1.5;
-        highlightBoundingMargin.setAttribute("style", `border-top-left-radius: ${vertical ? round : rtl ? 0 : round}px;` +
-            `border-top-right-radius: ${vertical ? round : !rtl ? 0 : round}px;` +
-            `border-bottom-right-radius: ${vertical ? 0 : !rtl ? 0 : round}px;` +
-            `border-bottom-left-radius: ${vertical ? 0 : rtl ? 0 : round}px;` +
-            "background-color: " +
-            `rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}) !important;`);
-        highlightBoundingMargin.scale = scale;
+        const MARGIN_MARKER_THICKNESS = 14 * (win.READIUM2.isFixedLayout ? scale : 1);
+        const MARGIN_MARKER_OFFSET = 6 * (win.READIUM2.isFixedLayout ? scale : 1);
         const paginatedOffset_ = paginatedOffset - MARGIN_MARKER_OFFSET - MARGIN_MARKER_THICKNESS;
-        highlightBoundingMargin.rect = {
-            left: vertical ?
-                (rangeBoundingClientRect.left - xOffset) :
+        const polygonCountourMarginBoxes = Array.from(polygonCountour.faces).map((face) => {
+            const b = face.box;
+            const left = vertical ?
+                b.xmin :
                 paginated ?
                     ((rtl
                         ?
@@ -501,7 +479,7 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
                                 :
                                     paginatedOffset_)
                         +
-                            Math.floor((rangeBoundingClientRect.left - xOffset) / paginatedWidth) * paginatedWidth)
+                            Math.floor((b.xmin) / paginatedWidth) * paginatedWidth)
                     :
                         (rtl
                             ?
@@ -511,49 +489,30 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
                                     ?
                                         MARGIN_MARKER_OFFSET
                                     :
-                                        parseInt(bodyComputedStyle.paddingLeft, 10) - MARGIN_MARKER_THICKNESS - MARGIN_MARKER_OFFSET),
-            top: vertical
+                                        parseInt(bodyComputedStyle.paddingLeft, 10) - MARGIN_MARKER_THICKNESS - MARGIN_MARKER_OFFSET);
+            const top = vertical
                 ?
                     parseInt(bodyComputedStyle.paddingTop, 10) - MARGIN_MARKER_THICKNESS - MARGIN_MARKER_OFFSET
                 :
-                    (rangeBoundingClientRect.top - yOffset),
-            width: vertical ? rangeBoundingClientRect.width : MARGIN_MARKER_THICKNESS,
-            height: vertical ? MARGIN_MARKER_THICKNESS : rangeBoundingClientRect.height,
-        };
-        highlightBoundingMargin.style.setProperty("width", `${highlightBoundingMargin.rect.width * scale}px`, "important");
-        highlightBoundingMargin.style.setProperty("height", `${highlightBoundingMargin.rect.height * scale}px`, "important");
-        highlightBoundingMargin.style.setProperty("min-width", highlightBoundingMargin.style.width, "important");
-        highlightBoundingMargin.style.setProperty("min-height", highlightBoundingMargin.style.height, "important");
-        highlightBoundingMargin.style.setProperty("left", `${highlightBoundingMargin.rect.left * scale}px`, "important");
-        highlightBoundingMargin.style.setProperty("top", `${highlightBoundingMargin.rect.top * scale}px`, "important");
-        highlightParent.append(highlightBoundingMargin);
+                    b.ymin;
+            const width = vertical ? b.width : MARGIN_MARKER_THICKNESS;
+            const height = vertical ? MARGIN_MARKER_THICKNESS : b.height;
+            return new core_1.Box(left, top, left + width, top + height);
+        });
+        const polygonCountourMarginUnionPoly = polygonCountourMarginBoxes.reduce((previous, current) => unify(previous, new core_1.Polygon(current)), new core_1.Polygon());
+        const highlightMarginSVG = documant.createElementNS(SVG_XML_NAMESPACE, "svg");
+        highlightMarginSVG.setAttribute("class", `${styles_1.CLASS_HIGHLIGHT_COMMON} ${styles_1.CLASS_HIGHLIGHT_CONTOUR_MARGIN}`);
+        highlightMarginSVG.polygon = polygonCountourMarginUnionPoly;
+        highlightMarginSVG.innerHTML = polygonCountourMarginUnionPoly.svg({
+            fill: `rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue})`,
+            fillRule: "evenodd",
+            stroke: "transparent",
+            strokeWidth: 0,
+            fillOpacity: 1,
+            className: undefined,
+        });
+        highlightParent.append(highlightMarginSVG);
     }
-    const highlightBounding = documant.createElement("div");
-    highlightBounding.setAttribute("class", `${styles_1.CLASS_HIGHLIGHT_BOUNDING_AREA} ${styles_1.CLASS_HIGHLIGHT_COMMON}`);
-    highlightBounding.scale = scale;
-    const leftBase = rangeBoundingClientRect.left - xOffset - expand;
-    const leftOff = (paginatedWidth - bodyWidth) / 2;
-    highlightBounding.rect = {
-        left: paginated
-            ?
-                rtl
-                    ?
-                        leftBase - leftOff - paginatedWidth
-                    :
-                        leftBase - leftOff
-            :
-                leftBase,
-        top: rangeBoundingClientRect.top - yOffset - expand,
-        width: rangeBoundingClientRect.width + expand * 2,
-        height: rangeBoundingClientRect.height + expand * 2,
-    };
-    highlightBounding.style.setProperty("width", `${highlightBounding.rect.width * scale}px`, "important");
-    highlightBounding.style.setProperty("height", `${highlightBounding.rect.height * scale}px`, "important");
-    highlightBounding.style.setProperty("min-width", highlightBounding.style.width, "important");
-    highlightBounding.style.setProperty("min-height", highlightBounding.style.height, "important");
-    highlightBounding.style.setProperty("left", `${highlightBounding.rect.left * scale}px`, "important");
-    highlightBounding.style.setProperty("top", `${highlightBounding.rect.top * scale}px`, "important");
-    highlightParent.append(highlightBounding);
     return highlightParent;
 }
 //# sourceMappingURL=highlight.js.map
