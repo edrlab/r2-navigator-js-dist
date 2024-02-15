@@ -2372,7 +2372,7 @@ var computeProgressionData = function () {
                 }
                 else {
                     var boundingRect = element.getBoundingClientRect();
-                    var clientRects = (0, rect_utils_1.getClientRectsNoOverlap_)(element.getClientRects(), false, vwm);
+                    var clientRects = (0, rect_utils_1.getClientRectsNoOverlap)((0, rect_utils_1.DOMRectListToArray)(element.getClientRects()), false, vwm);
                     var rectangle = void 0;
                     try {
                         for (var clientRects_1 = tslib_1.__values(clientRects), clientRects_1_1 = clientRects_1.next(); !clientRects_1_1.done; clientRects_1_1 = clientRects_1.next()) {

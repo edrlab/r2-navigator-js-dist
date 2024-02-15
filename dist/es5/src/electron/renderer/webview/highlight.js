@@ -16,6 +16,7 @@ var readium_css_2 = require("./readium-css");
 var core_1 = require("@flatten-js/core");
 var unify = core_1.BooleanOperations.unify;
 var IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
+window.DEBUG_RECTS = IS_DEV && rect_utils_1.VERBOSE;
 var DEFAULT_BACKGROUND_COLOR = {
     blue: 0,
     green: 0,
@@ -394,6 +395,7 @@ exports.createHighlight = createHighlight;
 function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     var e_3, _a, e_4, _b, e_5, _c, e_6, _d, e_7, _e, e_8, _f;
     var _g;
+    var DEBUG_RECTS = window.DEBUG_RECTS;
     var documant = win.document;
     var scrollElement = (0, readium_css_1.getScrollingElement)(documant);
     var range = highlight.selectionInfo ? (0, selection_1.convertRangeInfo)(documant, highlight.selectionInfo.rangeInfo) : highlight.range;
@@ -423,8 +425,16 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     var yOffset = paginated ? (-scrollElement.scrollTop) : bodyRect.top;
     var scale = 1 / ((win.READIUM2 && win.READIUM2.isFixedLayout) ? win.READIUM2.fxlViewportScale : 1);
     var doNotMergeHorizontallyAlignedRects = drawUnderline || drawStrikeThrough;
-    var rangeClientRects = range.getClientRects();
-    var clientRects = (0, rect_utils_1.getClientRectsNoOverlap_)(rangeClientRects, doNotMergeHorizontallyAlignedRects, vertical, highlight.expand ? highlight.expand : 0);
+    var clientRects;
+    var rangeClientRects = (0, rect_utils_1.DOMRectListToArray)(range.getClientRects());
+    if (doNotMergeHorizontallyAlignedRects) {
+        var textClientRects = (0, rect_utils_1.getTextClientRects)(range);
+        var textReducedClientRects = (0, rect_utils_1.getClientRectsNoOverlap)(textClientRects, true, vertical, highlight.expand ? highlight.expand : 0);
+        clientRects = (DEBUG_RECTS && drawStrikeThrough) ? textClientRects : textReducedClientRects;
+    }
+    else {
+        clientRects = (0, rect_utils_1.getClientRectsNoOverlap)(rangeClientRects, false, vertical, highlight.expand ? highlight.expand : 0);
+    }
     var underlineThickness = 3;
     var strikeThroughLineThickness = 4;
     var bodyWidth = parseInt(bodyComputedStyle.width, 10);
@@ -449,18 +459,52 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
             var y = rect.top * scale;
             boxesGapExpanded.push(new core_1.Box(Number((x - gap).toPrecision(12)), Number((y - gap).toPrecision(12)), Number((x + w + gap).toPrecision(12)), Number((y + h + gap).toPrecision(12))));
             if (drawStrikeThrough) {
-                var ww = (vertical ? strikeThroughLineThickness : rect.width) * scale;
-                var hh = (vertical ? rect.height : strikeThroughLineThickness) * scale;
-                var xx = (vertical ? (rect.left + (rect.width / 2) - (strikeThroughLineThickness / 2)) : rect.left) * scale;
-                var yy = (vertical ? rect.top : (rect.top + (rect.height / 2) - (strikeThroughLineThickness / 2))) * scale;
+                var thickness = DEBUG_RECTS ? (vertical ? rect.width : rect.height) : strikeThroughLineThickness;
+                var ww = (vertical ? thickness : rect.width) * scale;
+                var hh = (vertical ? rect.height : thickness) * scale;
+                var xx = (vertical
+                    ?
+                        (DEBUG_RECTS
+                            ?
+                                rect.left
+                            :
+                                (rect.left + (rect.width / 2) - (thickness / 2)))
+                    :
+                        rect.left) * scale;
+                var yy = (vertical
+                    ?
+                        rect.top
+                    :
+                        (DEBUG_RECTS
+                            ?
+                                rect.top
+                            :
+                                (rect.top + (rect.height / 2) - (thickness / 2)))) * scale;
                 boxesNoGapExpanded.push(new core_1.Box(Number((xx).toPrecision(12)), Number((yy).toPrecision(12)), Number((xx + ww).toPrecision(12)), Number((yy + hh).toPrecision(12))));
             }
             else {
+                var thickness = DEBUG_RECTS ? (vertical ? rect.width : rect.height) : underlineThickness;
                 if (drawUnderline) {
-                    var ww = (vertical ? underlineThickness : rect.width) * scale;
-                    var hh = (vertical ? rect.height : underlineThickness) * scale;
-                    var xx = (vertical ? (rect.left - (underlineThickness / 2)) : rect.left) * scale;
-                    var yy = (vertical ? rect.top : (rect.top + rect.height - (underlineThickness / 2))) * scale;
+                    var ww = (vertical ? thickness : rect.width) * scale;
+                    var hh = (vertical ? rect.height : thickness) * scale;
+                    var xx = (vertical
+                        ?
+                            (DEBUG_RECTS
+                                ?
+                                    rect.left
+                                :
+                                    (rect.left - (thickness / 2)))
+                        :
+                            rect.left) * scale;
+                    var yy = (vertical
+                        ?
+                            rect.top
+                        :
+                            (DEBUG_RECTS
+                                ?
+                                    rect.top
+                                :
+                                    (rect.top + rect.height - (thickness / 2)))) * scale;
                     boxesNoGapExpanded.push(new core_1.Box(Number((xx).toPrecision(12)), Number((yy).toPrecision(12)), Number((xx + ww).toPrecision(12)), Number((yy + hh).toPrecision(12))));
                 }
                 else {
@@ -487,7 +531,7 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     });
     var polygonSurface;
     if (doNotMergeHorizontallyAlignedRects) {
-        var singleSVGPath = true;
+        var singleSVGPath = !DEBUG_RECTS;
         if (singleSVGPath) {
             polygonSurface = new core_1.Polygon();
             try {
@@ -542,20 +586,20 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
             ?
                 polygonSurface.reduce(function (prev, cur) {
                     return prev + cur.svg({
-                        fill: "rgb(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ")"),
+                        fill: DEBUG_RECTS ? "pink" : "rgb(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ")"),
                         fillRule: "evenodd",
-                        stroke: "transparent",
-                        strokeWidth: 0,
+                        stroke: DEBUG_RECTS ? "magenta" : "transparent",
+                        strokeWidth: DEBUG_RECTS ? 1 : 0,
                         fillOpacity: 1,
                         className: undefined,
                     });
                 }, "")
             :
                 polygonSurface.svg({
-                    fill: "rgb(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ")"),
+                    fill: DEBUG_RECTS ? "yellow" : "rgb(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ")"),
                     fillRule: "evenodd",
-                    stroke: "transparent",
-                    strokeWidth: 0,
+                    stroke: DEBUG_RECTS ? "green" : "transparent",
+                    strokeWidth: DEBUG_RECTS ? 1 : 0,
                     fillOpacity: 1,
                     className: undefined,
                 }))
@@ -563,8 +607,8 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
                 polygonCountourUnionPoly.svg({
                     fill: "transparent",
                     fillRule: "evenodd",
-                    stroke: "transparent",
-                    strokeWidth: 1,
+                    stroke: DEBUG_RECTS ? "red" : "transparent",
+                    strokeWidth: DEBUG_RECTS ? 1 : 1,
                     fillOpacity: 1,
                     className: undefined,
                 });

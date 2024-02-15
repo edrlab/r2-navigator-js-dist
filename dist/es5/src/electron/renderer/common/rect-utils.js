@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.checkOverlaps = exports.removeContainedRects = exports.getRectOverlapY = exports.getRectOverlapX = exports.replaceOverlapingRects = exports.mergeTouchingRects = exports.rectsTouchOrOverlap = exports.getBoundingRect = exports.rectContains = exports.rectContainsPoint = exports.rectSubtract = exports.rectIntersect = exports.getClientRectsNoOverlap__ = exports.getClientRectsNoOverlap_ = exports.getClientRectsNoOverlap = void 0;
+exports.checkOverlaps = exports.removeContainedRects = exports.getRectOverlapY = exports.getRectOverlapX = exports.replaceOverlapingRects = exports.mergeTouchingRects = exports.rectsTouchOrOverlap = exports.getBoundingRect = exports.rectContains = exports.rectContainsPoint = exports.rectSame = exports.rectSubtract = exports.rectIntersect = exports.getClientRectsNoOverlap = exports.getTextClientRects = exports.DOMRectListToArray = exports.VERBOSE = void 0;
 var tslib_1 = require("tslib");
-var VERBOSE = false;
-var IS_DEV = VERBOSE &&
+exports.VERBOSE = false;
+var IS_DEV = exports.VERBOSE &&
     (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 var LOG_PREFIX = "RECTs -- ";
 var logRect = function (rect) {
@@ -12,40 +12,70 @@ var logRect = function (rect) {
         console.log(LOG_PREFIX + LOG_PREFIX_LOCAL + "TOP:".concat(rect.top, " BOTTOM:").concat(rect.bottom, " LEFT:").concat(rect.left, " RIGHT:").concat(rect.right, " WIDTH:").concat(rect.width, " HEIGHT:").concat(rect.height));
     }
 };
-function getClientRectsNoOverlap(range, doNotMergeAlignedRects, vertical, expand) {
-    var rangeClientRects = range.getClientRects();
-    return getClientRectsNoOverlap_(rangeClientRects, doNotMergeAlignedRects, vertical, expand);
-}
-exports.getClientRectsNoOverlap = getClientRectsNoOverlap;
-function getClientRectsNoOverlap_(clientRects, doNotMergeAlignedRects, vertical, expand) {
+function DOMRectListToArray(domRects) {
     var e_1, _a;
-    var originalRects = [];
+    var rects = [];
     try {
-        for (var clientRects_1 = tslib_1.__values(clientRects), clientRects_1_1 = clientRects_1.next(); !clientRects_1_1.done; clientRects_1_1 = clientRects_1.next()) {
-            var rangeClientRect = clientRects_1_1.value;
-            originalRects.push({
-                bottom: rangeClientRect.bottom,
-                height: rangeClientRect.height,
-                left: rangeClientRect.left,
-                right: rangeClientRect.right,
-                top: rangeClientRect.top,
-                width: rangeClientRect.width,
+        for (var domRects_1 = tslib_1.__values(domRects), domRects_1_1 = domRects_1.next(); !domRects_1_1.done; domRects_1_1 = domRects_1.next()) {
+            var domRect = domRects_1_1.value;
+            rects.push({
+                bottom: domRect.bottom,
+                height: domRect.height,
+                left: domRect.left,
+                right: domRect.right,
+                top: domRect.top,
+                width: domRect.width,
             });
         }
     }
     catch (e_1_1) { e_1 = { error: e_1_1 }; }
     finally {
         try {
-            if (clientRects_1_1 && !clientRects_1_1.done && (_a = clientRects_1.return)) _a.call(clientRects_1);
+            if (domRects_1_1 && !domRects_1_1.done && (_a = domRects_1.return)) _a.call(domRects_1);
         }
         finally { if (e_1) throw e_1.error; }
     }
-    return getClientRectsNoOverlap__(originalRects, doNotMergeAlignedRects, vertical, expand);
+    return rects;
 }
-exports.getClientRectsNoOverlap_ = getClientRectsNoOverlap_;
-function getClientRectsNoOverlap__(originalRects, doNotMergeAlignedRects, vertical, expand) {
+exports.DOMRectListToArray = DOMRectListToArray;
+function getTextClientRects(range) {
+    var doc = range.commonAncestorContainer.ownerDocument;
+    if (!doc) {
+        return [];
+    }
+    var iter = doc.createNodeIterator(range.commonAncestorContainer, NodeFilter.SHOW_TEXT, {
+        acceptNode: function (node) {
+            return node.nodeType === Node.TEXT_NODE && range.intersectsNode(node)
+                ? NodeFilter.FILTER_ACCEPT
+                : NodeFilter.FILTER_REJECT;
+        },
+    });
+    var rects = [];
+    while (iter.nextNode()) {
+        var r = doc.createRange();
+        if (iter.referenceNode.nodeValue && iter.referenceNode === range.startContainer) {
+            r.setStart(iter.referenceNode, range.startOffset);
+            r.setEnd(iter.referenceNode, iter.referenceNode === range.endContainer ? range.endOffset : iter.referenceNode.nodeValue.length);
+        }
+        else if (iter.referenceNode.nodeValue && iter.referenceNode === range.endContainer) {
+            r.setStart(iter.referenceNode, 0);
+            r.setEnd(iter.referenceNode, range.endOffset);
+        }
+        else {
+            r.selectNode(iter.referenceNode);
+        }
+        if (r.collapsed) {
+            continue;
+        }
+        var nodeRects = DOMRectListToArray(r.getClientRects());
+        rects.push.apply(rects, tslib_1.__spreadArray([], tslib_1.__read(nodeRects), false));
+    }
+    return rects;
+}
+exports.getTextClientRects = getTextClientRects;
+function getClientRectsNoOverlap(originalRects, doNotMergeAlignedRects, vertical, expand) {
     var e_2, _a, e_3, _b;
-    var LOG_PREFIX_LOCAL = "getClientRectsNoOverlap__ ~~ ";
+    var LOG_PREFIX_LOCAL = "getClientRectsNoOverlap ~~ ";
     if (IS_DEV) {
         console.log(LOG_PREFIX + LOG_PREFIX_LOCAL + "original number of rects = " + originalRects.length);
     }
@@ -73,7 +103,21 @@ function getClientRectsNoOverlap__(originalRects, doNotMergeAlignedRects, vertic
             finally { if (e_2) throw e_2.error; }
         }
     }
-    var tolerance = 1;
+    var rectsLandscapeAspectRatio = originalRects.filter(function (r) {
+        return r.width >= r.height;
+    });
+    var rectsPortraitAspectRatio = originalRects.filter(function (r) {
+        return r.width < r.height;
+    });
+    var sortFunc = function (r1, r2) {
+        var areaR1 = r1.width * r1.height;
+        var areaR2 = r2.width * r2.height;
+        return areaR1 < areaR2 ? -1 : areaR1 === areaR2 ? 0 : 1;
+    };
+    rectsLandscapeAspectRatio.sort(sortFunc);
+    rectsPortraitAspectRatio.sort(sortFunc);
+    originalRects = vertical ? rectsPortraitAspectRatio.concat(rectsLandscapeAspectRatio) : rectsLandscapeAspectRatio.concat(rectsPortraitAspectRatio);
+    var tolerance = 3;
     if (IS_DEV) {
         console.log(LOG_PREFIX + LOG_PREFIX_LOCAL + "tolerance = " + tolerance);
     }
@@ -85,7 +129,7 @@ function getClientRectsNoOverlap__(originalRects, doNotMergeAlignedRects, vertic
     if (IS_DEV) {
         console.log(LOG_PREFIX + LOG_PREFIX_LOCAL + "after [removeContainedRects], number of rects = " + noContainedRects.length);
     }
-    var newRects = replaceOverlapingRects(noContainedRects);
+    var newRects = replaceOverlapingRects(noContainedRects, doNotMergeAlignedRects, vertical);
     if (IS_DEV) {
         console.log(LOG_PREFIX + LOG_PREFIX_LOCAL + "after [replaceOverlapingRects], number of rects = " + newRects.length);
     }
@@ -132,7 +176,7 @@ function getClientRectsNoOverlap__(originalRects, doNotMergeAlignedRects, vertic
     }
     return newRects;
 }
-exports.getClientRectsNoOverlap__ = getClientRectsNoOverlap__;
+exports.getClientRectsNoOverlap = getClientRectsNoOverlap;
 function almostEqual(a, b, tolerance) {
     return Math.abs(a - b) <= tolerance;
 }
@@ -221,6 +265,13 @@ function rectSubtract(rect1, rect2) {
     return rects;
 }
 exports.rectSubtract = rectSubtract;
+function rectSame(rect1, rect2, tolerance) {
+    return almostEqual(rect1.left, rect2.left, tolerance) &&
+        almostEqual(rect1.right, rect2.right, tolerance) &&
+        almostEqual(rect1.top, rect2.top, tolerance) &&
+        almostEqual(rect1.bottom, rect2.bottom, tolerance);
+}
+exports.rectSame = rectSame;
 function rectContainsPoint(rect, x, y, tolerance) {
     return (rect.left < x || almostEqual(rect.left, x, tolerance)) &&
         (rect.right > x || almostEqual(rect.right, x, tolerance)) &&
@@ -310,8 +361,11 @@ function mergeTouchingRects(rects, tolerance, doNotMergeAlignedRects, vertical) 
     return rects;
 }
 exports.mergeTouchingRects = mergeTouchingRects;
-function replaceOverlapingRects(rects) {
+function replaceOverlapingRects(rects, doNotMergeAlignedRects, vertical) {
     var LOG_PREFIX_LOCAL = "replaceOverlapingRects ~~ ";
+    if (doNotMergeAlignedRects) {
+        return rects;
+    }
     for (var i = 0; i < rects.length; i++) {
         var _loop_2 = function (j) {
             var e_4, _a;
@@ -385,7 +439,7 @@ function replaceOverlapingRects(rects) {
             if (IS_DEV) {
                 console.log(LOG_PREFIX + LOG_PREFIX_LOCAL + "overlap removed: ".concat(rects.length, " ==> ").concat(newRects.length));
             }
-            return { value: replaceOverlapingRects(newRects) };
+            return { value: replaceOverlapingRects(newRects, doNotMergeAlignedRects, vertical) };
         };
         for (var j = i + 1; j < rects.length; j++) {
             var state_2 = _loop_2(j);
@@ -432,43 +486,32 @@ function removeContainedRects(rects, tolerance, doNotMergeAlignedRects, vertical
                     if (!rectContains(possiblyContainingRect, rect, tolerance)) {
                         continue;
                     }
-                    var rectsLineUpVertically = almostEqual(possiblyContainingRect.top, rect.top, tolerance) &&
-                        almostEqual(possiblyContainingRect.bottom, rect.bottom, tolerance);
-                    var mergeAllowedForVerticallyLinedUpRects = !doNotMergeAlignedRects || !vertical;
-                    var rectsLineUpHorizontally = almostEqual(possiblyContainingRect.left, rect.left, tolerance) &&
-                        almostEqual(possiblyContainingRect.right, rect.right, tolerance);
-                    var mergeAllowedForHorizontallyLinedUpRects = !doNotMergeAlignedRects || vertical;
-                    if (rectsLineUpVertically && rectsLineUpHorizontally) {
-                        if (IS_DEV) {
-                            console.log(LOG_PREFIX + LOG_PREFIX_LOCAL + "[identical] removed container (keep contained):");
-                            logRect(rect);
-                            logRect(possiblyContainingRect);
-                        }
-                        rectsToKeep.delete(possiblyContainingRect);
-                        continue;
-                    }
-                    else if (rectsLineUpVertically || rectsLineUpHorizontally) {
-                        var doMerge = (rectsLineUpHorizontally && mergeAllowedForHorizontallyLinedUpRects)
-                            ||
-                                (rectsLineUpVertically && mergeAllowedForVerticallyLinedUpRects);
-                        if (!doMerge) {
+                    if (doNotMergeAlignedRects) {
+                        var rectsLineUpVertically = almostEqual(possiblyContainingRect.top, rect.top, tolerance) &&
+                            almostEqual(possiblyContainingRect.bottom, rect.bottom, tolerance);
+                        var rectsLineUpHorizontally = almostEqual(possiblyContainingRect.left, rect.left, tolerance) &&
+                            almostEqual(possiblyContainingRect.right, rect.right, tolerance);
+                        if (rectsLineUpVertically && rectsLineUpHorizontally) {
+                            if (IS_DEV) {
+                                console.log(LOG_PREFIX + LOG_PREFIX_LOCAL + "[identical] removed container (keep contained):");
+                                logRect(possiblyContainingRect);
+                                logRect(rect);
+                            }
+                            rectsToKeep.delete(possiblyContainingRect);
                             continue;
                         }
-                        if (IS_DEV) {
-                            console.log(LOG_PREFIX + LOG_PREFIX_LOCAL + "[aligned] removed container (keep contained):");
-                            logRect(rect);
-                            logRect(possiblyContainingRect);
+                        else if (rectsLineUpVertically || rectsLineUpHorizontally) {
+                            if (rectsLineUpVertically && !vertical || rectsLineUpHorizontally && vertical) {
+                                if (IS_DEV) {
+                                    console.log(LOG_PREFIX + LOG_PREFIX_LOCAL + "[aligned] removed contained (keep container):");
+                                    logRect(rect);
+                                    logRect(possiblyContainingRect);
+                                }
+                                rectsToKeep.delete(rect);
+                                continue;
+                            }
+                            continue;
                         }
-                        rectsToKeep.delete(possiblyContainingRect);
-                        continue;
-                    }
-                    if (doNotMergeAlignedRects) {
-                        if (IS_DEV) {
-                            console.log(LOG_PREFIX + LOG_PREFIX_LOCAL + "[merge no] removed container (keep contained):");
-                            logRect(possiblyContainingRect);
-                            logRect(rect);
-                        }
-                        rectsToKeep.delete(possiblyContainingRect);
                     }
                     else {
                         if (IS_DEV) {
