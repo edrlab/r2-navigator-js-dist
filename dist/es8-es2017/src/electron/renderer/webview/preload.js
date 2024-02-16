@@ -36,6 +36,7 @@ const debug = debug_("r2:navigator#electron/renderer/webview/preload");
 const INJECTED_LINK_TXT = "__";
 const win = global.window;
 win.READIUM2 = {
+    lastClickedTextChar: undefined,
     DEBUG_VISUALS: false,
     fxlViewportHeight: 0,
     fxlViewportScale: 1,
@@ -2106,7 +2107,7 @@ const domDataFromPoint = (x, y) => {
                     }
                     else if (c.nodeType === Node.TEXT_NODE && range.startOffset > 0) {
                         c = domPointData.element.childNodes[range.startOffset - 1];
-                        if (c.nodeType === Node.ELEMENT_NODE) {
+                        if ((c === null || c === void 0 ? void 0 : c.nodeType) === Node.ELEMENT_NODE) {
                             domPointData.element = c;
                         }
                     }
@@ -2118,16 +2119,23 @@ const domDataFromPoint = (x, y) => {
                 if (node.parentNode && node.parentNode.nodeType === Node.ELEMENT_NODE) {
                     domPointData.element = node.parentNode;
                 }
+                if (!domPointData.element && node.parentElement) {
+                    domPointData.element = node.parentElement;
+                }
             }
         }
     }
     return domPointData;
 };
 const processXYRaw = (x, y, reverse, userInteract) => {
+    var _a, _b;
     debug("processXYRaw ENTRY");
     if ((0, popup_dialog_1.isPopupDialogOpen)(win.document)) {
         debug("processXYRaw isPopupDialogOpen SKIP");
         return;
+    }
+    if (userInteract) {
+        win.READIUM2.lastClickedTextChar = undefined;
     }
     const domPointData = domDataFromPoint(x, y);
     if (!domPointData.element ||
@@ -2180,6 +2188,12 @@ const processXYRaw = (x, y, reverse, userInteract) => {
             win.READIUM2.locationHashOverride === win.document.body ||
             win.READIUM2.locationHashOverride === win.document.documentElement) {
             debug(".hashElement = 5 ", userInteract);
+            if (userInteract && ((_b = (_a = domPointData.textNode) === null || _a === void 0 ? void 0 : _a.nodeValue) === null || _b === void 0 ? void 0 : _b.length) && domPointData.textNodeOffset >= 0 && domPointData.textNodeOffset <= domPointData.textNode.nodeValue.length) {
+                win.READIUM2.lastClickedTextChar = {
+                    textNode: domPointData.textNode,
+                    textNodeOffset: domPointData.textNodeOffset,
+                };
+            }
             win.READIUM2.hashElement = userInteract ? domPointData.element : win.READIUM2.hashElement;
             win.READIUM2.locationHashOverride = domPointData.element;
         }
@@ -2639,6 +2653,7 @@ const findFollowingDescendantSiblingElementsWithID = (el) => {
     return followingElementIDs;
 };
 const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays) => {
+    var _a, _b;
     if (!win.READIUM2.locationHashOverride) {
         return;
     }
@@ -2695,6 +2710,17 @@ const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays) => {
     if (!secondWebViewHref) {
         secondWebViewHref = undefined;
     }
+    let rangeInfo;
+    if (win.READIUM2.lastClickedTextChar && ((_b = (_a = win.READIUM2.lastClickedTextChar.textNode) === null || _a === void 0 ? void 0 : _a.nodeValue) === null || _b === void 0 ? void 0 : _b.length)) {
+        const range = win.document.createRange();
+        const startOffset = win.READIUM2.lastClickedTextChar.textNodeOffset >= win.READIUM2.lastClickedTextChar.textNode.nodeValue.length ? win.READIUM2.lastClickedTextChar.textNodeOffset - 1 : win.READIUM2.lastClickedTextChar.textNodeOffset;
+        range.setStart(win.READIUM2.lastClickedTextChar.textNode, startOffset);
+        range.setEnd(win.READIUM2.lastClickedTextChar.textNode, startOffset + 1);
+        const tuple = (0, selection_2.convertRange)(range, getCssSelector, exports.computeCFI);
+        if (tuple) {
+            rangeInfo = tuple[0];
+        }
+    }
     win.READIUM2.locationHashOverrideInfo = {
         audioPlaybackInfo: undefined,
         docInfo: {
@@ -2711,6 +2737,7 @@ const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays) => {
             cssSelector,
             position: undefined,
             progression,
+            rangeInfo,
         },
         paginationInfo: pinfo,
         secondWebViewHref,

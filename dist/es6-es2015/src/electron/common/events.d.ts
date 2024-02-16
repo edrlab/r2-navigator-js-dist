@@ -1,4 +1,4 @@
-import { Locator, LocatorLocations } from "r2-shared-js/dist/es6-es2015/src/models/locator";
+import { Locator, LocatorLocations } from "./locator";
 import { IAudioPlaybackInfo } from "./audiobook";
 import { IDocInfo } from "./document";
 import { IwidthHeight } from "./fxl";

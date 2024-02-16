@@ -37,6 +37,7 @@ var debug = debug_("r2:navigator#electron/renderer/webview/preload");
 var INJECTED_LINK_TXT = "__";
 var win = global.window;
 win.READIUM2 = {
+    lastClickedTextChar: undefined,
     DEBUG_VISUALS: false,
     fxlViewportHeight: 0,
     fxlViewportScale: 1,
@@ -2205,7 +2206,7 @@ var domDataFromPoint = function (x, y) {
                     }
                     else if (c.nodeType === Node.TEXT_NODE && range.startOffset > 0) {
                         c = domPointData.element.childNodes[range.startOffset - 1];
-                        if (c.nodeType === Node.ELEMENT_NODE) {
+                        if ((c === null || c === void 0 ? void 0 : c.nodeType) === Node.ELEMENT_NODE) {
                             domPointData.element = c;
                         }
                     }
@@ -2217,16 +2218,23 @@ var domDataFromPoint = function (x, y) {
                 if (node.parentNode && node.parentNode.nodeType === Node.ELEMENT_NODE) {
                     domPointData.element = node.parentNode;
                 }
+                if (!domPointData.element && node.parentElement) {
+                    domPointData.element = node.parentElement;
+                }
             }
         }
     }
     return domPointData;
 };
 var processXYRaw = function (x, y, reverse, userInteract) {
+    var _a, _b;
     debug("processXYRaw ENTRY");
     if ((0, popup_dialog_1.isPopupDialogOpen)(win.document)) {
         debug("processXYRaw isPopupDialogOpen SKIP");
         return;
+    }
+    if (userInteract) {
+        win.READIUM2.lastClickedTextChar = undefined;
     }
     var domPointData = domDataFromPoint(x, y);
     if (!domPointData.element ||
@@ -2279,6 +2287,12 @@ var processXYRaw = function (x, y, reverse, userInteract) {
             win.READIUM2.locationHashOverride === win.document.body ||
             win.READIUM2.locationHashOverride === win.document.documentElement) {
             debug(".hashElement = 5 ", userInteract);
+            if (userInteract && ((_b = (_a = domPointData.textNode) === null || _a === void 0 ? void 0 : _a.nodeValue) === null || _b === void 0 ? void 0 : _b.length) && domPointData.textNodeOffset >= 0 && domPointData.textNodeOffset <= domPointData.textNode.nodeValue.length) {
+                win.READIUM2.lastClickedTextChar = {
+                    textNode: domPointData.textNode,
+                    textNodeOffset: domPointData.textNodeOffset,
+                };
+            }
             win.READIUM2.hashElement = userInteract ? domPointData.element : win.READIUM2.hashElement;
             win.READIUM2.locationHashOverride = domPointData.element;
         }
@@ -2793,6 +2807,7 @@ var findFollowingDescendantSiblingElementsWithID = function (el) {
     return followingElementIDs;
 };
 var notifyReadingLocationRaw = function (userInteract, ignoreMediaOverlays) {
+    var _a, _b;
     if (!win.READIUM2.locationHashOverride) {
         return;
     }
@@ -2837,7 +2852,7 @@ var notifyReadingLocationRaw = function (userInteract, ignoreMediaOverlays) {
                 !win.READIUM2.locationHashOverrideInfo.selectionInfo ||
                 !(0, selection_1.sameSelections)(win.READIUM2.locationHashOverrideInfo.selectionInfo, selInfo);
     }
-    var _a = findPrecedingAncestorSiblingEpubPageBreak(win.READIUM2.locationHashOverride), epubPage = _a.epubPage, epubPageID = _a.epubPageID;
+    var _c = findPrecedingAncestorSiblingEpubPageBreak(win.READIUM2.locationHashOverride), epubPage = _c.epubPage, epubPageID = _c.epubPageID;
     var headings = findPrecedingAncestorSiblingHeadings(win.READIUM2.locationHashOverride);
     var followingElementIDs = findFollowingDescendantSiblingElementsWithID(win.READIUM2.locationHashOverride);
     var secondWebViewHref = win.READIUM2.urlQueryParams &&
@@ -2848,6 +2863,17 @@ var notifyReadingLocationRaw = function (userInteract, ignoreMediaOverlays) {
         undefined;
     if (!secondWebViewHref) {
         secondWebViewHref = undefined;
+    }
+    var rangeInfo;
+    if (win.READIUM2.lastClickedTextChar && ((_b = (_a = win.READIUM2.lastClickedTextChar.textNode) === null || _a === void 0 ? void 0 : _a.nodeValue) === null || _b === void 0 ? void 0 : _b.length)) {
+        var range = win.document.createRange();
+        var startOffset = win.READIUM2.lastClickedTextChar.textNodeOffset >= win.READIUM2.lastClickedTextChar.textNode.nodeValue.length ? win.READIUM2.lastClickedTextChar.textNodeOffset - 1 : win.READIUM2.lastClickedTextChar.textNodeOffset;
+        range.setStart(win.READIUM2.lastClickedTextChar.textNode, startOffset);
+        range.setEnd(win.READIUM2.lastClickedTextChar.textNode, startOffset + 1);
+        var tuple = (0, selection_2.convertRange)(range, getCssSelector, exports.computeCFI);
+        if (tuple) {
+            rangeInfo = tuple[0];
+        }
     }
     win.READIUM2.locationHashOverrideInfo = {
         audioPlaybackInfo: undefined,
@@ -2865,6 +2891,7 @@ var notifyReadingLocationRaw = function (userInteract, ignoreMediaOverlays) {
             cssSelector: cssSelector,
             position: undefined,
             progression: progression,
+            rangeInfo: rangeInfo,
         },
         paginationInfo: pinfo,
         secondWebViewHref: secondWebViewHref,

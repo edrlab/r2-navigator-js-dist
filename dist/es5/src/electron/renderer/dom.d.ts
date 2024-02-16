@@ -1,4 +1,4 @@
-import { Locator } from "r2-shared-js/dist/es5/src/models/locator";
+import { Locator } from "../common/locator";
 import { Publication } from "r2-shared-js/dist/es5/src/models/publication";
 import { IEventPayload_R2_EVENT_CLIPBOARD_COPY, IEventPayload_R2_EVENT_READIUMCSS, IKeyboardEvent } from "../common/events";
 export declare function fixedLayoutZoomPercent(zoomPercent: number): void;

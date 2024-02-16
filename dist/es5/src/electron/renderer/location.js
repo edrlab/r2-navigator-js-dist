@@ -335,7 +335,9 @@ function handleLinkUrl(href, rcss) {
     handleLink(href, undefined, false, rcss);
 }
 exports.handleLinkUrl = handleLinkUrl;
-function handleLinkLocator(location, rcss, rangeInfo) {
+function handleLinkLocator(location, rcss) {
+    var _a;
+    var rangeInfo = (_a = location === null || location === void 0 ? void 0 : location.locations) === null || _a === void 0 ? void 0 : _a.rangeInfo;
     var publication = win.READIUM2.publication;
     var publicationURL = win.READIUM2.publicationURL;
     if (!publication || !publicationURL) {
@@ -1058,6 +1060,8 @@ var _saveReadingLocation = function (activeWebView, locator) {
         locator: {
             href: docHref,
             locations: {
+                rangeInfo: locator.locations.rangeInfo ?
+                    locator.locations.rangeInfo : undefined,
                 cfi: locator.locations.cfi ?
                     locator.locations.cfi : undefined,
                 cssSelector: locator.locations.cssSelector ?
