@@ -7,6 +7,7 @@ export interface IColor {
 export declare const HighlightDrawTypeBackground = 0;
 export declare const HighlightDrawTypeUnderline = 1;
 export declare const HighlightDrawTypeStrikethrough = 2;
+export declare const HighlightDrawTypeOutline = 3;
 export interface IHighlight {
     id: string;
     selectionInfo?: ISelectionInfo;
