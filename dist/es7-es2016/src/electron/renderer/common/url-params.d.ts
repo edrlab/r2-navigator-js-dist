@@ -11,3 +11,4 @@ export declare const URL_PARAM_CLIPBOARD_INTERCEPT = "r2_CLIPBOARD_INTERCEPT";
 export declare const URL_PARAM_IS_IFRAME = "r2_IS_IFRAME";
 export declare const URL_PARAM_WEBVIEW_SLOT = "r2_WEBVIEW_SLOT";
 export declare const URL_PARAM_SECOND_WEBVIEW = "r2_SECOND_WEBVIEW";
+export declare const FRAG_ID_CSS_SELECTOR = "r2-css-selector_";

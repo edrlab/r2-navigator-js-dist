@@ -101,6 +101,9 @@ function bottomUpSearch(input, limit, fallback) {
             }
         }
         current = current.parentElement;
+        if (current && !current.parentElement) {
+            return "break";
+        }
         i++;
     };
     while (current) {
@@ -194,11 +197,14 @@ function classNames(input) {
         penalty: 1,
     }); });
 }
+var ELEMENT_NAMESPACE_PREFIX = /^(.+:)(.+)$/;
+var ELEMENT_NAMESPACE_PREFIX_ = /^\*\|(a|script|style)$/;
 function tagName(input) {
     var name = input.tagName.toLowerCase();
     if (config.tagName(name)) {
+        var n = name.replace(ELEMENT_NAMESPACE_PREFIX, "*|$2").replace(ELEMENT_NAMESPACE_PREFIX_, "*|$1:not(|$1)");
         return {
-            name: name,
+            name: n,
             penalty: 2,
         };
     }

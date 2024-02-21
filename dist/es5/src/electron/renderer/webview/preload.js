@@ -13,7 +13,7 @@ var readium_css_inject_1 = require("../../common/readium-css-inject");
 var selection_1 = require("../../common/selection");
 var styles_1 = require("../../common/styles");
 var animateProperty_1 = require("../common/animateProperty");
-var cssselector2_3_1 = require("../common/cssselector2-3");
+var cssselector3_1 = require("../common/cssselector3");
 var dom_text_utils_1 = require("../common/dom-text-utils");
 var easings_1 = require("../common/easings");
 var popup_dialog_1 = require("../common/popup-dialog");
@@ -1802,7 +1802,7 @@ function loaded(forced) {
                     ev.preventDefault();
                     ev.stopPropagation();
                     payload = {
-                        url: "#" + cssselector2_3_1.FRAG_ID_CSS_SELECTOR + (0, UrlUtils_1.encodeURIComponent_RFC3986)(getCssSelector(linkElement)),
+                        url: "#" + url_params_1.FRAG_ID_CSS_SELECTOR + (0, UrlUtils_1.encodeURIComponent_RFC3986)(getCssSelector(linkElement)),
                     };
                     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_LINK, payload);
                     return [4, (0, popupFootNotes_1.popupFootNote)(linkElement, focusScrollRaw, hrefStr, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable)];
@@ -2611,7 +2611,7 @@ var _getCssSelectorOptions = {
 };
 function getCssSelector(element) {
     try {
-        return (0, cssselector2_3_1.uniqueCssSelector)(element, win.document, _getCssSelectorOptions);
+        return (0, cssselector3_1.uniqueCssSelector)(element, win.document, _getCssSelectorOptions);
     }
     catch (err) {
         debug("uniqueCssSelector:");

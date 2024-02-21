@@ -1,4 +1,3 @@
-export declare const FRAG_ID_CSS_SELECTOR = "r2-css-selector_";
 export interface Options {
     root: Element;
     idName: (name: string) => boolean;

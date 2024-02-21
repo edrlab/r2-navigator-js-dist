@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.readiumCssTransformHtml = exports.injectReadPosCSS = exports.injectDefaultCSS = exports.removeAllCSS = exports.removeCSS = exports.appendCSS = exports.appendCSSInline = exports.ensureHead = exports.configureFixedLayout = exports.readiumCSSSet = exports.isPaginated = exports.isDocRTL = exports.isDocVertical = exports.READIUM2_BASEURL_ID = void 0;
+exports.readiumCssTransformHtml = exports.injectReadPosCSS = exports.injectDefaultCSS = exports.removeAllCSS = exports.removeCSS = exports.appendCSS = exports.appendCSSInline = exports.ensureHead = exports.configureFixedLayout = exports.readiumCSSSet = exports.isPaginated = exports.isDocCJK = exports.isDocRTL = exports.isDocVertical = exports.READIUM2_BASEURL_ID = void 0;
 var debug_ = require("debug");
 var dom_1 = require("./dom");
 var readium_css_settings_1 = require("./readium-css-settings");
@@ -69,6 +69,39 @@ function isDocRTL(documant) {
     return rtl;
 }
 exports.isDocRTL = isDocRTL;
+var isDocJapanese = function (documant) {
+    var isJA = false;
+    var langAttr = documant.documentElement.getAttribute("lang");
+    if (!langAttr) {
+        langAttr = documant.documentElement.getAttribute("xml:lang");
+    }
+    if (!langAttr) {
+        langAttr = documant.documentElement.getAttributeNS("http://www.w3.org/XML/1998/", "lang");
+    }
+    if (langAttr &&
+        (langAttr === "ja" || langAttr.startsWith("ja-"))) {
+        isJA = true;
+    }
+    return isJA;
+};
+var isDocCJK = function (documant) {
+    var isCJK = false;
+    var langAttr = documant.documentElement.getAttribute("lang");
+    if (!langAttr) {
+        langAttr = documant.documentElement.getAttribute("xml:lang");
+    }
+    if (!langAttr) {
+        langAttr = documant.documentElement.getAttributeNS("http://www.w3.org/XML/1998/", "lang");
+    }
+    if (langAttr &&
+        (langAttr === "ja" || langAttr.startsWith("ja-") ||
+            langAttr === "zh" || langAttr.startsWith("zh-") ||
+            langAttr === "ko" || langAttr.startsWith("ko-"))) {
+        isCJK = true;
+    }
+    return isCJK;
+};
+exports.isDocCJK = isDocCJK;
 function isPaginated(documant) {
     return documant && documant.documentElement &&
         documant.documentElement.classList.contains(styles_1.CLASS_PAGINATED);
@@ -189,20 +222,7 @@ function readiumCSSSet(documant, messageJson, isVerticalWritingMode, isRTL) {
                 needsDefaultCSS = false;
             }
         }
-        var isCJK_1 = false;
-        var langAttr = documant.documentElement.getAttribute("lang");
-        if (!langAttr) {
-            langAttr = documant.documentElement.getAttribute("xml:lang");
-        }
-        if (!langAttr) {
-            langAttr = documant.documentElement.getAttributeNS("http://www.w3.org/XML/1998/", "lang");
-        }
-        if (langAttr &&
-            (langAttr === "ja" || langAttr.startsWith("ja-") ||
-                langAttr === "zh" || langAttr.startsWith("zh-") ||
-                langAttr === "ko" || langAttr.startsWith("ko-"))) {
-            isCJK_1 = true;
-        }
+        var isCJK_1 = (0, exports.isDocCJK)(documant);
         var custom = isVerticalWritingMode && isCJK_1 ?
             "cjk-vertical/" : (isCJK_1 ?
             "cjk-horizontal/" : (isRTL ?
@@ -345,11 +365,21 @@ function readiumCSSSet(documant, messageJson, isVerticalWritingMode, isRTL) {
     else {
         docElement.style.removeProperty("--USER__paraSpacing");
     }
-    var isCJK = false;
+    var isCJK = (0, exports.isDocCJK)(documant);
     if (isVerticalWritingMode || (isRTL || isCJK)) {
         docElement.style.removeProperty("--USER__bodyHyphens");
         docElement.style.removeProperty("--USER__wordSpacing");
-        docElement.style.removeProperty("--USER__letterSpacing");
+        if (isDocJapanese(documant)) {
+            if (setCSS.letterSpacing && setCSS.letterSpacing.trim() !== "0") {
+                docElement.style.setProperty("--USER__letterSpacing", setCSS.letterSpacing);
+            }
+            else {
+                docElement.style.removeProperty("--USER__letterSpacing");
+            }
+        }
+        else {
+            docElement.style.removeProperty("--USER__letterSpacing");
+        }
         if (isVerticalWritingMode || isCJK) {
             if (isVerticalWritingMode) {
                 docElement.style.setProperty("--USER__colCount", "1");
@@ -631,7 +661,7 @@ function appendCSS(documant, mod, urlRoot) {
         var styleElement = documant.createElement("style");
         styleElement.setAttribute("id", idz + "-PATCH");
         styleElement.setAttribute("type", "text/css");
-        styleElement.appendChild(documant.createTextNode("audio[controls] { width: revert !important; height: revert !important; }"));
+        styleElement.appendChild(documant.createTextNode("\naudio[controls] {\n    width: revert !important; height: revert !important;\n}\n\n/* exception for Japanese, ReadiumCSS normally recommends disabling CSS letter-spacing for CJK in general */\n:root[style*=\"readium-advanced-on\"][style*=\"--USER__letterSpacing\"]:lang(ja) h1,\n:root[style*=\"readium-advanced-on\"][style*=\"--USER__letterSpacing\"]:lang(ja) h2,\n:root[style*=\"readium-advanced-on\"][style*=\"--USER__letterSpacing\"]:lang(ja) h3,\n:root[style*=\"readium-advanced-on\"][style*=\"--USER__letterSpacing\"]:lang(ja) h4,\n:root[style*=\"readium-advanced-on\"][style*=\"--USER__letterSpacing\"]:lang(ja) h5,\n:root[style*=\"readium-advanced-on\"][style*=\"--USER__letterSpacing\"]:lang(ja) h6,\n:root[style*=\"readium-advanced-on\"][style*=\"--USER__letterSpacing\"]:lang(ja) p,\n:root[style*=\"readium-advanced-on\"][style*=\"--USER__letterSpacing\"]:lang(ja) li,\n:root[style*=\"readium-advanced-on\"][style*=\"--USER__letterSpacing\"]:lang(ja) div {\n    letter-spacing: var(--USER__letterSpacing);\n    font-variant: none;\n}\n"));
         documant.head.insertBefore(styleElement, firstElementChild);
     }
     else {

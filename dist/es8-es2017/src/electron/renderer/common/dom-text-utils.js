@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateTtsQueue = exports.findTtsQueueItemIndex = exports.getTtsQueueItemRef = exports.getTtsQueueItemRefText = exports.getTtsQueueLength = exports.consoleLogTtsQueue = exports.consoleLogTtsQueueItem = exports.normalizeText = exports.normalizeHtmlText = exports.getDirection = exports.getLanguage = exports.combineTextNodes = void 0;
 const sentence_splitter_1 = require("sentence-splitter");
 const styles_1 = require("../../common/styles");
-const cssselector2_3_1 = require("../common/cssselector2-3");
+const cssselector3_1 = require("../common/cssselector3");
 const win = global.window;
 function combineTextNodes(textNodes, skipNormalize) {
     if (textNodes && textNodes.length) {
@@ -67,7 +67,7 @@ function consoleLogTtsQueueItem(i) {
     console.log("<<----");
     console.log(i.dir);
     console.log(i.lang);
-    const cssSelector = (0, cssselector2_3_1.uniqueCssSelector)(i.parentElement, i.parentElement.ownerDocument);
+    const cssSelector = (0, cssselector3_1.uniqueCssSelector)(i.parentElement, i.parentElement.ownerDocument, {});
     console.log(cssSelector);
     console.log(i.parentElement.tagName);
     console.log(i.combinedText);
@@ -320,7 +320,8 @@ function generateTtsQueue(rootElement, splitSentences) {
             if (el.getAttribute("id") === styles_1.SKIP_LINK_ID) {
                 return true;
             }
-            if (((_a = el.tagName) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === "rt") {
+            const lower = (_a = el.tagName) === null || _a === void 0 ? void 0 : _a.toLowerCase();
+            if (lower === "rt" || lower === "rp") {
                 return true;
             }
             let curEl = el;

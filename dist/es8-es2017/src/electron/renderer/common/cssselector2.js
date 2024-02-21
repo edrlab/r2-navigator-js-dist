@@ -1,8 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.uniqueCssSelector = exports.FRAG_ID_CSS_SELECTOR = void 0;
+exports.uniqueCssSelector = void 0;
 const cssesc = require("cssesc");
-exports.FRAG_ID_CSS_SELECTOR = "r2-css-selector_";
 var Limit;
 (function (Limit) {
     Limit[Limit["All"] = 0] = "All";
@@ -157,7 +156,7 @@ function tagName(input) {
     const name = input.tagName.toLowerCase();
     if (config.tagName(name)) {
         return {
-            name,
+            name: name.replace(/^(.+:)(.+)$/, "*|$2"),
             penalty: 2,
         };
     }

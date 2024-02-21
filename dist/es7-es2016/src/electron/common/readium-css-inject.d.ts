@@ -4,6 +4,7 @@ import { WebViewSlotEnum } from "./styles";
 export declare const READIUM2_BASEURL_ID = "r2_BASEURL_ID";
 export declare function isDocVertical(documant: Document): boolean;
 export declare function isDocRTL(documant: Document): boolean;
+export declare const isDocCJK: (documant: Document) => boolean;
 export declare function isPaginated(documant: Document): boolean;
 export declare function readiumCSSSet(documant: Document, messageJson: IEventPayload_R2_EVENT_READIUMCSS, isVerticalWritingMode: boolean, isRTL: boolean): void;
 export declare function configureFixedLayout(documant: Document, isFixedLayout: boolean, fxlViewportWidth: number, fxlViewportHeight: number, innerWidth: number, innerHeight: number, wvSlot: WebViewSlotEnum, zoomPercent: number): IwidthHeight | undefined;
