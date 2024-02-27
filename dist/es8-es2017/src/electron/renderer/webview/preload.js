@@ -2383,9 +2383,9 @@ const computeProgressionData = () => {
 };
 exports.computeProgressionData = computeProgressionData;
 const _blacklistIdClassForCssSelectors = [styles_1.LINK_TARGET_CLASS, styles_1.LINK_TARGET_ALT_CLASS, styles_1.CSS_CLASS_NO_FOCUS_OUTLINE, styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, styles_1.ID_HIGHLIGHTS_CONTAINER, styles_1.CLASS_HIGHLIGHT_CONTAINER, styles_1.CLASS_HIGHLIGHT_CONTOUR, styles_1.CLASS_HIGHLIGHT_CONTOUR_MARGIN, styles_1.TTS_ID_SPEAKING_DOC_ELEMENT, styles_1.ROOT_CLASS_KEYBOARD_INTERACT, styles_1.ROOT_CLASS_INVISIBLE_MASK, styles_1.ROOT_CLASS_INVISIBLE_MASK_REMOVED, styles_1.CLASS_PAGINATED, styles_1.ROOT_CLASS_NO_FOOTNOTES];
-const _blacklistIdClassForCssSelectorsMathJax = ["mathjax", "ctxt", "mjx"];
+const _blacklistIdClassForCssSelectorsMathJax = ["mathjax", "ctxt", "mjx", "r2-wbr"];
 const _blacklistIdClassForCFI = [styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, styles_1.ID_HIGHLIGHTS_CONTAINER, styles_1.CLASS_HIGHLIGHT_CONTAINER, styles_1.CLASS_HIGHLIGHT_CONTOUR, styles_1.CLASS_HIGHLIGHT_CONTOUR_MARGIN];
-const _blacklistIdClassForCFIMathJax = ["mathjax", "ctxt", "mjx"];
+const _blacklistIdClassForCFIMathJax = ["mathjax", "ctxt", "mjx", "r2-wbr"];
 const computeCFI = (node) => {
     if (node.nodeType !== Node.ELEMENT_NODE) {
         return undefined;

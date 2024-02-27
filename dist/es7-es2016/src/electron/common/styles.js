@@ -775,6 +775,18 @@ exports.ROOT_CLASS_INVISIBLE_MASK = "r2-visibility-mask-class";
 exports.ROOT_CLASS_INVISIBLE_MASK_REMOVED = "r2-visibility-mask-removed-class";
 const hover = true ? `.${exports.CLASS_HIGHLIGHT_HOVER}` : "";
 exports.visibilityMaskCssStyles = `
+r2-wbr,
+wbr {
+display: none;
+}
+:root[style*="readium-advanced-on"][style*="--USER__wordSpacing"] r2-wbr,
+:root[style*="readium-advanced-on"][style*="--USER__wordSpacing"] wbr {
+display: inherit;
+}
+r2-wbr::before,
+wbr::before {
+content: ' ';
+}
 
 :root[style] > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > .${exports.CLASS_HIGHLIGHT_CONTAINER}.${exports.CLASS_HIGHLIGHT_MARGIN}:not(${hover}) > svg.${exports.CLASS_HIGHLIGHT_CONTOUR},
 :root > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > .${exports.CLASS_HIGHLIGHT_CONTAINER}.${exports.CLASS_HIGHLIGHT_MARGIN}:not(${hover}) > svg.${exports.CLASS_HIGHLIGHT_CONTOUR}
