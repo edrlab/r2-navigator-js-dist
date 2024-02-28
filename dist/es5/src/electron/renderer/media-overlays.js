@@ -151,7 +151,7 @@ function playMediaOverlays(textHref, rootMo, textFragmentIDChain, isInteract) {
                         }
                     }
                     if (!moTextAudioPair) return [3, 3];
-                    if (!moTextAudioPair.Audio) return [3, 2];
+                    if (!(moTextAudioPair.Audio || moTextAudioPair.Video)) return [3, 2];
                     if (IS_DEV) {
                         debug("playMediaOverlays() - playMediaOverlaysAudio()");
                     }
@@ -175,6 +175,10 @@ function playMediaOverlays(textHref, rootMo, textFragmentIDChain, isInteract) {
 var ontimeupdate = function (ev) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
     var currentAudioElement;
     return tslib_1.__generator(this, function (_a) {
+        if (_currentAudioElement && _currentAudioElement.__draggable && _currentAudioElement.__hidden) {
+            _currentAudioElement.__hidden = false;
+            _currentAudioElement.style.display = "block";
+        }
         currentAudioElement = ev.currentTarget;
         if (_currentAudioEnd && currentAudioElement.currentTime >= (_currentAudioEnd - 0.05)) {
             if (IS_DEV) {
@@ -201,6 +205,59 @@ var ensureOnTimeUpdate = function (remove) {
         }
     }
 };
+function ensureVideoFrameDraggable() {
+    if (!_currentAudioElement || _currentAudioElement.__draggable) {
+        return;
+    }
+    _currentAudioElement.__draggable = true;
+    var moveDiv;
+    var pos1 = 0;
+    var pos2 = 0;
+    var pos3 = 0;
+    var pos4 = 0;
+    _currentAudioElement.addEventListener("mousedown", elMouseDown, true);
+    function elMouseDown(e) {
+        if (!_currentAudioElement) {
+            docMouseUp();
+            return;
+        }
+        e.preventDefault();
+        e.stopPropagation();
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        if (moveDiv === null || moveDiv === void 0 ? void 0 : moveDiv.parentNode) {
+            moveDiv.parentNode.removeChild(moveDiv);
+            moveDiv = undefined;
+        }
+        moveDiv = document.createElement("div");
+        moveDiv.setAttribute("style", "display: block; position: absolute; padding: 0; margin: 0; left: 0; top: 0; right: 0; bottom: 0; z-index: 9998; cursor: move; opacity: 0.4; background-color: black;");
+        document.body.insertBefore(moveDiv, _currentAudioElement);
+        document.body.addEventListener("mouseup", docMouseUp, true);
+        document.body.addEventListener("mousemove", docMouseMove, true);
+    }
+    function docMouseMove(e) {
+        if (!_currentAudioElement) {
+            docMouseUp();
+            return;
+        }
+        e.preventDefault();
+        e.stopPropagation();
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        _currentAudioElement.style.top = (_currentAudioElement.offsetTop - pos2) + "px";
+        _currentAudioElement.style.left = (_currentAudioElement.offsetLeft - pos1) + "px";
+    }
+    function docMouseUp() {
+        if (moveDiv === null || moveDiv === void 0 ? void 0 : moveDiv.parentNode) {
+            moveDiv.parentNode.removeChild(moveDiv);
+            moveDiv = undefined;
+        }
+        document.body.removeEventListener("mouseup", docMouseUp, true);
+        document.body.removeEventListener("mousemove", docMouseMove, true);
+    }
+}
 function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
     return tslib_1.__awaiter(this, void 0, void 0, function () {
         var publicationURL, urlObjFull, urlFull, urlObjNoQuery, urlNoQuery, hasBegin, hasEnd, matches, b, e, playClip, oncanplaythrough_1, onpause_1, onplay_1;
@@ -215,7 +272,7 @@ function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
                     _mediaOverlayActive = true;
                     _mediaOverlayTextAudioPair = moTextAudioPair;
                     _mediaOverlayTextId = undefined;
-                    if (!moTextAudioPair.Audio) {
+                    if (!moTextAudioPair.Audio && !moTextAudioPair.Video) {
                         if (IS_DEV) {
                             debug("playMediaOverlaysAudio - !moTextAudioPair.Audio => mediaOverlaysNext()");
                         }
@@ -224,7 +281,7 @@ function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
                     }
                     moHighlight_(moTextAudioPair);
                     publicationURL = win.READIUM2.publicationURL;
-                    urlObjFull = new URL(moTextAudioPair.Audio, publicationURL);
+                    urlObjFull = new URL(moTextAudioPair.Audio || moTextAudioPair.Video, publicationURL);
                     urlFull = urlObjFull.toString();
                     urlObjNoQuery = new URL(urlFull);
                     urlObjNoQuery.hash = "";
@@ -353,8 +410,14 @@ function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
                             _currentAudioElement.parentNode.removeChild(_currentAudioElement);
                         }
                     }
-                    _currentAudioElement = document.createElement("audio");
-                    _currentAudioElement.setAttribute("style", "display: none");
+                    _currentAudioElement = document.createElement(moTextAudioPair.Video ? "video" : "audio");
+                    if (moTextAudioPair.Video) {
+                        _currentAudioElement.setAttribute("style", "display: block; position: absolute; padding: 0; margin: 0; left: 10px; top: 10px; width: auto; height: auto; z-index: 9999; cursor: move; border: 2px solid black;");
+                        ensureVideoFrameDraggable();
+                    }
+                    else {
+                        _currentAudioElement.setAttribute("style", "display: none");
+                    }
                     _currentAudioElement.setAttribute("id", AUDIO_MO_ID);
                     _currentAudioElement.setAttribute("role", "media-overlays");
                     document.body.appendChild(_currentAudioElement);
@@ -1231,6 +1294,10 @@ function mediaOverlaysStop(stayActive) {
     if (!_mediaOverlayActive) {
         _lastClickedNotification = undefined;
         mediaOverlaysStateSet(events_1.MediaOverlaysStateEnum.STOPPED);
+        if (_currentAudioElement && _currentAudioElement.__draggable) {
+            _currentAudioElement.__hidden = true;
+            _currentAudioElement.style.display = "none";
+        }
     }
 }
 exports.mediaOverlaysStop = mediaOverlaysStop;
