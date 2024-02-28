@@ -26,16 +26,24 @@ function DOMRectListToArray(domRects) {
     return rects;
 }
 exports.DOMRectListToArray = DOMRectListToArray;
-function getTextClientRects(range) {
+function getTextClientRects(range, elementNamesToSkip) {
     const doc = range.commonAncestorContainer.ownerDocument;
     if (!doc) {
         return [];
     }
     const iter = doc.createNodeIterator(range.commonAncestorContainer, NodeFilter.SHOW_TEXT, {
         acceptNode: (node) => {
-            return node.nodeType === Node.TEXT_NODE && range.intersectsNode(node)
-                ? NodeFilter.FILTER_ACCEPT
-                : NodeFilter.FILTER_REJECT;
+            var _a;
+            if (node.nodeType === Node.TEXT_NODE && range.intersectsNode(node)) {
+                if (!elementNamesToSkip) {
+                    return NodeFilter.FILTER_ACCEPT;
+                }
+                const parentName = (_a = node.parentElement) === null || _a === void 0 ? void 0 : _a.nodeName.toLowerCase();
+                if (!parentName || !elementNamesToSkip.includes(parentName)) {
+                    return NodeFilter.FILTER_ACCEPT;
+                }
+            }
+            return NodeFilter.FILTER_REJECT;
         },
     });
     const rects = [];

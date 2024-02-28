@@ -870,6 +870,7 @@ function createHighlight(win, selectionInfo, range, color, pointerInteraction, d
     return [highlight, div];
 }
 exports.createHighlight = createHighlight;
+const JAPANESE_RUBY_TO_SKIP = ["rt", "rp"];
 function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     var _a;
     const DEBUG_RECTS = window.DEBUG_RECTS;
@@ -907,7 +908,7 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     let clientRects;
     const rangeClientRects = (0, rect_utils_1.DOMRectListToArray)(range.getClientRects());
     if (doNotMergeHorizontallyAlignedRects) {
-        const textClientRects = (0, rect_utils_1.getTextClientRects)(range);
+        const textClientRects = (0, rect_utils_1.getTextClientRects)(range, JAPANESE_RUBY_TO_SKIP);
         const textReducedClientRects = (0, rect_utils_1.getClientRectsNoOverlap)(textClientRects, true, vertical, highlight.expand ? highlight.expand : 0);
         clientRects = (DEBUG_RECTS && drawStrikeThrough) ? textClientRects : textReducedClientRects;
     }

@@ -10,7 +10,7 @@ export interface IRect extends IRectSimple {
     right: number;
 }
 export declare function DOMRectListToArray(domRects: DOMRectList): IRect[];
-export declare function getTextClientRects(range: Range): IRect[];
+export declare function getTextClientRects(range: Range, elementNamesToSkip?: string[]): IRect[];
 export declare function getClientRectsNoOverlap(originalRects: IRect[], doNotMergeAlignedRects: boolean, vertical: boolean, expand?: number): IRect[];
 export declare function rectIntersect(rect1: IRect, rect2: IRect): IRect;
 export declare function rectSubtract(rect1: IRect, rect2: IRect): IRect[];
