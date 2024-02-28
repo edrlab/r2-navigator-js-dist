@@ -206,6 +206,7 @@ var ensureOnTimeUpdate = function (remove) {
     }
 };
 function ensureVideoFrameDraggable() {
+    var _this = this;
     if (!_currentAudioElement || _currentAudioElement.__draggable) {
         return;
     }
@@ -215,7 +216,87 @@ function ensureVideoFrameDraggable() {
     var pos2 = 0;
     var pos3 = 0;
     var pos4 = 0;
-    _currentAudioElement.addEventListener("mousedown", elMouseDown, true);
+    var mouseDownX = 0;
+    var mouseDownY = 0;
+    if (document.pictureInPictureEnabled) {
+        _currentAudioElement.addEventListener("enterpictureinpicture", function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+            return tslib_1.__generator(this, function (_a) {
+                if (!_currentAudioElement) {
+                    return [2];
+                }
+                _currentAudioElement.style.opacity = "0.2";
+                _currentAudioElement.style.width = "1px";
+                _currentAudioElement.style.height = "1px";
+                _currentAudioElement.__previousStyleTop = _currentAudioElement.style.top;
+                _currentAudioElement.__previousStyleLeft = _currentAudioElement.style.left;
+                _currentAudioElement.style.top = "0px";
+                _currentAudioElement.style.left = "0px";
+                return [2];
+            });
+        }); });
+        _currentAudioElement.addEventListener("leavepictureinpicture", function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+            return tslib_1.__generator(this, function (_a) {
+                if (!_currentAudioElement) {
+                    return [2];
+                }
+                _currentAudioElement.style.opacity = "1";
+                _currentAudioElement.style.width = "auto";
+                _currentAudioElement.style.height = "auto";
+                if (_currentAudioElement.__previousStyleTop) {
+                    _currentAudioElement.style.top = _currentAudioElement.__previousStyleTop;
+                }
+                if (_currentAudioElement.__previousStyleLeft) {
+                    _currentAudioElement.style.left = _currentAudioElement.__previousStyleLeft;
+                }
+                return [2];
+            });
+        }); });
+    }
+    _currentAudioElement.addEventListener("mousedown", elMouseDown);
+    _currentAudioElement.addEventListener("mouseup", elMouseUp);
+    function elMouseUp(e) {
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
+            var _mouseDownX, _mouseDownY, err_1;
+            return tslib_1.__generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _mouseDownX = mouseDownX;
+                        _mouseDownY = mouseDownY;
+                        mouseDownX = 0;
+                        mouseDownY = 0;
+                        if (!_currentAudioElement) {
+                            docMouseUp();
+                            return [2];
+                        }
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (!_currentAudioElement || !document.pictureInPictureEnabled) {
+                            return [2];
+                        }
+                        if (!(Math.abs(_mouseDownX - e.clientX) <= 4 && Math.abs(_mouseDownY - e.clientY) <= 4)) return [3, 7];
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 6, , 7]);
+                        if (!(_currentAudioElement !== document.pictureInPictureElement)) return [3, 3];
+                        return [4, _currentAudioElement.requestPictureInPicture()];
+                    case 2:
+                        _a.sent();
+                        return [3, 5];
+                    case 3: return [4, document.exitPictureInPicture()];
+                    case 4:
+                        _a.sent();
+                        _a.label = 5;
+                    case 5: return [3, 7];
+                    case 6:
+                        err_1 = _a.sent();
+                        console.log("VIDEO PiP Error:", err_1);
+                        return [3, 7];
+                    case 7: return [2];
+                }
+            });
+        });
+    }
+    ;
     function elMouseDown(e) {
         if (!_currentAudioElement) {
             docMouseUp();
@@ -223,6 +304,8 @@ function ensureVideoFrameDraggable() {
         }
         e.preventDefault();
         e.stopPropagation();
+        mouseDownX = e.clientX;
+        mouseDownY = e.clientY;
         pos3 = e.clientX;
         pos4 = e.clientY;
         if (moveDiv === null || moveDiv === void 0 ? void 0 : moveDiv.parentNode) {
@@ -249,7 +332,11 @@ function ensureVideoFrameDraggable() {
         _currentAudioElement.style.top = (_currentAudioElement.offsetTop - pos2) + "px";
         _currentAudioElement.style.left = (_currentAudioElement.offsetLeft - pos1) + "px";
     }
-    function docMouseUp() {
+    function docMouseUp(e) {
+        if (e === void 0) { e = undefined; }
+        if (e) {
+            e.preventDefault();
+        }
         if (moveDiv === null || moveDiv === void 0 ? void 0 : moveDiv.parentNode) {
             moveDiv.parentNode.removeChild(moveDiv);
             moveDiv = undefined;
@@ -413,6 +500,8 @@ function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
                     _currentAudioElement = document.createElement(moTextAudioPair.Video ? "video" : "audio");
                     if (moTextAudioPair.Video) {
                         _currentAudioElement.setAttribute("style", "display: block; position: absolute; padding: 0; margin: 0; left: 10px; top: 10px; width: auto; height: auto; z-index: 9999; cursor: move; border: 2px solid black;");
+                        _currentAudioElement.setAttribute("disableremoteplayback", "true");
+                        _currentAudioElement.setAttribute("controlsList", "nofullscreen nodownload noremoteplayback noplaybackrate");
                         ensureVideoFrameDraggable();
                     }
                     else {
@@ -573,6 +662,9 @@ function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
                     onpause_1 = function (_ev) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
                         return tslib_1.__generator(this, function (_a) {
                             debug("onpause");
+                            if (_mediaOverlaysState !== events_1.MediaOverlaysStateEnum.PAUSED && _mediaOverlaysState !== events_1.MediaOverlaysStateEnum.STOPPED) {
+                                mediaOverlaysStateSet(events_1.MediaOverlaysStateEnum.PAUSED);
+                            }
                             return [2];
                         });
                     }); };
@@ -580,6 +672,9 @@ function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
                     onplay_1 = function (_ev) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
                         return tslib_1.__generator(this, function (_a) {
                             debug("onplay");
+                            if (_mediaOverlaysState !== events_1.MediaOverlaysStateEnum.PLAYING) {
+                                mediaOverlaysStateSet(events_1.MediaOverlaysStateEnum.PLAYING);
+                            }
                             return [2];
                         });
                     }); };
@@ -1280,6 +1375,7 @@ function mediaOverlaysInterrupt() {
 }
 exports.mediaOverlaysInterrupt = mediaOverlaysInterrupt;
 function mediaOverlaysStop(stayActive) {
+    var _this = this;
     if (IS_DEV) {
         debug("mediaOverlaysStop() stayActive: " + stayActive);
     }
@@ -1297,6 +1393,28 @@ function mediaOverlaysStop(stayActive) {
         if (_currentAudioElement && _currentAudioElement.__draggable) {
             _currentAudioElement.__hidden = true;
             _currentAudioElement.style.display = "none";
+            if (document.pictureInPictureEnabled) {
+                if (_currentAudioElement === document.pictureInPictureElement) {
+                    setTimeout(function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                        var err_2;
+                        return tslib_1.__generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    _a.trys.push([0, 2, , 3]);
+                                    return [4, document.exitPictureInPicture()];
+                                case 1:
+                                    _a.sent();
+                                    return [3, 3];
+                                case 2:
+                                    err_2 = _a.sent();
+                                    console.log("VIDEO PiP Error:", err_2);
+                                    return [3, 3];
+                                case 3: return [2];
+                            }
+                        });
+                    }); }, 100);
+                }
+            }
         }
     }
 }

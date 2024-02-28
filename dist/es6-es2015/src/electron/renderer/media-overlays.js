@@ -180,7 +180,69 @@ function ensureVideoFrameDraggable() {
     let pos2 = 0;
     let pos3 = 0;
     let pos4 = 0;
-    _currentAudioElement.addEventListener("mousedown", elMouseDown, true);
+    let mouseDownX = 0;
+    let mouseDownY = 0;
+    if (document.pictureInPictureEnabled) {
+        _currentAudioElement.addEventListener("enterpictureinpicture", () => tslib_1.__awaiter(this, void 0, void 0, function* () {
+            if (!_currentAudioElement) {
+                return;
+            }
+            _currentAudioElement.style.opacity = "0.2";
+            _currentAudioElement.style.width = "1px";
+            _currentAudioElement.style.height = "1px";
+            _currentAudioElement.__previousStyleTop = _currentAudioElement.style.top;
+            _currentAudioElement.__previousStyleLeft = _currentAudioElement.style.left;
+            _currentAudioElement.style.top = "0px";
+            _currentAudioElement.style.left = "0px";
+        }));
+        _currentAudioElement.addEventListener("leavepictureinpicture", () => tslib_1.__awaiter(this, void 0, void 0, function* () {
+            if (!_currentAudioElement) {
+                return;
+            }
+            _currentAudioElement.style.opacity = "1";
+            _currentAudioElement.style.width = "auto";
+            _currentAudioElement.style.height = "auto";
+            if (_currentAudioElement.__previousStyleTop) {
+                _currentAudioElement.style.top = _currentAudioElement.__previousStyleTop;
+            }
+            if (_currentAudioElement.__previousStyleLeft) {
+                _currentAudioElement.style.left = _currentAudioElement.__previousStyleLeft;
+            }
+        }));
+    }
+    _currentAudioElement.addEventListener("mousedown", elMouseDown);
+    _currentAudioElement.addEventListener("mouseup", elMouseUp);
+    function elMouseUp(e) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            const _mouseDownX = mouseDownX;
+            const _mouseDownY = mouseDownY;
+            mouseDownX = 0;
+            mouseDownY = 0;
+            if (!_currentAudioElement) {
+                docMouseUp();
+                return;
+            }
+            e.preventDefault();
+            e.stopPropagation();
+            if (!_currentAudioElement || !document.pictureInPictureEnabled) {
+                return;
+            }
+            if (Math.abs(_mouseDownX - e.clientX) <= 4 && Math.abs(_mouseDownY - e.clientY) <= 4) {
+                try {
+                    if (_currentAudioElement !== document.pictureInPictureElement) {
+                        yield _currentAudioElement.requestPictureInPicture();
+                    }
+                    else {
+                        yield document.exitPictureInPicture();
+                    }
+                }
+                catch (err) {
+                    console.log("VIDEO PiP Error:", err);
+                }
+            }
+        });
+    }
+    ;
     function elMouseDown(e) {
         if (!_currentAudioElement) {
             docMouseUp();
@@ -188,6 +250,8 @@ function ensureVideoFrameDraggable() {
         }
         e.preventDefault();
         e.stopPropagation();
+        mouseDownX = e.clientX;
+        mouseDownY = e.clientY;
         pos3 = e.clientX;
         pos4 = e.clientY;
         if (moveDiv === null || moveDiv === void 0 ? void 0 : moveDiv.parentNode) {
@@ -214,7 +278,10 @@ function ensureVideoFrameDraggable() {
         _currentAudioElement.style.top = (_currentAudioElement.offsetTop - pos2) + "px";
         _currentAudioElement.style.left = (_currentAudioElement.offsetLeft - pos1) + "px";
     }
-    function docMouseUp() {
+    function docMouseUp(e = undefined) {
+        if (e) {
+            e.preventDefault();
+        }
         if (moveDiv === null || moveDiv === void 0 ? void 0 : moveDiv.parentNode) {
             moveDiv.parentNode.removeChild(moveDiv);
             moveDiv = undefined;
@@ -354,6 +421,8 @@ function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
             _currentAudioElement = document.createElement(moTextAudioPair.Video ? "video" : "audio");
             if (moTextAudioPair.Video) {
                 _currentAudioElement.setAttribute("style", "display: block; position: absolute; padding: 0; margin: 0; left: 10px; top: 10px; width: auto; height: auto; z-index: 9999; cursor: move; border: 2px solid black;");
+                _currentAudioElement.setAttribute("disableremoteplayback", "true");
+                _currentAudioElement.setAttribute("controlsList", "nofullscreen nodownload noremoteplayback noplaybackrate");
                 ensureVideoFrameDraggable();
             }
             else {
@@ -504,10 +573,16 @@ function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
             _currentAudioElement.addEventListener("canplaythrough", oncanplaythrough);
             const onpause = (_ev) => tslib_1.__awaiter(this, void 0, void 0, function* () {
                 debug("onpause");
+                if (_mediaOverlaysState !== events_1.MediaOverlaysStateEnum.PAUSED && _mediaOverlaysState !== events_1.MediaOverlaysStateEnum.STOPPED) {
+                    mediaOverlaysStateSet(events_1.MediaOverlaysStateEnum.PAUSED);
+                }
             });
             _currentAudioElement.addEventListener("pause", onpause);
             const onplay = (_ev) => tslib_1.__awaiter(this, void 0, void 0, function* () {
                 debug("onplay");
+                if (_mediaOverlaysState !== events_1.MediaOverlaysStateEnum.PLAYING) {
+                    mediaOverlaysStateSet(events_1.MediaOverlaysStateEnum.PLAYING);
+                }
             });
             _currentAudioElement.addEventListener("play", onplay);
             _currentAudioElement.playbackRate = _mediaOverlaysPlaybackRate;
@@ -1081,6 +1156,18 @@ function mediaOverlaysStop(stayActive) {
         if (_currentAudioElement && _currentAudioElement.__draggable) {
             _currentAudioElement.__hidden = true;
             _currentAudioElement.style.display = "none";
+            if (document.pictureInPictureEnabled) {
+                if (_currentAudioElement === document.pictureInPictureElement) {
+                    setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+                        try {
+                            yield document.exitPictureInPicture();
+                        }
+                        catch (err) {
+                            console.log("VIDEO PiP Error:", err);
+                        }
+                    }), 100);
+                }
+            }
         }
     }
 }
