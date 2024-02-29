@@ -21,6 +21,7 @@ export interface IReadiumCSS {
     sepia: boolean | undefined;
     a11yNormalize: boolean | undefined;
     noFootnotes: boolean | undefined;
+    noRuby: boolean | undefined;
     mathJax: boolean | undefined;
     reduceMotion: boolean | undefined;
 }
@@ -71,6 +72,7 @@ export declare const readiumCSSDefaults: {
     lineHeight: undefined;
     night: boolean;
     noFootnotes: boolean;
+    noRuby: boolean;
     mathJax: boolean;
     pageMargins: undefined;
     paged: boolean;

@@ -151,6 +151,7 @@ function readiumCSSSet(documant, messageJson, isVerticalWritingMode, isRTL) {
     const setCSS = messageJson.setCSS;
     if (!setCSS) {
         docElement.classList.remove(styles_1.ROOT_CLASS_NO_FOOTNOTES);
+        docElement.classList.remove(styles_1.ROOT_CLASS_NO_RUBY);
         docElement.removeAttribute("data-readiumcss");
         removeAllCSS(documant);
         const toRemove = [];
@@ -238,6 +239,12 @@ function readiumCSSSet(documant, messageJson, isVerticalWritingMode, isRTL) {
         debug("---- setCSS -----");
         debug(setCSS);
         debug("-----");
+    }
+    if (setCSS.noRuby) {
+        docElement.classList.add(styles_1.ROOT_CLASS_NO_RUBY);
+    }
+    else {
+        docElement.classList.remove(styles_1.ROOT_CLASS_NO_RUBY);
     }
     if (setCSS.noFootnotes) {
         docElement.classList.add(styles_1.ROOT_CLASS_NO_FOOTNOTES);

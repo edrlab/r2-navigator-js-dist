@@ -53,6 +53,7 @@ exports.readiumCSSDefaults = {
     lineHeight: undefined,
     night: false,
     noFootnotes: false,
+    noRuby: false,
     mathJax: false,
     pageMargins: undefined,
     paged: false,
