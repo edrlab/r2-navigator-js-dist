@@ -53,8 +53,8 @@ let _mediaOverlayTextId;
 let _mediaOverlayTextHref;
 let _mediaOverlayActive = false;
 function playMediaOverlays(textHref, rootMo, textFragmentIDChain, isInteract) {
-    var _a, _b, _c, _d;
     return tslib_1.__awaiter(this, void 0, void 0, function* () {
+        var _a, _b, _c, _d;
         if (IS_DEV) {
             debug("playMediaOverlays() : " + textHref + " //// " + decodeURIComponent(textHref));
             debug(JSON.stringify(textFragmentIDChain, null, 4));
@@ -832,8 +832,8 @@ function ensureKillAutoNextTimeout() {
     }
 }
 function playMediaOverlaysForLink(link, textFragmentIDChain, isInteract) {
-    var _a;
     return tslib_1.__awaiter(this, void 0, void 0, function* () {
+        var _a;
         if (IS_DEV) {
             debug("playMediaOverlaysForLink()");
             debug(link.Href);

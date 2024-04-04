@@ -64,10 +64,10 @@ var _mediaOverlayTextId;
 var _mediaOverlayTextHref;
 var _mediaOverlayActive = false;
 function playMediaOverlays(textHref, rootMo, textFragmentIDChain, isInteract) {
-    var _a, _b, _c, _d;
     return tslib_1.__awaiter(this, void 0, void 0, function () {
         var loc, locationHashOverrideInfo, hrefUrlObj, hashI, after, spaceI, hashID, arrayIDs, regexpr, matches, textFragmentIDChain_, moTextAudioPair, followingElementIDs, followingElementIDs_1, followingElementIDs_1_1, id;
-        var e_2, _e;
+        var e_2, _a;
+        var _b, _c, _d, _e;
         return tslib_1.__generator(this, function (_f) {
             switch (_f.label) {
                 case 0:
@@ -80,12 +80,12 @@ function playMediaOverlays(textHref, rootMo, textFragmentIDChain, isInteract) {
                     if (!textFragmentIDChain) {
                         if (loc) {
                             if (IS_DEV) {
-                                debug("playMediaOverlays() CURRENT LOCATOR " + textHref + " -- " + ((_a = loc.locator) === null || _a === void 0 ? void 0 : _a.href));
+                                debug("playMediaOverlays() CURRENT LOCATOR " + textHref + " -- " + ((_b = loc.locator) === null || _b === void 0 ? void 0 : _b.href));
                                 debug(JSON.stringify(loc, null, 4));
                             }
-                            hrefUrlObj = new URL("https://dummy.com/" + ((_b = loc.locator) === null || _b === void 0 ? void 0 : _b.href));
+                            hrefUrlObj = new URL("https://dummy.com/" + ((_c = loc.locator) === null || _c === void 0 ? void 0 : _c.href));
                             if (textHref === hrefUrlObj.pathname.substr(1)) {
-                                if ((_c = loc.locator.locations) === null || _c === void 0 ? void 0 : _c.cssSelector) {
+                                if ((_d = loc.locator.locations) === null || _d === void 0 ? void 0 : _d.cssSelector) {
                                     debug("playMediaOverlays() CSS SELECTOR: " + loc.locator.locations.cssSelector);
                                     hashI = loc.locator.locations.cssSelector.lastIndexOf("#");
                                     if (hashI >= 0) {
@@ -100,7 +100,7 @@ function playMediaOverlays(textHref, rootMo, textFragmentIDChain, isInteract) {
                                         }
                                     }
                                 }
-                                if ((_d = loc.locator.locations) === null || _d === void 0 ? void 0 : _d.cfi) {
+                                if ((_e = loc.locator.locations) === null || _e === void 0 ? void 0 : _e.cfi) {
                                     debug("playMediaOverlays() CFI: " + loc.locator.locations.cfi);
                                     arrayIDs = [];
                                     regexpr = /\[([^\]]+)\]/g;
@@ -140,7 +140,7 @@ function playMediaOverlays(textHref, rootMo, textFragmentIDChain, isInteract) {
                             catch (e_2_1) { e_2 = { error: e_2_1 }; }
                             finally {
                                 try {
-                                    if (followingElementIDs_1_1 && !followingElementIDs_1_1.done && (_e = followingElementIDs_1.return)) _e.call(followingElementIDs_1);
+                                    if (followingElementIDs_1_1 && !followingElementIDs_1_1.done && (_a = followingElementIDs_1.return)) _a.call(followingElementIDs_1);
                                 }
                                 finally { if (e_2) throw e_2.error; }
                             }
@@ -974,10 +974,10 @@ function ensureKillAutoNextTimeout() {
     }
 }
 function playMediaOverlaysForLink(link, textFragmentIDChain, isInteract) {
-    var _a;
     return tslib_1.__awaiter(this, void 0, void 0, function () {
-        var moUrl, _b, _c, altLink, publicationURL, moUrlObjFull, moUrlFull, response, e_7, moJson, e_8, href, hrefUrlObj;
-        var e_9, _d;
+        var moUrl, _a, _b, altLink, publicationURL, moUrlObjFull, moUrlFull, response, e_7, moJson, e_8, href, hrefUrlObj;
+        var e_9, _c;
+        var _d;
         return tslib_1.__generator(this, function (_e) {
             switch (_e.label) {
                 case 0:
@@ -987,7 +987,7 @@ function playMediaOverlaysForLink(link, textFragmentIDChain, isInteract) {
                         debug(link.HrefDecoded);
                         debug(JSON.stringify(textFragmentIDChain, null, 4));
                     }
-                    if ((_a = link.Properties) === null || _a === void 0 ? void 0 : _a.MediaOverlay) {
+                    if ((_d = link.Properties) === null || _d === void 0 ? void 0 : _d.MediaOverlay) {
                         moUrl = link.Properties.MediaOverlay;
                         if (IS_DEV) {
                             debug(link.Properties.MediaOverlay);
@@ -996,8 +996,8 @@ function playMediaOverlaysForLink(link, textFragmentIDChain, isInteract) {
                     }
                     if (link.Alternate) {
                         try {
-                            for (_b = tslib_1.__values(link.Alternate), _c = _b.next(); !_c.done; _c = _b.next()) {
-                                altLink = _c.value;
+                            for (_a = tslib_1.__values(link.Alternate), _b = _a.next(); !_b.done; _b = _a.next()) {
+                                altLink = _b.value;
                                 if (altLink.TypeLink === "application/vnd.syncnarr+json") {
                                     if (!moUrl) {
                                         moUrl = altLink.Href;
@@ -1014,7 +1014,7 @@ function playMediaOverlaysForLink(link, textFragmentIDChain, isInteract) {
                         catch (e_9_1) { e_9 = { error: e_9_1 }; }
                         finally {
                             try {
-                                if (_c && !_c.done && (_d = _b.return)) _d.call(_b);
+                                if (_b && !_b.done && (_c = _a.return)) _c.call(_a);
                             }
                             finally { if (e_9) throw e_9.error; }
                         }
