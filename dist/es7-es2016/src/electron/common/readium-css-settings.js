@@ -41,7 +41,6 @@ var fontEnum;
 })(fontEnum || (exports.fontEnum = fontEnum = {}));
 exports.readiumCSSDefaults = {
     a11yNormalize: false,
-    backgroundColor: undefined,
     bodyHyphens: bodyHyphensEnum.auto,
     colCount: colCountEnum.auto,
     darken: false,
@@ -63,6 +62,11 @@ exports.readiumCSSDefaults = {
     sepia: false,
     textAlign: textAlignEnum.start,
     textColor: undefined,
+    backgroundColor: undefined,
+    selectionBackgroundColor: undefined,
+    selectionTextColor: undefined,
+    linkColor: undefined,
+    linkVisitedColor: undefined,
     typeScale: undefined,
     wordSpacing: undefined,
 };
