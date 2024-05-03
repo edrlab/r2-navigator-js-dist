@@ -880,7 +880,7 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     if (!range) {
         return null;
     }
-    const drawBackground = highlight.drawType === highlight_1.HighlightDrawTypeBackground;
+    const drawBackground = !highlight.drawType || highlight.drawType === highlight_1.HighlightDrawTypeBackground;
     const drawUnderline = highlight.drawType === highlight_1.HighlightDrawTypeUnderline;
     const drawStrikeThrough = highlight.drawType === highlight_1.HighlightDrawTypeStrikethrough;
     const drawOutline = highlight.drawType === highlight_1.HighlightDrawTypeOutline;
@@ -891,16 +891,16 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     const highlightParent = documant.createElement("div");
     highlightParent.setAttribute("id", highlight.id);
     highlightParent.setAttribute("class", `${styles_1.CLASS_HIGHLIGHT_CONTAINER} ${styles_1.CLASS_HIGHLIGHT_COMMON}`);
-    highlightParent.setAttribute("data-type", `${highlight.drawType}`);
+    highlightParent.setAttribute("data-type", `${highlight.drawType || highlight_1.HighlightDrawTypeBackground}`);
     if (highlight.group) {
         highlightParent.setAttribute("data-group", highlight.group);
     }
     if (doDrawMargin) {
         highlightParent.classList.add(styles_1.CLASS_HIGHLIGHT_MARGIN);
     }
-    const styleAttr = win.document.documentElement.getAttribute("style");
-    const isNight = styleAttr ? styleAttr.indexOf("readium-night-on") > 0 : false;
-    highlightParent.style.setProperty("mix-blend-mode", isNight ? "hard-light" : "multiply", "important");
+    if (!highlight.drawType || highlight.drawType === highlight_1.HighlightDrawTypeBackground) {
+        highlightParent.classList.add(styles_1.CLASS_HIGHLIGHT_BEHIND);
+    }
     const xOffset = paginated ? (-scrollElement.scrollLeft) : bodyRect.left;
     const yOffset = paginated ? (-scrollElement.scrollTop) : bodyRect.top;
     const scale = 1 / ((win.READIUM2 && win.READIUM2.isFixedLayout) ? win.READIUM2.fxlViewportScale : 1);

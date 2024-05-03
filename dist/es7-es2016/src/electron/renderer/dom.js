@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setKeyUpEventHandler = exports.setKeyDownEventHandler = exports.installNavigatorDOM = exports.readiumCssUpdate = exports.readiumCssOnOff = exports.fixedLayoutZoomPercent = void 0;
+exports.setKeyUpEventHandler = exports.setKeyDownEventHandler = exports.installNavigatorDOM = exports.readiumCssUpdate = exports.readiumCssOnOff = exports.fixedLayoutZoomPercent = exports.stealFocusDisable = void 0;
 const tslib_1 = require("tslib");
 const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 const debug_ = require("debug");
@@ -166,6 +166,10 @@ function readiumCssApplyToWebview(loc, activeWebView, pubLink, rcss) {
         }, 60);
     }
 }
+function stealFocusDisable(doDisable) {
+    win.READIUM2.stealFocusDisabled = doDisable;
+}
+exports.stealFocusDisable = stealFocusDisable;
 const _fixedLayoutZoomPercentTimers = {};
 function fixedLayoutZoomPercent(zoomPercent) {
     win.READIUM2.domSlidingViewport.style.overflow = zoomPercent === 0 ? "hidden" : "auto";
@@ -249,7 +253,7 @@ function createWebViewInternal(preloadScriptPath) {
         (0, readaloud_1.checkTtsState)(wv);
     });
     wv.addEventListener("ipc-message", (event) => {
-        var _a, _b;
+        var _a, _b, _c;
         const webview = event.currentTarget;
         if (webview !== wv) {
             debug("Wrong navigator webview?!");
@@ -259,16 +263,19 @@ function createWebViewInternal(preloadScriptPath) {
             (0, media_overlays_1.mediaOverlaysInterrupt)();
         }
         else if (event.channel === events_1.R2_EVENT_KEYBOARD_FOCUS_REQUEST) {
-            debug("KEYBOARD FOCUS REQUEST (2) ", webview.id, (_a = win.document.activeElement) === null || _a === void 0 ? void 0 : _a.id);
-            if (win.document.activeElement && win.document.activeElement.blur) {
-                win.document.activeElement.blur();
-            }
-            const iframe = (_b = webview.shadowRoot) === null || _b === void 0 ? void 0 : _b.querySelector("iframe");
-            if (iframe) {
-                iframe.focus();
-            }
-            else {
-                webview.focus();
+            const skip = (_a = win.READIUM2) === null || _a === void 0 ? void 0 : _a.stealFocusDisabled;
+            debug("KEYBOARD FOCUS REQUEST (2) ", webview.id, (_b = win.document.activeElement) === null || _b === void 0 ? void 0 : _b.id, skip);
+            if (!skip) {
+                if (win.document.activeElement && win.document.activeElement.blur) {
+                    win.document.activeElement.blur();
+                }
+                const iframe = (_c = webview.shadowRoot) === null || _c === void 0 ? void 0 : _c.querySelector("iframe");
+                if (iframe) {
+                    iframe.focus();
+                }
+                else {
+                    webview.focus();
+                }
             }
         }
         else if (event.channel === events_1.R2_EVENT_SHOW) {
@@ -467,6 +474,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
         ttsSentenceDetectionEnabled: true,
         ttsVoice: null,
         highlightsDrawMargin: false,
+        stealFocusDisabled: false,
     };
     electron_1.ipcRenderer.send("accessibility-support-changed");
     if (IS_DEV) {

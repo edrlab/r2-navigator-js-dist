@@ -59,6 +59,7 @@ export interface IReadiumElectronBrowserWindow {
     ttsOverlayEnabled: boolean;
     ttsPlaybackRate: number;
     ttsVoice: SpeechSynthesisVoice | null;
+    stealFocusDisabled: boolean;
     fixedLayoutZoomPercent: number;
     clipboardInterceptor: ((data: IEventPayload_R2_EVENT_CLIPBOARD_COPY) => void) | undefined;
     preloadScriptPath: string;

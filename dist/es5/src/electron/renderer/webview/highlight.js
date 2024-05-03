@@ -1074,7 +1074,7 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     if (!range) {
         return null;
     }
-    var drawBackground = highlight.drawType === highlight_1.HighlightDrawTypeBackground;
+    var drawBackground = !highlight.drawType || highlight.drawType === highlight_1.HighlightDrawTypeBackground;
     var drawUnderline = highlight.drawType === highlight_1.HighlightDrawTypeUnderline;
     var drawStrikeThrough = highlight.drawType === highlight_1.HighlightDrawTypeStrikethrough;
     var drawOutline = highlight.drawType === highlight_1.HighlightDrawTypeOutline;
@@ -1085,16 +1085,16 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     var highlightParent = documant.createElement("div");
     highlightParent.setAttribute("id", highlight.id);
     highlightParent.setAttribute("class", "".concat(styles_1.CLASS_HIGHLIGHT_CONTAINER, " ").concat(styles_1.CLASS_HIGHLIGHT_COMMON));
-    highlightParent.setAttribute("data-type", "".concat(highlight.drawType));
+    highlightParent.setAttribute("data-type", "".concat(highlight.drawType || highlight_1.HighlightDrawTypeBackground));
     if (highlight.group) {
         highlightParent.setAttribute("data-group", highlight.group);
     }
     if (doDrawMargin) {
         highlightParent.classList.add(styles_1.CLASS_HIGHLIGHT_MARGIN);
     }
-    var styleAttr = win.document.documentElement.getAttribute("style");
-    var isNight = styleAttr ? styleAttr.indexOf("readium-night-on") > 0 : false;
-    highlightParent.style.setProperty("mix-blend-mode", isNight ? "hard-light" : "multiply", "important");
+    if (!highlight.drawType || highlight.drawType === highlight_1.HighlightDrawTypeBackground) {
+        highlightParent.classList.add(styles_1.CLASS_HIGHLIGHT_BEHIND);
+    }
     var xOffset = paginated ? (-scrollElement.scrollLeft) : bodyRect.left;
     var yOffset = paginated ? (-scrollElement.scrollTop) : bodyRect.top;
     var scale = 1 / ((win.READIUM2 && win.READIUM2.isFixedLayout) ? win.READIUM2.fxlViewportScale : 1);
