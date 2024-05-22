@@ -331,6 +331,13 @@ exports.footnotesCssStyles = `
     width: 100%;
 }
 
+:root[style] .${exports.FOOTNOTES_CONTAINER_CLASS} a[epub|type~="backlink"],
+:root .${exports.FOOTNOTES_CONTAINER_CLASS} a[epub|type~="backlink"],
+:root[style] .${exports.FOOTNOTES_CONTAINER_CLASS} a[role~="doc-backlink"],
+:root .${exports.FOOTNOTES_CONTAINER_CLASS} a[role~="doc-backlink"] {
+    display: none !important;
+}
+
 /*
 :root[style] .${exports.FOOTNOTES_CLOSE_BUTTON_CLASS},
 :root .${exports.FOOTNOTES_CLOSE_BUTTON_CLASS} {
@@ -1018,6 +1025,11 @@ We cannot completely disable "scroll" event (prevent default) because we need to
     max-height: none !important;
 }
 
+:root[style]:not(.${exports.ROOT_CLASS_FIXED_LAYOUT}),
+:root:not(.${exports.ROOT_CLASS_FIXED_LAYOUT}) {
+    --RS__pageGutter: 50px !important;
+}
+
 @media screen and (min-width: 35em) {
     :root[style]:not(.${exports.ROOT_CLASS_FIXED_LAYOUT}),
     :root:not(.${exports.ROOT_CLASS_FIXED_LAYOUT}) {
@@ -1036,15 +1048,15 @@ We cannot completely disable "scroll" event (prevent default) because we need to
 :root:not(.${exports.ROOT_CLASS_FIXED_LAYOUT}):not(.${exports.CLASS_VWM}) > body {
     padding-top: 20px !important;
     padding-bottom: 20px !important;
-    padding-left: 22px !important;
-    padding-right: 22px !important;
+    padding-left: 50px !important;
+    padding-right: 50px !important;
 }
 :root[style]:not(.${exports.ROOT_CLASS_FIXED_LAYOUT}).${exports.CLASS_VWM} > body,
 :root:not(.${exports.ROOT_CLASS_FIXED_LAYOUT}).${exports.CLASS_VWM} > body {
     padding-top: 22px !important;
     padding-bottom: 22px !important;
-    padding-left: 20px !important;
-    padding-right: 20px !important;
+    padding-left: 50px !important;
+    padding-right: 50px !important;
 }
 :root[style*="--USER__pageMargins"]:not(.${exports.ROOT_CLASS_FIXED_LAYOUT}):not(.${exports.CLASS_VWM}) > body {
     padding-left: calc(var(--RS__pageGutter) * var(--USER__pageMargins)) !important;

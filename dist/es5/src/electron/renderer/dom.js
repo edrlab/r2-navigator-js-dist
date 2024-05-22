@@ -205,9 +205,7 @@ function fixedLayoutZoomPercent(zoomPercent) {
     var e_5, _a;
     var _this = this;
     win.READIUM2.domSlidingViewport.style.overflow = zoomPercent === 0 ? "hidden" : "auto";
-    if (win.READIUM2) {
-        win.READIUM2.fixedLayoutZoomPercent = zoomPercent;
-    }
+    win.READIUM2.fixedLayoutZoomPercent = zoomPercent;
     var activeWebViews = win.READIUM2.getActiveWebViews();
     var _loop_1 = function (activeWebView) {
         if (_fixedLayoutZoomPercentTimers[activeWebView.id]) {

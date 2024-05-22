@@ -172,9 +172,7 @@ exports.stealFocusDisable = stealFocusDisable;
 const _fixedLayoutZoomPercentTimers = {};
 function fixedLayoutZoomPercent(zoomPercent) {
     win.READIUM2.domSlidingViewport.style.overflow = zoomPercent === 0 ? "hidden" : "auto";
-    if (win.READIUM2) {
-        win.READIUM2.fixedLayoutZoomPercent = zoomPercent;
-    }
+    win.READIUM2.fixedLayoutZoomPercent = zoomPercent;
     const activeWebViews = win.READIUM2.getActiveWebViews();
     for (const activeWebView of activeWebViews) {
         if (_fixedLayoutZoomPercentTimers[activeWebView.id]) {
