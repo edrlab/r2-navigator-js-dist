@@ -197,7 +197,9 @@ function readiumCssApplyToWebview(loc, activeWebView, pubLink, rcss) {
     }
 }
 function stealFocusDisable(doDisable) {
-    win.READIUM2.stealFocusDisabled = doDisable;
+    if (win.READIUM2) {
+        win.READIUM2.stealFocusDisabled = doDisable;
+    }
 }
 exports.stealFocusDisable = stealFocusDisable;
 var _fixedLayoutZoomPercentTimers = {};
