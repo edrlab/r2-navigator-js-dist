@@ -192,7 +192,11 @@ function readiumCssApplyToWebview(loc, activeWebView, pubLink, rcss) {
     if (loc && loc.locator.href === ((_a = activeWebView.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href)) {
         setTimeout(function () {
             debug("readiumCssOnOff -> handleLinkLocator");
+            stealFocusDisable(true);
             (0, location_1.handleLinkLocator)(loc.locator, actualReadiumCss);
+            setTimeout(function () {
+                stealFocusDisable(false);
+            }, 200);
         }, 60);
     }
 }

@@ -1078,8 +1078,11 @@ We cannot completely disable "scroll" event (prevent default) because we need to
     min-height: 0 !important;
     max-height: none !important;
 }
-:root[style]:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}):not(.${exports.CLASS_VWM}) div,
-:root:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}):not(.${exports.CLASS_VWM}) div {
+:root[style]:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}):not(.${exports.CLASS_VWM}) > body > *:not(#${exports.POPUP_DIALOG_CLASS}) div,
+:root:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}):not(.${exports.CLASS_VWM}) > body > *:not(#${exports.POPUP_DIALOG_CLASS}) div,
+:root[style]:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}):not(.${exports.CLASS_VWM}) > body > div,
+:root:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}):not(.${exports.CLASS_VWM}) > body > div
+{
     max-width: none !important;
     max-height: none !important;
 }
@@ -1118,8 +1121,10 @@ We cannot completely disable "scroll" event (prevent default) because we need to
     min-height: 0 !important;
     max-height: none !important;
 }
-:root[style]:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}).${exports.CLASS_VWM} div,
-:root:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}).${exports.CLASS_VWM} div {
+:root[style]:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}).${exports.CLASS_VWM} > body > *:not(#${exports.POPUP_DIALOG_CLASS}) div,
+:root:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}).${exports.CLASS_VWM} > body > *:not(#${exports.POPUP_DIALOG_CLASS}) div,
+:root[style]:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}).${exports.CLASS_VWM} > body > div,
+:root:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}).${exports.CLASS_VWM} > body > div {
     max-width: none !important;
     max-height: none !important;
 }
