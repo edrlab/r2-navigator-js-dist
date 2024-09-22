@@ -1,6 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PopupDialog = exports.isElementInsidePopupDialog = exports.closePopupDialogs = exports.isPopupDialogOpen = void 0;
+exports.PopupDialog = void 0;
+exports.isPopupDialogOpen = isPopupDialogOpen;
+exports.closePopupDialogs = closePopupDialogs;
+exports.isElementInsidePopupDialog = isElementInsidePopupDialog;
 const tabbable = require("tabbable");
 const electron_1 = require("electron");
 const events_1 = require("../../common/events");
@@ -9,7 +12,6 @@ function isPopupDialogOpen(documant) {
     return documant.documentElement &&
         documant.documentElement.classList.contains(styles_1.POPUP_DIALOG_CLASS);
 }
-exports.isPopupDialogOpen = isPopupDialogOpen;
 function closePopupDialogs(documant) {
     console.log("...DIALOG close all");
     const dialogs = documant.querySelectorAll(`dialog.${styles_1.POPUP_DIALOG_CLASS}`);
@@ -26,7 +28,6 @@ function closePopupDialogs(documant) {
         }, 50);
     });
 }
-exports.closePopupDialogs = closePopupDialogs;
 function isElementInsidePopupDialog(el) {
     let currentElement = el;
     while (currentElement && currentElement.nodeType === Node.ELEMENT_NODE) {
@@ -39,7 +40,6 @@ function isElementInsidePopupDialog(el) {
     }
     return false;
 }
-exports.isElementInsidePopupDialog = isElementInsidePopupDialog;
 function getFocusables(rootElement) {
     const tabbables = tabbable.tabbable(rootElement);
     return tabbables;

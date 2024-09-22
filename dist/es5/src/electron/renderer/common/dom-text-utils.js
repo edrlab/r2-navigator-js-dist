@@ -1,6 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateTtsQueue = exports.findTtsQueueItemIndex = exports.getTtsQueueItemRef = exports.getTtsQueueItemRefText = exports.getTtsQueueLength = exports.consoleLogTtsQueue = exports.consoleLogTtsQueueItem = exports.normalizeText = exports.normalizeHtmlText = exports.getDirection = exports.getLanguage = exports.combineTextNodes = void 0;
+exports.combineTextNodes = combineTextNodes;
+exports.getLanguage = getLanguage;
+exports.getDirection = getDirection;
+exports.normalizeHtmlText = normalizeHtmlText;
+exports.normalizeText = normalizeText;
+exports.consoleLogTtsQueueItem = consoleLogTtsQueueItem;
+exports.consoleLogTtsQueue = consoleLogTtsQueue;
+exports.getTtsQueueLength = getTtsQueueLength;
+exports.getTtsQueueItemRefText = getTtsQueueItemRefText;
+exports.getTtsQueueItemRef = getTtsQueueItemRef;
+exports.findTtsQueueItemIndex = findTtsQueueItemIndex;
+exports.generateTtsQueue = generateTtsQueue;
 var tslib_1 = require("tslib");
 var sentence_splitter_1 = require("sentence-splitter");
 var styles_1 = require("../../common/styles");
@@ -36,7 +47,6 @@ function combineTextNodes(textNodes, skipNormalize) {
     }
     return "";
 }
-exports.combineTextNodes = combineTextNodes;
 function getLanguage(el) {
     var currentElement = el;
     while (currentElement && currentElement.nodeType === Node.ELEMENT_NODE) {
@@ -54,7 +64,6 @@ function getLanguage(el) {
     }
     return undefined;
 }
-exports.getLanguage = getLanguage;
 function getDirection(el) {
     var currentElement = el;
     while (currentElement && currentElement.nodeType === Node.ELEMENT_NODE) {
@@ -66,15 +75,12 @@ function getDirection(el) {
     }
     return undefined;
 }
-exports.getDirection = getDirection;
 function normalizeHtmlText(str) {
     return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
-exports.normalizeHtmlText = normalizeHtmlText;
 function normalizeText(str) {
     return normalizeHtmlText(str).replace(/[\r\n]/g, " ").replace(/\s\s+/g, " ");
 }
-exports.normalizeText = normalizeText;
 function consoleLogTtsQueueItem(i) {
     var e_2, _a;
     console.log("<<----");
@@ -103,7 +109,6 @@ function consoleLogTtsQueueItem(i) {
     }
     console.log("---->>");
 }
-exports.consoleLogTtsQueueItem = consoleLogTtsQueueItem;
 function consoleLogTtsQueue(f) {
     var e_3, _a;
     try {
@@ -120,7 +125,6 @@ function consoleLogTtsQueue(f) {
         finally { if (e_3) throw e_3.error; }
     }
 }
-exports.consoleLogTtsQueue = consoleLogTtsQueue;
 function getTtsQueueLength(items) {
     var e_4, _a;
     var l = 0;
@@ -144,7 +148,6 @@ function getTtsQueueLength(items) {
     }
     return l;
 }
-exports.getTtsQueueLength = getTtsQueueLength;
 function getTtsQueueItemRefText(obj) {
     if (obj.iSentence === -1) {
         return obj.item.combinedText;
@@ -154,7 +157,6 @@ function getTtsQueueItemRefText(obj) {
     }
     return "";
 }
-exports.getTtsQueueItemRefText = getTtsQueueItemRefText;
 function getTtsQueueItemRef(items, index) {
     var e_5, _a, e_6, _b;
     var i = -1;
@@ -200,7 +202,6 @@ function getTtsQueueItemRef(items, index) {
     }
     return undefined;
 }
-exports.getTtsQueueItemRef = getTtsQueueItemRef;
 function findTtsQueueItemIndex(ttsQueue, element, startTextNode, startTextNodeOffset, rootElem) {
     var e_7, _a, e_8, _b, e_9, _c, e_10, _d, e_11, _e, e_12, _f;
     var _g, _h, _j;
@@ -363,7 +364,6 @@ function findTtsQueueItemIndex(ttsQueue, element, startTextNode, startTextNodeOf
     }
     return -1;
 }
-exports.findTtsQueueItemIndex = findTtsQueueItemIndex;
 var _putInElementStackTagNames = ["h1", "h2", "h3", "h4", "h5", "h6", "p", "th", "td", "caption", "li", "blockquote", "q", "dt", "dd", "figcaption", "div", "pre"];
 var _doNotProcessDeepChildTagNames = ["svg", "img", "sup", "sub", "audio", "video", "source", "button", "canvas", "del", "dialog", "embed", "form", "head", "iframe", "meter", "noscript", "object", "s", "script", "select", "style", "textarea"];
 var _skippables = [
@@ -992,5 +992,4 @@ function generateTtsQueue(rootElement, splitSentences) {
     });
     return ttsQueue;
 }
-exports.generateTtsQueue = generateTtsQueue;
 //# sourceMappingURL=dom-text-utils.js.map

@@ -1,11 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.clearSessions = exports.clearDefaultSession = exports.clearWebviewSession = exports.getWebViewSession = exports.clearSession = exports.initSessions = exports.secureSessions = void 0;
+exports.secureSessions = secureSessions;
+exports.initSessions = initSessions;
+exports.clearSession = clearSession;
+exports.getWebViewSession = getWebViewSession;
+exports.clearWebviewSession = clearWebviewSession;
+exports.clearDefaultSession = clearDefaultSession;
+exports.clearSessions = clearSessions;
 var tslib_1 = require("tslib");
 var debug_ = require("debug");
 var electron_1 = require("electron");
 var request = require("request");
-var requestPromise = require("request-promise-native");
 var transformer_1 = require("r2-shared-js/dist/es5/src/transform/transformer");
 var transformer_html_1 = require("r2-shared-js/dist/es5/src/transform/transformer-html");
 var dom_1 = require("../common/dom");
@@ -125,99 +130,72 @@ function secureSessions(server) {
         callback(false);
     });
 }
-exports.secureSessions = secureSessions;
 var _customUrlProtocolSchemeHandlerWasCalled = false;
 var streamProtocolHandler = function (req, callback) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
-    var url, u, ref, failure, success, reqHeaders, serverUrl, header, needsStreamingResponse, response, err_1;
+    var url, u, ref, failure, success, reqHeaders, serverUrl, header;
     return tslib_1.__generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _customUrlProtocolSchemeHandlerWasCalled = true;
-                url = (0, sessions_1.convertCustomSchemeToHttpUrl)(req.url);
-                u = new URL(url);
-                ref = u.origin;
-                if (req.referrer && req.referrer.trim()) {
-                    ref = req.referrer;
-                }
-                failure = function (err) {
-                    debug(err);
-                    callback({});
-                };
-                success = function (response) {
-                    var headers = {};
-                    Object.keys(response.headers).forEach(function (header) {
-                        var val = response.headers[header];
-                        if (val) {
-                            headers[header] = val;
-                        }
-                    });
-                    if (!headers.referer) {
-                        headers.referer = ref;
-                    }
-                    if (response.statusCode && (response.statusCode < 200 || response.statusCode >= 300)) {
-                        failure("HTTP CODE " + response.statusCode);
-                        return;
-                    }
-                    response
-                        .on("error", function h() {
-                        debug("RESPONSE ERROR " + url);
-                    });
-                    var obj = {
-                        data: response,
-                        headers: headers,
-                        statusCode: response.statusCode,
-                    };
-                    callback(obj);
-                };
-                reqHeaders = req.headers;
-                if (_server) {
-                    serverUrl = _server.serverUrl();
-                    if (_server.isSecured() &&
-                        ((serverUrl && url.startsWith(serverUrl)) ||
-                            url.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://"))) {
-                        header = _server.getSecureHTTPHeader(url);
-                        if (header) {
-                            reqHeaders[header.name] = header.value;
-                        }
-                    }
-                }
-                needsStreamingResponse = true;
-                if (!needsStreamingResponse) return [3, 1];
-                request.get({
-                    headers: reqHeaders,
-                    method: "GET",
-                    rejectUnauthorized: false,
-                    uri: url,
-                })
-                    .on("response", function (response) {
-                    success(response);
-                })
-                    .on("error", function (err) {
-                    failure(err);
-                });
-                return [3, 5];
-            case 1:
-                response = void 0;
-                _a.label = 2;
-            case 2:
-                _a.trys.push([2, 4, , 5]);
-                return [4, requestPromise({
-                        headers: reqHeaders,
-                        method: "GET",
-                        rejectUnauthorized: false,
-                        resolveWithFullResponse: true,
-                        uri: url,
-                    })];
-            case 3:
-                response = _a.sent();
-                success(response);
-                return [3, 5];
-            case 4:
-                err_1 = _a.sent();
-                failure(err_1);
-                return [3, 5];
-            case 5: return [2];
+        _customUrlProtocolSchemeHandlerWasCalled = true;
+        url = (0, sessions_1.convertCustomSchemeToHttpUrl)(req.url);
+        u = new URL(url);
+        ref = u.origin;
+        if (req.referrer && req.referrer.trim()) {
+            ref = req.referrer;
         }
+        failure = function (err) {
+            debug(err);
+            callback({});
+        };
+        success = function (response) {
+            var headers = {};
+            Object.keys(response.headers).forEach(function (header) {
+                var val = response.headers[header];
+                if (val) {
+                    headers[header] = val;
+                }
+            });
+            if (!headers.referer) {
+                headers.referer = ref;
+            }
+            if (response.statusCode && (response.statusCode < 200 || response.statusCode >= 300)) {
+                failure("HTTP CODE " + response.statusCode);
+                return;
+            }
+            response
+                .on("error", function h() {
+                debug("RESPONSE ERROR " + url);
+            });
+            var obj = {
+                data: response,
+                headers: headers,
+                statusCode: response.statusCode,
+            };
+            callback(obj);
+        };
+        reqHeaders = req.headers;
+        if (_server) {
+            serverUrl = _server.serverUrl();
+            if (_server.isSecured() &&
+                ((serverUrl && url.startsWith(serverUrl)) ||
+                    url.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://"))) {
+                header = _server.getSecureHTTPHeader(url);
+                if (header) {
+                    reqHeaders[header.name] = header.value;
+                }
+            }
+        }
+        request.get({
+            headers: reqHeaders,
+            method: "GET",
+            rejectUnauthorized: false,
+            uri: url,
+        })
+            .on("response", function (response) {
+            success(response);
+        })
+            .on("error", function (err) {
+            failure(err);
+        });
+        return [2];
     });
 }); };
 var httpProtocolHandler = function (req, callback) {
@@ -253,7 +231,7 @@ var transformerAudioVideo = function (_publication, link, url, htmlStr, _session
     if (link && link.TypeLink) {
         mediaType = link.TypeLink;
     }
-    var documant = (0, dom_1.parseDOM)(htmlStrToParse, mediaType);
+    var documantFromXmlDom = (0, dom_1.parseDOM)(htmlStrToParse, mediaType);
     var urlHttp = url;
     if (urlHttp.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
         urlHttp = (0, sessions_1.convertCustomSchemeToHttpUrl)(urlHttp);
@@ -305,8 +283,8 @@ var transformerAudioVideo = function (_publication, link, url, htmlStr, _session
             }
         }
     };
-    processTree(documant.body);
-    var serialized = (0, dom_1.serializeDOM)(documant);
+    processTree(documantFromXmlDom.body);
+    var serialized = (0, dom_1.serializeDOM)(documantFromXmlDom);
     var prefix = htmlStr.substr(0, iHtmlStart);
     var iHtmlStart_ = serialized.indexOf("<html");
     if (iHtmlStart_ < 0) {
@@ -340,7 +318,7 @@ var transformerHttpBaseIframes = function (_publication, link, url, htmlStr, _se
     if (link && link.TypeLink) {
         mediaType = link.TypeLink;
     }
-    var documant = (0, dom_1.parseDOM)(htmlStrToParse, mediaType);
+    var documantFromXmlDom = (0, dom_1.parseDOM)(htmlStrToParse, mediaType);
     var urlHttp = url;
     if (!urlHttp.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
         urlHttp = (0, sessions_1.convertHttpUrlToCustomScheme)(urlHttp);
@@ -411,8 +389,8 @@ var transformerHttpBaseIframes = function (_publication, link, url, htmlStr, _se
             }
         }
     };
-    processTree(documant.body);
-    var serialized = (0, dom_1.serializeDOM)(documant);
+    processTree(documantFromXmlDom.body);
+    var serialized = (0, dom_1.serializeDOM)(documantFromXmlDom);
     var prefix = htmlStr.substr(0, iHtmlStart);
     var iHtmlStart_ = serialized.indexOf("<html");
     if (iHtmlStart_ < 0) {
@@ -475,7 +453,7 @@ function initSessions() {
             }]);
     }
     electron_1.app.on("ready", function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-        var err_2, webViewSession;
+        var err_1, webViewSession;
         return tslib_1.__generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -488,8 +466,8 @@ function initSessions() {
                     _a.sent();
                     return [3, 4];
                 case 3:
-                    err_2 = _a.sent();
-                    debug(err_2);
+                    err_1 = _a.sent();
+                    debug(err_1);
                     return [3, 4];
                 case 4:
                     if (electron_1.session.defaultSession) {
@@ -520,10 +498,9 @@ function initSessions() {
         });
     }); });
 }
-exports.initSessions = initSessions;
 function clearSession(sess, str) {
     return tslib_1.__awaiter(this, void 0, void 0, function () {
-        var prom1, prom2, results, results_1, results_1_1, result, err_3;
+        var prom1, prom2, results, results_1, results_1_1, result, err_2;
         var e_1, _a;
         return tslib_1.__generator(this, function (_b) {
             switch (_b.label) {
@@ -561,22 +538,20 @@ function clearSession(sess, str) {
                     }
                     return [3, 4];
                 case 3:
-                    err_3 = _b.sent();
-                    debug(err_3);
+                    err_2 = _b.sent();
+                    debug(err_2);
                     return [3, 4];
                 case 4: return [2, Promise.resolve()];
             }
         });
     });
 }
-exports.clearSession = clearSession;
 function getWebViewSession() {
     return electron_1.session.fromPartition(sessions_1.R2_SESSION_WEBVIEW, { cache: true });
 }
-exports.getWebViewSession = getWebViewSession;
 function clearWebviewSession() {
     return tslib_1.__awaiter(this, void 0, void 0, function () {
-        var sess, err_4;
+        var sess, err_3;
         return tslib_1.__generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -590,18 +565,17 @@ function clearWebviewSession() {
                     _a.sent();
                     return [3, 4];
                 case 3:
-                    err_4 = _a.sent();
-                    debug(err_4);
+                    err_3 = _a.sent();
+                    debug(err_3);
                     return [3, 4];
                 case 4: return [2, Promise.resolve()];
             }
         });
     });
 }
-exports.clearWebviewSession = clearWebviewSession;
 function clearDefaultSession() {
     return tslib_1.__awaiter(this, void 0, void 0, function () {
-        var err_5;
+        var err_4;
         return tslib_1.__generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -614,18 +588,17 @@ function clearDefaultSession() {
                     _a.sent();
                     return [3, 4];
                 case 3:
-                    err_5 = _a.sent();
-                    debug(err_5);
+                    err_4 = _a.sent();
+                    debug(err_4);
                     return [3, 4];
                 case 4: return [2, Promise.resolve()];
             }
         });
     });
 }
-exports.clearDefaultSession = clearDefaultSession;
 function clearSessions() {
     return tslib_1.__awaiter(this, void 0, void 0, function () {
-        var err_6;
+        var err_5;
         return tslib_1.__generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -635,13 +608,12 @@ function clearSessions() {
                     _a.sent();
                     return [3, 3];
                 case 2:
-                    err_6 = _a.sent();
-                    debug(err_6);
+                    err_5 = _a.sent();
+                    debug(err_5);
                     return [3, 3];
                 case 3: return [2, Promise.resolve()];
             }
         });
     });
 }
-exports.clearSessions = clearSessions;
 //# sourceMappingURL=sessions.js.map

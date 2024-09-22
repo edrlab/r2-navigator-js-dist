@@ -1,6 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getCurrentAudioPlaybackRate = exports.setCurrentAudioPlaybackRate = exports.audioForward = exports.audioRewind = exports.audioTogglePlayPause = exports.audioPause = exports.audioPlay = void 0;
+exports.audioPlay = audioPlay;
+exports.audioPause = audioPause;
+exports.audioTogglePlayPause = audioTogglePlayPause;
+exports.audioRewind = audioRewind;
+exports.audioForward = audioForward;
+exports.setCurrentAudioPlaybackRate = setCurrentAudioPlaybackRate;
+exports.getCurrentAudioPlaybackRate = getCurrentAudioPlaybackRate;
 var tslib_1 = require("tslib");
 var events_1 = require("../common/events");
 var win = global.window;
@@ -25,7 +31,6 @@ function audioPlay() {
         });
     }); }, 0);
 }
-exports.audioPlay = audioPlay;
 function audioPause() {
     var _this = this;
     var activeWebView = win.READIUM2.getFirstOrSecondWebView();
@@ -47,7 +52,6 @@ function audioPause() {
         });
     }); }, 0);
 }
-exports.audioPause = audioPause;
 function audioTogglePlayPause() {
     var _this = this;
     var activeWebView = win.READIUM2.getFirstOrSecondWebView();
@@ -69,7 +73,6 @@ function audioTogglePlayPause() {
         });
     }); }, 0);
 }
-exports.audioTogglePlayPause = audioTogglePlayPause;
 function audioRewind() {
     var _this = this;
     var activeWebView = win.READIUM2.getFirstOrSecondWebView();
@@ -91,7 +94,6 @@ function audioRewind() {
         });
     }); }, 0);
 }
-exports.audioRewind = audioRewind;
 function audioForward() {
     var _this = this;
     var activeWebView = win.READIUM2.getFirstOrSecondWebView();
@@ -113,14 +115,11 @@ function audioForward() {
         });
     }); }, 0);
 }
-exports.audioForward = audioForward;
 var _playbackRate = 1;
 function setCurrentAudioPlaybackRate(speed) {
     _playbackRate = speed;
 }
-exports.setCurrentAudioPlaybackRate = setCurrentAudioPlaybackRate;
 function getCurrentAudioPlaybackRate() {
     return _playbackRate;
 }
-exports.getCurrentAudioPlaybackRate = getCurrentAudioPlaybackRate;
 //# sourceMappingURL=audiobook.js.map

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.uniqueCssSelector = void 0;
+exports.uniqueCssSelector = uniqueCssSelector;
 const cssesc = require("cssesc");
 var Limit;
 (function (Limit) {
@@ -40,7 +40,6 @@ function uniqueCssSelector(input, doc, options) {
         throw new Error("Selector was not found.");
     }
 }
-exports.uniqueCssSelector = uniqueCssSelector;
 function findRootDocument(rootNode, defaults) {
     if (rootNode.nodeType === Node.DOCUMENT_NODE) {
         return rootNode;

@@ -1,6 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setKeyUpEventHandler = exports.setKeyDownEventHandler = exports.installNavigatorDOM = exports.readiumCssUpdate = exports.readiumCssOnOff = exports.fixedLayoutZoomPercent = exports.stealFocusDisable = void 0;
+exports.stealFocusDisable = stealFocusDisable;
+exports.fixedLayoutZoomPercent = fixedLayoutZoomPercent;
+exports.readiumCssOnOff = readiumCssOnOff;
+exports.readiumCssUpdate = readiumCssUpdate;
+exports.installNavigatorDOM = installNavigatorDOM;
+exports.setKeyDownEventHandler = setKeyDownEventHandler;
+exports.setKeyUpEventHandler = setKeyUpEventHandler;
 var tslib_1 = require("tslib");
 var IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 var debug_ = require("debug");
@@ -205,7 +211,6 @@ function stealFocusDisable(doDisable) {
         win.READIUM2.stealFocusDisabled = doDisable;
     }
 }
-exports.stealFocusDisable = stealFocusDisable;
 var _fixedLayoutZoomPercentTimers = {};
 function fixedLayoutZoomPercent(zoomPercent) {
     var e_5, _a;
@@ -260,7 +265,6 @@ function fixedLayoutZoomPercent(zoomPercent) {
         finally { if (e_5) throw e_5.error; }
     }
 }
-exports.fixedLayoutZoomPercent = fixedLayoutZoomPercent;
 function readiumCssOnOff(rcss) {
     var e_7, _a;
     var loc = (0, location_1.getCurrentReadingLocation)();
@@ -279,11 +283,9 @@ function readiumCssOnOff(rcss) {
         finally { if (e_7) throw e_7.error; }
     }
 }
-exports.readiumCssOnOff = readiumCssOnOff;
 function readiumCssUpdate(rcss) {
     return readiumCssOnOff(rcss);
 }
-exports.readiumCssUpdate = readiumCssUpdate;
 var _webview1;
 var _webview2;
 function createWebViewInternal(preloadScriptPath) {
@@ -685,15 +687,12 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
         (0, location_1.handleLinkLocator)(location, rcss);
     }, 100);
 }
-exports.installNavigatorDOM = installNavigatorDOM;
 var _keyDownEventHandler;
 function setKeyDownEventHandler(func) {
     _keyDownEventHandler = func;
 }
-exports.setKeyDownEventHandler = setKeyDownEventHandler;
 var _keyUpEventHandler;
 function setKeyUpEventHandler(func) {
     _keyUpEventHandler = func;
 }
-exports.setKeyUpEventHandler = setKeyUpEventHandler;
 //# sourceMappingURL=dom.js.map

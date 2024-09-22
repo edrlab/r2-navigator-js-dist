@@ -1,6 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ttsSentenceDetectionEnable = exports.ttsSkippabilityEnable = exports.ttsPlaybackRate = exports.ttsVoice = exports.ttsClickEnable = exports.ttsOverlayEnable = exports.ttsNext = exports.ttsPrevious = exports.ttsResume = exports.ttsStop = exports.ttsPause = exports.ttsPlay = exports.ttsListen = exports.TTSStateEnum = exports.ttsHandleIpcMessage = exports.playTtsOnReadingLocation = exports.checkTtsState = void 0;
+exports.TTSStateEnum = void 0;
+exports.checkTtsState = checkTtsState;
+exports.playTtsOnReadingLocation = playTtsOnReadingLocation;
+exports.ttsHandleIpcMessage = ttsHandleIpcMessage;
+exports.ttsListen = ttsListen;
+exports.ttsPlay = ttsPlay;
+exports.ttsPause = ttsPause;
+exports.ttsStop = ttsStop;
+exports.ttsResume = ttsResume;
+exports.ttsPrevious = ttsPrevious;
+exports.ttsNext = ttsNext;
+exports.ttsOverlayEnable = ttsOverlayEnable;
+exports.ttsClickEnable = ttsClickEnable;
+exports.ttsVoice = ttsVoice;
+exports.ttsPlaybackRate = ttsPlaybackRate;
+exports.ttsSkippabilityEnable = ttsSkippabilityEnable;
+exports.ttsSentenceDetectionEnable = ttsSentenceDetectionEnable;
 const tslib_1 = require("tslib");
 const debounce = require("debounce");
 const events_1 = require("../common/events");
@@ -28,7 +44,6 @@ function checkTtsState(wv) {
     }
     checkTtsStateDebounced(wasStopped, wv);
 }
-exports.checkTtsState = checkTtsState;
 const checkTtsStateDebounced = debounce(checkTtsStateRaw, 400);
 function checkTtsStateRaw(wasStopped, wv) {
     var _a;
@@ -95,7 +110,6 @@ function playTtsOnReadingLocation(href) {
         activeWebView.addEventListener("ipc-message", cb);
     }
 }
-exports.playTtsOnReadingLocation = playTtsOnReadingLocation;
 function ttsHandleIpcMessage(eventChannel, _eventArgs, eventCurrentTarget) {
     var _a, _b;
     if (eventChannel === events_1.R2_EVENT_TTS_IS_PAUSED) {
@@ -130,7 +144,6 @@ function ttsHandleIpcMessage(eventChannel, _eventArgs, eventCurrentTarget) {
     }
     return true;
 }
-exports.ttsHandleIpcMessage = ttsHandleIpcMessage;
 var TTSStateEnum;
 (function (TTSStateEnum) {
     TTSStateEnum["PAUSED"] = "PAUSED";
@@ -141,7 +154,6 @@ let _ttsListener;
 function ttsListen(ttsListener) {
     _ttsListener = ttsListener;
 }
-exports.ttsListen = ttsListen;
 function ttsPlay(speed, voice) {
     var _a;
     if (win.READIUM2) {
@@ -173,15 +185,14 @@ function ttsPlay(speed, voice) {
         voice,
     };
     setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
-        var _b;
+        var _a;
         if (activeWebView) {
-            if ((_b = activeWebView.READIUM2) === null || _b === void 0 ? void 0 : _b.DOMisReady) {
+            if ((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady) {
                 yield activeWebView.send(events_1.R2_EVENT_TTS_DO_PLAY, payload);
             }
         }
     }), 0);
 }
-exports.ttsPlay = ttsPlay;
 function ttsPause() {
     const activeWebViews = win.READIUM2.getActiveWebViews();
     for (const activeWebView of activeWebViews) {
@@ -196,7 +207,6 @@ function ttsPause() {
         }), 0);
     }
 }
-exports.ttsPause = ttsPause;
 function ttsStop() {
     const activeWebViews = win.READIUM2.getActiveWebViews();
     for (const activeWebView of activeWebViews) {
@@ -213,7 +223,6 @@ function ttsStop() {
         }), 0);
     }
 }
-exports.ttsStop = ttsStop;
 function ttsResume() {
     const activeWebViews = win.READIUM2.getActiveWebViews();
     for (const activeWebView of activeWebViews) {
@@ -228,7 +237,6 @@ function ttsResume() {
         }), 0);
     }
 }
-exports.ttsResume = ttsResume;
 function ttsPrevious(skipSentences = false) {
     const activeWebViews = win.READIUM2.getActiveWebViews();
     for (const activeWebView of activeWebViews) {
@@ -246,7 +254,6 @@ function ttsPrevious(skipSentences = false) {
         }), 0);
     }
 }
-exports.ttsPrevious = ttsPrevious;
 function ttsNext(skipSentences = false) {
     const activeWebViews = win.READIUM2.getActiveWebViews();
     for (const activeWebView of activeWebViews) {
@@ -264,7 +271,6 @@ function ttsNext(skipSentences = false) {
         }), 0);
     }
 }
-exports.ttsNext = ttsNext;
 function ttsOverlayEnable(doEnable) {
     if (win.READIUM2) {
         win.READIUM2.ttsOverlayEnabled = doEnable;
@@ -282,7 +288,6 @@ function ttsOverlayEnable(doEnable) {
         }), 0);
     }
 }
-exports.ttsOverlayEnable = ttsOverlayEnable;
 function ttsClickEnable(doEnable) {
     if (win.READIUM2) {
         win.READIUM2.ttsClickEnabled = doEnable;
@@ -300,7 +305,6 @@ function ttsClickEnable(doEnable) {
         }), 0);
     }
 }
-exports.ttsClickEnable = ttsClickEnable;
 function ttsVoice(voice) {
     if (win.READIUM2) {
         win.READIUM2.ttsVoice = voice;
@@ -318,7 +322,6 @@ function ttsVoice(voice) {
         }), 0);
     }
 }
-exports.ttsVoice = ttsVoice;
 function ttsPlaybackRate(speed) {
     if (win.READIUM2) {
         win.READIUM2.ttsPlaybackRate = speed;
@@ -336,7 +339,6 @@ function ttsPlaybackRate(speed) {
         }), 0);
     }
 }
-exports.ttsPlaybackRate = ttsPlaybackRate;
 function ttsSkippabilityEnable(doEnable) {
     if (win.READIUM2) {
         win.READIUM2.ttsSkippabilityEnabled = doEnable;
@@ -354,7 +356,6 @@ function ttsSkippabilityEnable(doEnable) {
         }), 0);
     }
 }
-exports.ttsSkippabilityEnable = ttsSkippabilityEnable;
 function ttsSentenceDetectionEnable(doEnable) {
     if (win.READIUM2) {
         win.READIUM2.ttsSentenceDetectionEnabled = doEnable;
@@ -372,5 +373,4 @@ function ttsSentenceDetectionEnable(doEnable) {
         }), 0);
     }
 }
-exports.ttsSentenceDetectionEnable = ttsSentenceDetectionEnable;
 //# sourceMappingURL=readaloud.js.map

@@ -1,6 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.mediaOverlaysEnableSkippability = exports.mediaOverlaysPlaybackRate = exports.mediaOverlaysClickEnable = exports.mediaOverlaysEnableCaptionsMode = exports.mediaOverlaysEscape = exports.mediaOverlaysNext = exports.mediaOverlaysPrevious = exports.mediaOverlaysResume = exports.mediaOverlaysStop = exports.mediaOverlaysInterrupt = exports.mediaOverlaysPause = exports.mediaOverlaysPlay = exports.mediaOverlaysListen = exports.mediaOverlaysHandleIpcMessage = exports.publicationHasMediaOverlays = exports.MediaOverlaysStateEnum = void 0;
+exports.MediaOverlaysStateEnum = void 0;
+exports.publicationHasMediaOverlays = publicationHasMediaOverlays;
+exports.mediaOverlaysHandleIpcMessage = mediaOverlaysHandleIpcMessage;
+exports.mediaOverlaysListen = mediaOverlaysListen;
+exports.mediaOverlaysPlay = mediaOverlaysPlay;
+exports.mediaOverlaysPause = mediaOverlaysPause;
+exports.mediaOverlaysInterrupt = mediaOverlaysInterrupt;
+exports.mediaOverlaysStop = mediaOverlaysStop;
+exports.mediaOverlaysResume = mediaOverlaysResume;
+exports.mediaOverlaysPrevious = mediaOverlaysPrevious;
+exports.mediaOverlaysNext = mediaOverlaysNext;
+exports.mediaOverlaysEscape = mediaOverlaysEscape;
+exports.mediaOverlaysEnableCaptionsMode = mediaOverlaysEnableCaptionsMode;
+exports.mediaOverlaysClickEnable = mediaOverlaysClickEnable;
+exports.mediaOverlaysPlaybackRate = mediaOverlaysPlaybackRate;
+exports.mediaOverlaysEnableSkippability = mediaOverlaysEnableSkippability;
 const tslib_1 = require("tslib");
 const debug_ = require("debug");
 const util = require("util");
@@ -37,7 +52,6 @@ function publicationHasMediaOverlays(publication) {
     }
     return false;
 }
-exports.publicationHasMediaOverlays = publicationHasMediaOverlays;
 let _captionsMode = false;
 let _mediaOverlaysClickEnabled = false;
 let _mediaOverlaysPlaybackRate = 1;
@@ -991,7 +1005,6 @@ function mediaOverlaysHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarg
     }
     return true;
 }
-exports.mediaOverlaysHandleIpcMessage = mediaOverlaysHandleIpcMessage;
 function moHighlight_(moTextAudioPair) {
     if (IS_DEV) {
         debug("moHighlight ...");
@@ -1039,8 +1052,8 @@ function moHighlight(href, id) {
             }
         }
         setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
-            var _f;
-            if ((_f = activeWebView.READIUM2) === null || _f === void 0 ? void 0 : _f.DOMisReady) {
+            var _a;
+            if ((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady) {
                 yield activeWebView.send(events_1.R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT, payload);
             }
         }), 0);
@@ -1070,7 +1083,6 @@ let _mediaOverlaysListener;
 function mediaOverlaysListen(mediaOverlaysListener) {
     _mediaOverlaysListener = mediaOverlaysListener;
 }
-exports.mediaOverlaysListen = mediaOverlaysListen;
 function mediaOverlaysPlay(speed) {
     var _a;
     if (IS_DEV) {
@@ -1109,7 +1121,6 @@ function mediaOverlaysPlay(speed) {
         mediaOverlaysResume();
     }
 }
-exports.mediaOverlaysPlay = mediaOverlaysPlay;
 function mediaOverlaysPause() {
     if (IS_DEV) {
         debug("mediaOverlaysPause()");
@@ -1124,7 +1135,6 @@ function mediaOverlaysPause() {
     }
     mediaOverlaysStateSet(events_1.MediaOverlaysStateEnum.PAUSED);
 }
-exports.mediaOverlaysPause = mediaOverlaysPause;
 function mediaOverlaysInterrupt() {
     if (!win.READIUM2 || !win.READIUM2.publication) {
         return;
@@ -1137,7 +1147,6 @@ function mediaOverlaysInterrupt() {
     }
     mediaOverlaysStop(_mediaOverlayActive);
 }
-exports.mediaOverlaysInterrupt = mediaOverlaysInterrupt;
 function mediaOverlaysStop(stayActive) {
     if (IS_DEV) {
         debug("mediaOverlaysStop() stayActive: " + stayActive);
@@ -1171,7 +1180,6 @@ function mediaOverlaysStop(stayActive) {
         }
     }
 }
-exports.mediaOverlaysStop = mediaOverlaysStop;
 function mediaOverlaysResume() {
     if (IS_DEV) {
         debug("mediaOverlaysResume()");
@@ -1202,7 +1210,6 @@ function mediaOverlaysResume() {
         mediaOverlaysPlay(_mediaOverlaysPlaybackRate);
     }
 }
-exports.mediaOverlaysResume = mediaOverlaysResume;
 function mediaOverlaysPrevious() {
     if (IS_DEV) {
         debug("mediaOverlaysPrevious()");
@@ -1262,7 +1269,6 @@ function mediaOverlaysPrevious() {
         (0, location_2.navPreviousOrNext)(true, true, true);
     }
 }
-exports.mediaOverlaysPrevious = mediaOverlaysPrevious;
 function mediaOverlaysNext(escape) {
     if (IS_DEV) {
         debug("mediaOverlaysNext()");
@@ -1322,22 +1328,18 @@ function mediaOverlaysNext(escape) {
         (0, location_2.navPreviousOrNext)(false, true, true);
     }
 }
-exports.mediaOverlaysNext = mediaOverlaysNext;
 function mediaOverlaysEscape() {
     if (!win.READIUM2 || !win.READIUM2.publication) {
         return;
     }
     mediaOverlaysNext(true);
 }
-exports.mediaOverlaysEscape = mediaOverlaysEscape;
 function mediaOverlaysEnableCaptionsMode(captionsMode) {
     _captionsMode = captionsMode;
 }
-exports.mediaOverlaysEnableCaptionsMode = mediaOverlaysEnableCaptionsMode;
 function mediaOverlaysClickEnable(doEnable) {
     _mediaOverlaysClickEnabled = doEnable;
 }
-exports.mediaOverlaysClickEnable = mediaOverlaysClickEnable;
 function mediaOverlaysPlaybackRate(speed) {
     if (!win.READIUM2 || !win.READIUM2.publication) {
         return;
@@ -1347,10 +1349,8 @@ function mediaOverlaysPlaybackRate(speed) {
         _currentAudioElement.playbackRate = speed;
     }
 }
-exports.mediaOverlaysPlaybackRate = mediaOverlaysPlaybackRate;
 let _mediaOverlaySkippabilityIsEnabled = true;
 function mediaOverlaysEnableSkippability(doEnable) {
     _mediaOverlaySkippabilityIsEnabled = doEnable;
 }
-exports.mediaOverlaysEnableSkippability = mediaOverlaysEnableSkippability;
 //# sourceMappingURL=media-overlays.js.map

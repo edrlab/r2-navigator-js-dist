@@ -12,6 +12,7 @@ export interface IHighlight {
     id: string;
     selectionInfo?: ISelectionInfo;
     range?: Range;
+    rangeCssHighlight?: Range;
     color: IColor;
     pointerInteraction: boolean;
     drawType?: number;

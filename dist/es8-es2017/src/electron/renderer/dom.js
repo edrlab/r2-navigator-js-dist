@@ -1,6 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setKeyUpEventHandler = exports.setKeyDownEventHandler = exports.installNavigatorDOM = exports.readiumCssUpdate = exports.readiumCssOnOff = exports.fixedLayoutZoomPercent = exports.stealFocusDisable = void 0;
+exports.stealFocusDisable = stealFocusDisable;
+exports.fixedLayoutZoomPercent = fixedLayoutZoomPercent;
+exports.readiumCssOnOff = readiumCssOnOff;
+exports.readiumCssUpdate = readiumCssUpdate;
+exports.installNavigatorDOM = installNavigatorDOM;
+exports.setKeyDownEventHandler = setKeyDownEventHandler;
+exports.setKeyUpEventHandler = setKeyUpEventHandler;
 const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 const debug_ = require("debug");
 const electron_1 = require("electron");
@@ -174,7 +180,6 @@ function stealFocusDisable(doDisable) {
         win.READIUM2.stealFocusDisabled = doDisable;
     }
 }
-exports.stealFocusDisable = stealFocusDisable;
 const _fixedLayoutZoomPercentTimers = {};
 function fixedLayoutZoomPercent(zoomPercent) {
     win.READIUM2.domSlidingViewport.style.overflow = zoomPercent === 0 ? "hidden" : "auto";
@@ -204,7 +209,6 @@ function fixedLayoutZoomPercent(zoomPercent) {
         }
     }
 }
-exports.fixedLayoutZoomPercent = fixedLayoutZoomPercent;
 function readiumCssOnOff(rcss) {
     const loc = (0, location_1.getCurrentReadingLocation)();
     const activeWebViews = win.READIUM2.getActiveWebViews();
@@ -212,11 +216,9 @@ function readiumCssOnOff(rcss) {
         readiumCssApplyToWebview(loc, activeWebView, undefined, rcss);
     }
 }
-exports.readiumCssOnOff = readiumCssOnOff;
 function readiumCssUpdate(rcss) {
     return readiumCssOnOff(rcss);
 }
-exports.readiumCssUpdate = readiumCssUpdate;
 let _webview1;
 let _webview2;
 function createWebViewInternal(preloadScriptPath) {
@@ -543,15 +545,12 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
         (0, location_1.handleLinkLocator)(location, rcss);
     }, 100);
 }
-exports.installNavigatorDOM = installNavigatorDOM;
 let _keyDownEventHandler;
 function setKeyDownEventHandler(func) {
     _keyDownEventHandler = func;
 }
-exports.setKeyDownEventHandler = setKeyDownEventHandler;
 let _keyUpEventHandler;
 function setKeyUpEventHandler(func) {
     _keyUpEventHandler = func;
 }
-exports.setKeyUpEventHandler = setKeyUpEventHandler;
 //# sourceMappingURL=dom.js.map

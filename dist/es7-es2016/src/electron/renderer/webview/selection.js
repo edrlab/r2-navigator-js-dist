@@ -1,6 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.normalizeRange = exports.convertRangeInfo = exports.convertRange = exports.createOrderedRange = exports.getCurrentSelectionInfo = exports.cleanupStr = exports.collapseWhitespaces = exports.clearCurrentSelection = void 0;
+exports.cleanupStr = exports.collapseWhitespaces = void 0;
+exports.clearCurrentSelection = clearCurrentSelection;
+exports.getCurrentSelectionInfo = getCurrentSelectionInfo;
+exports.createOrderedRange = createOrderedRange;
+exports.convertRange = convertRange;
+exports.convertRangeInfo = convertRangeInfo;
+exports.normalizeRange = normalizeRange;
 const electron_1 = require("electron");
 const events_1 = require("../../common/events");
 const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
@@ -62,7 +68,6 @@ function clearCurrentSelection(win) {
     }
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_READING_LOCATION_CLEAR_SELECTION);
 }
-exports.clearCurrentSelection = clearCurrentSelection;
 const collapseWhitespaces = (str) => {
     return str.replace(/[\r\n]/g, " ").replace(/\s\s+/g, " ");
 };
@@ -165,7 +170,6 @@ function getCurrentSelectionInfo(win, getCssSelector, computeElementCFI) {
         rawAfter: textInfo.rawAfter,
     };
 }
-exports.getCurrentSelectionInfo = getCurrentSelectionInfo;
 function createOrderedRange(startNode, startOffset, endNode, endOffset) {
     const range = new Range();
     range.setStart(startNode, startOffset);
@@ -184,7 +188,6 @@ function createOrderedRange(startNode, startOffset, endNode, endOffset) {
     console.log(">>> createOrderedRange RANGE REVERSE ALSO COLLAPSED?!");
     return undefined;
 }
-exports.createOrderedRange = createOrderedRange;
 function convertRange(range, getCssSelector, computeElementCFI) {
     var _a, _b;
     const startIsElement = range.startContainer.nodeType === Node.ELEMENT_NODE;
@@ -403,7 +406,6 @@ function convertRange(range, getCssSelector, computeElementCFI) {
             rawAfter,
         }];
 }
-exports.convertRange = convertRange;
 function convertRangeInfo(documant, rangeInfo) {
     const startElement = documant.querySelector(rangeInfo.startContainerElementCssSelector);
     if (!startElement) {
@@ -441,7 +443,6 @@ function convertRangeInfo(documant, rangeInfo) {
     }
     return createOrderedRange(startContainer, rangeInfo.startOffset, endContainer, rangeInfo.endOffset);
 }
-exports.convertRangeInfo = convertRangeInfo;
 function getCommonAncestorElement(node1, node2) {
     if (node1.nodeType === Node.ELEMENT_NODE && node1 === node2) {
         return node1;
@@ -556,7 +557,6 @@ function normalizeRange(r) {
     }
     return range;
 }
-exports.normalizeRange = normalizeRange;
 function documentForward(node) {
     if (node.firstChild) {
         return node.firstChild;

@@ -1,6 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ttsSentenceDetectionEnable = exports.ttsSkippabilityEnable = exports.ttsPlaybackRate = exports.ttsVoice = exports.ttsClickEnable = exports.ttsOverlayEnable = exports.ttsNext = exports.ttsPrevious = exports.ttsResume = exports.ttsStop = exports.ttsPause = exports.ttsPlay = exports.ttsListen = exports.TTSStateEnum = exports.ttsHandleIpcMessage = exports.playTtsOnReadingLocation = exports.checkTtsState = void 0;
+exports.TTSStateEnum = void 0;
+exports.checkTtsState = checkTtsState;
+exports.playTtsOnReadingLocation = playTtsOnReadingLocation;
+exports.ttsHandleIpcMessage = ttsHandleIpcMessage;
+exports.ttsListen = ttsListen;
+exports.ttsPlay = ttsPlay;
+exports.ttsPause = ttsPause;
+exports.ttsStop = ttsStop;
+exports.ttsResume = ttsResume;
+exports.ttsPrevious = ttsPrevious;
+exports.ttsNext = ttsNext;
+exports.ttsOverlayEnable = ttsOverlayEnable;
+exports.ttsClickEnable = ttsClickEnable;
+exports.ttsVoice = ttsVoice;
+exports.ttsPlaybackRate = ttsPlaybackRate;
+exports.ttsSkippabilityEnable = ttsSkippabilityEnable;
+exports.ttsSentenceDetectionEnable = ttsSentenceDetectionEnable;
 var tslib_1 = require("tslib");
 var debounce = require("debounce");
 var events_1 = require("../common/events");
@@ -28,7 +44,6 @@ function checkTtsState(wv) {
     }
     checkTtsStateDebounced(wasStopped, wv);
 }
-exports.checkTtsState = checkTtsState;
 var checkTtsStateDebounced = debounce(checkTtsStateRaw, 400);
 function checkTtsStateRaw(wasStopped, wv) {
     var _a;
@@ -95,7 +110,6 @@ function playTtsOnReadingLocation(href) {
         activeWebView.addEventListener("ipc-message", cb_1);
     }
 }
-exports.playTtsOnReadingLocation = playTtsOnReadingLocation;
 function ttsHandleIpcMessage(eventChannel, _eventArgs, eventCurrentTarget) {
     var _a, _b;
     if (eventChannel === events_1.R2_EVENT_TTS_IS_PAUSED) {
@@ -130,7 +144,6 @@ function ttsHandleIpcMessage(eventChannel, _eventArgs, eventCurrentTarget) {
     }
     return true;
 }
-exports.ttsHandleIpcMessage = ttsHandleIpcMessage;
 var TTSStateEnum;
 (function (TTSStateEnum) {
     TTSStateEnum["PAUSED"] = "PAUSED";
@@ -141,7 +154,6 @@ var _ttsListener;
 function ttsListen(ttsListener) {
     _ttsListener = ttsListener;
 }
-exports.ttsListen = ttsListen;
 function ttsPlay(speed, voice) {
     var _this = this;
     var _a;
@@ -189,7 +201,6 @@ function ttsPlay(speed, voice) {
         });
     }); }, 0);
 }
-exports.ttsPlay = ttsPlay;
 function ttsPause() {
     var e_1, _a;
     var _this = this;
@@ -227,7 +238,6 @@ function ttsPause() {
         finally { if (e_1) throw e_1.error; }
     }
 }
-exports.ttsPause = ttsPause;
 function ttsStop() {
     var e_2, _a;
     var _this = this;
@@ -267,7 +277,6 @@ function ttsStop() {
         finally { if (e_2) throw e_2.error; }
     }
 }
-exports.ttsStop = ttsStop;
 function ttsResume() {
     var e_3, _a;
     var _this = this;
@@ -305,7 +314,6 @@ function ttsResume() {
         finally { if (e_3) throw e_3.error; }
     }
 }
-exports.ttsResume = ttsResume;
 function ttsPrevious(skipSentences) {
     var e_4, _a;
     var _this = this;
@@ -348,7 +356,6 @@ function ttsPrevious(skipSentences) {
         finally { if (e_4) throw e_4.error; }
     }
 }
-exports.ttsPrevious = ttsPrevious;
 function ttsNext(skipSentences) {
     var e_5, _a;
     var _this = this;
@@ -391,7 +398,6 @@ function ttsNext(skipSentences) {
         finally { if (e_5) throw e_5.error; }
     }
 }
-exports.ttsNext = ttsNext;
 function ttsOverlayEnable(doEnable) {
     var e_6, _a;
     var _this = this;
@@ -433,7 +439,6 @@ function ttsOverlayEnable(doEnable) {
         finally { if (e_6) throw e_6.error; }
     }
 }
-exports.ttsOverlayEnable = ttsOverlayEnable;
 function ttsClickEnable(doEnable) {
     var e_7, _a;
     var _this = this;
@@ -475,7 +480,6 @@ function ttsClickEnable(doEnable) {
         finally { if (e_7) throw e_7.error; }
     }
 }
-exports.ttsClickEnable = ttsClickEnable;
 function ttsVoice(voice) {
     var e_8, _a;
     var _this = this;
@@ -516,7 +520,6 @@ function ttsVoice(voice) {
         finally { if (e_8) throw e_8.error; }
     }
 }
-exports.ttsVoice = ttsVoice;
 function ttsPlaybackRate(speed) {
     var e_9, _a;
     var _this = this;
@@ -557,7 +560,6 @@ function ttsPlaybackRate(speed) {
         finally { if (e_9) throw e_9.error; }
     }
 }
-exports.ttsPlaybackRate = ttsPlaybackRate;
 function ttsSkippabilityEnable(doEnable) {
     var e_10, _a;
     var _this = this;
@@ -599,7 +601,6 @@ function ttsSkippabilityEnable(doEnable) {
         finally { if (e_10) throw e_10.error; }
     }
 }
-exports.ttsSkippabilityEnable = ttsSkippabilityEnable;
 function ttsSentenceDetectionEnable(doEnable) {
     var e_11, _a;
     var _this = this;
@@ -641,5 +642,4 @@ function ttsSentenceDetectionEnable(doEnable) {
         finally { if (e_11) throw e_11.error; }
     }
 }
-exports.ttsSentenceDetectionEnable = ttsSentenceDetectionEnable;
 //# sourceMappingURL=readaloud.js.map

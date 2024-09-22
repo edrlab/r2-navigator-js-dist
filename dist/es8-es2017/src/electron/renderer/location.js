@@ -1,6 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isLocatorVisible = exports.setReadingLocationSaver = exports.getCurrentReadingLocation = exports.reloadContent = exports.handleLinkLocator = exports.handleLinkUrl = exports.handleLink = exports.navLeftOrRight = exports.navPreviousOrNext = exports.shiftWebview = exports.locationHandleIpcMessage = exports.setWebViewStyle = void 0;
+exports.setWebViewStyle = setWebViewStyle;
+exports.locationHandleIpcMessage = locationHandleIpcMessage;
+exports.shiftWebview = shiftWebview;
+exports.navPreviousOrNext = navPreviousOrNext;
+exports.navLeftOrRight = navLeftOrRight;
+exports.handleLink = handleLink;
+exports.handleLinkUrl = handleLinkUrl;
+exports.handleLinkLocator = handleLinkLocator;
+exports.reloadContent = reloadContent;
+exports.getCurrentReadingLocation = getCurrentReadingLocation;
+exports.setReadingLocationSaver = setReadingLocationSaver;
+exports.isLocatorVisible = isLocatorVisible;
 const debug_ = require("debug");
 const electron_1 = require("electron");
 const path = require("path");
@@ -62,7 +73,6 @@ function setWebViewStyle(wv, wvSlot, fxl) {
                 "right"));
     }
 }
-exports.setWebViewStyle = setWebViewStyle;
 function locationHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
     const activeWebView = eventCurrentTarget;
     if (eventChannel === events_1.R2_EVENT_LOCATOR_VISIBLE) {
@@ -156,7 +166,6 @@ function locationHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
     }
     return true;
 }
-exports.locationHandleIpcMessage = locationHandleIpcMessage;
 electron_1.ipcRenderer.on(events_1.R2_EVENT_LINK, (event, payload) => {
     if (!win.READIUM2) {
         return;
@@ -184,7 +193,6 @@ function shiftWebview(webview, offset, backgroundColor) {
         webview.style.transform = `translateX(${offset}px)`;
     }
 }
-exports.shiftWebview = shiftWebview;
 function navPreviousOrNext(goPREVIOUS, spineNav, ignorePageSpreadHandling) {
     const publication = win.READIUM2.publication;
     const publicationURL = win.READIUM2.publicationURL;
@@ -264,7 +272,6 @@ function navPreviousOrNext(goPREVIOUS, spineNav, ignorePageSpreadHandling) {
     }
     return undefined;
 }
-exports.navPreviousOrNext = navPreviousOrNext;
 function navLeftOrRight(left, spineNav, ignorePageSpreadHandling) {
     var _a;
     const loc = _lastSavedReadingLocation;
@@ -275,7 +282,6 @@ function navLeftOrRight(left, spineNav, ignorePageSpreadHandling) {
     const goPREVIOUS = left ? !rtl : rtl;
     return navPreviousOrNext(goPREVIOUS, spineNav, ignorePageSpreadHandling);
 }
-exports.navLeftOrRight = navLeftOrRight;
 function handleLink(href, previous, useGoto, rcss) {
     debug(`handleLink: ${href}`);
     const special = href.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://");
@@ -307,12 +313,10 @@ function handleLink(href, previous, useGoto, rcss) {
         }
     }
 }
-exports.handleLink = handleLink;
 function handleLinkUrl(href, rcss) {
     debug(`handleLinkUrl: ${href}`);
     handleLink(href, undefined, false, rcss);
 }
-exports.handleLinkUrl = handleLinkUrl;
 function handleLinkLocator(location, rcss) {
     var _a;
     const rangeInfo = (_a = location === null || location === void 0 ? void 0 : location.locations) === null || _a === void 0 ? void 0 : _a.rangeInfo;
@@ -370,7 +374,6 @@ function handleLinkLocator(location, rcss) {
         handleLink(hrefToLoad, undefined, useGoto, rcss);
     }
 }
-exports.handleLinkLocator = handleLinkLocator;
 let _reloadCounter = 0;
 function reloadContent() {
     const activeWebViews = win.READIUM2.getActiveWebViews();
@@ -378,7 +381,6 @@ function reloadContent() {
         reloadWebView(activeWebView);
     }
 }
-exports.reloadContent = reloadContent;
 function reloadWebView(activeWebView) {
     setTimeout(() => {
         activeWebView.READIUM2.forceRefresh = true;
@@ -1155,7 +1157,6 @@ let _lastSavedReadingLocation;
 function getCurrentReadingLocation() {
     return _lastSavedReadingLocation;
 }
-exports.getCurrentReadingLocation = getCurrentReadingLocation;
 let _readingLocationSaver;
 const _saveReadingLocation = (activeWebView, locator) => {
     var _a, _b;
@@ -1248,7 +1249,6 @@ const _saveReadingLocation = (activeWebView, locator) => {
 function setReadingLocationSaver(func) {
     _readingLocationSaver = func;
 }
-exports.setReadingLocationSaver = setReadingLocationSaver;
 async function isLocatorVisible(locator) {
     return new Promise((resolve, reject) => {
         var _a;
@@ -1282,5 +1282,4 @@ async function isLocatorVisible(locator) {
         reject("isLocatorVisible - no webview href match.");
     });
 }
-exports.isLocatorVisible = isLocatorVisible;
 //# sourceMappingURL=location.js.map

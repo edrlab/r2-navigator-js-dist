@@ -1,6 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.highlightsDrawMargin = exports.highlightsCreate = exports.highlightsRemove = exports.highlightsRemoveAll = exports.highlightsClickListen = exports.highlightsHandleIpcMessage = void 0;
+exports.highlightsHandleIpcMessage = highlightsHandleIpcMessage;
+exports.highlightsClickListen = highlightsClickListen;
+exports.highlightsRemoveAll = highlightsRemoveAll;
+exports.highlightsRemove = highlightsRemove;
+exports.highlightsCreate = highlightsCreate;
+exports.highlightsDrawMargin = highlightsDrawMargin;
 const events_1 = require("../common/events");
 const win = global.window;
 function highlightsHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
@@ -19,12 +24,10 @@ function highlightsHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget)
         return false;
     }
 }
-exports.highlightsHandleIpcMessage = highlightsHandleIpcMessage;
 let _highlightsClickListener;
 function highlightsClickListen(highlightsClickListener) {
     _highlightsClickListener = highlightsClickListener;
 }
-exports.highlightsClickListen = highlightsClickListen;
 function highlightsRemoveAll(href, groups) {
     var _a;
     console.log("--HIGH-- highlightsRemoveAll: " + href + " ... " + JSON.stringify(groups));
@@ -54,7 +57,6 @@ function highlightsRemoveAll(href, groups) {
         }, 0);
     }
 }
-exports.highlightsRemoveAll = highlightsRemoveAll;
 function highlightsRemove(href, highlightIDs) {
     var _a;
     console.log("--HIGH-- highlightsRemove: " + href + " ==> " + highlightIDs.length);
@@ -79,7 +81,6 @@ function highlightsRemove(href, highlightIDs) {
         }, 0);
     }
 }
-exports.highlightsRemove = highlightsRemove;
 async function highlightsCreate(href, highlightDefinitions) {
     return new Promise((resolve, reject) => {
         var _a;
@@ -126,7 +127,6 @@ async function highlightsCreate(href, highlightDefinitions) {
         reject("highlightsCreate - no webview match?!");
     });
 }
-exports.highlightsCreate = highlightsCreate;
 function highlightsDrawMargin(drawMargin) {
     console.log("--HIGH-- highlightsDrawMargin: " + JSON.stringify(drawMargin, null, 4));
     win.READIUM2.highlightsDrawMargin = drawMargin;
@@ -143,5 +143,4 @@ function highlightsDrawMargin(drawMargin) {
         }, 0);
     }
 }
-exports.highlightsDrawMargin = highlightsDrawMargin;
 //# sourceMappingURL=highlight.js.map

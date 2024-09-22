@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setupReadiumCSS = void 0;
+exports.setupReadiumCSS = setupReadiumCSS;
 const express = require("express");
 const transformer_1 = require("r2-shared-js/dist/es6-es2015/src/transform/transformer");
 const transformer_html_1 = require("r2-shared-js/dist/es6-es2015/src/transform/transformer-html");
@@ -82,5 +82,4 @@ function setupReadiumCSS(server, folderPath, readiumCssGetter) {
     };
     transformer_1.Transformers.instance().add(new transformer_html_1.TransformerHTML(transformerReadiumCss));
 }
-exports.setupReadiumCSS = setupReadiumCSS;
 //# sourceMappingURL=readium-css.js.map

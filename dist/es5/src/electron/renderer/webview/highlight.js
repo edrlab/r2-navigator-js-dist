@@ -1,6 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createHighlight = exports.createHighlights = exports.recreateAllHighlights = exports.recreateAllHighlightsDebounced = exports.recreateAllHighlightsRaw = exports.destroyHighlightsGroup = exports.destroyHighlight = exports.destroyAllhighlights = exports.hideAllhighlights = exports.getBoundingClientRectOfDocumentBody = exports.setDrawMargin = void 0;
+exports.recreateAllHighlightsDebounced = exports.setDrawMargin = exports.ENABLE_CSS_HIGHLIGHTS = void 0;
+exports.getBoundingClientRectOfDocumentBody = getBoundingClientRectOfDocumentBody;
+exports.hideAllhighlights = hideAllhighlights;
+exports.destroyAllhighlights = destroyAllhighlights;
+exports.destroyHighlight = destroyHighlight;
+exports.destroyHighlightsGroup = destroyHighlightsGroup;
+exports.recreateAllHighlightsRaw = recreateAllHighlightsRaw;
+exports.recreateAllHighlights = recreateAllHighlights;
+exports.createHighlights = createHighlights;
+exports.createHighlight = createHighlight;
 var tslib_1 = require("tslib");
 var crypto = require("crypto");
 var debounce = require("debounce");
@@ -17,8 +26,9 @@ var core_1 = require("@flatten-js/core");
 var unify = core_1.BooleanOperations.unify, subtract = core_1.BooleanOperations.subtract;
 var IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 window.DEBUG_RECTS = IS_DEV && rect_utils_1.VERBOSE;
+exports.ENABLE_CSS_HIGHLIGHTS = true && !!CSS.highlights;
 var cleanupPolygon = function (polygonAccumulator, off) {
-    var e_1, _a, e_2, _b, e_3, _c, e_4, _d, e_5, _e, e_6, _f, e_7, _g;
+    var e_1, _a, e_2, _b, e_3, _c, e_4, _d, e_5, _f, e_6, _g, e_7, _h;
     var DEBUG_RECTS = window.DEBUG_RECTS;
     var minLength = Math.abs(off) + 1;
     var nSegments = 0;
@@ -28,8 +38,8 @@ var cleanupPolygon = function (polygonAccumulator, off) {
         console.log("--====}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}");
     }
     try {
-        for (var _h = tslib_1.__values(polygonAccumulator.edges), _j = _h.next(); !_j.done; _j = _h.next()) {
-            var e = _j.value;
+        for (var _j = tslib_1.__values(polygonAccumulator.edges), _k = _j.next(); !_k.done; _k = _j.next()) {
+            var e = _k.value;
             var edge = e;
             if (edge.isSegment) {
                 nSegments++;
@@ -58,7 +68,7 @@ var cleanupPolygon = function (polygonAccumulator, off) {
     catch (e_1_1) { e_1 = { error: e_1_1 }; }
     finally {
         try {
-            if (_j && !_j.done && (_a = _h.return)) _a.call(_h);
+            if (_k && !_k.done && (_a = _j.return)) _a.call(_j);
         }
         finally { if (e_1) throw e_1.error; }
     }
@@ -75,12 +85,12 @@ var cleanupPolygon = function (polygonAccumulator, off) {
         console.log("--====}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}");
     }
     try {
-        for (var _k = tslib_1.__values(polygonAccumulator.faces), _l = _k.next(); !_l.done; _l = _k.next()) {
-            var f = _l.value;
+        for (var _l = tslib_1.__values(polygonAccumulator.faces), _m = _l.next(); !_m.done; _m = _l.next()) {
+            var f = _m.value;
             var face = f;
             try {
-                for (var _m = (e_3 = void 0, tslib_1.__values(face.edges)), _o = _m.next(); !_o.done; _o = _m.next()) {
-                    var e = _o.value;
+                for (var _o = (e_3 = void 0, tslib_1.__values(face.edges)), _p = _o.next(); !_p.done; _p = _o.next()) {
+                    var e = _p.value;
                     var edge = e;
                     if (edge.isSegment) {
                         nSegments++;
@@ -109,7 +119,7 @@ var cleanupPolygon = function (polygonAccumulator, off) {
             catch (e_3_1) { e_3 = { error: e_3_1 }; }
             finally {
                 try {
-                    if (_o && !_o.done && (_c = _m.return)) _c.call(_m);
+                    if (_p && !_p.done && (_c = _o.return)) _c.call(_o);
                 }
                 finally { if (e_3) throw e_3.error; }
             }
@@ -118,7 +128,7 @@ var cleanupPolygon = function (polygonAccumulator, off) {
     catch (e_2_1) { e_2 = { error: e_2_1 }; }
     finally {
         try {
-            if (_l && !_l.done && (_b = _k.return)) _b.call(_k);
+            if (_m && !_m.done && (_b = _l.return)) _b.call(_l);
         }
         finally { if (e_2) throw e_2.error; }
     }
@@ -135,8 +145,8 @@ var cleanupPolygon = function (polygonAccumulator, off) {
         console.log("--====}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}");
     }
     try {
-        for (var _p = tslib_1.__values(polygonAccumulator.faces), _q = _p.next(); !_q.done; _q = _p.next()) {
-            var f = _q.value;
+        for (var _q = tslib_1.__values(polygonAccumulator.faces), _r = _q.next(); !_r.done; _r = _q.next()) {
+            var f = _r.value;
             var face = f;
             var edge = face.first;
             while (edge) {
@@ -172,7 +182,7 @@ var cleanupPolygon = function (polygonAccumulator, off) {
     catch (e_4_1) { e_4 = { error: e_4_1 }; }
     finally {
         try {
-            if (_q && !_q.done && (_d = _p.return)) _d.call(_p);
+            if (_r && !_r.done && (_d = _q.return)) _d.call(_q);
         }
         finally { if (e_4) throw e_4.error; }
     }
@@ -224,7 +234,7 @@ var cleanupPolygon = function (polygonAccumulator, off) {
                 catch (e_6_1) { e_6 = { error: e_6_1 }; }
                 finally {
                     try {
-                        if (edgeShapes_1_1 && !edgeShapes_1_1.done && (_f = edgeShapes_1.return)) _f.call(edgeShapes_1);
+                        if (edgeShapes_1_1 && !edgeShapes_1_1.done && (_g = edgeShapes_1.return)) _g.call(edgeShapes_1);
                     }
                     finally { if (e_6) throw e_6.error; }
                 }
@@ -355,7 +365,7 @@ var cleanupPolygon = function (polygonAccumulator, off) {
             catch (e_7_1) { e_7 = { error: e_7_1 }; }
             finally {
                 try {
-                    if (chainedEdgeShapes_1_1 && !chainedEdgeShapes_1_1.done && (_g = chainedEdgeShapes_1.return)) _g.call(chainedEdgeShapes_1);
+                    if (chainedEdgeShapes_1_1 && !chainedEdgeShapes_1_1.done && (_h = chainedEdgeShapes_1.return)) _h.call(chainedEdgeShapes_1);
                 }
                 finally { if (e_7) throw e_7.error; }
             }
@@ -371,7 +381,7 @@ var cleanupPolygon = function (polygonAccumulator, off) {
     catch (e_5_1) { e_5 = { error: e_5_1 }; }
     finally {
         try {
-            if (faces_1_1 && !faces_1_1.done && (_e = faces_1.return)) _e.call(faces_1);
+            if (faces_1_1 && !faces_1_1.done && (_f = faces_1.return)) _f.call(faces_1);
         }
         finally { if (e_5) throw e_5.error; }
     }
@@ -380,12 +390,12 @@ var addEdgePoints = function (polygon, offset) {
     var e_8, _a, e_9, _b, e_10, _c;
     var boxes = [];
     try {
-        for (var _d = tslib_1.__values(polygon.faces), _e = _d.next(); !_e.done; _e = _d.next()) {
-            var f = _e.value;
+        for (var _d = tslib_1.__values(polygon.faces), _f = _d.next(); !_f.done; _f = _d.next()) {
+            var f = _f.value;
             var face = f;
             try {
-                for (var _f = (e_9 = void 0, tslib_1.__values(face.edges)), _g = _f.next(); !_g.done; _g = _f.next()) {
-                    var edge = _g.value;
+                for (var _g = (e_9 = void 0, tslib_1.__values(face.edges)), _h = _g.next(); !_h.done; _h = _g.next()) {
+                    var edge = _h.value;
                     if (edge.isSegment) {
                         var segment = edge.shape;
                         var bStart = new core_1.Box(segment.start.x - offset, segment.start.y - offset, segment.start.x + offset * 2, segment.start.y + offset * 2);
@@ -405,7 +415,7 @@ var addEdgePoints = function (polygon, offset) {
             catch (e_9_1) { e_9 = { error: e_9_1 }; }
             finally {
                 try {
-                    if (_g && !_g.done && (_b = _f.return)) _b.call(_f);
+                    if (_h && !_h.done && (_b = _g.return)) _b.call(_g);
                 }
                 finally { if (e_9) throw e_9.error; }
             }
@@ -414,7 +424,7 @@ var addEdgePoints = function (polygon, offset) {
     catch (e_8_1) { e_8 = { error: e_8_1 }; }
     finally {
         try {
-            if (_e && !_e.done && (_a = _d.return)) _a.call(_d);
+            if (_f && !_f.done && (_a = _d.return)) _a.call(_d);
         }
         finally { if (e_8) throw e_8.error; }
     }
@@ -455,12 +465,12 @@ function offset_(polygon, off, useSegmentJoinsNotArcs) {
     var postponeFinalUnify = off > 0;
     var polygonAccumulator = postponeFinalUnify ? undefined : polygon.clone();
     try {
-        for (var _d = tslib_1.__values(polygon.faces), _e = _d.next(); !_e.done; _e = _d.next()) {
-            var f = _e.value;
+        for (var _d = tslib_1.__values(polygon.faces), _f = _d.next(); !_f.done; _f = _d.next()) {
+            var f = _f.value;
             var face = f;
             try {
-                for (var _f = (e_12 = void 0, tslib_1.__values(face.edges)), _g = _f.next(); !_g.done; _g = _f.next()) {
-                    var edge = _g.value;
+                for (var _g = (e_12 = void 0, tslib_1.__values(face.edges)), _h = _g.next(); !_h.done; _h = _g.next()) {
+                    var edge = _h.value;
                     if (edge.isSegment) {
                         var polygonEdge = new core_1.Polygon();
                         var segment = edge.shape;
@@ -526,8 +536,8 @@ function offset_(polygon, off, useSegmentJoinsNotArcs) {
                             }
                         }
                         try {
-                            for (var _h = (e_13 = void 0, tslib_1.__values(polygonAccumulator.faces)), _j = _h.next(); !_j.done; _j = _h.next()) {
-                                var f_1 = _j.value;
+                            for (var _j = (e_13 = void 0, tslib_1.__values(polygonAccumulator.faces)), _k = _j.next(); !_k.done; _k = _j.next()) {
+                                var f_1 = _k.value;
                                 var face_2 = f_1;
                                 if (face_2.edges.length < 4) {
                                     if (DEBUG_RECTS) {
@@ -550,7 +560,7 @@ function offset_(polygon, off, useSegmentJoinsNotArcs) {
                         catch (e_13_1) { e_13 = { error: e_13_1 }; }
                         finally {
                             try {
-                                if (_j && !_j.done && (_c = _h.return)) _c.call(_h);
+                                if (_k && !_k.done && (_c = _j.return)) _c.call(_j);
                             }
                             finally { if (e_13) throw e_13.error; }
                         }
@@ -564,7 +574,7 @@ function offset_(polygon, off, useSegmentJoinsNotArcs) {
             catch (e_12_1) { e_12 = { error: e_12_1 }; }
             finally {
                 try {
-                    if (_g && !_g.done && (_b = _f.return)) _b.call(_f);
+                    if (_h && !_h.done && (_b = _g.return)) _b.call(_g);
                 }
                 finally { if (e_12) throw e_12.error; }
             }
@@ -573,7 +583,7 @@ function offset_(polygon, off, useSegmentJoinsNotArcs) {
     catch (e_11_1) { e_11 = { error: e_11_1 }; }
     finally {
         try {
-            if (_e && !_e.done && (_a = _d.return)) _a.call(_d);
+            if (_f && !_f.done && (_a = _d.return)) _a.call(_d);
         }
         finally { if (e_11) throw e_11.error; }
     }
@@ -632,8 +642,8 @@ function offset(originaPolygon, off, useSegmentJoinsNotArcs) {
     }
     var singleFacePolygons = [];
     try {
-        for (var _d = tslib_1.__values(originaPolygon.faces), _e = _d.next(); !_e.done; _e = _d.next()) {
-            var f = _e.value;
+        for (var _d = tslib_1.__values(originaPolygon.faces), _f = _d.next(); !_f.done; _f = _d.next()) {
+            var f = _f.value;
             var face = f;
             var poly = new core_1.Polygon();
             poly.addFace(face.edges.map(function (edge) { return edge.shape; }));
@@ -643,7 +653,7 @@ function offset(originaPolygon, off, useSegmentJoinsNotArcs) {
     catch (e_14_1) { e_14 = { error: e_14_1 }; }
     finally {
         try {
-            if (_e && !_e.done && (_a = _d.return)) _a.call(_d);
+            if (_f && !_f.done && (_a = _d.return)) _a.call(_d);
         }
         finally { if (e_14) throw e_14.error; }
     }
@@ -653,8 +663,8 @@ function offset(originaPolygon, off, useSegmentJoinsNotArcs) {
             var polygon = singleFacePolygons_1_1.value;
             var resPoly = offset_(polygon, off, useSegmentJoinsNotArcs);
             try {
-                for (var _f = (e_16 = void 0, tslib_1.__values(resPoly.faces)), _g = _f.next(); !_g.done; _g = _f.next()) {
-                    var f = _g.value;
+                for (var _g = (e_16 = void 0, tslib_1.__values(resPoly.faces)), _h = _g.next(); !_h.done; _h = _g.next()) {
+                    var f = _h.value;
                     var face = f;
                     singlePolygon.addFace(face.edges.map((function (edge) { return edge.shape; })));
                 }
@@ -662,7 +672,7 @@ function offset(originaPolygon, off, useSegmentJoinsNotArcs) {
             catch (e_16_1) { e_16 = { error: e_16_1 }; }
             finally {
                 try {
-                    if (_g && !_g.done && (_c = _f.return)) _c.call(_f);
+                    if (_h && !_h.done && (_c = _g.return)) _c.call(_g);
                 }
                 finally { if (e_16) throw e_16.error; }
             }
@@ -716,7 +726,6 @@ var SVG_XML_NAMESPACE = "http://www.w3.org/2000/svg";
 function getBoundingClientRectOfDocumentBody(win) {
     return win.document.body.getBoundingClientRect();
 }
-exports.getBoundingClientRectOfDocumentBody = getBoundingClientRectOfDocumentBody;
 function processMouseEvent(win, ev) {
     if (!_highlightsContainer) {
         return;
@@ -744,6 +753,7 @@ function processMouseEvent(win, ev) {
     var foundElement;
     for (var i = _highlights.length - 1; i >= 0; i--) {
         var highlight = _highlights[i];
+        var doDrawMargin = drawMargin(highlight);
         var highlightParent = documant.getElementById("".concat(highlight.id));
         if (!highlightParent) {
             highlightParent = _highlightsContainer.querySelector("#".concat(highlight.id));
@@ -755,7 +765,7 @@ function processMouseEvent(win, ev) {
         while (highlightFragment) {
             if (highlightFragment.namespaceURI === SVG_XML_NAMESPACE) {
                 var svg = highlightFragment;
-                hit = svg.polygon.contains(new core_1.Point((x - xOffset) * scale, (y - yOffset) * scale));
+                hit = (!doDrawMargin || svg.classList.contains(styles_1.CLASS_HIGHLIGHT_CONTOUR_MARGIN)) && svg.polygon.contains(new core_1.Point((x - xOffset) * scale, (y - yOffset) * scale));
                 if (hit) {
                     break;
                 }
@@ -779,7 +789,7 @@ function processMouseEvent(win, ev) {
         documant.documentElement.classList.remove(styles_1.CLASS_HIGHLIGHT_CURSOR2);
         return;
     }
-    if (foundElement && (foundHighlight === null || foundHighlight === void 0 ? void 0 : foundHighlight.pointerInteraction)) {
+    if (foundElement && foundHighlight && foundHighlight.pointerInteraction) {
         if (isMouseMove) {
             foundElement.classList.add(styles_1.CLASS_HIGHLIGHT_HOVER);
             documant.documentElement.classList.add(styles_1.CLASS_HIGHLIGHT_CURSOR2);
@@ -841,12 +851,14 @@ function hideAllhighlights(_documant) {
     if (IS_DEV) {
         console.log("--HIGH WEBVIEW-- hideAllhighlights: " + _highlights.length);
     }
+    if (exports.ENABLE_CSS_HIGHLIGHTS) {
+        CSS.highlights.clear();
+    }
     if (_highlightsContainer) {
         _highlightsContainer.remove();
         _highlightsContainer = null;
     }
 }
-exports.hideAllhighlights = hideAllhighlights;
 function destroyAllhighlights(documant) {
     if (IS_DEV) {
         console.log("--HIGH WEBVIEW-- destroyAllhighlights: " + _highlights.length);
@@ -854,7 +866,6 @@ function destroyAllhighlights(documant) {
     hideAllhighlights(documant);
     _highlights.splice(0, _highlights.length);
 }
-exports.destroyAllhighlights = destroyAllhighlights;
 function destroyHighlight(documant, id) {
     if (IS_DEV) {
         console.log("--HIGH WEBVIEW-- destroyHighlight: " + id + " ... " + _highlights.length);
@@ -871,8 +882,14 @@ function destroyHighlight(documant, id) {
     if (highlightContainer) {
         highlightContainer.remove();
     }
+    if (exports.ENABLE_CSS_HIGHLIGHTS && highlight && highlight.rangeCssHighlight) {
+        var _a = tslib_1.__read(computeCssHighlightRGBID(highlight), 2), _strRGB = _a[0], cssHighlightID = _a[1];
+        var cssHighlight = CSS.highlights.get(cssHighlightID);
+        if (cssHighlight && cssHighlight.has(highlight.rangeCssHighlight)) {
+            cssHighlight.delete(highlight.rangeCssHighlight);
+        }
+    }
 }
-exports.destroyHighlight = destroyHighlight;
 function destroyHighlightsGroup(documant, group) {
     if (IS_DEV) {
         console.log("--HIGH WEBVIEW-- destroyHighlightsGroup: " + group + " ... " + _highlights.length);
@@ -891,6 +908,13 @@ function destroyHighlightsGroup(documant, group) {
             if (highlightContainer) {
                 highlightContainer.remove();
             }
+            if (exports.ENABLE_CSS_HIGHLIGHTS && highlight.rangeCssHighlight) {
+                var _a = tslib_1.__read(computeCssHighlightRGBID(highlight), 2), _strRGB = _a[0], cssHighlightID = _a[1];
+                var cssHighlight = CSS.highlights.get(cssHighlightID);
+                if (cssHighlight && cssHighlight.has(highlight.rangeCssHighlight)) {
+                    cssHighlight.delete(highlight.rangeCssHighlight);
+                }
+            }
         }
         else {
             return "break";
@@ -902,7 +926,6 @@ function destroyHighlightsGroup(documant, group) {
             break;
     }
 }
-exports.destroyHighlightsGroup = destroyHighlightsGroup;
 function recreateAllHighlightsRaw(win, highlights) {
     var e_17, _a;
     if (IS_DEV) {
@@ -954,7 +977,6 @@ function recreateAllHighlightsRaw(win, highlights) {
     var highlightsContainer = ensureHighlightsContainer(win);
     highlightsContainer.append(docFrag);
 }
-exports.recreateAllHighlightsRaw = recreateAllHighlightsRaw;
 exports.recreateAllHighlightsDebounced = debounce(function (win) {
     if (IS_DEV) {
         console.log("--HIGH WEBVIEW-- recreateAllHighlightsDebounced: " + _highlights.length);
@@ -968,7 +990,6 @@ function recreateAllHighlights(win) {
     hideAllhighlights(win.document);
     (0, exports.recreateAllHighlightsDebounced)(win);
 }
-exports.recreateAllHighlights = recreateAllHighlights;
 function createHighlights(win, highDefs, pointerInteraction) {
     var e_18, _a;
     if (IS_DEV) {
@@ -1004,7 +1025,6 @@ function createHighlights(win, highDefs, pointerInteraction) {
     highlightsContainer.append(docFrag);
     return highlights;
 }
-exports.createHighlights = createHighlights;
 var computeCFI = function (node) {
     if (node.nodeType !== Node.ELEMENT_NODE) {
         if (node.parentNode) {
@@ -1062,17 +1082,48 @@ function createHighlight(win, selectionInfo, range, color, pointerInteraction, d
     var div = createHighlightDom(win, highlight, bodyRect, bodyComputedStyle);
     return [highlight, div];
 }
-exports.createHighlight = createHighlight;
+var computeCssHighlightRGBID = function (highlight) {
+    var drawUnderline = highlight.drawType === highlight_1.HighlightDrawTypeUnderline;
+    var drawStrikeThrough = highlight.drawType === highlight_1.HighlightDrawTypeStrikethrough;
+    var strRGB = "R".concat(highlight.color.red, "G").concat(highlight.color.green, "B").concat(highlight.color.blue).concat(drawUnderline ? "_" : drawStrikeThrough ? "__" : "");
+    var cssHighlightID = "highlight_".concat(strRGB);
+    return [strRGB, cssHighlightID];
+};
 var JAPANESE_RUBY_TO_SKIP = ["rt", "rp"];
 function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
-    var e_19, _a, e_20, _b, e_21, _c, e_22, _d, e_23, _e, e_24, _f, e_25, _g, e_26, _h, e_27, _j, e_28, _k, e_29, _l, e_30, _m;
-    var _o;
+    var e_19, _a, e_20, _b, e_21, _c, e_22, _d, e_23, _f, e_24, _g, e_25, _h, e_26, _j, e_27, _k, e_28, _l, e_29, _m, e_30, _o;
+    var _p;
     var DEBUG_RECTS = window.DEBUG_RECTS;
     var documant = win.document;
     var scrollElement = (0, readium_css_1.getScrollingElement)(documant);
-    var range = highlight.selectionInfo ? (0, selection_1.convertRangeInfo)(documant, highlight.selectionInfo.rangeInfo) : highlight.range;
+    var range = highlight.range ? highlight.range : highlight.selectionInfo ? (0, selection_1.convertRangeInfo)(documant, highlight.selectionInfo.rangeInfo) : undefined;
     if (!range) {
         return null;
+    }
+    var rangeHasSVG = false;
+    var parent = range.startContainer;
+    while (parent) {
+        if (parent.nodeType === Node.ELEMENT_NODE) {
+            var ns = parent.namespaceURI;
+            if (ns && ns.includes("svg")) {
+                rangeHasSVG = true;
+                break;
+            }
+        }
+        parent = parent.parentNode;
+    }
+    if (!rangeHasSVG) {
+        parent = range.endContainer;
+        while (parent) {
+            if (parent.nodeType === Node.ELEMENT_NODE) {
+                var ns = parent.namespaceURI;
+                if (ns && ns.includes("svg")) {
+                    rangeHasSVG = true;
+                    break;
+                }
+            }
+            parent = parent.parentNode;
+        }
     }
     var drawBackground = !highlight.drawType || highlight.drawType === highlight_1.HighlightDrawTypeBackground;
     var drawUnderline = highlight.drawType === highlight_1.HighlightDrawTypeUnderline;
@@ -1082,6 +1133,27 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     var rtl = (0, readium_css_2.isRTL)();
     var vertical = (0, readium_css_1.isVerticalWritingMode)();
     var doDrawMargin = drawMargin(highlight);
+    ;
+    var underlineThickness = 3;
+    var strikeThroughLineThickness = 4;
+    if (exports.ENABLE_CSS_HIGHLIGHTS && !doDrawMargin && !rangeHasSVG && (drawBackground || (drawUnderline && !vertical) || (drawStrikeThrough && !vertical))) {
+        highlight.rangeCssHighlight = range;
+        var _q = tslib_1.__read(computeCssHighlightRGBID(highlight), 2), strRGB = _q[0], cssHighlightID = _q[1];
+        var styleElement = win.document.getElementById("Readium2-" + strRGB);
+        if (!styleElement) {
+            (0, readium_css_inject_1.appendCSSInline)(win.document, strRGB, drawUnderline || drawStrikeThrough
+                ?
+                    "\n::highlight(".concat(cssHighlightID, ") {\n    text-decoration-color: rgb(").concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ");\n    text-decoration-style: solid;\n    text-decoration-thickness: 0.16em;\n    text-decoration-line: ").concat(drawUnderline ? "underline" : "line-through", ";\n}\n")
+                :
+                    "\n/*\nhttps://lea.verou.me/blog/2024/contrast-color\nhttps://blackorwhite.lloydk.ca\n*/\n\n::highlight(".concat(cssHighlightID, ") {\n    background-color: rgb(").concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ");\n\n    color: white;\n    text-shadow: 0 0 .05em black, 0 0 .05em black, 0 0 .05em black, 0 0 .05em black;\n}\n\n@supports (color: oklch(from red l c h)) {\n\n    ::highlight(").concat(cssHighlightID, ") {\n        background-color: rgb(").concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ");\n\n        color: oklch(from rgb(").concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ") clamp(0, (0.7 / l - 1) * infinity, 1) c h);\n\n        text-shadow: none;\n    }\n}\n\n@supports (color: oklch(from color-mix(in oklch, red, tan) l c h)) {\n\n    ::highlight(").concat(cssHighlightID, ") {\n        background-color: rgb(").concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ");\n\n        color: color(from rgb(").concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ") xyz-d65 clamp(0, (0.36 / y - 1) * infinity, 1) clamp(0, (0.36 / y - 1) * infinity, 1) clamp(0, (0.36 / y - 1) * infinity, 1));\n\n        text-shadow: none;\n    }\n}\n\n@supports (color: contrast-color(red)) {\n\n    ::highlight(").concat(cssHighlightID, ") {\n        background-color: rgb(").concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ");\n\n        color: contrast-color(rgb(").concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, "));\n        text-shadow: none;\n    }\n}\n"));
+        }
+        var cssHighlight = CSS.highlights.get(cssHighlightID);
+        if (!cssHighlight) {
+            cssHighlight = new Highlight();
+            CSS.highlights.set(cssHighlightID, cssHighlight);
+        }
+        cssHighlight.add(highlight.rangeCssHighlight);
+    }
     var highlightParent = documant.createElement("div");
     highlightParent.setAttribute("id", highlight.id);
     highlightParent.setAttribute("class", "".concat(styles_1.CLASS_HIGHLIGHT_CONTAINER, " ").concat(styles_1.CLASS_HIGHLIGHT_COMMON));
@@ -1092,8 +1164,11 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     if (doDrawMargin) {
         highlightParent.classList.add(styles_1.CLASS_HIGHLIGHT_MARGIN);
     }
-    if (!highlight.drawType || highlight.drawType === highlight_1.HighlightDrawTypeBackground) {
+    if (drawBackground) {
         highlightParent.classList.add(styles_1.CLASS_HIGHLIGHT_BEHIND);
+    }
+    if (highlight.rangeCssHighlight && !highlight.pointerInteraction) {
+        return highlightParent;
     }
     var xOffset = paginated ? (-scrollElement.scrollLeft) : bodyRect.left;
     var yOffset = paginated ? (-scrollElement.scrollTop) : bodyRect.top;
@@ -1109,8 +1184,6 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     else {
         clientRects = (0, rect_utils_1.getClientRectsNoOverlap)(rangeClientRects, false, vertical, highlight.expand ? highlight.expand : 0);
     }
-    var underlineThickness = 3;
-    var strikeThroughLineThickness = 4;
     var bodyWidth = parseInt(bodyComputedStyle.width, 10);
     var paginatedTwo = paginated && (0, readium_css_1.isTwoPageSpread)();
     var paginatedWidth = scrollElement.clientWidth / (paginatedTwo ? 2 : 1);
@@ -1214,7 +1287,10 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     });
     cleanupPolygon(polygonCountourUnionPoly, gap);
     var polygonSurface;
-    if (doNotMergeHorizontallyAlignedRects) {
+    if (highlight.rangeCssHighlight) {
+        polygonSurface = undefined;
+    }
+    else if (doNotMergeHorizontallyAlignedRects) {
         var singleSVGPath = !DEBUG_RECTS;
         if (singleSVGPath) {
             polygonSurface = new core_1.Polygon();
@@ -1283,16 +1359,16 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
                 console.log("--POLY FACES BEFORE ...");
             }
             try {
-                for (var _p = tslib_1.__values(polygonSurface.faces), _q = _p.next(); !_q.done; _q = _p.next()) {
-                    var f = _q.value;
+                for (var _r = tslib_1.__values(polygonSurface.faces), _s = _r.next(); !_s.done; _s = _r.next()) {
+                    var f = _s.value;
                     var face = f;
                     if (DEBUG_RECTS) {
                         console.log("--................--................--................");
                         console.log("--POLY FACE: " + (face.orientation() === core_1.ORIENTATION.CCW ? "CCW" : face.orientation() === core_1.ORIENTATION.CW ? "CW" : "ORIENTATION.NOT_ORIENTABLE"));
                     }
                     try {
-                        for (var _r = (e_23 = void 0, tslib_1.__values(face.edges)), _s = _r.next(); !_s.done; _s = _r.next()) {
-                            var edge = _s.value;
+                        for (var _t = (e_23 = void 0, tslib_1.__values(face.edges)), _u = _t.next(); !_u.done; _u = _t.next()) {
+                            var edge = _u.value;
                             if (DEBUG_RECTS) {
                                 console.log("--POLY EDGE");
                             }
@@ -1324,7 +1400,7 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
                     catch (e_23_1) { e_23 = { error: e_23_1 }; }
                     finally {
                         try {
-                            if (_s && !_s.done && (_e = _r.return)) _e.call(_r);
+                            if (_u && !_u.done && (_f = _t.return)) _f.call(_t);
                         }
                         finally { if (e_23) throw e_23.error; }
                     }
@@ -1333,7 +1409,7 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
             catch (e_22_1) { e_22 = { error: e_22_1 }; }
             finally {
                 try {
-                    if (_q && !_q.done && (_d = _p.return)) _d.call(_p);
+                    if (_s && !_s.done && (_d = _r.return)) _d.call(_r);
                 }
                 finally { if (e_22) throw e_22.error; }
             }
@@ -1348,16 +1424,16 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
                 console.log("--POLY FACES AFTER ...");
             }
             try {
-                for (var _t = tslib_1.__values(polygonSurface.faces), _u = _t.next(); !_u.done; _u = _t.next()) {
-                    var f = _u.value;
+                for (var _v = tslib_1.__values(polygonSurface.faces), _w = _v.next(); !_w.done; _w = _v.next()) {
+                    var f = _w.value;
                     var face = f;
                     if (DEBUG_RECTS) {
                         console.log("--................--................--................");
                         console.log("--POLY FACE: " + (face.orientation() === core_1.ORIENTATION.CCW ? "CCW" : face.orientation() === core_1.ORIENTATION.CW ? "CW" : "ORIENTATION.NOT_ORIENTABLE"));
                     }
                     try {
-                        for (var _v = (e_25 = void 0, tslib_1.__values(face.edges)), _w = _v.next(); !_w.done; _w = _v.next()) {
-                            var edge = _w.value;
+                        for (var _x = (e_25 = void 0, tslib_1.__values(face.edges)), _y = _x.next(); !_y.done; _y = _x.next()) {
+                            var edge = _y.value;
                             if (DEBUG_RECTS) {
                                 console.log("--POLY EDGE");
                             }
@@ -1389,7 +1465,7 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
                     catch (e_25_1) { e_25 = { error: e_25_1 }; }
                     finally {
                         try {
-                            if (_w && !_w.done && (_g = _v.return)) _g.call(_v);
+                            if (_y && !_y.done && (_h = _x.return)) _h.call(_x);
                         }
                         finally { if (e_25) throw e_25.error; }
                     }
@@ -1398,7 +1474,7 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
             catch (e_24_1) { e_24 = { error: e_24_1 }; }
             finally {
                 try {
-                    if (_u && !_u.done && (_f = _t.return)) _f.call(_t);
+                    if (_w && !_w.done && (_g = _v.return)) _g.call(_v);
                 }
                 finally { if (e_24) throw e_24.error; }
             }
@@ -1406,7 +1482,9 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     }
     if (DEBUG_RECTS) {
         addEdgePoints(polygonCountourUnionPoly, 1);
-        if (Array.isArray(polygonSurface)) {
+        if (!polygonSurface) {
+        }
+        else if (Array.isArray(polygonSurface)) {
             try {
                 for (var polygonSurface_1 = tslib_1.__values(polygonSurface), polygonSurface_1_1 = polygonSurface_1.next(); !polygonSurface_1_1.done; polygonSurface_1_1 = polygonSurface_1.next()) {
                     var poly = polygonSurface_1_1.value;
@@ -1416,7 +1494,7 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
             catch (e_26_1) { e_26 = { error: e_26_1 }; }
             finally {
                 try {
-                    if (polygonSurface_1_1 && !polygonSurface_1_1.done && (_h = polygonSurface_1.return)) _h.call(polygonSurface_1);
+                    if (polygonSurface_1_1 && !polygonSurface_1_1.done && (_j = polygonSurface_1.return)) _j.call(polygonSurface_1);
                 }
                 finally { if (e_26) throw e_26.error; }
             }
@@ -1428,28 +1506,40 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     var highlightAreaSVG = documant.createElementNS(SVG_XML_NAMESPACE, "svg");
     highlightAreaSVG.setAttribute("class", "".concat(styles_1.CLASS_HIGHLIGHT_COMMON, " ").concat(styles_1.CLASS_HIGHLIGHT_CONTOUR));
     highlightAreaSVG.polygon = polygonCountourUnionPoly;
+    var outlineThickness = 2;
+    var usrFontSize = bodyComputedStyle.getPropertyValue("--USER__fontSize");
+    if (usrFontSize) {
+        usrFontSize = usrFontSize.replace("%", "");
+        try {
+            var factor = parseInt(usrFontSize, 10) / 100;
+            outlineThickness = outlineThickness * factor;
+        }
+        catch (_e) {
+        }
+    }
     highlightAreaSVG.innerHTML =
-        (Array.isArray(polygonSurface)
-            ?
-                polygonSurface.reduce(function (prevSVGPath, currentPolygon) {
-                    return prevSVGPath + currentPolygon.svg({
-                        fill: DEBUG_RECTS ? "pink" : drawOutline ? "transparent" : "rgb(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ")"),
+        (polygonSurface ?
+            (Array.isArray(polygonSurface)
+                ?
+                    polygonSurface.reduce(function (prevSVGPath, currentPolygon) {
+                        return prevSVGPath + currentPolygon.svg({
+                            fill: DEBUG_RECTS ? "pink" : (drawOutline || highlight.rangeCssHighlight) ? "transparent" : "rgb(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ")"),
+                            fillRule: "evenodd",
+                            stroke: DEBUG_RECTS ? "magenta" : drawOutline ? "rgb(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ")") : "transparent",
+                            strokeWidth: DEBUG_RECTS ? 1 : drawOutline ? outlineThickness : 0,
+                            fillOpacity: 1,
+                            className: undefined,
+                        });
+                    }, "")
+                :
+                    polygonSurface.svg({
+                        fill: DEBUG_RECTS ? "yellow" : (drawOutline || highlight.rangeCssHighlight) ? "transparent" : "rgb(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ")"),
                         fillRule: "evenodd",
-                        stroke: DEBUG_RECTS ? "magenta" : drawOutline ? "rgb(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ")") : "transparent",
-                        strokeWidth: DEBUG_RECTS ? 1 : drawOutline ? 2 : 0,
+                        stroke: DEBUG_RECTS ? "green" : drawOutline ? "rgb(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ")") : "transparent",
+                        strokeWidth: DEBUG_RECTS ? 1 : drawOutline ? outlineThickness : 0,
                         fillOpacity: 1,
                         className: undefined,
-                    });
-                }, "")
-            :
-                polygonSurface.svg({
-                    fill: DEBUG_RECTS ? "yellow" : drawOutline ? "transparent" : "rgb(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ")"),
-                    fillRule: "evenodd",
-                    stroke: DEBUG_RECTS ? "green" : drawOutline ? "rgb(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ")") : "transparent",
-                    strokeWidth: DEBUG_RECTS ? 1 : drawOutline ? 2 : 0,
-                    fillOpacity: 1,
-                    className: undefined,
-                }))
+                    })) : "")
             +
                 polygonCountourUnionPoly.svg({
                     fill: "transparent",
@@ -1467,8 +1557,8 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
         var boundingRect = void 0;
         var polygonCountourMarginRects = [];
         try {
-            for (var _x = tslib_1.__values(polygonCountourUnionPoly.faces), _y = _x.next(); !_y.done; _y = _x.next()) {
-                var f = _y.value;
+            for (var _z = tslib_1.__values(polygonCountourUnionPoly.faces), _0 = _z.next(); !_0.done; _0 = _z.next()) {
+                var f = _0.value;
                 var face = f;
                 var b = face.box;
                 var left = vertical ?
@@ -1520,7 +1610,7 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
         catch (e_27_1) { e_27 = { error: e_27_1 }; }
         finally {
             try {
-                if (_y && !_y.done && (_j = _x.return)) _j.call(_x);
+                if (_0 && !_0.done && (_k = _z.return)) _k.call(_z);
             }
             finally { if (e_27) throw e_27.error; }
         }
@@ -1540,7 +1630,7 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
                     });
                 }
                 else {
-                    (_o = group.boxes) === null || _o === void 0 ? void 0 : _o.push(r);
+                    (_p = group.boxes) === null || _p === void 0 ? void 0 : _p.push(r);
                 }
             };
             try {
@@ -1552,7 +1642,7 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
             catch (e_28_1) { e_28 = { error: e_28_1 }; }
             finally {
                 try {
-                    if (polygonCountourMarginRects_1_1 && !polygonCountourMarginRects_1_1.done && (_k = polygonCountourMarginRects_1.return)) _k.call(polygonCountourMarginRects_1);
+                    if (polygonCountourMarginRects_1_1 && !polygonCountourMarginRects_1_1.done && (_l = polygonCountourMarginRects_1.return)) _l.call(polygonCountourMarginRects_1);
                 }
                 finally { if (e_28) throw e_28.error; }
             }
@@ -1585,7 +1675,7 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
                     catch (e_29_1) { e_29 = { error: e_29_1 }; }
                     finally {
                         try {
-                            if (boundingRect_1_1 && !boundingRect_1_1.done && (_l = boundingRect_1.return)) _l.call(boundingRect_1);
+                            if (boundingRect_1_1 && !boundingRect_1_1.done && (_m = boundingRect_1.return)) _m.call(boundingRect_1);
                         }
                         finally { if (e_29) throw e_29.error; }
                     }
@@ -1613,7 +1703,7 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
                 catch (e_30_1) { e_30 = { error: e_30_1 }; }
                 finally {
                     try {
-                        if (polygonCountourMarginRects_2_1 && !polygonCountourMarginRects_2_1.done && (_m = polygonCountourMarginRects_2.return)) _m.call(polygonCountourMarginRects_2);
+                        if (polygonCountourMarginRects_2_1 && !polygonCountourMarginRects_2_1.done && (_o = polygonCountourMarginRects_2.return)) _o.call(polygonCountourMarginRects_2);
                     }
                     finally { if (e_30) throw e_30.error; }
                 }

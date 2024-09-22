@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.doLsdRenew = exports.doLsdReturn = void 0;
+exports.doLsdReturn = doLsdReturn;
+exports.doLsdRenew = doLsdRenew;
 var tslib_1 = require("tslib");
 var debug_ = require("debug");
 var moment = require("moment");
@@ -38,7 +39,6 @@ function doLsdReturn(publicationsServer, deviceIDManager, publicationFilePath) {
         });
     });
 }
-exports.doLsdReturn = doLsdReturn;
 function doLsdRenew(publicationsServer, deviceIDManager, publicationFilePath, endDateStr) {
     return tslib_1.__awaiter(this, void 0, void 0, function () {
         var publication, endDate, returnResponseLsd, err_2;
@@ -71,5 +71,4 @@ function doLsdRenew(publicationsServer, deviceIDManager, publicationFilePath, en
         });
     });
 }
-exports.doLsdRenew = doLsdRenew;
 //# sourceMappingURL=lsd.js.map

@@ -1,6 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getCurrentAudioPlaybackRate = exports.setCurrentAudioPlaybackRate = exports.audioForward = exports.audioRewind = exports.audioTogglePlayPause = exports.audioPause = exports.audioPlay = void 0;
+exports.audioPlay = audioPlay;
+exports.audioPause = audioPause;
+exports.audioTogglePlayPause = audioTogglePlayPause;
+exports.audioRewind = audioRewind;
+exports.audioForward = audioForward;
+exports.setCurrentAudioPlaybackRate = setCurrentAudioPlaybackRate;
+exports.getCurrentAudioPlaybackRate = getCurrentAudioPlaybackRate;
 const events_1 = require("../common/events");
 const win = global.window;
 function audioPlay() {
@@ -15,7 +21,6 @@ function audioPlay() {
         }
     }, 0);
 }
-exports.audioPlay = audioPlay;
 function audioPause() {
     const activeWebView = win.READIUM2.getFirstOrSecondWebView();
     if (!activeWebView) {
@@ -28,7 +33,6 @@ function audioPause() {
         }
     }, 0);
 }
-exports.audioPause = audioPause;
 function audioTogglePlayPause() {
     const activeWebView = win.READIUM2.getFirstOrSecondWebView();
     if (!activeWebView) {
@@ -41,7 +45,6 @@ function audioTogglePlayPause() {
         }
     }, 0);
 }
-exports.audioTogglePlayPause = audioTogglePlayPause;
 function audioRewind() {
     const activeWebView = win.READIUM2.getFirstOrSecondWebView();
     if (!activeWebView) {
@@ -54,7 +57,6 @@ function audioRewind() {
         }
     }, 0);
 }
-exports.audioRewind = audioRewind;
 function audioForward() {
     const activeWebView = win.READIUM2.getFirstOrSecondWebView();
     if (!activeWebView) {
@@ -67,14 +69,11 @@ function audioForward() {
         }
     }, 0);
 }
-exports.audioForward = audioForward;
 let _playbackRate = 1;
 function setCurrentAudioPlaybackRate(speed) {
     _playbackRate = speed;
 }
-exports.setCurrentAudioPlaybackRate = setCurrentAudioPlaybackRate;
 function getCurrentAudioPlaybackRate() {
     return _playbackRate;
 }
-exports.getCurrentAudioPlaybackRate = getCurrentAudioPlaybackRate;
 //# sourceMappingURL=audiobook.js.map

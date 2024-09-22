@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.popupFootNote = void 0;
+exports.popupFootNote = popupFootNote;
 const path = require("path");
 const styles_1 = require("../../common/styles");
 const popup_dialog_1 = require("../common/popup-dialog");
@@ -95,5 +95,4 @@ async function popupFootNote(element, focusScrollRaw, href, ensureTwoPageSpreadW
     pop.show(element);
     return true;
 }
-exports.popupFootNote = popupFootNote;
 //# sourceMappingURL=popupFootNotes.js.map

@@ -1,11 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.clearSessions = exports.clearDefaultSession = exports.clearWebviewSession = exports.getWebViewSession = exports.clearSession = exports.initSessions = exports.secureSessions = void 0;
+exports.secureSessions = secureSessions;
+exports.initSessions = initSessions;
+exports.clearSession = clearSession;
+exports.getWebViewSession = getWebViewSession;
+exports.clearWebviewSession = clearWebviewSession;
+exports.clearDefaultSession = clearDefaultSession;
+exports.clearSessions = clearSessions;
 const tslib_1 = require("tslib");
 const debug_ = require("debug");
 const electron_1 = require("electron");
 const request = require("request");
-const requestPromise = require("request-promise-native");
 const transformer_1 = require("r2-shared-js/dist/es7-es2016/src/transform/transformer");
 const transformer_html_1 = require("r2-shared-js/dist/es7-es2016/src/transform/transformer-html");
 const dom_1 = require("../common/dom");
@@ -119,7 +124,6 @@ function secureSessions(server) {
         callback(false);
     });
 }
-exports.secureSessions = secureSessions;
 let _customUrlProtocolSchemeHandlerWasCalled = false;
 const streamProtocolHandler = (req, callback) => tslib_1.__awaiter(void 0, void 0, void 0, function* () {
     _customUrlProtocolSchemeHandlerWasCalled = true;
@@ -171,37 +175,18 @@ const streamProtocolHandler = (req, callback) => tslib_1.__awaiter(void 0, void 
             }
         }
     }
-    const needsStreamingResponse = true;
-    if (needsStreamingResponse) {
-        request.get({
-            headers: reqHeaders,
-            method: "GET",
-            rejectUnauthorized: false,
-            uri: url,
-        })
-            .on("response", (response) => {
-            success(response);
-        })
-            .on("error", (err) => {
-            failure(err);
-        });
-    }
-    else {
-        let response;
-        try {
-            response = yield requestPromise({
-                headers: reqHeaders,
-                method: "GET",
-                rejectUnauthorized: false,
-                resolveWithFullResponse: true,
-                uri: url,
-            });
-            success(response);
-        }
-        catch (err) {
-            failure(err);
-        }
-    }
+    request.get({
+        headers: reqHeaders,
+        method: "GET",
+        rejectUnauthorized: false,
+        uri: url,
+    })
+        .on("response", (response) => {
+        success(response);
+    })
+        .on("error", (err) => {
+        failure(err);
+    });
 });
 const httpProtocolHandler = (req, callback) => {
     _customUrlProtocolSchemeHandlerWasCalled = true;
@@ -236,7 +221,7 @@ const transformerAudioVideo = (_publication, link, url, htmlStr, _sessionInfo) =
     if (link && link.TypeLink) {
         mediaType = link.TypeLink;
     }
-    const documant = (0, dom_1.parseDOM)(htmlStrToParse, mediaType);
+    const documantFromXmlDom = (0, dom_1.parseDOM)(htmlStrToParse, mediaType);
     let urlHttp = url;
     if (urlHttp.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
         urlHttp = (0, sessions_1.convertCustomSchemeToHttpUrl)(urlHttp);
@@ -288,8 +273,8 @@ const transformerAudioVideo = (_publication, link, url, htmlStr, _sessionInfo) =
             }
         }
     };
-    processTree(documant.body);
-    const serialized = (0, dom_1.serializeDOM)(documant);
+    processTree(documantFromXmlDom.body);
+    const serialized = (0, dom_1.serializeDOM)(documantFromXmlDom);
     const prefix = htmlStr.substr(0, iHtmlStart);
     const iHtmlStart_ = serialized.indexOf("<html");
     if (iHtmlStart_ < 0) {
@@ -323,7 +308,7 @@ const transformerHttpBaseIframes = (_publication, link, url, htmlStr, _sessionIn
     if (link && link.TypeLink) {
         mediaType = link.TypeLink;
     }
-    const documant = (0, dom_1.parseDOM)(htmlStrToParse, mediaType);
+    const documantFromXmlDom = (0, dom_1.parseDOM)(htmlStrToParse, mediaType);
     let urlHttp = url;
     if (!urlHttp.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
         urlHttp = (0, sessions_1.convertHttpUrlToCustomScheme)(urlHttp);
@@ -394,8 +379,8 @@ const transformerHttpBaseIframes = (_publication, link, url, htmlStr, _sessionIn
             }
         }
     };
-    processTree(documant.body);
-    const serialized = (0, dom_1.serializeDOM)(documant);
+    processTree(documantFromXmlDom.body);
+    const serialized = (0, dom_1.serializeDOM)(documantFromXmlDom);
     const prefix = htmlStr.substr(0, iHtmlStart);
     const iHtmlStart_ = serialized.indexOf("<html");
     if (iHtmlStart_ < 0) {
@@ -491,7 +476,6 @@ function initSessions() {
         }
     }));
 }
-exports.initSessions = initSessions;
 function clearSession(sess, str) {
     return tslib_1.__awaiter(this, void 0, void 0, function* () {
         const prom1 = sess.clearCache();
@@ -518,11 +502,9 @@ function clearSession(sess, str) {
         return Promise.resolve();
     });
 }
-exports.clearSession = clearSession;
 function getWebViewSession() {
     return electron_1.session.fromPartition(sessions_1.R2_SESSION_WEBVIEW, { cache: true });
 }
-exports.getWebViewSession = getWebViewSession;
 function clearWebviewSession() {
     return tslib_1.__awaiter(this, void 0, void 0, function* () {
         const sess = getWebViewSession();
@@ -537,7 +519,6 @@ function clearWebviewSession() {
         return Promise.resolve();
     });
 }
-exports.clearWebviewSession = clearWebviewSession;
 function clearDefaultSession() {
     return tslib_1.__awaiter(this, void 0, void 0, function* () {
         if (electron_1.session.defaultSession) {
@@ -551,7 +532,6 @@ function clearDefaultSession() {
         return Promise.resolve();
     });
 }
-exports.clearDefaultSession = clearDefaultSession;
 function clearSessions() {
     return tslib_1.__awaiter(this, void 0, void 0, function* () {
         try {
@@ -563,5 +543,4 @@ function clearSessions() {
         return Promise.resolve();
     });
 }
-exports.clearSessions = clearSessions;
 //# sourceMappingURL=sessions.js.map

@@ -1,6 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.highlightsDrawMargin = exports.highlightsCreate = exports.highlightsRemove = exports.highlightsRemoveAll = exports.highlightsClickListen = exports.highlightsHandleIpcMessage = void 0;
+exports.highlightsHandleIpcMessage = highlightsHandleIpcMessage;
+exports.highlightsClickListen = highlightsClickListen;
+exports.highlightsRemoveAll = highlightsRemoveAll;
+exports.highlightsRemove = highlightsRemove;
+exports.highlightsCreate = highlightsCreate;
+exports.highlightsDrawMargin = highlightsDrawMargin;
 var tslib_1 = require("tslib");
 var events_1 = require("../common/events");
 var win = global.window;
@@ -20,12 +25,10 @@ function highlightsHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget)
         return false;
     }
 }
-exports.highlightsHandleIpcMessage = highlightsHandleIpcMessage;
 var _highlightsClickListener;
 function highlightsClickListen(highlightsClickListener) {
     _highlightsClickListener = highlightsClickListener;
 }
-exports.highlightsClickListen = highlightsClickListen;
 function highlightsRemoveAll(href, groups) {
     var e_1, _a;
     var _this = this;
@@ -79,7 +82,6 @@ function highlightsRemoveAll(href, groups) {
         finally { if (e_1) throw e_1.error; }
     }
 }
-exports.highlightsRemoveAll = highlightsRemoveAll;
 function highlightsRemove(href, highlightIDs) {
     var e_2, _a;
     var _this = this;
@@ -127,7 +129,6 @@ function highlightsRemove(href, highlightIDs) {
         finally { if (e_2) throw e_2.error; }
     }
 }
-exports.highlightsRemove = highlightsRemove;
 function highlightsCreate(href, highlightDefinitions) {
     return tslib_1.__awaiter(this, void 0, void 0, function () {
         var _this = this;
@@ -204,7 +205,6 @@ function highlightsCreate(href, highlightDefinitions) {
         });
     });
 }
-exports.highlightsCreate = highlightsCreate;
 function highlightsDrawMargin(drawMargin) {
     var e_4, _a;
     var _this = this;
@@ -244,5 +244,4 @@ function highlightsDrawMargin(drawMargin) {
         finally { if (e_4) throw e_4.error; }
     }
 }
-exports.highlightsDrawMargin = highlightsDrawMargin;
 //# sourceMappingURL=highlight.js.map

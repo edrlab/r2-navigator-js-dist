@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.convertColorHexadecimalToRGBA = exports.HighlightDrawTypeOutline = exports.HighlightDrawTypeStrikethrough = exports.HighlightDrawTypeUnderline = exports.HighlightDrawTypeBackground = void 0;
+exports.HighlightDrawTypeOutline = exports.HighlightDrawTypeStrikethrough = exports.HighlightDrawTypeUnderline = exports.HighlightDrawTypeBackground = void 0;
+exports.convertColorHexadecimalToRGBA = convertColorHexadecimalToRGBA;
 exports.HighlightDrawTypeBackground = 0;
 exports.HighlightDrawTypeUnderline = 1;
 exports.HighlightDrawTypeStrikethrough = 2;
@@ -16,5 +17,4 @@ function convertColorHexadecimalToRGBA(cssHex, alpha) {
     }
     return undefined;
 }
-exports.convertColorHexadecimalToRGBA = convertColorHexadecimalToRGBA;
 //# sourceMappingURL=highlight.js.map

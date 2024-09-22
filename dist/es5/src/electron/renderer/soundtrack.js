@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.soundtrackHandleIpcMessage = void 0;
+exports.soundtrackHandleIpcMessage = soundtrackHandleIpcMessage;
 var events_1 = require("../common/events");
 function soundtrackHandleIpcMessage(eventChannel, eventArgs, _eventCurrentTarget) {
     if (eventChannel === events_1.R2_EVENT_AUDIO_SOUNDTRACK) {
@@ -12,7 +12,6 @@ function soundtrackHandleIpcMessage(eventChannel, eventArgs, _eventCurrentTarget
     }
     return true;
 }
-exports.soundtrackHandleIpcMessage = soundtrackHandleIpcMessage;
 var AUDIO_SOUNDTRACK_ID = "R2_AUDIO_SOUNDTRACK_ID";
 var _currentAudioSoundTrack;
 function handleAudioSoundTrack(url) {

@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.doLsdRenew = exports.doLsdReturn = void 0;
+exports.doLsdReturn = doLsdReturn;
+exports.doLsdRenew = doLsdRenew;
 const debug_ = require("debug");
 const moment = require("moment");
 const renew_1 = require("r2-lcp-js/dist/es8-es2017/src/lsd/renew");
@@ -25,7 +26,6 @@ async function doLsdReturn(publicationsServer, deviceIDManager, publicationFileP
     }
     return Promise.reject("doLsdReturn?!");
 }
-exports.doLsdReturn = doLsdReturn;
 async function doLsdRenew(publicationsServer, deviceIDManager, publicationFilePath, endDateStr) {
     const publication = publicationsServer.cachedPublication(publicationFilePath);
     if (!publication || !publication.LCP || !publication.LCP.LSD) {
@@ -46,5 +46,4 @@ async function doLsdRenew(publicationsServer, deviceIDManager, publicationFilePa
     }
     return Promise.reject("doLsdRenew?!");
 }
-exports.doLsdRenew = doLsdRenew;
 //# sourceMappingURL=lsd.js.map

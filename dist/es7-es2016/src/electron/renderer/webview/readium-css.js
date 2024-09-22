@@ -1,6 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.readiumCSS = exports.checkHiddenFootNotes = exports.computeVerticalRTL = exports.isRTL = exports.isVerticalWritingMode = exports.calculateColumnDimension = exports.calculateTotalColumns = exports.isTwoPageSpread = exports.calculateMaxScrollShift = exports.getScrollingElement = exports.clearImageZoomOutline = exports.clearImageZoomOutlineDebounced = void 0;
+exports.readiumCSS = exports.calculateTotalColumns = exports.isTwoPageSpread = exports.calculateMaxScrollShift = exports.getScrollingElement = exports.clearImageZoomOutline = exports.clearImageZoomOutlineDebounced = void 0;
+exports.calculateColumnDimension = calculateColumnDimension;
+exports.isVerticalWritingMode = isVerticalWritingMode;
+exports.isRTL = isRTL;
+exports.computeVerticalRTL = computeVerticalRTL;
+exports.checkHiddenFootNotes = checkHiddenFootNotes;
 const debounce = require("debounce");
 const readium_css_inject_1 = require("../../common/readium-css-inject");
 const styles_1 = require("../../common/styles");
@@ -84,7 +89,7 @@ const calculateMaxScrollShift = () => {
 };
 exports.calculateMaxScrollShift = calculateMaxScrollShift;
 const isTwoPageSpread = () => {
-    if (!win || !win.document || !win.document.documentElement) {
+    if (!win || !win.document || !win.document.documentElement || !win.document.body) {
         return false;
     }
     const docStyle = win.getComputedStyle(win.document.documentElement);
@@ -92,7 +97,14 @@ const isTwoPageSpread = () => {
     if (docStyle) {
         docColumnCount = parseInt(docStyle.getPropertyValue("column-count"), 10);
     }
-    return docColumnCount === 2;
+    const scrollElement = (0, exports.getScrollingElement)(win.document);
+    const bodyComputedStyle = win.getComputedStyle(win.document.body);
+    const bodyWidth = parseInt(bodyComputedStyle.width, 10);
+    let paginatedTwo = docColumnCount === 2;
+    if (paginatedTwo && (bodyWidth * 2) > scrollElement.clientWidth) {
+        paginatedTwo = false;
+    }
+    return paginatedTwo;
 };
 exports.isTwoPageSpread = isTwoPageSpread;
 const calculateTotalColumns = () => {
@@ -124,17 +136,14 @@ function calculateColumnDimension() {
     }
     return columnDimension;
 }
-exports.calculateColumnDimension = calculateColumnDimension;
 let _isVerticalWritingMode = false;
 function isVerticalWritingMode() {
     return _isVerticalWritingMode;
 }
-exports.isVerticalWritingMode = isVerticalWritingMode;
 let _isRTL = false;
 function isRTL() {
     return _isRTL;
 }
-exports.isRTL = isRTL;
 function computeVerticalRTL() {
     if (!win.document || !win.document.documentElement) {
         return;
@@ -213,7 +222,6 @@ function computeVerticalRTL() {
     _isVerticalWritingMode = vertical;
     _isRTL = rtl;
 }
-exports.computeVerticalRTL = computeVerticalRTL;
 function checkHiddenFootNotes(documant) {
     if (documant.documentElement.classList.contains(styles_1.ROOT_CLASS_NO_FOOTNOTES)) {
         return;
@@ -264,7 +272,6 @@ function checkHiddenFootNotes(documant) {
         }
     });
 }
-exports.checkHiddenFootNotes = checkHiddenFootNotes;
 const readiumCSS = (documant, messageJson) => {
     if (IS_DEV) {
         console.log("_____ readiumCssJson.urlRoot (readiumCSS()): ", messageJson.urlRoot);

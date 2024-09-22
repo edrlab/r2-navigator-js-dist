@@ -1,6 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateTtsQueue = exports.findTtsQueueItemIndex = exports.getTtsQueueItemRef = exports.getTtsQueueItemRefText = exports.getTtsQueueLength = exports.consoleLogTtsQueue = exports.consoleLogTtsQueueItem = exports.normalizeText = exports.normalizeHtmlText = exports.getDirection = exports.getLanguage = exports.combineTextNodes = void 0;
+exports.combineTextNodes = combineTextNodes;
+exports.getLanguage = getLanguage;
+exports.getDirection = getDirection;
+exports.normalizeHtmlText = normalizeHtmlText;
+exports.normalizeText = normalizeText;
+exports.consoleLogTtsQueueItem = consoleLogTtsQueueItem;
+exports.consoleLogTtsQueue = consoleLogTtsQueue;
+exports.getTtsQueueLength = getTtsQueueLength;
+exports.getTtsQueueItemRefText = getTtsQueueItemRefText;
+exports.getTtsQueueItemRef = getTtsQueueItemRef;
+exports.findTtsQueueItemIndex = findTtsQueueItemIndex;
+exports.generateTtsQueue = generateTtsQueue;
 const sentence_splitter_1 = require("sentence-splitter");
 const styles_1 = require("../../common/styles");
 const cssselector3_1 = require("../common/cssselector3");
@@ -24,7 +35,6 @@ function combineTextNodes(textNodes, skipNormalize) {
     }
     return "";
 }
-exports.combineTextNodes = combineTextNodes;
 function getLanguage(el) {
     let currentElement = el;
     while (currentElement && currentElement.nodeType === Node.ELEMENT_NODE) {
@@ -42,7 +52,6 @@ function getLanguage(el) {
     }
     return undefined;
 }
-exports.getLanguage = getLanguage;
 function getDirection(el) {
     let currentElement = el;
     while (currentElement && currentElement.nodeType === Node.ELEMENT_NODE) {
@@ -54,15 +63,12 @@ function getDirection(el) {
     }
     return undefined;
 }
-exports.getDirection = getDirection;
 function normalizeHtmlText(str) {
     return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
-exports.normalizeHtmlText = normalizeHtmlText;
 function normalizeText(str) {
     return normalizeHtmlText(str).replace(/[\r\n]/g, " ").replace(/\s\s+/g, " ");
 }
-exports.normalizeText = normalizeText;
 function consoleLogTtsQueueItem(i) {
     console.log("<<----");
     console.log(i.dir);
@@ -80,13 +86,11 @@ function consoleLogTtsQueueItem(i) {
     }
     console.log("---->>");
 }
-exports.consoleLogTtsQueueItem = consoleLogTtsQueueItem;
 function consoleLogTtsQueue(f) {
     for (const i of f) {
         consoleLogTtsQueueItem(i);
     }
 }
-exports.consoleLogTtsQueue = consoleLogTtsQueue;
 function getTtsQueueLength(items) {
     let l = 0;
     for (const it of items) {
@@ -99,7 +103,6 @@ function getTtsQueueLength(items) {
     }
     return l;
 }
-exports.getTtsQueueLength = getTtsQueueLength;
 function getTtsQueueItemRefText(obj) {
     if (obj.iSentence === -1) {
         return obj.item.combinedText;
@@ -109,7 +112,6 @@ function getTtsQueueItemRefText(obj) {
     }
     return "";
 }
-exports.getTtsQueueItemRefText = getTtsQueueItemRefText;
 function getTtsQueueItemRef(items, index) {
     let i = -1;
     let k = -1;
@@ -134,7 +136,6 @@ function getTtsQueueItemRef(items, index) {
     }
     return undefined;
 }
-exports.getTtsQueueItemRef = getTtsQueueItemRef;
 function findTtsQueueItemIndex(ttsQueue, element, startTextNode, startTextNodeOffset, rootElem) {
     var _a, _b, _c;
     let i = 0;
@@ -236,7 +237,6 @@ function findTtsQueueItemIndex(ttsQueue, element, startTextNode, startTextNodeOf
     }
     return -1;
 }
-exports.findTtsQueueItemIndex = findTtsQueueItemIndex;
 const _putInElementStackTagNames = ["h1", "h2", "h3", "h4", "h5", "h6", "p", "th", "td", "caption", "li", "blockquote", "q", "dt", "dd", "figcaption", "div", "pre"];
 const _doNotProcessDeepChildTagNames = ["svg", "img", "sup", "sub", "audio", "video", "source", "button", "canvas", "del", "dialog", "embed", "form", "head", "iframe", "meter", "noscript", "object", "s", "script", "select", "style", "textarea"];
 const _skippables = [
@@ -802,5 +802,4 @@ function generateTtsQueue(rootElement, splitSentences) {
     });
     return ttsQueue;
 }
-exports.generateTtsQueue = generateTtsQueue;
 //# sourceMappingURL=dom-text-utils.js.map

@@ -1,13 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getEpubReadingSystemInfo = exports.setEpubReadingSystemInfo = void 0;
+exports.setEpubReadingSystemInfo = setEpubReadingSystemInfo;
+exports.getEpubReadingSystemInfo = getEpubReadingSystemInfo;
 var _epubReadingSystemNameVersion = { name: "Readium2", version: "0.0.0" };
 function setEpubReadingSystemInfo(nv) {
     _epubReadingSystemNameVersion = nv;
 }
-exports.setEpubReadingSystemInfo = setEpubReadingSystemInfo;
 function getEpubReadingSystemInfo() {
     return _epubReadingSystemNameVersion;
 }
-exports.getEpubReadingSystemInfo = getEpubReadingSystemInfo;
 //# sourceMappingURL=epubReadingSystem.js.map

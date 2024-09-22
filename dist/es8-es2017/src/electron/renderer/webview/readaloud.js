@@ -1,6 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ttsPlayQueueIndex = exports.ttsPreviewAndEventuallyPlayQueueIndex = exports.ttsPrevious = exports.ttsNext = exports.ttsQueueCurrentText = exports.ttsQueueCurrentIndex = exports.ttsQueueSize = exports.ttsPauseOrResume = exports.isTtsActive = exports.isTtsPlaying = exports.ttsResume = exports.ttsPlaybackRate = exports.ttsVoice = exports.ttsPause = exports.ttsStop = exports.ttsPlay = void 0;
+exports.ttsPlay = ttsPlay;
+exports.ttsStop = ttsStop;
+exports.ttsPause = ttsPause;
+exports.ttsVoice = ttsVoice;
+exports.ttsPlaybackRate = ttsPlaybackRate;
+exports.ttsResume = ttsResume;
+exports.isTtsPlaying = isTtsPlaying;
+exports.isTtsActive = isTtsActive;
+exports.ttsPauseOrResume = ttsPauseOrResume;
+exports.ttsQueueSize = ttsQueueSize;
+exports.ttsQueueCurrentIndex = ttsQueueCurrentIndex;
+exports.ttsQueueCurrentText = ttsQueueCurrentText;
+exports.ttsNext = ttsNext;
+exports.ttsPrevious = ttsPrevious;
+exports.ttsPreviewAndEventuallyPlayQueueIndex = ttsPreviewAndEventuallyPlayQueueIndex;
+exports.ttsPlayQueueIndex = ttsPlayQueueIndex;
 const debounce = require("debounce");
 const electron_1 = require("electron");
 const events_1 = require("../../common/events");
@@ -106,12 +121,10 @@ function ttsPlay(speed, voice, focusScrollRaw, rootElem, startElem, startTextNod
         startTTSSession(speed, voice, rootEl, ttsQueue, ttsQueueIndex, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
     }, 100);
 }
-exports.ttsPlay = ttsPlay;
 function ttsStop() {
     ttsPause(true);
     resetState(true);
 }
-exports.ttsStop = ttsStop;
 function ttsPause(doNotReset = false) {
     highlights(false);
     if (win.speechSynthesis.speaking) {
@@ -155,7 +168,6 @@ function ttsPause(doNotReset = false) {
         }
     }
 }
-exports.ttsPause = ttsPause;
 function ttsVoice(voice) {
     win.READIUM2.ttsVoice = voice;
     if (_dialogState) {
@@ -167,7 +179,6 @@ function ttsVoice(voice) {
         }, 60);
     }
 }
-exports.ttsVoice = ttsVoice;
 function ttsPlaybackRate(speed) {
     win.READIUM2.ttsPlaybackRate = speed;
     if (_dialogState) {
@@ -180,7 +191,6 @@ function ttsPlaybackRate(speed) {
         }, 60);
     }
 }
-exports.ttsPlaybackRate = ttsPlaybackRate;
 let _resumableState;
 function ttsResume() {
     if (_dialogState &&
@@ -210,11 +220,9 @@ function ttsResume() {
         }, 100);
     }
 }
-exports.ttsResume = ttsResume;
 function isTtsPlaying() {
     return isTtsActive() && !win.speechSynthesis.paused;
 }
-exports.isTtsPlaying = isTtsPlaying;
 function isTtsActive() {
     if (_dialogState && (_dialogState.hasAttribute("open") || _dialogState.open) &&
         (win.speechSynthesis.speaking || win.speechSynthesis.pending)) {
@@ -222,7 +230,6 @@ function isTtsActive() {
     }
     return false;
 }
-exports.isTtsActive = isTtsActive;
 function ttsPauseOrResume() {
     if (isTtsPlaying()) {
         ttsPause();
@@ -231,28 +238,24 @@ function ttsPauseOrResume() {
         ttsResume();
     }
 }
-exports.ttsPauseOrResume = ttsPauseOrResume;
 function ttsQueueSize() {
     if (_dialogState && _dialogState.ttsQueue) {
         (0, dom_text_utils_1.getTtsQueueLength)(_dialogState.ttsQueue);
     }
     return -1;
 }
-exports.ttsQueueSize = ttsQueueSize;
 function ttsQueueCurrentIndex() {
     if (_dialogState && _dialogState.ttsQueueItem) {
         return _dialogState.ttsQueueItem.iGlobal;
     }
     return -1;
 }
-exports.ttsQueueCurrentIndex = ttsQueueCurrentIndex;
 function ttsQueueCurrentText() {
     if (_dialogState && _dialogState.ttsQueueItem) {
         return (0, dom_text_utils_1.getTtsQueueItemRefText)(_dialogState.ttsQueueItem);
     }
     return undefined;
 }
-exports.ttsQueueCurrentText = ttsQueueCurrentText;
 function ttsNext(skipSentences = false) {
     if (_dialogState && _dialogState.ttsQueueItem) {
         let j = _dialogState.ttsQueueItem.iGlobal + 1;
@@ -277,7 +280,6 @@ function ttsNext(skipSentences = false) {
         ttsResume();
     }
 }
-exports.ttsNext = ttsNext;
 function ttsPrevious(skipSentences = false) {
     if (_dialogState && _dialogState.ttsQueueItem) {
         let j = _dialogState.ttsQueueItem.iGlobal - 1;
@@ -300,12 +302,10 @@ function ttsPrevious(skipSentences = false) {
         ttsResume();
     }
 }
-exports.ttsPrevious = ttsPrevious;
 function ttsPreviewAndEventuallyPlayQueueIndex(n) {
     ttsPause(true);
     ttsPlayQueueIndexDebounced(n);
 }
-exports.ttsPreviewAndEventuallyPlayQueueIndex = ttsPreviewAndEventuallyPlayQueueIndex;
 function throttle(fn, time) {
     let called = false;
     let lastCalled;
@@ -414,7 +414,7 @@ function wrapHighlightWord(ttsQueueItemRef, utteranceText, charIndex, charLength
                     red: 255,
                 },
                 drawType: highlight_1.HighlightDrawTypeUnderline,
-                expand: 2,
+                expand: highlight_2.ENABLE_CSS_HIGHLIGHTS ? 0 : 2,
                 selectionInfo: undefined,
                 group: "tts",
                 range,
@@ -899,7 +899,6 @@ function ttsPlayQueueIndex(ttsQueueIndex) {
     win.READIUM2.ttsClickEnabled = true;
     (0, readium_css_1.clearImageZoomOutlineDebounced)();
 }
-exports.ttsPlayQueueIndex = ttsPlayQueueIndex;
 function startTTSSession(speed, voice, ttsRootElement, ttsQueue, ttsQueueIndexStart, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
     win.READIUM2.ttsPlaybackRate = speed;
     win.READIUM2.ttsVoice = voice;

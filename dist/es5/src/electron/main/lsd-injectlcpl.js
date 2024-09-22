@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.lsdLcpUpdateInject = void 0;
+exports.lsdLcpUpdateInject = lsdLcpUpdateInject;
 var tslib_1 = require("tslib");
 var debug_ = require("debug");
 var fs = require("fs");
@@ -51,5 +51,4 @@ function lsdLcpUpdateInject(lcplStr, publication, publicationPath) {
         });
     });
 }
-exports.lsdLcpUpdateInject = lsdLcpUpdateInject;
 //# sourceMappingURL=lsd-injectlcpl.js.map

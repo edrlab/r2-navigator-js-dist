@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.doLsdRenew = exports.doLsdReturn = void 0;
+exports.doLsdReturn = doLsdReturn;
+exports.doLsdRenew = doLsdRenew;
 const tslib_1 = require("tslib");
 const debug_ = require("debug");
 const moment = require("moment");
@@ -28,7 +29,6 @@ function doLsdReturn(publicationsServer, deviceIDManager, publicationFilePath) {
         return Promise.reject("doLsdReturn?!");
     });
 }
-exports.doLsdReturn = doLsdReturn;
 function doLsdRenew(publicationsServer, deviceIDManager, publicationFilePath, endDateStr) {
     return tslib_1.__awaiter(this, void 0, void 0, function* () {
         const publication = publicationsServer.cachedPublication(publicationFilePath);
@@ -51,5 +51,4 @@ function doLsdRenew(publicationsServer, deviceIDManager, publicationFilePath, en
         return Promise.reject("doLsdRenew?!");
     });
 }
-exports.doLsdRenew = doLsdRenew;
 //# sourceMappingURL=lsd.js.map

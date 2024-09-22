@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setWindowNavigatorEpubReadingSystem = void 0;
+exports.setWindowNavigatorEpubReadingSystem = setWindowNavigatorEpubReadingSystem;
 function setWindowNavigatorEpubReadingSystem(win, obj) {
     const ers = {};
     win.navigator.epubReadingSystem = ers;
@@ -30,5 +30,4 @@ function setWindowNavigatorEpubReadingSystem(win, obj) {
         }
     };
 }
-exports.setWindowNavigatorEpubReadingSystem = setWindowNavigatorEpubReadingSystem;
 //# sourceMappingURL=epubReadingSystem.js.map

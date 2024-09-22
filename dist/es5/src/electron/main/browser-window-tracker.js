@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.contextMenuSetup = exports.trackBrowserWindow = void 0;
+exports.contextMenuSetup = void 0;
+exports.trackBrowserWindow = trackBrowserWindow;
 var debug_ = require("debug");
 var electron_1 = require("electron");
 var context_menu_1 = require("../common/context-menu");
@@ -21,7 +22,6 @@ function trackBrowserWindow(win, _serverURL) {
         _electronBrowserWindows.splice(i, 1);
     });
 }
-exports.trackBrowserWindow = trackBrowserWindow;
 electron_1.app.on("accessibility-support-changed", function (_ev, accessibilitySupportEnabled) {
     debug("accessibility-support-changed ... ", accessibilitySupportEnabled);
     if (electron_1.app.accessibilitySupportEnabled !== accessibilitySupportEnabled) {

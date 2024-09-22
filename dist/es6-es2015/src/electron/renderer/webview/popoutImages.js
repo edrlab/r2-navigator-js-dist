@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.popoutImage = void 0;
+exports.popoutImage = popoutImage;
 const styles_1 = require("../../common/styles");
 const popup_dialog_1 = require("../common/popup-dialog");
 function popoutImage(win, element, href_src, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
@@ -335,5 +335,4 @@ function popoutImage(win, element, href_src, focusScrollRaw, ensureTwoPageSpread
     const pop = new popup_dialog_1.PopupDialog(element.ownerDocument, htmltxt, onDialogClosed, styles_1.TTS_POPUP_DIALOG_CLASS, false);
     pop.show(element);
 }
-exports.popoutImage = popoutImage;
 //# sourceMappingURL=popoutImages.js.map

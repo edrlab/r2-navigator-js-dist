@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sameSelections = exports.sameRanges = void 0;
+exports.sameRanges = sameRanges;
+exports.sameSelections = sameSelections;
 function sameRanges(r1, r2) {
     if (!r1 || !r2) {
         return false;
@@ -25,7 +26,6 @@ function sameRanges(r1, r2) {
     }
     return true;
 }
-exports.sameRanges = sameRanges;
 function sameSelections(sel1, sel2) {
     if (!sel1 || !sel2) {
         return false;
@@ -43,5 +43,4 @@ function sameSelections(sel1, sel2) {
     }
     return true;
 }
-exports.sameSelections = sameSelections;
 //# sourceMappingURL=selection.js.map

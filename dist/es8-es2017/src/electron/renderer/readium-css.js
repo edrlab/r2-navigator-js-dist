@@ -1,6 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setReadiumCssJsonGetter = exports.adjustReadiumCssJsonMessageForFixedLayout = exports.obtainReadiumCss = exports.isFixedLayout = exports.isRTL_PackageMeta = void 0;
+exports.isRTL_PackageMeta = isRTL_PackageMeta;
+exports.isFixedLayout = isFixedLayout;
+exports.obtainReadiumCss = obtainReadiumCss;
+exports.adjustReadiumCssJsonMessageForFixedLayout = adjustReadiumCssJsonMessageForFixedLayout;
+exports.setReadiumCssJsonGetter = setReadiumCssJsonGetter;
 const win = global.window;
 const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 function isRTL_PackageMeta() {
@@ -12,7 +16,6 @@ function isRTL_PackageMeta() {
     }
     return false;
 }
-exports.isRTL_PackageMeta = isRTL_PackageMeta;
 function isFixedLayout(link) {
     if (link && link.Properties) {
         if (link.Properties.Layout === "fixed") {
@@ -30,7 +33,6 @@ function isFixedLayout(link) {
     }
     return false;
 }
-exports.isFixedLayout = isFixedLayout;
 const _defaultReadiumCss = { setCSS: undefined, isFixedLayout: false };
 function obtainReadiumCss(rcss) {
     const r = rcss ? rcss :
@@ -42,7 +44,6 @@ function obtainReadiumCss(rcss) {
     }
     return r;
 }
-exports.obtainReadiumCss = obtainReadiumCss;
 function adjustReadiumCssJsonMessageForFixedLayout(webview, pubLink, rcss) {
     if (!webview) {
         return rcss;
@@ -58,10 +59,8 @@ function adjustReadiumCssJsonMessageForFixedLayout(webview, pubLink, rcss) {
     }
     return rcss;
 }
-exports.adjustReadiumCssJsonMessageForFixedLayout = adjustReadiumCssJsonMessageForFixedLayout;
 let _computeReadiumCssJsonMessage;
 function setReadiumCssJsonGetter(func) {
     _computeReadiumCssJsonMessage = func;
 }
-exports.setReadiumCssJsonGetter = setReadiumCssJsonGetter;
 //# sourceMappingURL=readium-css.js.map

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.doTryLcpPass = void 0;
+exports.doTryLcpPass = doTryLcpPass;
 const crypto = require("crypto");
 const debug_ = require("debug");
 const debug = debug_("r2:navigator#electron/main/lcp");
@@ -30,5 +30,4 @@ async function doTryLcpPass(publicationsServer, publicationFilePath, lcpPasses, 
         return Promise.reject(err);
     }
 }
-exports.doTryLcpPass = doTryLcpPass;
 //# sourceMappingURL=lcp.js.map

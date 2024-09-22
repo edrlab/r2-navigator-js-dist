@@ -1,38 +1,47 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseDOM = exports.serializeDOM = void 0;
+exports.serializeDOM = serializeDOM;
+exports.parseDOM = parseDOM;
 var tslib_1 = require("tslib");
 var xmldom = require("@xmldom/xmldom");
 function serializeDOM(documant) {
-    var serialized = new xmldom.XMLSerializer().serializeToString(documant);
+    var isWeb = typeof window !== "undefined" && documant instanceof window.Document;
+    console.log("--DOMDOM: SERIALIZE--", isWeb);
+    var serialized = isWeb
+        ? new XMLSerializer().serializeToString(documant)
+        : new xmldom.XMLSerializer().serializeToString(documant);
     return serialized;
 }
-exports.serializeDOM = serializeDOM;
 function parseDOM(htmlStrToParse, mediaType) {
-    if (mediaType === "application/xhtml+xml") {
-        mediaType = "application/xhtml";
+    if (!mediaType) {
+        mediaType = "application/xml";
     }
-    var documant = mediaType ?
-        new xmldom.DOMParser().parseFromString(htmlStrToParse, mediaType) :
-        new xmldom.DOMParser().parseFromString(htmlStrToParse);
-    if (!documant.head) {
-        definePropertyGetterSetter_DocHeadBody(documant, "head");
+    var isWeb = typeof window !== "undefined" && (mediaType === "application/xhtml+xml" || mediaType === "application/xml" || mediaType === "image/svg+xml" || mediaType === "text/html" || mediaType === "text/xml");
+    console.log("--DOMDOM: PARSE--", isWeb);
+    var documant = isWeb
+        ? new DOMParser().parseFromString(htmlStrToParse, mediaType)
+        : new xmldom.DOMParser().parseFromString(htmlStrToParse, mediaType);
+    var docNodeJS = documant;
+    var docWeb = documant;
+    if (!isWeb) {
+        if (!docWeb.head) {
+            definePropertyGetterSetter_DocHeadBody(docNodeJS, "head");
+        }
+        if (!docWeb.body) {
+            definePropertyGetterSetter_DocHeadBody(docNodeJS, "body");
+        }
+        if (docWeb.documentElement && !docWeb.documentElement.style) {
+            definePropertyGetterSetter_ElementStyle(docNodeJS.documentElement);
+        }
+        if (docWeb.body && !docWeb.body.style) {
+            definePropertyGetterSetter_ElementStyle(docWeb.body);
+        }
+        if (docWeb.documentElement && !docWeb.documentElement.classList) {
+            definePropertyGetterSetter_ElementClassList(docNodeJS.documentElement);
+        }
     }
-    if (!documant.body) {
-        definePropertyGetterSetter_DocHeadBody(documant, "body");
-    }
-    if (!documant.documentElement.style) {
-        definePropertyGetterSetter_ElementStyle(documant.documentElement);
-    }
-    if (!documant.body.style) {
-        definePropertyGetterSetter_ElementStyle(documant.body);
-    }
-    if (!documant.documentElement.classList) {
-        definePropertyGetterSetter_ElementClassList(documant.documentElement);
-    }
-    return documant;
+    return docWeb;
 }
-exports.parseDOM = parseDOM;
 function definePropertyGetterSetter_ElementClassList(element) {
     var classListObj = {};
     classListObj.element = element;
@@ -128,12 +137,13 @@ function classListRemove(className) {
 function definePropertyGetterSetter_DocHeadBody(documant, elementName) {
     Object.defineProperty(documant, elementName, {
         get: function () {
+            var _a;
             var doc = this;
             var key = elementName + "_";
             if (doc[key]) {
                 return doc[key];
             }
-            if (doc.documentElement.childNodes && doc.documentElement.childNodes.length) {
+            if (((_a = doc.documentElement) === null || _a === void 0 ? void 0 : _a.childNodes) && doc.documentElement.childNodes.length) {
                 for (var i = 0; i < doc.documentElement.childNodes.length; i++) {
                     var child = doc.documentElement.childNodes[i];
                     if (child.nodeType === 1) {

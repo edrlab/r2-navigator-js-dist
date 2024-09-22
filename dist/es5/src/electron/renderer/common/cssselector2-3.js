@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.uniqueCssSelector = void 0;
+exports.uniqueCssSelector = uniqueCssSelector;
 var debug_ = require("debug");
 var cssselector2_1 = require("./cssselector2");
 var cssselector3_1 = require("./cssselector3");
@@ -16,5 +16,4 @@ function uniqueCssSelector(input, doc, options) {
     }
     return res3;
 }
-exports.uniqueCssSelector = uniqueCssSelector;
 //# sourceMappingURL=cssselector2-3.js.map

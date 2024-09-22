@@ -1,6 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isLocatorVisible = exports.setReadingLocationSaver = exports.getCurrentReadingLocation = exports.reloadContent = exports.handleLinkLocator = exports.handleLinkUrl = exports.handleLink = exports.navLeftOrRight = exports.navPreviousOrNext = exports.shiftWebview = exports.locationHandleIpcMessage = exports.setWebViewStyle = void 0;
+exports.setWebViewStyle = setWebViewStyle;
+exports.locationHandleIpcMessage = locationHandleIpcMessage;
+exports.shiftWebview = shiftWebview;
+exports.navPreviousOrNext = navPreviousOrNext;
+exports.navLeftOrRight = navLeftOrRight;
+exports.handleLink = handleLink;
+exports.handleLinkUrl = handleLinkUrl;
+exports.handleLinkLocator = handleLinkLocator;
+exports.reloadContent = reloadContent;
+exports.getCurrentReadingLocation = getCurrentReadingLocation;
+exports.setReadingLocationSaver = setReadingLocationSaver;
+exports.isLocatorVisible = isLocatorVisible;
 var tslib_1 = require("tslib");
 var debug_ = require("debug");
 var electron_1 = require("electron");
@@ -63,7 +74,6 @@ function setWebViewStyle(wv, wvSlot, fxl) {
                 "right"));
     }
 }
-exports.setWebViewStyle = setWebViewStyle;
 function locationHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
     var activeWebView = eventCurrentTarget;
     if (eventChannel === events_1.R2_EVENT_LOCATOR_VISIBLE) {
@@ -157,7 +167,6 @@ function locationHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {
     }
     return true;
 }
-exports.locationHandleIpcMessage = locationHandleIpcMessage;
 electron_1.ipcRenderer.on(events_1.R2_EVENT_LINK, function (event, payload) {
     if (!win.READIUM2) {
         return;
@@ -185,7 +194,6 @@ function shiftWebview(webview, offset, backgroundColor) {
         webview.style.transform = "translateX(".concat(offset, "px)");
     }
 }
-exports.shiftWebview = shiftWebview;
 function navPreviousOrNext(goPREVIOUS, spineNav, ignorePageSpreadHandling) {
     var _this = this;
     var publication = win.READIUM2.publication;
@@ -274,7 +282,6 @@ function navPreviousOrNext(goPREVIOUS, spineNav, ignorePageSpreadHandling) {
     }
     return undefined;
 }
-exports.navPreviousOrNext = navPreviousOrNext;
 function navLeftOrRight(left, spineNav, ignorePageSpreadHandling) {
     var _a;
     var loc = _lastSavedReadingLocation;
@@ -285,7 +292,6 @@ function navLeftOrRight(left, spineNav, ignorePageSpreadHandling) {
     var goPREVIOUS = left ? !rtl : rtl;
     return navPreviousOrNext(goPREVIOUS, spineNav, ignorePageSpreadHandling);
 }
-exports.navLeftOrRight = navLeftOrRight;
 function handleLink(href, previous, useGoto, rcss) {
     var _this = this;
     debug("handleLink: ".concat(href));
@@ -328,12 +334,10 @@ function handleLink(href, previous, useGoto, rcss) {
         }
     }
 }
-exports.handleLink = handleLink;
 function handleLinkUrl(href, rcss) {
     debug("handleLinkUrl: ".concat(href));
     handleLink(href, undefined, false, rcss);
 }
-exports.handleLinkUrl = handleLinkUrl;
 function handleLinkLocator(location, rcss) {
     var _a;
     var rangeInfo = (_a = location === null || location === void 0 ? void 0 : location.locations) === null || _a === void 0 ? void 0 : _a.rangeInfo;
@@ -391,7 +395,6 @@ function handleLinkLocator(location, rcss) {
         handleLink(hrefToLoad, undefined, useGoto, rcss);
     }
 }
-exports.handleLinkLocator = handleLinkLocator;
 var _reloadCounter = 0;
 function reloadContent() {
     var e_1, _a;
@@ -410,7 +413,6 @@ function reloadContent() {
         finally { if (e_1) throw e_1.error; }
     }
 }
-exports.reloadContent = reloadContent;
 function reloadWebView(activeWebView) {
     setTimeout(function () {
         activeWebView.READIUM2.forceRefresh = true;
@@ -976,7 +978,6 @@ var _lastSavedReadingLocation;
 function getCurrentReadingLocation() {
     return _lastSavedReadingLocation;
 }
-exports.getCurrentReadingLocation = getCurrentReadingLocation;
 var _readingLocationSaver;
 var _saveReadingLocation = function (activeWebView, locator) {
     var e_2, _a, e_3, _b;
@@ -1090,7 +1091,6 @@ var _saveReadingLocation = function (activeWebView, locator) {
 function setReadingLocationSaver(func) {
     _readingLocationSaver = func;
 }
-exports.setReadingLocationSaver = setReadingLocationSaver;
 function isLocatorVisible(locator) {
     return tslib_1.__awaiter(this, void 0, void 0, function () {
         var _this = this;
@@ -1153,5 +1153,4 @@ function isLocatorVisible(locator) {
         });
     });
 }
-exports.isLocatorVisible = isLocatorVisible;
 //# sourceMappingURL=location.js.map

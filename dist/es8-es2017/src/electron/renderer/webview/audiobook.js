@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setupAudioBook = void 0;
+exports.setupAudioBook = setupAudioBook;
 const debounce = require("debounce");
 const electron_1 = require("electron");
 const audiobook_1 = require("../../common/audiobook");
@@ -289,5 +289,4 @@ function setupAudioBook(_docTitle, audioPlaybackRate) {
         forward();
     });
 }
-exports.setupAudioBook = setupAudioBook;
 //# sourceMappingURL=audiobook.js.map

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.doTryLcpPass = void 0;
+exports.doTryLcpPass = doTryLcpPass;
 const tslib_1 = require("tslib");
 const crypto = require("crypto");
 const debug_ = require("debug");
@@ -33,5 +33,4 @@ function doTryLcpPass(publicationsServer, publicationFilePath, lcpPasses, isSha2
         }
     });
 }
-exports.doTryLcpPass = doTryLcpPass;
 //# sourceMappingURL=lcp.js.map

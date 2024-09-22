@@ -1,6 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.highlightsDrawMargin = exports.highlightsCreate = exports.highlightsRemove = exports.highlightsRemoveAll = exports.highlightsClickListen = exports.highlightsHandleIpcMessage = void 0;
+exports.highlightsHandleIpcMessage = highlightsHandleIpcMessage;
+exports.highlightsClickListen = highlightsClickListen;
+exports.highlightsRemoveAll = highlightsRemoveAll;
+exports.highlightsRemove = highlightsRemove;
+exports.highlightsCreate = highlightsCreate;
+exports.highlightsDrawMargin = highlightsDrawMargin;
 const tslib_1 = require("tslib");
 const events_1 = require("../common/events");
 const win = global.window;
@@ -20,12 +25,10 @@ function highlightsHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget)
         return false;
     }
 }
-exports.highlightsHandleIpcMessage = highlightsHandleIpcMessage;
 let _highlightsClickListener;
 function highlightsClickListen(highlightsClickListener) {
     _highlightsClickListener = highlightsClickListener;
 }
-exports.highlightsClickListen = highlightsClickListen;
 function highlightsRemoveAll(href, groups) {
     var _a;
     console.log("--HIGH-- highlightsRemoveAll: " + href + " ... " + JSON.stringify(groups));
@@ -35,8 +38,8 @@ function highlightsRemoveAll(href, groups) {
             continue;
         }
         setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
-            var _b;
-            if ((_b = activeWebView.READIUM2) === null || _b === void 0 ? void 0 : _b.DOMisReady) {
+            var _a;
+            if ((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady) {
                 const payload = {
                     groups,
                 };
@@ -55,7 +58,6 @@ function highlightsRemoveAll(href, groups) {
         }), 0);
     }
 }
-exports.highlightsRemoveAll = highlightsRemoveAll;
 function highlightsRemove(href, highlightIDs) {
     var _a;
     console.log("--HIGH-- highlightsRemove: " + href + " ==> " + highlightIDs.length);
@@ -68,8 +70,8 @@ function highlightsRemove(href, highlightIDs) {
             highlightIDs,
         };
         setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
-            var _b;
-            if ((_b = activeWebView.READIUM2) === null || _b === void 0 ? void 0 : _b.DOMisReady) {
+            var _a;
+            if ((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady) {
                 if (activeWebView.READIUM2.highlights) {
                     activeWebView.READIUM2.highlights = activeWebView.READIUM2.highlights.filter((h) => {
                         return !highlightIDs.includes(h.id);
@@ -80,7 +82,6 @@ function highlightsRemove(href, highlightIDs) {
         }), 0);
     }
 }
-exports.highlightsRemove = highlightsRemove;
 function highlightsCreate(href, highlightDefinitions) {
     return tslib_1.__awaiter(this, void 0, void 0, function* () {
         return new Promise((resolve, reject) => {
@@ -118,8 +119,8 @@ function highlightsCreate(href, highlightDefinitions) {
                     highlights: undefined,
                 };
                 setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
-                    var _b;
-                    if ((_b = activeWebView.READIUM2) === null || _b === void 0 ? void 0 : _b.DOMisReady) {
+                    var _a;
+                    if ((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady) {
                         yield activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_CREATE, payloadPing);
                     }
                 }), 0);
@@ -129,7 +130,6 @@ function highlightsCreate(href, highlightDefinitions) {
         });
     });
 }
-exports.highlightsCreate = highlightsCreate;
 function highlightsDrawMargin(drawMargin) {
     console.log("--HIGH-- highlightsDrawMargin: " + JSON.stringify(drawMargin, null, 4));
     win.READIUM2.highlightsDrawMargin = drawMargin;
@@ -146,5 +146,4 @@ function highlightsDrawMargin(drawMargin) {
         }), 0);
     }
 }
-exports.highlightsDrawMargin = highlightsDrawMargin;
 //# sourceMappingURL=highlight.js.map

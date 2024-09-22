@@ -1,6 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.checkOverlaps = exports.removeContainedRects = exports.getRectOverlapY = exports.getRectOverlapX = exports.replaceOverlapingRects = exports.mergeTouchingRects = exports.rectsTouchOrOverlap = exports.getBoundingRect = exports.rectContains = exports.rectContainsPoint = exports.rectSame = exports.rectSubtract = exports.rectIntersect = exports.getClientRectsNoOverlap = exports.getTextClientRects = exports.DOMRectListToArray = exports.VERBOSE = void 0;
+exports.VERBOSE = void 0;
+exports.DOMRectListToArray = DOMRectListToArray;
+exports.getTextClientRects = getTextClientRects;
+exports.getClientRectsNoOverlap = getClientRectsNoOverlap;
+exports.rectIntersect = rectIntersect;
+exports.rectSubtract = rectSubtract;
+exports.rectSame = rectSame;
+exports.rectContainsPoint = rectContainsPoint;
+exports.rectContains = rectContains;
+exports.getBoundingRect = getBoundingRect;
+exports.rectsTouchOrOverlap = rectsTouchOrOverlap;
+exports.mergeTouchingRects = mergeTouchingRects;
+exports.replaceOverlapingRects = replaceOverlapingRects;
+exports.getRectOverlapX = getRectOverlapX;
+exports.getRectOverlapY = getRectOverlapY;
+exports.removeContainedRects = removeContainedRects;
+exports.checkOverlaps = checkOverlaps;
 var tslib_1 = require("tslib");
 exports.VERBOSE = false;
 var IS_DEV = exports.VERBOSE &&
@@ -37,7 +53,6 @@ function DOMRectListToArray(domRects) {
     }
     return rects;
 }
-exports.DOMRectListToArray = DOMRectListToArray;
 function getTextClientRects(range, elementNamesToSkip) {
     var doc = range.commonAncestorContainer.ownerDocument;
     if (!doc) {
@@ -80,7 +95,6 @@ function getTextClientRects(range, elementNamesToSkip) {
     }
     return rects;
 }
-exports.getTextClientRects = getTextClientRects;
 function getClientRectsNoOverlap(originalRects, doNotMergeAlignedRects, vertical, expand) {
     var e_2, _a, e_3, _b;
     var LOG_PREFIX_LOCAL = "getClientRectsNoOverlap ~~ ";
@@ -184,7 +198,6 @@ function getClientRectsNoOverlap(originalRects, doNotMergeAlignedRects, vertical
     }
     return newRects;
 }
-exports.getClientRectsNoOverlap = getClientRectsNoOverlap;
 function almostEqual(a, b, tolerance) {
     return Math.abs(a - b) <= tolerance;
 }
@@ -203,7 +216,6 @@ function rectIntersect(rect1, rect2) {
     };
     return rect;
 }
-exports.rectIntersect = rectIntersect;
 function rectSubtract(rect1, rect2) {
     var rectIntersected = rectIntersect(rect2, rect1);
     if (rectIntersected.height === 0 || rectIntersected.width === 0) {
@@ -272,28 +284,24 @@ function rectSubtract(rect1, rect2) {
     }
     return rects;
 }
-exports.rectSubtract = rectSubtract;
 function rectSame(rect1, rect2, tolerance) {
     return almostEqual(rect1.left, rect2.left, tolerance) &&
         almostEqual(rect1.right, rect2.right, tolerance) &&
         almostEqual(rect1.top, rect2.top, tolerance) &&
         almostEqual(rect1.bottom, rect2.bottom, tolerance);
 }
-exports.rectSame = rectSame;
 function rectContainsPoint(rect, x, y, tolerance) {
     return (rect.left < x || almostEqual(rect.left, x, tolerance)) &&
         (rect.right > x || almostEqual(rect.right, x, tolerance)) &&
         (rect.top < y || almostEqual(rect.top, y, tolerance)) &&
         (rect.bottom > y || almostEqual(rect.bottom, y, tolerance));
 }
-exports.rectContainsPoint = rectContainsPoint;
 function rectContains(rect1, rect2, tolerance) {
     return (rectContainsPoint(rect1, rect2.left, rect2.top, tolerance) &&
         rectContainsPoint(rect1, rect2.right, rect2.top, tolerance) &&
         rectContainsPoint(rect1, rect2.left, rect2.bottom, tolerance) &&
         rectContainsPoint(rect1, rect2.right, rect2.bottom, tolerance));
 }
-exports.rectContains = rectContains;
 function getBoundingRect(rect1, rect2) {
     var left = Math.min(rect1.left, rect2.left);
     var right = Math.max(rect1.right, rect2.right);
@@ -308,14 +316,12 @@ function getBoundingRect(rect1, rect2) {
         width: right - left,
     };
 }
-exports.getBoundingRect = getBoundingRect;
 function rectsTouchOrOverlap(rect1, rect2, tolerance) {
     return ((rect1.left < rect2.right || (tolerance >= 0 && almostEqual(rect1.left, rect2.right, tolerance))) &&
         (rect2.left < rect1.right || (tolerance >= 0 && almostEqual(rect2.left, rect1.right, tolerance))) &&
         (rect1.top < rect2.bottom || (tolerance >= 0 && almostEqual(rect1.top, rect2.bottom, tolerance))) &&
         (rect2.top < rect1.bottom || (tolerance >= 0 && almostEqual(rect2.top, rect1.bottom, tolerance))));
 }
-exports.rectsTouchOrOverlap = rectsTouchOrOverlap;
 function mergeTouchingRects(rects, tolerance, doNotMergeAlignedRects, vertical) {
     var LOG_PREFIX_LOCAL = "mergeTouchingRects ~~ ";
     for (var i = 0; i < rects.length; i++) {
@@ -368,7 +374,6 @@ function mergeTouchingRects(rects, tolerance, doNotMergeAlignedRects, vertical) 
     }
     return rects;
 }
-exports.mergeTouchingRects = mergeTouchingRects;
 function replaceOverlapingRects(rects, doNotMergeAlignedRects, vertical) {
     var LOG_PREFIX_LOCAL = "replaceOverlapingRects ~~ ";
     if (doNotMergeAlignedRects) {
@@ -457,15 +462,12 @@ function replaceOverlapingRects(rects, doNotMergeAlignedRects, vertical) {
     }
     return rects;
 }
-exports.replaceOverlapingRects = replaceOverlapingRects;
 function getRectOverlapX(rect1, rect2) {
     return Math.max(0, Math.min(rect1.right, rect2.right) - Math.max(rect1.left, rect2.left));
 }
-exports.getRectOverlapX = getRectOverlapX;
 function getRectOverlapY(rect1, rect2) {
     return Math.max(0, Math.min(rect1.bottom, rect2.bottom) - Math.max(rect1.top, rect2.top));
 }
-exports.getRectOverlapY = getRectOverlapY;
 function removeContainedRects(rects, tolerance, doNotMergeAlignedRects, vertical) {
     var e_5, _a, e_6, _b;
     var LOG_PREFIX_LOCAL = "removeContainedRects ~~ ";
@@ -550,7 +552,6 @@ function removeContainedRects(rects, tolerance, doNotMergeAlignedRects, vertical
     }
     return Array.from(rectsToKeep);
 }
-exports.removeContainedRects = removeContainedRects;
 function checkOverlaps(rects) {
     var e_7, _a, e_8, _b;
     var LOG_PREFIX_LOCAL = "checkOverlaps ~~ ";
@@ -608,5 +609,4 @@ function checkOverlaps(rects) {
         }
     }
 }
-exports.checkOverlaps = checkOverlaps;
 //# sourceMappingURL=rect-utils.js.map

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.popupFootNote = void 0;
+exports.popupFootNote = popupFootNote;
 var tslib_1 = require("tslib");
 var path = require("path");
 var styles_1 = require("../../common/styles");
@@ -110,5 +110,4 @@ function popupFootNote(element, focusScrollRaw, href, ensureTwoPageSpreadWithOdd
         });
     });
 }
-exports.popupFootNote = popupFootNote;
 //# sourceMappingURL=popupFootNotes.js.map

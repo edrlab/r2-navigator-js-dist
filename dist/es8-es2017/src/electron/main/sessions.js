@@ -1,10 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.clearSessions = exports.clearDefaultSession = exports.clearWebviewSession = exports.getWebViewSession = exports.clearSession = exports.initSessions = exports.secureSessions = void 0;
+exports.secureSessions = secureSessions;
+exports.initSessions = initSessions;
+exports.clearSession = clearSession;
+exports.getWebViewSession = getWebViewSession;
+exports.clearWebviewSession = clearWebviewSession;
+exports.clearDefaultSession = clearDefaultSession;
+exports.clearSessions = clearSessions;
 const debug_ = require("debug");
 const electron_1 = require("electron");
 const request = require("request");
-const requestPromise = require("request-promise-native");
 const transformer_1 = require("r2-shared-js/dist/es8-es2017/src/transform/transformer");
 const transformer_html_1 = require("r2-shared-js/dist/es8-es2017/src/transform/transformer-html");
 const dom_1 = require("../common/dom");
@@ -116,7 +121,6 @@ function secureSessions(server) {
         callback(false);
     });
 }
-exports.secureSessions = secureSessions;
 let _customUrlProtocolSchemeHandlerWasCalled = false;
 const streamProtocolHandler = async (req, callback) => {
     _customUrlProtocolSchemeHandlerWasCalled = true;
@@ -168,37 +172,18 @@ const streamProtocolHandler = async (req, callback) => {
             }
         }
     }
-    const needsStreamingResponse = true;
-    if (needsStreamingResponse) {
-        request.get({
-            headers: reqHeaders,
-            method: "GET",
-            rejectUnauthorized: false,
-            uri: url,
-        })
-            .on("response", (response) => {
-            success(response);
-        })
-            .on("error", (err) => {
-            failure(err);
-        });
-    }
-    else {
-        let response;
-        try {
-            response = await requestPromise({
-                headers: reqHeaders,
-                method: "GET",
-                rejectUnauthorized: false,
-                resolveWithFullResponse: true,
-                uri: url,
-            });
-            success(response);
-        }
-        catch (err) {
-            failure(err);
-        }
-    }
+    request.get({
+        headers: reqHeaders,
+        method: "GET",
+        rejectUnauthorized: false,
+        uri: url,
+    })
+        .on("response", (response) => {
+        success(response);
+    })
+        .on("error", (err) => {
+        failure(err);
+    });
 };
 const httpProtocolHandler = (req, callback) => {
     _customUrlProtocolSchemeHandlerWasCalled = true;
@@ -233,7 +218,7 @@ const transformerAudioVideo = (_publication, link, url, htmlStr, _sessionInfo) =
     if (link && link.TypeLink) {
         mediaType = link.TypeLink;
     }
-    const documant = (0, dom_1.parseDOM)(htmlStrToParse, mediaType);
+    const documantFromXmlDom = (0, dom_1.parseDOM)(htmlStrToParse, mediaType);
     let urlHttp = url;
     if (urlHttp.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
         urlHttp = (0, sessions_1.convertCustomSchemeToHttpUrl)(urlHttp);
@@ -285,8 +270,8 @@ const transformerAudioVideo = (_publication, link, url, htmlStr, _sessionInfo) =
             }
         }
     };
-    processTree(documant.body);
-    const serialized = (0, dom_1.serializeDOM)(documant);
+    processTree(documantFromXmlDom.body);
+    const serialized = (0, dom_1.serializeDOM)(documantFromXmlDom);
     const prefix = htmlStr.substr(0, iHtmlStart);
     const iHtmlStart_ = serialized.indexOf("<html");
     if (iHtmlStart_ < 0) {
@@ -320,7 +305,7 @@ const transformerHttpBaseIframes = (_publication, link, url, htmlStr, _sessionIn
     if (link && link.TypeLink) {
         mediaType = link.TypeLink;
     }
-    const documant = (0, dom_1.parseDOM)(htmlStrToParse, mediaType);
+    const documantFromXmlDom = (0, dom_1.parseDOM)(htmlStrToParse, mediaType);
     let urlHttp = url;
     if (!urlHttp.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
         urlHttp = (0, sessions_1.convertHttpUrlToCustomScheme)(urlHttp);
@@ -391,8 +376,8 @@ const transformerHttpBaseIframes = (_publication, link, url, htmlStr, _sessionIn
             }
         }
     };
-    processTree(documant.body);
-    const serialized = (0, dom_1.serializeDOM)(documant);
+    processTree(documantFromXmlDom.body);
+    const serialized = (0, dom_1.serializeDOM)(documantFromXmlDom);
     const prefix = htmlStr.substr(0, iHtmlStart);
     const iHtmlStart_ = serialized.indexOf("<html");
     if (iHtmlStart_ < 0) {
@@ -488,7 +473,6 @@ function initSessions() {
         }
     });
 }
-exports.initSessions = initSessions;
 async function clearSession(sess, str) {
     const prom1 = sess.clearCache();
     const prom2 = sess.clearStorageData({
@@ -513,11 +497,9 @@ async function clearSession(sess, str) {
     }
     return Promise.resolve();
 }
-exports.clearSession = clearSession;
 function getWebViewSession() {
     return electron_1.session.fromPartition(sessions_1.R2_SESSION_WEBVIEW, { cache: true });
 }
-exports.getWebViewSession = getWebViewSession;
 async function clearWebviewSession() {
     const sess = getWebViewSession();
     if (sess) {
@@ -530,7 +512,6 @@ async function clearWebviewSession() {
     }
     return Promise.resolve();
 }
-exports.clearWebviewSession = clearWebviewSession;
 async function clearDefaultSession() {
     if (electron_1.session.defaultSession) {
         try {
@@ -542,7 +523,6 @@ async function clearDefaultSession() {
     }
     return Promise.resolve();
 }
-exports.clearDefaultSession = clearDefaultSession;
 async function clearSessions() {
     try {
         await promiseAllSettled([clearDefaultSession(), clearWebviewSession()]);
@@ -552,5 +532,4 @@ async function clearSessions() {
     }
     return Promise.resolve();
 }
-exports.clearSessions = clearSessions;
 //# sourceMappingURL=sessions.js.map

@@ -2,6 +2,7 @@ import * as debounce from "debounce";
 import { IColor, IHighlight, IHighlightDefinition } from "../../common/highlight";
 import { ISelectionInfo } from "../../common/selection";
 import { ReadiumElectronWebviewWindow } from "./state";
+export declare const ENABLE_CSS_HIGHLIGHTS = true;
 export declare const setDrawMargin: (win: ReadiumElectronWebviewWindow, drawMargin: boolean | string[]) => void;
 export declare function getBoundingClientRectOfDocumentBody(win: ReadiumElectronWebviewWindow): DOMRect;
 export declare function hideAllhighlights(_documant: Document): void;

@@ -1,6 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createHighlight = exports.createHighlights = exports.recreateAllHighlights = exports.recreateAllHighlightsDebounced = exports.recreateAllHighlightsRaw = exports.destroyHighlightsGroup = exports.destroyHighlight = exports.destroyAllhighlights = exports.hideAllhighlights = exports.getBoundingClientRectOfDocumentBody = exports.setDrawMargin = void 0;
+exports.recreateAllHighlightsDebounced = exports.setDrawMargin = exports.ENABLE_CSS_HIGHLIGHTS = void 0;
+exports.getBoundingClientRectOfDocumentBody = getBoundingClientRectOfDocumentBody;
+exports.hideAllhighlights = hideAllhighlights;
+exports.destroyAllhighlights = destroyAllhighlights;
+exports.destroyHighlight = destroyHighlight;
+exports.destroyHighlightsGroup = destroyHighlightsGroup;
+exports.recreateAllHighlightsRaw = recreateAllHighlightsRaw;
+exports.recreateAllHighlights = recreateAllHighlights;
+exports.createHighlights = createHighlights;
+exports.createHighlight = createHighlight;
 const crypto = require("crypto");
 const debounce = require("debounce");
 const electron_1 = require("electron");
@@ -16,6 +25,7 @@ const core_1 = require("@flatten-js/core");
 const { unify, subtract } = core_1.BooleanOperations;
 const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 window.DEBUG_RECTS = IS_DEV && rect_utils_1.VERBOSE;
+exports.ENABLE_CSS_HIGHLIGHTS = true && !!CSS.highlights;
 const cleanupPolygon = (polygonAccumulator, off) => {
     const DEBUG_RECTS = window.DEBUG_RECTS;
     const minLength = Math.abs(off) + 1;
@@ -550,7 +560,6 @@ const SVG_XML_NAMESPACE = "http://www.w3.org/2000/svg";
 function getBoundingClientRectOfDocumentBody(win) {
     return win.document.body.getBoundingClientRect();
 }
-exports.getBoundingClientRectOfDocumentBody = getBoundingClientRectOfDocumentBody;
 function processMouseEvent(win, ev) {
     if (!_highlightsContainer) {
         return;
@@ -578,6 +587,7 @@ function processMouseEvent(win, ev) {
     let foundElement;
     for (let i = _highlights.length - 1; i >= 0; i--) {
         const highlight = _highlights[i];
+        const doDrawMargin = drawMargin(highlight);
         let highlightParent = documant.getElementById(`${highlight.id}`);
         if (!highlightParent) {
             highlightParent = _highlightsContainer.querySelector(`#${highlight.id}`);
@@ -589,7 +599,7 @@ function processMouseEvent(win, ev) {
         while (highlightFragment) {
             if (highlightFragment.namespaceURI === SVG_XML_NAMESPACE) {
                 const svg = highlightFragment;
-                hit = svg.polygon.contains(new core_1.Point((x - xOffset) * scale, (y - yOffset) * scale));
+                hit = (!doDrawMargin || svg.classList.contains(styles_1.CLASS_HIGHLIGHT_CONTOUR_MARGIN)) && svg.polygon.contains(new core_1.Point((x - xOffset) * scale, (y - yOffset) * scale));
                 if (hit) {
                     break;
                 }
@@ -613,7 +623,7 @@ function processMouseEvent(win, ev) {
         documant.documentElement.classList.remove(styles_1.CLASS_HIGHLIGHT_CURSOR2);
         return;
     }
-    if (foundElement && (foundHighlight === null || foundHighlight === void 0 ? void 0 : foundHighlight.pointerInteraction)) {
+    if (foundElement && foundHighlight && foundHighlight.pointerInteraction) {
         if (isMouseMove) {
             foundElement.classList.add(styles_1.CLASS_HIGHLIGHT_HOVER);
             documant.documentElement.classList.add(styles_1.CLASS_HIGHLIGHT_CURSOR2);
@@ -675,12 +685,14 @@ function hideAllhighlights(_documant) {
     if (IS_DEV) {
         console.log("--HIGH WEBVIEW-- hideAllhighlights: " + _highlights.length);
     }
+    if (exports.ENABLE_CSS_HIGHLIGHTS) {
+        CSS.highlights.clear();
+    }
     if (_highlightsContainer) {
         _highlightsContainer.remove();
         _highlightsContainer = null;
     }
 }
-exports.hideAllhighlights = hideAllhighlights;
 function destroyAllhighlights(documant) {
     if (IS_DEV) {
         console.log("--HIGH WEBVIEW-- destroyAllhighlights: " + _highlights.length);
@@ -688,7 +700,6 @@ function destroyAllhighlights(documant) {
     hideAllhighlights(documant);
     _highlights.splice(0, _highlights.length);
 }
-exports.destroyAllhighlights = destroyAllhighlights;
 function destroyHighlight(documant, id) {
     if (IS_DEV) {
         console.log("--HIGH WEBVIEW-- destroyHighlight: " + id + " ... " + _highlights.length);
@@ -705,8 +716,14 @@ function destroyHighlight(documant, id) {
     if (highlightContainer) {
         highlightContainer.remove();
     }
+    if (exports.ENABLE_CSS_HIGHLIGHTS && highlight && highlight.rangeCssHighlight) {
+        const [_strRGB, cssHighlightID] = computeCssHighlightRGBID(highlight);
+        const cssHighlight = CSS.highlights.get(cssHighlightID);
+        if (cssHighlight && cssHighlight.has(highlight.rangeCssHighlight)) {
+            cssHighlight.delete(highlight.rangeCssHighlight);
+        }
+    }
 }
-exports.destroyHighlight = destroyHighlight;
 function destroyHighlightsGroup(documant, group) {
     if (IS_DEV) {
         console.log("--HIGH WEBVIEW-- destroyHighlightsGroup: " + group + " ... " + _highlights.length);
@@ -725,13 +742,19 @@ function destroyHighlightsGroup(documant, group) {
             if (highlightContainer) {
                 highlightContainer.remove();
             }
+            if (exports.ENABLE_CSS_HIGHLIGHTS && highlight.rangeCssHighlight) {
+                const [_strRGB, cssHighlightID] = computeCssHighlightRGBID(highlight);
+                const cssHighlight = CSS.highlights.get(cssHighlightID);
+                if (cssHighlight && cssHighlight.has(highlight.rangeCssHighlight)) {
+                    cssHighlight.delete(highlight.rangeCssHighlight);
+                }
+            }
         }
         else {
             break;
         }
     }
 }
-exports.destroyHighlightsGroup = destroyHighlightsGroup;
 function recreateAllHighlightsRaw(win, highlights) {
     if (IS_DEV) {
         console.log("--HIGH WEBVIEW-- recreateAllHighlightsRaw: " + _highlights.length + " ==> " + (highlights === null || highlights === void 0 ? void 0 : highlights.length));
@@ -772,7 +795,6 @@ function recreateAllHighlightsRaw(win, highlights) {
     const highlightsContainer = ensureHighlightsContainer(win);
     highlightsContainer.append(docFrag);
 }
-exports.recreateAllHighlightsRaw = recreateAllHighlightsRaw;
 exports.recreateAllHighlightsDebounced = debounce((win) => {
     if (IS_DEV) {
         console.log("--HIGH WEBVIEW-- recreateAllHighlightsDebounced: " + _highlights.length);
@@ -786,7 +808,6 @@ function recreateAllHighlights(win) {
     hideAllhighlights(win.document);
     (0, exports.recreateAllHighlightsDebounced)(win);
 }
-exports.recreateAllHighlights = recreateAllHighlights;
 function createHighlights(win, highDefs, pointerInteraction) {
     if (IS_DEV) {
         console.log("--HIGH WEBVIEW-- createHighlights: " + highDefs.length + " ... " + _highlights.length);
@@ -811,7 +832,6 @@ function createHighlights(win, highDefs, pointerInteraction) {
     highlightsContainer.append(docFrag);
     return highlights;
 }
-exports.createHighlights = createHighlights;
 const computeCFI = (node) => {
     if (node.nodeType !== Node.ELEMENT_NODE) {
         if (node.parentNode) {
@@ -869,16 +889,47 @@ function createHighlight(win, selectionInfo, range, color, pointerInteraction, d
     const div = createHighlightDom(win, highlight, bodyRect, bodyComputedStyle);
     return [highlight, div];
 }
-exports.createHighlight = createHighlight;
+const computeCssHighlightRGBID = (highlight) => {
+    const drawUnderline = highlight.drawType === highlight_1.HighlightDrawTypeUnderline;
+    const drawStrikeThrough = highlight.drawType === highlight_1.HighlightDrawTypeStrikethrough;
+    const strRGB = `R${highlight.color.red}G${highlight.color.green}B${highlight.color.blue}${drawUnderline ? "_" : drawStrikeThrough ? "__" : ""}`;
+    const cssHighlightID = `highlight_${strRGB}`;
+    return [strRGB, cssHighlightID];
+};
 const JAPANESE_RUBY_TO_SKIP = ["rt", "rp"];
 function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     var _a;
     const DEBUG_RECTS = window.DEBUG_RECTS;
     const documant = win.document;
     const scrollElement = (0, readium_css_1.getScrollingElement)(documant);
-    const range = highlight.selectionInfo ? (0, selection_1.convertRangeInfo)(documant, highlight.selectionInfo.rangeInfo) : highlight.range;
+    const range = highlight.range ? highlight.range : highlight.selectionInfo ? (0, selection_1.convertRangeInfo)(documant, highlight.selectionInfo.rangeInfo) : undefined;
     if (!range) {
         return null;
+    }
+    let rangeHasSVG = false;
+    let parent = range.startContainer;
+    while (parent) {
+        if (parent.nodeType === Node.ELEMENT_NODE) {
+            const ns = parent.namespaceURI;
+            if (ns && ns.includes("svg")) {
+                rangeHasSVG = true;
+                break;
+            }
+        }
+        parent = parent.parentNode;
+    }
+    if (!rangeHasSVG) {
+        parent = range.endContainer;
+        while (parent) {
+            if (parent.nodeType === Node.ELEMENT_NODE) {
+                const ns = parent.namespaceURI;
+                if (ns && ns.includes("svg")) {
+                    rangeHasSVG = true;
+                    break;
+                }
+            }
+            parent = parent.parentNode;
+        }
     }
     const drawBackground = !highlight.drawType || highlight.drawType === highlight_1.HighlightDrawTypeBackground;
     const drawUnderline = highlight.drawType === highlight_1.HighlightDrawTypeUnderline;
@@ -888,6 +939,78 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     const rtl = (0, readium_css_2.isRTL)();
     const vertical = (0, readium_css_1.isVerticalWritingMode)();
     const doDrawMargin = drawMargin(highlight);
+    ;
+    const underlineThickness = 3;
+    const strikeThroughLineThickness = 4;
+    if (exports.ENABLE_CSS_HIGHLIGHTS && !doDrawMargin && !rangeHasSVG && (drawBackground || (drawUnderline && !vertical) || (drawStrikeThrough && !vertical))) {
+        highlight.rangeCssHighlight = range;
+        const [strRGB, cssHighlightID] = computeCssHighlightRGBID(highlight);
+        const styleElement = win.document.getElementById("Readium2-" + strRGB);
+        if (!styleElement) {
+            (0, readium_css_inject_1.appendCSSInline)(win.document, strRGB, drawUnderline || drawStrikeThrough
+                ?
+                    `
+::highlight(${cssHighlightID}) {
+    text-decoration-color: rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue});
+    text-decoration-style: solid;
+    text-decoration-thickness: 0.16em;
+    text-decoration-line: ${drawUnderline ? "underline" : "line-through"};
+}
+`
+                :
+                    `
+/*
+https://lea.verou.me/blog/2024/contrast-color
+https://blackorwhite.lloydk.ca
+*/
+
+::highlight(${cssHighlightID}) {
+    background-color: rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue});
+
+    color: white;
+    text-shadow: 0 0 .05em black, 0 0 .05em black, 0 0 .05em black, 0 0 .05em black;
+}
+
+@supports (color: oklch(from red l c h)) {
+
+    ::highlight(${cssHighlightID}) {
+        background-color: rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue});
+
+        color: oklch(from rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}) clamp(0, (0.7 / l - 1) * infinity, 1) c h);
+
+        text-shadow: none;
+    }
+}
+
+@supports (color: oklch(from color-mix(in oklch, red, tan) l c h)) {
+
+    ::highlight(${cssHighlightID}) {
+        background-color: rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue});
+
+        color: color(from rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}) xyz-d65 clamp(0, (0.36 / y - 1) * infinity, 1) clamp(0, (0.36 / y - 1) * infinity, 1) clamp(0, (0.36 / y - 1) * infinity, 1));
+
+        text-shadow: none;
+    }
+}
+
+@supports (color: contrast-color(red)) {
+
+    ::highlight(${cssHighlightID}) {
+        background-color: rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue});
+
+        color: contrast-color(rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue}));
+        text-shadow: none;
+    }
+}
+`);
+        }
+        let cssHighlight = CSS.highlights.get(cssHighlightID);
+        if (!cssHighlight) {
+            cssHighlight = new Highlight();
+            CSS.highlights.set(cssHighlightID, cssHighlight);
+        }
+        cssHighlight.add(highlight.rangeCssHighlight);
+    }
     const highlightParent = documant.createElement("div");
     highlightParent.setAttribute("id", highlight.id);
     highlightParent.setAttribute("class", `${styles_1.CLASS_HIGHLIGHT_CONTAINER} ${styles_1.CLASS_HIGHLIGHT_COMMON}`);
@@ -898,8 +1021,11 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     if (doDrawMargin) {
         highlightParent.classList.add(styles_1.CLASS_HIGHLIGHT_MARGIN);
     }
-    if (!highlight.drawType || highlight.drawType === highlight_1.HighlightDrawTypeBackground) {
+    if (drawBackground) {
         highlightParent.classList.add(styles_1.CLASS_HIGHLIGHT_BEHIND);
+    }
+    if (highlight.rangeCssHighlight && !highlight.pointerInteraction) {
+        return highlightParent;
     }
     const xOffset = paginated ? (-scrollElement.scrollLeft) : bodyRect.left;
     const yOffset = paginated ? (-scrollElement.scrollTop) : bodyRect.top;
@@ -915,8 +1041,6 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     else {
         clientRects = (0, rect_utils_1.getClientRectsNoOverlap)(rangeClientRects, false, vertical, highlight.expand ? highlight.expand : 0);
     }
-    const underlineThickness = 3;
-    const strikeThroughLineThickness = 4;
     const bodyWidth = parseInt(bodyComputedStyle.width, 10);
     const paginatedTwo = paginated && (0, readium_css_1.isTwoPageSpread)();
     const paginatedWidth = scrollElement.clientWidth / (paginatedTwo ? 2 : 1);
@@ -1010,7 +1134,10 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     });
     cleanupPolygon(polygonCountourUnionPoly, gap);
     let polygonSurface;
-    if (doNotMergeHorizontallyAlignedRects) {
+    if (highlight.rangeCssHighlight) {
+        polygonSurface = undefined;
+    }
+    else if (doNotMergeHorizontallyAlignedRects) {
         const singleSVGPath = !DEBUG_RECTS;
         if (singleSVGPath) {
             polygonSurface = new core_1.Polygon();
@@ -1142,7 +1269,9 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     }
     if (DEBUG_RECTS) {
         addEdgePoints(polygonCountourUnionPoly, 1);
-        if (Array.isArray(polygonSurface)) {
+        if (!polygonSurface) {
+        }
+        else if (Array.isArray(polygonSurface)) {
             for (const poly of polygonSurface) {
                 addEdgePoints(poly, 1);
             }
@@ -1154,28 +1283,40 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     const highlightAreaSVG = documant.createElementNS(SVG_XML_NAMESPACE, "svg");
     highlightAreaSVG.setAttribute("class", `${styles_1.CLASS_HIGHLIGHT_COMMON} ${styles_1.CLASS_HIGHLIGHT_CONTOUR}`);
     highlightAreaSVG.polygon = polygonCountourUnionPoly;
+    let outlineThickness = 2;
+    let usrFontSize = bodyComputedStyle.getPropertyValue("--USER__fontSize");
+    if (usrFontSize) {
+        usrFontSize = usrFontSize.replace("%", "");
+        try {
+            const factor = parseInt(usrFontSize, 10) / 100;
+            outlineThickness = outlineThickness * factor;
+        }
+        catch (_e) {
+        }
+    }
     highlightAreaSVG.innerHTML =
-        (Array.isArray(polygonSurface)
-            ?
-                polygonSurface.reduce((prevSVGPath, currentPolygon) => {
-                    return prevSVGPath + currentPolygon.svg({
-                        fill: DEBUG_RECTS ? "pink" : drawOutline ? "transparent" : `rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue})`,
+        (polygonSurface ?
+            (Array.isArray(polygonSurface)
+                ?
+                    polygonSurface.reduce((prevSVGPath, currentPolygon) => {
+                        return prevSVGPath + currentPolygon.svg({
+                            fill: DEBUG_RECTS ? "pink" : (drawOutline || highlight.rangeCssHighlight) ? "transparent" : `rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue})`,
+                            fillRule: "evenodd",
+                            stroke: DEBUG_RECTS ? "magenta" : drawOutline ? `rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue})` : "transparent",
+                            strokeWidth: DEBUG_RECTS ? 1 : drawOutline ? outlineThickness : 0,
+                            fillOpacity: 1,
+                            className: undefined,
+                        });
+                    }, "")
+                :
+                    polygonSurface.svg({
+                        fill: DEBUG_RECTS ? "yellow" : (drawOutline || highlight.rangeCssHighlight) ? "transparent" : `rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue})`,
                         fillRule: "evenodd",
-                        stroke: DEBUG_RECTS ? "magenta" : drawOutline ? `rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue})` : "transparent",
-                        strokeWidth: DEBUG_RECTS ? 1 : drawOutline ? 2 : 0,
+                        stroke: DEBUG_RECTS ? "green" : drawOutline ? `rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue})` : "transparent",
+                        strokeWidth: DEBUG_RECTS ? 1 : drawOutline ? outlineThickness : 0,
                         fillOpacity: 1,
                         className: undefined,
-                    });
-                }, "")
-            :
-                polygonSurface.svg({
-                    fill: DEBUG_RECTS ? "yellow" : drawOutline ? "transparent" : `rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue})`,
-                    fillRule: "evenodd",
-                    stroke: DEBUG_RECTS ? "green" : drawOutline ? `rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue})` : "transparent",
-                    strokeWidth: DEBUG_RECTS ? 1 : drawOutline ? 2 : 0,
-                    fillOpacity: 1,
-                    className: undefined,
-                }))
+                    })) : "")
             +
                 polygonCountourUnionPoly.svg({
                     fill: "transparent",

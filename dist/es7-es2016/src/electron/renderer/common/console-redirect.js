@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.consoleRedirect = void 0;
+exports.consoleRedirect = consoleRedirect;
 const debugBrowser = require("debug");
 const debugNode = require("debug/src/node");
 const util = require("util");
@@ -83,5 +83,4 @@ function consoleRedirect(debugNamespace, stdout, stderr, printInOriginalConsole)
         });
     };
 }
-exports.consoleRedirect = consoleRedirect;
 //# sourceMappingURL=console-redirect.js.map
