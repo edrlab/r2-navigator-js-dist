@@ -2593,10 +2593,11 @@ const findPrecedingAncestorSiblingEpubPageBreak = (element) => {
     }
     return nil;
 };
+const MAX_FOLLOWING_ELEMENTS_IDS = 100;
 let _elementsWithID;
 const findFollowingDescendantSiblingElementsWithID = (el) => {
     let followingElementIDs;
-    if (true) {
+    if (win.document.documentElement.classList.contains(styles_1.R2_MO_CLASS_PLAYING) || win.document.documentElement.classList.contains(styles_1.R2_MO_CLASS_PAUSED) || win.document.documentElement.classList.contains(styles_1.R2_MO_CLASS_STOPPED)) {
         followingElementIDs = [];
         if (!_elementsWithID) {
             _elementsWithID = Array.from(win.document.querySelectorAll(`*:not(#${styles_1.ID_HIGHLIGHTS_CONTAINER}):not(#${styles_1.POPUP_DIALOG_CLASS}):not(#${styles_1.SKIP_LINK_ID}) *[id]:not(#${styles_1.ID_HIGHLIGHTS_CONTAINER}):not(#${styles_1.POPUP_DIALOG_CLASS}):not(#${styles_1.SKIP_LINK_ID})`));
@@ -2636,6 +2637,9 @@ const findFollowingDescendantSiblingElementsWithID = (el) => {
                 }
                 if (doPush) {
                     followingElementIDs.push(id);
+                    if (followingElementIDs.length >= MAX_FOLLOWING_ELEMENTS_IDS) {
+                        return followingElementIDs;
+                    }
                 }
             }
         }
