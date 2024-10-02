@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.cleanupStr = exports.collapseWhitespaces = void 0;
+exports.cleanupStr = exports.collapseWhitespaces = exports.setSelectionChangeAction = void 0;
 exports.clearCurrentSelection = clearCurrentSelection;
 exports.getCurrentSelectionInfo = getCurrentSelectionInfo;
 exports.createOrderedRange = createOrderedRange;
@@ -56,12 +56,33 @@ function dumpDebug(msg, startNode, startOffset, endNode, endOffset, getCssSelect
     console.log("Offset: " + endOffset);
     console.log("$$$$$$$$$$$$$$$$$");
 }
+let _selectionChangeTimeout = undefined;
+let _ignoreSelectionChangeEvent = false;
+const setSelectionChangeAction = (win, func) => {
+    var _a;
+    (_a = win.document) === null || _a === void 0 ? void 0 : _a.addEventListener("selectionchange", (_ev) => {
+        if (_selectionChangeTimeout !== undefined) {
+            win.clearTimeout(_selectionChangeTimeout);
+        }
+        if (_ignoreSelectionChangeEvent) {
+            _ignoreSelectionChangeEvent = false;
+            return;
+        }
+        func();
+    });
+};
+exports.setSelectionChangeAction = setSelectionChangeAction;
 function clearCurrentSelection(win) {
     var _a;
     const selection = win.getSelection();
     if (!selection) {
         return;
     }
+    _ignoreSelectionChangeEvent = true;
+    _selectionChangeTimeout = win.setTimeout(() => {
+        _ignoreSelectionChangeEvent = false;
+        _selectionChangeTimeout = undefined;
+    }, 200);
     selection.removeAllRanges();
     if ((_a = win.READIUM2.locationHashOverrideInfo) === null || _a === void 0 ? void 0 : _a.selectionInfo) {
         win.READIUM2.locationHashOverrideInfo.selectionInfo = undefined;

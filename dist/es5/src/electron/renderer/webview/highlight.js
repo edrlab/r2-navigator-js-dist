@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.recreateAllHighlightsDebounced = exports.setDrawMargin = exports.ENABLE_CSS_HIGHLIGHTS = void 0;
+exports.recreateAllHighlightsDebounced = exports.setDrawMargin = exports.HIGHLIGHT_GROUP_PAGEBREAK = exports.HIGHLIGHT_GROUP_TTS = exports.ENABLE_PAGEBREAK_MARGIN_TEXT_EXPERIMENT = exports.ENABLE_CSS_HIGHLIGHTS = void 0;
 exports.getBoundingClientRectOfDocumentBody = getBoundingClientRectOfDocumentBody;
 exports.hideAllhighlights = hideAllhighlights;
 exports.destroyAllhighlights = destroyAllhighlights;
@@ -27,6 +27,7 @@ var unify = core_1.BooleanOperations.unify, subtract = core_1.BooleanOperations.
 var IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 window.DEBUG_RECTS = IS_DEV && rect_utils_1.VERBOSE;
 exports.ENABLE_CSS_HIGHLIGHTS = true && !!CSS.highlights;
+exports.ENABLE_PAGEBREAK_MARGIN_TEXT_EXPERIMENT = false;
 var cleanupPolygon = function (polygonAccumulator, off) {
     var e_1, _a, e_2, _b, e_3, _c, e_4, _d, e_5, _f, e_6, _g, e_7, _h;
     var DEBUG_RECTS = window.DEBUG_RECTS;
@@ -704,8 +705,16 @@ var DEFAULT_BACKGROUND_COLOR = {
     red: 255,
 };
 var _highlights = [];
+exports.HIGHLIGHT_GROUP_TTS = "tts";
+exports.HIGHLIGHT_GROUP_PAGEBREAK = "pagebreak";
 var _drawMargin = false;
 var drawMargin = function (h) {
+    if (h.group === exports.HIGHLIGHT_GROUP_TTS) {
+        return false;
+    }
+    if (h.group === exports.HIGHLIGHT_GROUP_PAGEBREAK) {
+        return true;
+    }
     if (Array.isArray(_drawMargin)) {
         if (h.group) {
             return _drawMargin.includes(h.group);
@@ -792,9 +801,11 @@ function processMouseEvent(win, ev) {
     if (foundElement && foundHighlight && foundHighlight.pointerInteraction) {
         if (isMouseMove) {
             foundElement.classList.add(styles_1.CLASS_HIGHLIGHT_HOVER);
-            documant.documentElement.classList.add(styles_1.CLASS_HIGHLIGHT_CURSOR2);
+            if (foundHighlight.group !== exports.HIGHLIGHT_GROUP_PAGEBREAK) {
+                documant.documentElement.classList.add(styles_1.CLASS_HIGHLIGHT_CURSOR2);
+            }
         }
-        else if (ev.type === "mouseup" || ev.type === "click") {
+        else if ((ev.type === "mouseup" || ev.type === "click") && foundHighlight.group !== exports.HIGHLIGHT_GROUP_PAGEBREAK) {
             documant.documentElement.classList.remove(styles_1.CLASS_HIGHLIGHT_CURSOR2);
             ev.preventDefault();
             ev.stopPropagation();
@@ -1007,7 +1018,7 @@ function createHighlights(win, highDefs, pointerInteraction) {
                 highlights.push(null);
                 continue;
             }
-            var _b = tslib_1.__read(createHighlight(win, highDef.selectionInfo, highDef.range, highDef.color, pointerInteraction, highDef.drawType, highDef.expand, highDef.group, bodyRect, bodyComputedStyle), 2), high = _b[0], div = _b[1];
+            var _b = tslib_1.__read(createHighlight(win, highDef.selectionInfo, highDef.range, highDef.color, pointerInteraction, highDef.drawType, highDef.expand, highDef.group, highDef.marginText, bodyRect, bodyComputedStyle), 2), high = _b[0], div = _b[1];
             highlights.push(high);
             if (div) {
                 docFrag.append(div);
@@ -1053,7 +1064,7 @@ var computeCFI = function (node) {
     }
     return "/" + cfi;
 };
-function createHighlight(win, selectionInfo, range, color, pointerInteraction, drawType, expand, group, bodyRect, bodyComputedStyle) {
+function createHighlight(win, selectionInfo, range, color, pointerInteraction, drawType, expand, group, marginText, bodyRect, bodyComputedStyle) {
     var uniqueStr = selectionInfo ? "".concat(selectionInfo.rangeInfo.startContainerElementCssSelector).concat(selectionInfo.rangeInfo.startContainerChildTextNodeIndex).concat(selectionInfo.rangeInfo.startOffset).concat(selectionInfo.rangeInfo.endContainerElementCssSelector).concat(selectionInfo.rangeInfo.endContainerChildTextNodeIndex).concat(selectionInfo.rangeInfo.endOffset) : range ? "".concat(range.startOffset, "-").concat(range.endOffset, "-").concat(computeCFI(range.startContainer), "-").concat(computeCFI(range.endContainer)) : "_RANGE_";
     var checkSum = crypto.createHash("sha1");
     checkSum.update(uniqueStr);
@@ -1077,6 +1088,7 @@ function createHighlight(win, selectionInfo, range, color, pointerInteraction, d
         selectionInfo: selectionInfo,
         range: range,
         group: group,
+        marginText: marginText,
     };
     _highlights.push(highlight);
     var div = createHighlightDom(win, highlight, bodyRect, bodyComputedStyle);
@@ -1730,7 +1742,7 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
         var highlightMarginSVG = documant.createElementNS(SVG_XML_NAMESPACE, "svg");
         highlightMarginSVG.setAttribute("class", "".concat(styles_1.CLASS_HIGHLIGHT_COMMON, " ").concat(styles_1.CLASS_HIGHLIGHT_CONTOUR_MARGIN));
         highlightMarginSVG.polygon = polygonMarginUnionPoly;
-        highlightMarginSVG.innerHTML = polygonMarginUnionPoly.svg({
+        var svgPath = polygonMarginUnionPoly.svg({
             fill: "rgb(".concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ")"),
             fillRule: "evenodd",
             stroke: "transparent",
@@ -1738,6 +1750,23 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
             fillOpacity: 1,
             className: undefined,
         });
+        if (exports.ENABLE_PAGEBREAK_MARGIN_TEXT_EXPERIMENT) {
+            var svg = svgPath;
+            highlight.marginText = "Long test 1.";
+            if (highlight.marginText) {
+                var m = svg.match(/d="\s*M([0-9]+\.?[0-9]*),([0-9]+\.?[0-9]*)/);
+                if (m && m[1] && m[2]) {
+                    var r2SvgHighlightsTextFilterID = "r2SvgFilterR".concat(highlight.color.red, "G").concat(highlight.color.green, "B").concat(highlight.color.blue);
+                    var el = highlightParent.querySelector("#".concat(r2SvgHighlightsTextFilterID));
+                    var filter = el ? "" : "<defs><filter x=\"0\" y=\"0\" width=\"1\" height=\"1\" id=\"".concat(r2SvgHighlightsTextFilterID, "\"><feFlood flood-color=\"rgb(").concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ")\" result=\"bg\" /><feMerge><feMergeNode in=\"bg\"/><feMergeNode in=\"SourceGraphic\"/></feMerge></filter></defs>");
+                    svg = "".concat(filter).concat(svgPath, "<text x=\"").concat(m[1], "\" y=\"").concat(m[2], "\" class=\"").concat(styles_1.CLASS_HIGHLIGHT_CONTOUR_MARGIN, "_\" font-size=\"stroke:red; fill: magenta;\" filter=\"url(#").concat(r2SvgHighlightsTextFilterID, ")\">").concat(highlight.marginText, "</text>");
+                }
+            }
+            highlightMarginSVG.innerHTML = svg;
+        }
+        else {
+            highlightMarginSVG.innerHTML = svgPath;
+        }
         highlightParent.append(highlightMarginSVG);
     }
     return highlightParent;

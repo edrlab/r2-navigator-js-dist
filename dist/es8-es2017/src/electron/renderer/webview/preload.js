@@ -8,6 +8,7 @@ const tabbable_1 = require("tabbable");
 const UrlUtils_1 = require("r2-utils-js/dist/es8-es2017/src/_utils/http/UrlUtils");
 const sessions_1 = require("../../common/sessions");
 const events_1 = require("../../common/events");
+const highlight_1 = require("../../common/highlight");
 const readium_css_inject_1 = require("../../common/readium-css-inject");
 const selection_1 = require("../../common/selection");
 const styles_1 = require("../../common/styles");
@@ -21,7 +22,7 @@ const rect_utils_1 = require("../common/rect-utils");
 const url_params_1 = require("../common/url-params");
 const audiobook_1 = require("./audiobook");
 const epubReadingSystem_1 = require("./epubReadingSystem");
-const highlight_1 = require("./highlight");
+const highlight_2 = require("./highlight");
 const popoutImages_1 = require("./popoutImages");
 const popupFootNotes_1 = require("./popupFootNotes");
 const readaloud_1 = require("./readaloud");
@@ -89,6 +90,9 @@ win.prompt = (...args) => {
     return "";
 };
 const CSS_PIXEL_TOLERANCE = 5;
+(0, selection_2.setSelectionChangeAction)(win, () => {
+    notifyReadingLocationDebounced(true);
+});
 const TOUCH_SWIPE_DELTA_MIN = 80;
 const TOUCH_SWIPE_LONG_PRESS_MAX_TIME = 500;
 const TOUCH_SWIPE_MAX_TIME = 500;
@@ -154,7 +158,7 @@ win.document.addEventListener("touchend", (event) => {
         return;
     }
     const rtl = (0, readium_css_1.isRTL)();
-    if (deltaX < 0) {
+    if (deltaX > 0) {
         const payload = {
             go: rtl ? "PREVIOUS" : "NEXT",
             nav: true,
@@ -928,7 +932,7 @@ const scrollToHashRaw = (animate, skipRedraw) => {
         return;
     }
     if (!skipRedraw) {
-        (0, highlight_1.recreateAllHighlightsRaw)(win);
+        (0, highlight_2.recreateAllHighlightsRaw)(win);
     }
     debug("++++ scrollToHashRaw");
     const isPaged = (0, readium_css_inject_1.isPaginated)(win.document);
@@ -1161,7 +1165,7 @@ function handleFocusInRaw(target, _tabKeyDownEvent) {
 electron_1.ipcRenderer.on(events_1.R2_EVENT_READIUMCSS, (_event, payload) => {
     showHideContentMask(true, payload.isFixedLayout || win.READIUM2.isFixedLayout);
     (0, readium_css_1.readiumCSS)(win.document, payload);
-    (0, highlight_1.recreateAllHighlights)(win);
+    (0, highlight_2.recreateAllHighlights)(win);
     showHideContentMask(false, payload.isFixedLayout || win.READIUM2.isFixedLayout);
 });
 let _docTitle;
@@ -1383,8 +1387,8 @@ function loaded(forced) {
                     const buffer = Buffer.from(await new Response(cs.readable).arrayBuffer());
                     const jsonStr = new TextDecoder().decode(buffer);
                     const highlights = JSON.parse(jsonStr);
-                    (0, highlight_1.setDrawMargin)(win, highlights.margin);
-                    (0, highlight_1.recreateAllHighlightsRaw)(win, highlights.list);
+                    (0, highlight_2.setDrawMargin)(win, highlights.margin);
+                    (0, highlight_2.recreateAllHighlightsRaw)(win, highlights.list);
                 }
                 catch (err) {
                     debug("################## HIGHLIGHTS PARSE ERROR?!");
@@ -1780,7 +1784,7 @@ function loaded(forced) {
             };
             electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_FXL_CONFIGURE, payload);
         }
-        (0, highlight_1.recreateAllHighlightsRaw)(win);
+        (0, highlight_2.recreateAllHighlightsRaw)(win);
     });
     const onResizeRaw = () => {
         if (win.READIUM2.isFixedLayout) {
@@ -2563,6 +2567,28 @@ const findPrecedingAncestorSiblingEpubPageBreak = (element) => {
             _allEpubPageBreaks = [];
         }
         debug("_allEpubPageBreaks XPath", _allEpubPageBreaks.length, xpathResult.snapshotLength);
+        if (highlight_2.ENABLE_PAGEBREAK_MARGIN_TEXT_EXPERIMENT) {
+            (0, highlight_2.destroyHighlightsGroup)(win.document, highlight_2.HIGHLIGHT_GROUP_PAGEBREAK);
+            const highlightDefinitions = [];
+            for (const pageBreak of _allEpubPageBreaks) {
+                const range = new Range();
+                range.selectNode(pageBreak.element);
+                highlightDefinitions.push({
+                    color: {
+                        blue: 60,
+                        green: 76,
+                        red: 231,
+                    },
+                    drawType: highlight_1.HighlightDrawTypeOutline,
+                    expand: 1,
+                    selectionInfo: undefined,
+                    group: highlight_2.HIGHLIGHT_GROUP_PAGEBREAK,
+                    range,
+                    marginText: pageBreak.text ? pageBreak.text : undefined,
+                });
+            }
+            (0, highlight_2.createHighlights)(win, highlightDefinitions, true);
+        }
     }
     for (let i = _allEpubPageBreaks.length - 1; i >= 0; i--) {
         const pageBreak = _allEpubPageBreaks[i];
@@ -2955,7 +2981,7 @@ if (!win.READIUM2.isAudio) {
                 highlightDefinition.selectionInfo = selInfo;
             }
         }
-        const highlights = (0, highlight_1.createHighlights)(win, highlightDefinitions, true);
+        const highlights = (0, highlight_2.createHighlights)(win, highlightDefinitions, true);
         const payloadPong = {
             highlightDefinitions: payloadPing.highlightDefinitions,
             highlights: highlights.length ? highlights : undefined,
@@ -2964,20 +2990,20 @@ if (!win.READIUM2.isAudio) {
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_HIGHLIGHT_REMOVE, (_event, payload) => {
         payload.highlightIDs.forEach((highlightID) => {
-            (0, highlight_1.destroyHighlight)(win.document, highlightID);
+            (0, highlight_2.destroyHighlight)(win.document, highlightID);
         });
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_HIGHLIGHT_DRAW_MARGIN, (_event, payload) => {
-        (0, highlight_1.setDrawMargin)(win, payload.drawMargin);
+        (0, highlight_2.setDrawMargin)(win, payload.drawMargin);
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_HIGHLIGHT_REMOVE_ALL, (_event, payload) => {
         if (payload.groups) {
             for (const group of payload.groups) {
-                (0, highlight_1.destroyHighlightsGroup)(win.document, group);
+                (0, highlight_2.destroyHighlightsGroup)(win.document, group);
             }
         }
         else {
-            (0, highlight_1.destroyAllhighlights)(win.document);
+            (0, highlight_2.destroyAllhighlights)(win.document);
         }
     });
 }

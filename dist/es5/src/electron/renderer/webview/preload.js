@@ -9,6 +9,7 @@ var tabbable_1 = require("tabbable");
 var UrlUtils_1 = require("r2-utils-js/dist/es5/src/_utils/http/UrlUtils");
 var sessions_1 = require("../../common/sessions");
 var events_1 = require("../../common/events");
+var highlight_1 = require("../../common/highlight");
 var readium_css_inject_1 = require("../../common/readium-css-inject");
 var selection_1 = require("../../common/selection");
 var styles_1 = require("../../common/styles");
@@ -22,7 +23,7 @@ var rect_utils_1 = require("../common/rect-utils");
 var url_params_1 = require("../common/url-params");
 var audiobook_1 = require("./audiobook");
 var epubReadingSystem_1 = require("./epubReadingSystem");
-var highlight_1 = require("./highlight");
+var highlight_2 = require("./highlight");
 var popoutImages_1 = require("./popoutImages");
 var popupFootNotes_1 = require("./popupFootNotes");
 var readaloud_1 = require("./readaloud");
@@ -102,6 +103,9 @@ win.prompt = function () {
     return "";
 };
 var CSS_PIXEL_TOLERANCE = 5;
+(0, selection_2.setSelectionChangeAction)(win, function () {
+    notifyReadingLocationDebounced(true);
+});
 var TOUCH_SWIPE_DELTA_MIN = 80;
 var TOUCH_SWIPE_LONG_PRESS_MAX_TIME = 500;
 var TOUCH_SWIPE_MAX_TIME = 500;
@@ -167,7 +171,7 @@ win.document.addEventListener("touchend", function (event) {
         return;
     }
     var rtl = (0, readium_css_1.isRTL)();
-    if (deltaX < 0) {
+    if (deltaX > 0) {
         var payload = {
             go: rtl ? "PREVIOUS" : "NEXT",
             nav: true,
@@ -941,7 +945,7 @@ var scrollToHashRaw = function (animate, skipRedraw) {
         return;
     }
     if (!skipRedraw) {
-        (0, highlight_1.recreateAllHighlightsRaw)(win);
+        (0, highlight_2.recreateAllHighlightsRaw)(win);
     }
     debug("++++ scrollToHashRaw");
     var isPaged = (0, readium_css_inject_1.isPaginated)(win.document);
@@ -1174,7 +1178,7 @@ function handleFocusInRaw(target, _tabKeyDownEvent) {
 electron_1.ipcRenderer.on(events_1.R2_EVENT_READIUMCSS, function (_event, payload) {
     showHideContentMask(true, payload.isFixedLayout || win.READIUM2.isFixedLayout);
     (0, readium_css_1.readiumCSS)(win.document, payload);
-    (0, highlight_1.recreateAllHighlights)(win);
+    (0, highlight_2.recreateAllHighlights)(win);
     showHideContentMask(false, payload.isFixedLayout || win.READIUM2.isFixedLayout);
 });
 var _docTitle;
@@ -1403,8 +1407,8 @@ function loaded(forced) {
                             buffer = _b.apply(_a, [_c.sent()]);
                             jsonStr_1 = new TextDecoder().decode(buffer);
                             highlights = JSON.parse(jsonStr_1);
-                            (0, highlight_1.setDrawMargin)(win, highlights.margin);
-                            (0, highlight_1.recreateAllHighlightsRaw)(win, highlights.list);
+                            (0, highlight_2.setDrawMargin)(win, highlights.margin);
+                            (0, highlight_2.recreateAllHighlightsRaw)(win, highlights.list);
                             return [3, 3];
                         case 2:
                             err_1 = _c.sent();
@@ -1838,7 +1842,7 @@ function loaded(forced) {
             };
             electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_FXL_CONFIGURE, payload);
         }
-        (0, highlight_1.recreateAllHighlightsRaw)(win);
+        (0, highlight_2.recreateAllHighlightsRaw)(win);
     });
     var onResizeRaw = function () {
         if (win.READIUM2.isFixedLayout) {
@@ -2691,6 +2695,7 @@ var findPrecedingAncestorSiblingHeadings = function (element) {
 };
 var _allEpubPageBreaks;
 var findPrecedingAncestorSiblingEpubPageBreak = function (element) {
+    var e_11, _a;
     if (!_allEpubPageBreaks) {
         var xpathResult = win.document.evaluate("//*[contains(concat(' ', normalize-space(@role), ' '), ' doc-pagebreak ')] | //*[contains(concat(' ', normalize-space(@epub:type), ' '), ' pagebreak ')]", win.document.body, _namespaceResolver, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
         for (var i = 0; i < xpathResult.snapshotLength; i++) {
@@ -2717,6 +2722,38 @@ var findPrecedingAncestorSiblingEpubPageBreak = function (element) {
             _allEpubPageBreaks = [];
         }
         debug("_allEpubPageBreaks XPath", _allEpubPageBreaks.length, xpathResult.snapshotLength);
+        if (highlight_2.ENABLE_PAGEBREAK_MARGIN_TEXT_EXPERIMENT) {
+            (0, highlight_2.destroyHighlightsGroup)(win.document, highlight_2.HIGHLIGHT_GROUP_PAGEBREAK);
+            var highlightDefinitions = [];
+            try {
+                for (var _allEpubPageBreaks_1 = tslib_1.__values(_allEpubPageBreaks), _allEpubPageBreaks_1_1 = _allEpubPageBreaks_1.next(); !_allEpubPageBreaks_1_1.done; _allEpubPageBreaks_1_1 = _allEpubPageBreaks_1.next()) {
+                    var pageBreak = _allEpubPageBreaks_1_1.value;
+                    var range = new Range();
+                    range.selectNode(pageBreak.element);
+                    highlightDefinitions.push({
+                        color: {
+                            blue: 60,
+                            green: 76,
+                            red: 231,
+                        },
+                        drawType: highlight_1.HighlightDrawTypeOutline,
+                        expand: 1,
+                        selectionInfo: undefined,
+                        group: highlight_2.HIGHLIGHT_GROUP_PAGEBREAK,
+                        range: range,
+                        marginText: pageBreak.text ? pageBreak.text : undefined,
+                    });
+                }
+            }
+            catch (e_11_1) { e_11 = { error: e_11_1 }; }
+            finally {
+                try {
+                    if (_allEpubPageBreaks_1_1 && !_allEpubPageBreaks_1_1.done && (_a = _allEpubPageBreaks_1.return)) _a.call(_allEpubPageBreaks_1);
+                }
+                finally { if (e_11) throw e_11.error; }
+            }
+            (0, highlight_2.createHighlights)(win, highlightDefinitions, true);
+        }
     }
     for (var i = _allEpubPageBreaks.length - 1; i >= 0; i--) {
         var pageBreak = _allEpubPageBreaks[i];
@@ -3087,7 +3124,7 @@ if (!win.READIUM2.isAudio) {
         }
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_HIGHLIGHT_CREATE, function (_event, payloadPing) {
-        var e_11, _a;
+        var e_12, _a;
         if (payloadPing.highlightDefinitions &&
             payloadPing.highlightDefinitions.length === 1 &&
             payloadPing.highlightDefinitions[0].selectionInfo) {
@@ -3113,14 +3150,14 @@ if (!win.READIUM2.isAudio) {
                 }
             }
         }
-        catch (e_11_1) { e_11 = { error: e_11_1 }; }
+        catch (e_12_1) { e_12 = { error: e_12_1 }; }
         finally {
             try {
                 if (highlightDefinitions_1_1 && !highlightDefinitions_1_1.done && (_a = highlightDefinitions_1.return)) _a.call(highlightDefinitions_1);
             }
-            finally { if (e_11) throw e_11.error; }
+            finally { if (e_12) throw e_12.error; }
         }
-        var highlights = (0, highlight_1.createHighlights)(win, highlightDefinitions, true);
+        var highlights = (0, highlight_2.createHighlights)(win, highlightDefinitions, true);
         var payloadPong = {
             highlightDefinitions: payloadPing.highlightDefinitions,
             highlights: highlights.length ? highlights : undefined,
@@ -3129,31 +3166,31 @@ if (!win.READIUM2.isAudio) {
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_HIGHLIGHT_REMOVE, function (_event, payload) {
         payload.highlightIDs.forEach(function (highlightID) {
-            (0, highlight_1.destroyHighlight)(win.document, highlightID);
+            (0, highlight_2.destroyHighlight)(win.document, highlightID);
         });
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_HIGHLIGHT_DRAW_MARGIN, function (_event, payload) {
-        (0, highlight_1.setDrawMargin)(win, payload.drawMargin);
+        (0, highlight_2.setDrawMargin)(win, payload.drawMargin);
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_HIGHLIGHT_REMOVE_ALL, function (_event, payload) {
-        var e_12, _a;
+        var e_13, _a;
         if (payload.groups) {
             try {
                 for (var _b = tslib_1.__values(payload.groups), _c = _b.next(); !_c.done; _c = _b.next()) {
                     var group = _c.value;
-                    (0, highlight_1.destroyHighlightsGroup)(win.document, group);
+                    (0, highlight_2.destroyHighlightsGroup)(win.document, group);
                 }
             }
-            catch (e_12_1) { e_12 = { error: e_12_1 }; }
+            catch (e_13_1) { e_13 = { error: e_13_1 }; }
             finally {
                 try {
                     if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
                 }
-                finally { if (e_12) throw e_12.error; }
+                finally { if (e_13) throw e_13.error; }
             }
         }
         else {
-            (0, highlight_1.destroyAllhighlights)(win.document);
+            (0, highlight_2.destroyAllhighlights)(win.document);
         }
     });
 }

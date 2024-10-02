@@ -3,6 +3,9 @@ import { IColor, IHighlight, IHighlightDefinition } from "../../common/highlight
 import { ISelectionInfo } from "../../common/selection";
 import { ReadiumElectronWebviewWindow } from "./state";
 export declare const ENABLE_CSS_HIGHLIGHTS = true;
+export declare const ENABLE_PAGEBREAK_MARGIN_TEXT_EXPERIMENT = false;
+export declare const HIGHLIGHT_GROUP_TTS = "tts";
+export declare const HIGHLIGHT_GROUP_PAGEBREAK = "pagebreak";
 export declare const setDrawMargin: (win: ReadiumElectronWebviewWindow, drawMargin: boolean | string[]) => void;
 export declare function getBoundingClientRectOfDocumentBody(win: ReadiumElectronWebviewWindow): DOMRect;
 export declare function hideAllhighlights(_documant: Document): void;
@@ -13,4 +16,4 @@ export declare function recreateAllHighlightsRaw(win: ReadiumElectronWebviewWind
 export declare const recreateAllHighlightsDebounced: debounce.DebouncedFunction<(win: ReadiumElectronWebviewWindow) => void>;
 export declare function recreateAllHighlights(win: ReadiumElectronWebviewWindow): void;
 export declare function createHighlights(win: ReadiumElectronWebviewWindow, highDefs: IHighlightDefinition[], pointerInteraction: boolean): Array<IHighlight | null>;
-export declare function createHighlight(win: ReadiumElectronWebviewWindow, selectionInfo: ISelectionInfo | undefined, range: Range | undefined, color: IColor | undefined, pointerInteraction: boolean, drawType: number | undefined, expand: number | undefined, group: string | undefined, bodyRect: DOMRect, bodyComputedStyle: CSSStyleDeclaration): [IHighlight, HTMLDivElement | null];
+export declare function createHighlight(win: ReadiumElectronWebviewWindow, selectionInfo: ISelectionInfo | undefined, range: Range | undefined, color: IColor | undefined, pointerInteraction: boolean, drawType: number | undefined, expand: number | undefined, group: string | undefined, marginText: string | undefined, bodyRect: DOMRect, bodyComputedStyle: CSSStyleDeclaration): [IHighlight, HTMLDivElement | null];

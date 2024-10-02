@@ -435,7 +435,7 @@ function wrapHighlightWord(ttsQueueItemRef, utteranceText, charIndex, charLength
                 drawType: highlight_1.HighlightDrawTypeUnderline,
                 expand: highlight_2.ENABLE_CSS_HIGHLIGHTS ? 0 : 2,
                 selectionInfo: undefined,
-                group: "tts",
+                group: highlight_2.HIGHLIGHT_GROUP_TTS,
                 range: range,
             },
         ];
@@ -544,7 +544,7 @@ function wrapHighlight(doHighlight, ttsQueueItemRef) {
                     drawType: highlight_1.HighlightDrawTypeBackground,
                     expand: 4,
                     selectionInfo: undefined,
-                    group: "tts",
+                    group: highlight_2.HIGHLIGHT_GROUP_TTS,
                     range: range,
                 },
             ];

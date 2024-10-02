@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.recreateAllHighlightsDebounced = exports.setDrawMargin = exports.ENABLE_CSS_HIGHLIGHTS = void 0;
+exports.recreateAllHighlightsDebounced = exports.setDrawMargin = exports.HIGHLIGHT_GROUP_PAGEBREAK = exports.HIGHLIGHT_GROUP_TTS = exports.ENABLE_PAGEBREAK_MARGIN_TEXT_EXPERIMENT = exports.ENABLE_CSS_HIGHLIGHTS = void 0;
 exports.getBoundingClientRectOfDocumentBody = getBoundingClientRectOfDocumentBody;
 exports.hideAllhighlights = hideAllhighlights;
 exports.destroyAllhighlights = destroyAllhighlights;
@@ -26,6 +26,7 @@ const { unify, subtract } = core_1.BooleanOperations;
 const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 window.DEBUG_RECTS = IS_DEV && rect_utils_1.VERBOSE;
 exports.ENABLE_CSS_HIGHLIGHTS = true && !!CSS.highlights;
+exports.ENABLE_PAGEBREAK_MARGIN_TEXT_EXPERIMENT = false;
 const cleanupPolygon = (polygonAccumulator, off) => {
     const DEBUG_RECTS = window.DEBUG_RECTS;
     const minLength = Math.abs(off) + 1;
@@ -538,8 +539,16 @@ const DEFAULT_BACKGROUND_COLOR = {
     red: 255,
 };
 const _highlights = [];
+exports.HIGHLIGHT_GROUP_TTS = "tts";
+exports.HIGHLIGHT_GROUP_PAGEBREAK = "pagebreak";
 let _drawMargin = false;
 const drawMargin = (h) => {
+    if (h.group === exports.HIGHLIGHT_GROUP_TTS) {
+        return false;
+    }
+    if (h.group === exports.HIGHLIGHT_GROUP_PAGEBREAK) {
+        return true;
+    }
     if (Array.isArray(_drawMargin)) {
         if (h.group) {
             return _drawMargin.includes(h.group);
@@ -626,9 +635,11 @@ function processMouseEvent(win, ev) {
     if (foundElement && foundHighlight && foundHighlight.pointerInteraction) {
         if (isMouseMove) {
             foundElement.classList.add(styles_1.CLASS_HIGHLIGHT_HOVER);
-            documant.documentElement.classList.add(styles_1.CLASS_HIGHLIGHT_CURSOR2);
+            if (foundHighlight.group !== exports.HIGHLIGHT_GROUP_PAGEBREAK) {
+                documant.documentElement.classList.add(styles_1.CLASS_HIGHLIGHT_CURSOR2);
+            }
         }
-        else if (ev.type === "mouseup" || ev.type === "click") {
+        else if ((ev.type === "mouseup" || ev.type === "click") && foundHighlight.group !== exports.HIGHLIGHT_GROUP_PAGEBREAK) {
             documant.documentElement.classList.remove(styles_1.CLASS_HIGHLIGHT_CURSOR2);
             ev.preventDefault();
             ev.stopPropagation();
@@ -822,7 +833,7 @@ function createHighlights(win, highDefs, pointerInteraction) {
             highlights.push(null);
             continue;
         }
-        const [high, div] = createHighlight(win, highDef.selectionInfo, highDef.range, highDef.color, pointerInteraction, highDef.drawType, highDef.expand, highDef.group, bodyRect, bodyComputedStyle);
+        const [high, div] = createHighlight(win, highDef.selectionInfo, highDef.range, highDef.color, pointerInteraction, highDef.drawType, highDef.expand, highDef.group, highDef.marginText, bodyRect, bodyComputedStyle);
         highlights.push(high);
         if (div) {
             docFrag.append(div);
@@ -860,7 +871,7 @@ const computeCFI = (node) => {
     }
     return "/" + cfi;
 };
-function createHighlight(win, selectionInfo, range, color, pointerInteraction, drawType, expand, group, bodyRect, bodyComputedStyle) {
+function createHighlight(win, selectionInfo, range, color, pointerInteraction, drawType, expand, group, marginText, bodyRect, bodyComputedStyle) {
     const uniqueStr = selectionInfo ? `${selectionInfo.rangeInfo.startContainerElementCssSelector}${selectionInfo.rangeInfo.startContainerChildTextNodeIndex}${selectionInfo.rangeInfo.startOffset}${selectionInfo.rangeInfo.endContainerElementCssSelector}${selectionInfo.rangeInfo.endContainerChildTextNodeIndex}${selectionInfo.rangeInfo.endOffset}` : range ? `${range.startOffset}-${range.endOffset}-${computeCFI(range.startContainer)}-${computeCFI(range.endContainer)}` : "_RANGE_";
     const checkSum = crypto.createHash("sha1");
     checkSum.update(uniqueStr);
@@ -884,6 +895,7 @@ function createHighlight(win, selectionInfo, range, color, pointerInteraction, d
         selectionInfo,
         range,
         group,
+        marginText,
     };
     _highlights.push(highlight);
     const div = createHighlightDom(win, highlight, bodyRect, bodyComputedStyle);
@@ -1464,7 +1476,7 @@ https://blackorwhite.lloydk.ca
         const highlightMarginSVG = documant.createElementNS(SVG_XML_NAMESPACE, "svg");
         highlightMarginSVG.setAttribute("class", `${styles_1.CLASS_HIGHLIGHT_COMMON} ${styles_1.CLASS_HIGHLIGHT_CONTOUR_MARGIN}`);
         highlightMarginSVG.polygon = polygonMarginUnionPoly;
-        highlightMarginSVG.innerHTML = polygonMarginUnionPoly.svg({
+        const svgPath = polygonMarginUnionPoly.svg({
             fill: `rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue})`,
             fillRule: "evenodd",
             stroke: "transparent",
@@ -1472,6 +1484,23 @@ https://blackorwhite.lloydk.ca
             fillOpacity: 1,
             className: undefined,
         });
+        if (exports.ENABLE_PAGEBREAK_MARGIN_TEXT_EXPERIMENT) {
+            let svg = svgPath;
+            highlight.marginText = "Long test 1.";
+            if (highlight.marginText) {
+                const m = svg.match(/d="\s*M([0-9]+\.?[0-9]*),([0-9]+\.?[0-9]*)/);
+                if (m && m[1] && m[2]) {
+                    const r2SvgHighlightsTextFilterID = `r2SvgFilterR${highlight.color.red}G${highlight.color.green}B${highlight.color.blue}`;
+                    const el = highlightParent.querySelector(`#${r2SvgHighlightsTextFilterID}`);
+                    const filter = el ? "" : `<defs><filter x="0" y="0" width="1" height="1" id="${r2SvgHighlightsTextFilterID}"><feFlood flood-color="rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue})" result="bg" /><feMerge><feMergeNode in="bg"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>`;
+                    svg = `${filter}${svgPath}<text x="${m[1]}" y="${m[2]}" class="${styles_1.CLASS_HIGHLIGHT_CONTOUR_MARGIN}_" font-size="stroke:red; fill: magenta;" filter="url(#${r2SvgHighlightsTextFilterID})">${highlight.marginText}</text>`;
+                }
+            }
+            highlightMarginSVG.innerHTML = svg;
+        }
+        else {
+            highlightMarginSVG.innerHTML = svgPath;
+        }
         highlightParent.append(highlightMarginSVG);
     }
     return highlightParent;
