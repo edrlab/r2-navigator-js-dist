@@ -159,7 +159,8 @@ function readiumCssApplyToWebview(loc, activeWebView, pubLink, rcss) {
     var actualReadiumCss = (0, readium_css_1.obtainReadiumCss)(rcss);
     activeWebView.READIUM2.readiumCss = actualReadiumCss;
     var payloadRcss = (0, readium_css_1.adjustReadiumCssJsonMessageForFixedLayout)(activeWebView, pubLink || activeWebView.READIUM2.link, actualReadiumCss);
-    if (activeWebView.style.transform &&
+    if (styles_1.ENABLE_EXTRA_COLUMN_SHIFT_METHOD &&
+        activeWebView.style.transform &&
         activeWebView.style.transform !== "none" &&
         !activeWebView.hasAttribute("data-wv-fxl")) {
         activeWebView.style.opacity = "0";
@@ -219,7 +220,7 @@ function fixedLayoutZoomPercent(zoomPercent) {
     win.READIUM2.fixedLayoutZoomPercent = zoomPercent;
     var activeWebViews = win.READIUM2.getActiveWebViews();
     var _loop_1 = function (activeWebView) {
-        if (_fixedLayoutZoomPercentTimers[activeWebView.id]) {
+        if (_fixedLayoutZoomPercentTimers[activeWebView.id] !== undefined) {
             win.clearTimeout(_fixedLayoutZoomPercentTimers[activeWebView.id]);
             _fixedLayoutZoomPercentTimers[activeWebView.id] = undefined;
         }
@@ -350,7 +351,7 @@ function createWebViewInternal(preloadScriptPath) {
                 }
             }
         }
-        else if (event.channel === events_1.R2_EVENT_SHOW) {
+        else if (event.channel === events_1.R2_EVENT_SHOW && styles_1.ENABLE_EXTRA_COLUMN_SHIFT_METHOD) {
             webview.style.opacity = "1";
         }
         else if (event.channel === events_1.R2_EVENT_FXL_CONFIGURE) {

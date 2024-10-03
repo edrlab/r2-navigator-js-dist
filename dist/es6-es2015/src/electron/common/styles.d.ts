@@ -1,8 +1,10 @@
+export declare const ENABLE_EXTRA_COLUMN_SHIFT_METHOD = false;
 export declare enum WebViewSlotEnum {
     center = "center",
     left = "left",
     right = "right"
 }
+export declare const EXTRA_COLUMN_PAD_ID = "r2-extra-column-pad";
 export declare const CLASS_VWM = "r2-class-VWM";
 export declare const CLASS_PAGINATED = "r2-css-paginated";
 export declare const HIDE_CURSOR_CLASS = "r2-hideCursor";
@@ -65,6 +67,7 @@ export declare const CLASS_HIGHLIGHT_MARGIN = "R2_CLASS_HIGHLIGHT_MARGIN";
 export declare const CLASS_HIGHLIGHT_BEHIND = "R2_CLASS_HIGHLIGHT_BEHIND";
 export declare const CLASS_HIGHLIGHT_HOVER = "R2_CLASS_HIGHLIGHT_HOVER";
 export declare const CLASS_HIGHLIGHT_CURSOR2 = "R2_CLASS_HIGHLIGHT_CURSOR2";
+export declare const ENABLE_VISIBILITY_MASK = false;
 export declare const ROOT_CLASS_INVISIBLE_MASK = "r2-visibility-mask-class";
 export declare const ROOT_CLASS_INVISIBLE_MASK_REMOVED = "r2-visibility-mask-removed-class";
 export declare const visibilityMaskCssStyles: string;

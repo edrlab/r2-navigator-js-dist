@@ -1101,6 +1101,22 @@ var computeCssHighlightRGBID = function (highlight) {
     var cssHighlightID = "highlight_".concat(strRGB);
     return [strRGB, cssHighlightID];
 };
+var calcRGB = function (rgb) {
+    return (rgb <= 0.03928) ? rgb / 12.92 : Math.pow(((rgb + 0.055) / 1.055), 2.4);
+};
+var computeHighContrastForegroundColourForBackground = function (color) {
+    var foregroundColour = "#ffffff";
+    var red = calcRGB(color.red);
+    var green = calcRGB(color.green);
+    var blue = calcRGB(color.blue);
+    var luminance = 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+    var pickBlack = (luminance + 0.05) / 0.05;
+    var pickWhite = 1.05 / (luminance + 0.05);
+    if (pickBlack > pickWhite) {
+        foregroundColour = "#000000";
+    }
+    return foregroundColour;
+};
 var JAPANESE_RUBY_TO_SKIP = ["rt", "rp"];
 function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     var e_19, _a, e_20, _b, e_21, _c, e_22, _d, e_23, _f, e_24, _g, e_25, _h, e_26, _j, e_27, _k, e_28, _l, e_29, _m, e_30, _o;
@@ -1153,11 +1169,12 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
         var _q = tslib_1.__read(computeCssHighlightRGBID(highlight), 2), strRGB = _q[0], cssHighlightID = _q[1];
         var styleElement = win.document.getElementById("Readium2-" + strRGB);
         if (!styleElement) {
+            var foregroundColour = computeHighContrastForegroundColourForBackground(highlight.color);
             (0, readium_css_inject_1.appendCSSInline)(win.document, strRGB, drawUnderline || drawStrikeThrough
                 ?
                     "\n::highlight(".concat(cssHighlightID, ") {\n    text-decoration-color: rgb(").concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ");\n    text-decoration-style: solid;\n    text-decoration-thickness: 0.16em;\n    text-decoration-line: ").concat(drawUnderline ? "underline" : "line-through", ";\n}\n")
                 :
-                    "\n/*\nhttps://lea.verou.me/blog/2024/contrast-color\nhttps://blackorwhite.lloydk.ca\n*/\n\n::highlight(".concat(cssHighlightID, ") {\n    background-color: rgb(").concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ");\n\n    color: white;\n    text-shadow: 0 0 .05em black, 0 0 .05em black, 0 0 .05em black, 0 0 .05em black;\n}\n\n@supports (color: oklch(from red l c h)) {\n\n    ::highlight(").concat(cssHighlightID, ") {\n        background-color: rgb(").concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ");\n\n        color: oklch(from rgb(").concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ") clamp(0, (0.7 / l - 1) * infinity, 1) c h);\n\n        text-shadow: none;\n    }\n}\n\n@supports (color: oklch(from color-mix(in oklch, red, tan) l c h)) {\n\n    ::highlight(").concat(cssHighlightID, ") {\n        background-color: rgb(").concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ");\n\n        color: color(from rgb(").concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ") xyz-d65 clamp(0, (0.36 / y - 1) * infinity, 1) clamp(0, (0.36 / y - 1) * infinity, 1) clamp(0, (0.36 / y - 1) * infinity, 1));\n\n        text-shadow: none;\n    }\n}\n\n@supports (color: contrast-color(red)) {\n\n    ::highlight(").concat(cssHighlightID, ") {\n        background-color: rgb(").concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ");\n\n        color: contrast-color(rgb(").concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, "));\n        text-shadow: none;\n    }\n}\n"));
+                    "\n::highlight(".concat(cssHighlightID, ") {\n    background-color: rgb(").concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ");\n    color: ").concat(foregroundColour, ";\n}\n@supports (color: contrast-color(red)) {\n\n    ::highlight(").concat(cssHighlightID, ") {\n        background-color: rgb(").concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, ");\n\n        color: contrast-color(rgb(").concat(highlight.color.red, ", ").concat(highlight.color.green, ", ").concat(highlight.color.blue, "));\n        text-shadow: none;\n    }\n}\n"));
         }
         var cssHighlight = CSS.highlights.get(cssHighlightID);
         if (!cssHighlight) {

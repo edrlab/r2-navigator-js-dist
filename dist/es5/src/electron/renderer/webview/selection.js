@@ -63,6 +63,7 @@ var setSelectionChangeAction = function (win, func) {
     (_a = win.document) === null || _a === void 0 ? void 0 : _a.addEventListener("selectionchange", function (_ev) {
         if (_selectionChangeTimeout !== undefined) {
             win.clearTimeout(_selectionChangeTimeout);
+            _selectionChangeTimeout = undefined;
         }
         if (_ignoreSelectionChangeEvent) {
             _ignoreSelectionChangeEvent = false;
@@ -80,8 +81,8 @@ function clearCurrentSelection(win) {
     }
     _ignoreSelectionChangeEvent = true;
     _selectionChangeTimeout = win.setTimeout(function () {
-        _ignoreSelectionChangeEvent = false;
         _selectionChangeTimeout = undefined;
+        _ignoreSelectionChangeEvent = false;
     }, 200);
     selection.removeAllRanges();
     if ((_a = win.READIUM2.locationHashOverrideInfo) === null || _a === void 0 ? void 0 : _a.selectionInfo) {

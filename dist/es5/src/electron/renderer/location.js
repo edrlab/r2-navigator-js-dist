@@ -34,9 +34,9 @@ var debug = debug_("r2:navigator#electron/renderer/location");
 var IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 var win = global.window;
 var webviewStyleCommon = "display: flex; border: 0; margin: 0; padding: 0; box-sizing: border-box; position: absolute; ";
-var webviewStyleLeft = "opacity: 0; " + webviewStyleCommon + "left: 0; width: 50%; bottom: 0; top: 0;";
-var webviewStyleRight = "opacity: 0; " + webviewStyleCommon + "left: 50%; right: 0; bottom: 0; top: 0;";
-var webviewStyleCenter = "opacity: 0; " + webviewStyleCommon + "left: 0; right: 0; bottom: 0; top: 0;";
+var webviewStyleLeft = "opacity: ".concat(styles_1.ENABLE_EXTRA_COLUMN_SHIFT_METHOD ? 0 : 1, "; ") + webviewStyleCommon + "left: 0; width: 50%; bottom: 0; top: 0;";
+var webviewStyleRight = "opacity: ".concat(styles_1.ENABLE_EXTRA_COLUMN_SHIFT_METHOD ? 0 : 1, "; ") + webviewStyleCommon + "left: 50%; right: 0; bottom: 0; top: 0;";
+var webviewStyleCenter = "opacity: ".concat(styles_1.ENABLE_EXTRA_COLUMN_SHIFT_METHOD ? 0 : 1, "; ") + webviewStyleCommon + "left: 0; right: 0; bottom: 0; top: 0;";
 var webviewStyleLeft_ = "opacity: 1; " + webviewStyleCommon +
     "left: 0; top: calc(0 - max(var(--R2_FXL_Y_SHIFT), var(--R2_FXL_Y_SHIFT_)));";
 var webviewStyleRight_ = "opacity: 1; " + webviewStyleCommon +
@@ -754,7 +754,8 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
             debug(msgStr);
         }
         if (activeWebView) {
-            if (activeWebView.style.transform &&
+            if (styles_1.ENABLE_EXTRA_COLUMN_SHIFT_METHOD &&
+                activeWebView.style.transform &&
                 activeWebView.style.transform !== "none" &&
                 !activeWebView.hasAttribute("data-wv-fxl")) {
                 activeWebView.style.opacity = "0";
@@ -954,7 +955,8 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
                                 && activeWebView.READIUM2.link !== null;
                             activeWebView.READIUM2.link = pubLink;
                             activeWebView.READIUM2.highlights = highlights_2;
-                            if (activeWebView.style.transform &&
+                            if (styles_1.ENABLE_EXTRA_COLUMN_SHIFT_METHOD &&
+                                activeWebView.style.transform &&
                                 activeWebView.style.transform !== "none" &&
                                 !activeWebView.hasAttribute("data-wv-fxl")) {
                                 if (webviewAlreadyHasContent) {

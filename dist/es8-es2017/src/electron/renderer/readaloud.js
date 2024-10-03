@@ -48,7 +48,7 @@ function checkTtsStateRaw(wasStopped, wv) {
     var _a;
     if (wasStopped || win.READIUM2.ttsClickEnabled) {
         if ((_a = wv.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href) {
-            if (_ttsAutoPlayTimeout) {
+            if (_ttsAutoPlayTimeout !== undefined) {
                 win.clearTimeout(_ttsAutoPlayTimeout);
                 _ttsAutoPlayTimeout = undefined;
             }

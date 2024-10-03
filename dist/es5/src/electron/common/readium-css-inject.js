@@ -759,8 +759,10 @@ function readiumCssTransformHtml(htmlStr, readiumcssJson, mediaType) {
     var htmlStrToParse = "<?xml version=\"1.0\" encoding=\"utf-8\"?>".concat(parseableChunk, "TXT</body></html>");
     var documantFromXmlDom = (0, dom_1.parseDOM)(htmlStrToParse, mediaType);
     documantFromXmlDom.documentElement.setAttribute("data-readiumcss-injected", "yes");
-    documantFromXmlDom.documentElement.classList.add(styles_1.ROOT_CLASS_INVISIBLE_MASK);
-    documantFromXmlDom.documentElement.classList.remove(styles_1.ROOT_CLASS_INVISIBLE_MASK_REMOVED);
+    if (styles_1.ENABLE_VISIBILITY_MASK) {
+        documantFromXmlDom.documentElement.classList.add(styles_1.ROOT_CLASS_INVISIBLE_MASK);
+        documantFromXmlDom.documentElement.classList.remove(styles_1.ROOT_CLASS_INVISIBLE_MASK_REMOVED);
+    }
     var rtl = isDocRTL(documantFromXmlDom);
     var vertical = isDocVertical(documantFromXmlDom);
     if (readiumcssJson) {

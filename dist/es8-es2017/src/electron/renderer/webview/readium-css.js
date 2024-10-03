@@ -104,6 +104,10 @@ const isTwoPageSpread = () => {
     if (paginatedTwo && (bodyWidth * 2) > scrollElement.clientWidth) {
         paginatedTwo = false;
     }
+    if (docColumnCount && isNaN(docColumnCount)
+        && (bodyWidth * 2) <= (scrollElement.clientWidth + 10)) {
+        paginatedTwo = true;
+    }
     return paginatedTwo;
 };
 exports.isTwoPageSpread = isTwoPageSpread;
@@ -193,7 +197,7 @@ function computeVerticalRTL() {
                 break;
             }
             const id = childEl.id || childEl.getAttribute("id");
-            if (id === styles_3.SKIP_LINK_ID || id === styles_3.ID_HIGHLIGHTS_CONTAINER) {
+            if (id === styles_3.SKIP_LINK_ID || id === styles_3.ID_HIGHLIGHTS_CONTAINER || id === styles_1.EXTRA_COLUMN_PAD_ID || id === styles_1.POPUP_DIALOG_CLASS) {
                 continue;
             }
             singleChild = childEl;

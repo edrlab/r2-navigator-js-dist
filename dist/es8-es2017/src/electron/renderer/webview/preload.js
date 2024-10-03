@@ -333,7 +333,7 @@ function isVisible(allowPartial, element, domRect) {
         return false;
     }
     const scrollLeftPotentiallyExcessive = getScrollOffsetIntoView(element, domRect);
-    const extraShift = scrollElement.scrollLeftExtra;
+    const extraShift = styles_1.ENABLE_EXTRA_COLUMN_SHIFT_METHOD ? scrollElement.scrollLeftExtra : 0;
     let currentOffset = scrollElement.scrollLeft;
     if (extraShift) {
         currentOffset += (((currentOffset < 0) ? -1 : 1) * extraShift);
@@ -502,6 +502,9 @@ function elementCapturesKeyboardArrowKeys(target) {
     return false;
 }
 function ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable() {
+    if (!styles_1.ENABLE_EXTRA_COLUMN_SHIFT_METHOD) {
+        return 0;
+    }
     const scrollElement = (0, readium_css_1.getScrollingElement)(win.document);
     const val = scrollElement.scrollLeftExtra;
     if (val === 0) {
@@ -512,6 +515,9 @@ function ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable() {
     return val;
 }
 function ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable(scrollLeftExtra) {
+    if (!styles_1.ENABLE_EXTRA_COLUMN_SHIFT_METHOD) {
+        return;
+    }
     const scrollElement = (0, readium_css_1.getScrollingElement)(win.document);
     scrollElement.scrollLeftExtra = scrollLeftExtra;
     const scrollLeftExtraBackgroundColor = scrollElement.scrollLeftExtraBackgroundColor;
@@ -521,6 +527,9 @@ function ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable(scrollLeftExtra) {
     });
 }
 function ensureTwoPageSpreadWithOddColumnsIsOffset(scrollOffset, maxScrollShift) {
+    if (!styles_1.ENABLE_EXTRA_COLUMN_SHIFT_METHOD) {
+        return;
+    }
     if (!win || !win.document || !win.document.body || !win.document.documentElement) {
         return;
     }
@@ -1122,12 +1131,17 @@ const scrollToHashDebounced = debounce((animate) => {
 }, 100);
 let _ignoreScrollEvent = false;
 function showHideContentMask(doHide, isFixedLayout) {
+    if (!styles_1.ENABLE_VISIBILITY_MASK) {
+        return;
+    }
     if (doHide) {
         win.document.documentElement.classList.add(styles_1.ROOT_CLASS_INVISIBLE_MASK);
         win.document.documentElement.classList.remove(styles_1.ROOT_CLASS_INVISIBLE_MASK_REMOVED);
     }
     else {
-        electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_SHOW, null);
+        if (styles_1.ENABLE_EXTRA_COLUMN_SHIFT_METHOD) {
+            electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_SHOW, null);
+        }
         if (isFixedLayout) {
             win.document.documentElement.classList.add(styles_1.ROOT_CLASS_INVISIBLE_MASK_REMOVED);
         }
@@ -1358,6 +1372,39 @@ const onScrollRaw = () => {
 const onScrollDebounced = debounce(() => {
     onScrollRaw();
 }, 300);
+const appendExtraColumnPadIfNecessary = (skipResizeObserver) => {
+    if (styles_1.ENABLE_EXTRA_COLUMN_SHIFT_METHOD) {
+        return;
+    }
+    let elPad = win.document.getElementById(styles_1.EXTRA_COLUMN_PAD_ID);
+    const isPaged = (0, readium_css_inject_1.isPaginated)(win.document);
+    const isTwo = (0, readium_css_1.isTwoPageSpread)();
+    const isVWM = (0, readium_css_1.isVerticalWritingMode)();
+    if (isVWM || !isPaged || !isTwo) {
+    }
+    else {
+        const { maxScrollShift, maxScrollShiftAdjusted } = (0, readium_css_1.calculateMaxScrollShift)();
+        if (maxScrollShiftAdjusted > maxScrollShift) {
+            elPad = win.document.createElement("div");
+            elPad.setAttribute("id", styles_1.EXTRA_COLUMN_PAD_ID);
+            elPad.style.breakBefore = "column";
+            elPad.innerHTML = "&#8203;";
+            if (!skipResizeObserver) {
+                _firstResizeObserver = true;
+                _firstResizeObserverTimeout = win.setTimeout(() => {
+                    _firstResizeObserverTimeout = undefined;
+                    if (_firstResizeObserver) {
+                        _firstResizeObserver = false;
+                        debug("ResizeObserver CANCEL SKIP FIRST (extra col pad)");
+                    }
+                }, 400);
+            }
+            win.document.body.appendChild(elPad);
+        }
+    }
+};
+let _firstResizeObserver = true;
+let _firstResizeObserverTimeout = undefined;
 let _loaded = false;
 function loaded(forced) {
     if (_loaded) {
@@ -1404,6 +1451,7 @@ function loaded(forced) {
     }
     else {
         if (!win.READIUM2.isFixedLayout) {
+            appendExtraColumnPadIfNecessary(true);
             showHideContentMask(false, win.READIUM2.isFixedLayout);
             debug("++++ scrollToHashDebounced FROM LOAD");
             scrollToHashDebounced(false);
@@ -1495,18 +1543,30 @@ function loaded(forced) {
     const useResizeObserver = !win.READIUM2.isFixedLayout;
     if (useResizeObserver && win.document.body) {
         setTimeout(() => {
-            let _firstResizeObserver = true;
             const resizeObserver = new win.ResizeObserver((_entries) => {
+                if (_firstResizeObserverTimeout !== undefined) {
+                    win.clearTimeout(_firstResizeObserverTimeout);
+                    _firstResizeObserverTimeout = undefined;
+                }
                 if (_firstResizeObserver) {
                     _firstResizeObserver = false;
                     debug("ResizeObserver SKIP FIRST");
                     return;
                 }
                 win.document.body.tabbables = undefined;
+                const elPad = win.document.getElementById(styles_1.EXTRA_COLUMN_PAD_ID);
+                if (elPad) {
+                    setTimeout(() => {
+                        elPad === null || elPad === void 0 ? void 0 : elPad.remove();
+                    }, 100);
+                    return;
+                }
+                appendExtraColumnPadIfNecessary(false);
                 scrollToHashDebounced(false);
             });
             resizeObserver.observe(win.document.body);
-            setTimeout(() => {
+            _firstResizeObserverTimeout = win.setTimeout(() => {
+                _firstResizeObserverTimeout = undefined;
                 if (_firstResizeObserver) {
                     _firstResizeObserver = false;
                     debug("ResizeObserver CANCEL SKIP FIRST");
@@ -1516,12 +1576,13 @@ function loaded(forced) {
     }
     let _mouseMoveTimeout;
     win.document.documentElement.addEventListener("mousemove", (_ev) => {
-        if (_mouseMoveTimeout) {
+        if (_mouseMoveTimeout !== undefined) {
             win.clearTimeout(_mouseMoveTimeout);
             _mouseMoveTimeout = undefined;
         }
         win.document.documentElement.classList.remove(styles_1.HIDE_CURSOR_CLASS);
         _mouseMoveTimeout = win.setTimeout(() => {
+            _mouseMoveTimeout = undefined;
             win.document.documentElement.classList.add(styles_1.HIDE_CURSOR_CLASS);
         }, 1000);
     });
@@ -2241,7 +2302,7 @@ const computeProgressionData = () => {
                 progressionRatio = scrollElement.scrollTop / maxScrollShift;
             }
             else {
-                extraShift = scrollElement.scrollLeftExtra;
+                extraShift = styles_1.ENABLE_EXTRA_COLUMN_SHIFT_METHOD ? scrollElement.scrollLeftExtra : 0;
                 if (extraShift) {
                     progressionRatio = ((((0, readium_css_1.isRTL)() ? -1 : 1) * scrollElement.scrollLeft) + extraShift) /
                         maxScrollShiftAdjusted;
@@ -2375,9 +2436,9 @@ const computeProgressionData = () => {
     };
 };
 exports.computeProgressionData = computeProgressionData;
-const _blacklistIdClassForCssSelectors = [styles_1.LINK_TARGET_CLASS, styles_1.LINK_TARGET_ALT_CLASS, styles_1.CSS_CLASS_NO_FOCUS_OUTLINE, styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, styles_1.ID_HIGHLIGHTS_CONTAINER, styles_1.CLASS_HIGHLIGHT_CONTAINER, styles_1.CLASS_HIGHLIGHT_CONTOUR, styles_1.CLASS_HIGHLIGHT_CONTOUR_MARGIN, styles_1.TTS_ID_SPEAKING_DOC_ELEMENT, styles_1.ROOT_CLASS_KEYBOARD_INTERACT, styles_1.ROOT_CLASS_INVISIBLE_MASK, styles_1.ROOT_CLASS_INVISIBLE_MASK_REMOVED, styles_1.CLASS_PAGINATED, styles_1.ROOT_CLASS_NO_FOOTNOTES, styles_1.ROOT_CLASS_NO_RUBY];
+const _blacklistIdClassForCssSelectors = [styles_1.EXTRA_COLUMN_PAD_ID, styles_1.LINK_TARGET_CLASS, styles_1.LINK_TARGET_ALT_CLASS, styles_1.CSS_CLASS_NO_FOCUS_OUTLINE, styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, styles_1.ID_HIGHLIGHTS_CONTAINER, styles_1.CLASS_HIGHLIGHT_CONTAINER, styles_1.CLASS_HIGHLIGHT_CONTOUR, styles_1.CLASS_HIGHLIGHT_CONTOUR_MARGIN, styles_1.TTS_ID_SPEAKING_DOC_ELEMENT, styles_1.ROOT_CLASS_KEYBOARD_INTERACT, styles_1.ROOT_CLASS_INVISIBLE_MASK, styles_1.ROOT_CLASS_INVISIBLE_MASK_REMOVED, styles_1.CLASS_PAGINATED, styles_1.ROOT_CLASS_NO_FOOTNOTES, styles_1.ROOT_CLASS_NO_RUBY];
 const _blacklistIdClassForCssSelectorsMathJax = ["mathjax", "ctxt", "mjx", "r2-wbr"];
-const _blacklistIdClassForCFI = [styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, styles_1.ID_HIGHLIGHTS_CONTAINER, styles_1.CLASS_HIGHLIGHT_CONTAINER, styles_1.CLASS_HIGHLIGHT_CONTOUR, styles_1.CLASS_HIGHLIGHT_CONTOUR_MARGIN];
+const _blacklistIdClassForCFI = [styles_1.EXTRA_COLUMN_PAD_ID, styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, styles_1.ID_HIGHLIGHTS_CONTAINER, styles_1.CLASS_HIGHLIGHT_CONTAINER, styles_1.CLASS_HIGHLIGHT_CONTOUR, styles_1.CLASS_HIGHLIGHT_CONTOUR_MARGIN];
 const _blacklistIdClassForCFIMathJax = ["mathjax", "ctxt", "mjx", "r2-wbr"];
 const computeCFI = (node) => {
     if (node.nodeType !== Node.ELEMENT_NODE) {
@@ -2625,11 +2686,12 @@ const findFollowingDescendantSiblingElementsWithID = (el) => {
     if (win.document.documentElement.classList.contains(styles_1.R2_MO_CLASS_PLAYING) || win.document.documentElement.classList.contains(styles_1.R2_MO_CLASS_PAUSED) || win.document.documentElement.classList.contains(styles_1.R2_MO_CLASS_STOPPED)) {
         followingElementIDs = [];
         if (!_elementsWithID) {
-            _elementsWithID = Array.from(win.document.querySelectorAll(`*:not(#${styles_1.ID_HIGHLIGHTS_CONTAINER}):not(#${styles_1.POPUP_DIALOG_CLASS}):not(#${styles_1.SKIP_LINK_ID}) *[id]:not(#${styles_1.ID_HIGHLIGHTS_CONTAINER}):not(#${styles_1.POPUP_DIALOG_CLASS}):not(#${styles_1.SKIP_LINK_ID})`));
+            _elementsWithID = Array.from(win.document.querySelectorAll(`*:not(#${styles_1.ID_HIGHLIGHTS_CONTAINER}):not(#${styles_1.POPUP_DIALOG_CLASS}):not(#${styles_1.EXTRA_COLUMN_PAD_ID}):not(#${styles_1.SKIP_LINK_ID}) *[id]:not(#${styles_1.ID_HIGHLIGHTS_CONTAINER}):not(#${styles_1.POPUP_DIALOG_CLASS}):not(#${styles_1.EXTRA_COLUMN_PAD_ID}):not(#${styles_1.SKIP_LINK_ID})`));
         }
         const elHighlightsContainer = win.document.getElementById(styles_1.ID_HIGHLIGHTS_CONTAINER);
         const elPopupDialog = win.document.getElementById(styles_1.POPUP_DIALOG_CLASS);
         const elSkipLink = win.document.getElementById(styles_1.SKIP_LINK_ID);
+        const elPad = win.document.getElementById(styles_1.EXTRA_COLUMN_PAD_ID);
         for (let i = 0; i < _elementsWithID.length; i++) {
             const elementWithID = _elementsWithID[i];
             const id = elementWithID.id || elementWithID.getAttribute("id");
@@ -2658,6 +2720,13 @@ const findFollowingDescendantSiblingElementsWithID = (el) => {
                     if (c3 === 0 || (c3 & Node.DOCUMENT_POSITION_CONTAINED_BY)) {
                         doPush = false;
                         debug("findFollowingDescendantSiblingElementsWithID CSS selector failed? (skip link) " + id);
+                    }
+                }
+                if (elPad) {
+                    const c4 = elPad.compareDocumentPosition(elementWithID);
+                    if (c4 === 0 || (c4 & Node.DOCUMENT_POSITION_CONTAINED_BY)) {
+                        doPush = false;
+                        debug("findFollowingDescendantSiblingElementsWithID CSS selector failed? (extra col pad) " + id);
                     }
                 }
                 if (doPush) {
