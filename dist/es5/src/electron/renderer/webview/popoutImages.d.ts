@@ -1,2 +1,0 @@
-import { ReadiumElectronWebviewWindow } from "./state";
-export declare function popoutImage(win: ReadiumElectronWebviewWindow, element: HTMLImageElement | SVGElement, href_src: string, focusScrollRaw: (el: HTMLOrSVGElement, doFocus: boolean, animate: boolean, domRect: DOMRect | undefined) => void, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable: () => number, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable: (val: number) => void): void;

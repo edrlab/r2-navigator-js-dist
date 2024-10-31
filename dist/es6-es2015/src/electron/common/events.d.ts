@@ -161,6 +161,7 @@ export declare const R2_EVENT_TTS_DO_NEXT = "R2_EVENT_TTS_DO_NEXT";
 export declare const R2_EVENT_TTS_DO_PREVIOUS = "R2_EVENT_TTS_DO_PREVIOUS";
 export interface IEventPayload_R2_EVENT_TTS_DO_NEXT_OR_PREVIOUS {
     skipSentences: boolean | undefined;
+    escape: boolean | undefined;
 }
 export declare const R2_EVENT_CAPTIONS = "R2_EVENT_CAPTIONS";
 export interface IEventPayload_R2_EVENT_CAPTIONS {

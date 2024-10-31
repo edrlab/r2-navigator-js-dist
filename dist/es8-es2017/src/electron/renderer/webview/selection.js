@@ -7,6 +7,7 @@ exports.createOrderedRange = createOrderedRange;
 exports.convertRange = convertRange;
 exports.convertRangeInfo = convertRangeInfo;
 exports.normalizeRange = normalizeRange;
+exports.normalizeRange_ = normalizeRange_;
 const electron_1 = require("electron");
 const events_1 = require("../../common/events");
 const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
@@ -123,6 +124,10 @@ function getCurrentSelectionInfo(win, getCssSelector, computeElementCFI) {
         return undefined;
     }
     const range = normalizeRange(r);
+    if (range.collapsed) {
+        console.log("$$$$$$$$$$$$$$$$$ RANGE COLLAPSED AFTER NORMALISE?!");
+        return undefined;
+    }
     if (IS_DEV) {
         if (range.startContainer !== r.startContainer) {
             console.log(">>>>>>>>>>>>>>>>>>>>>>> SELECTION RANGE NORMALIZE diff: startContainer");
@@ -183,6 +188,7 @@ function getCurrentSelectionInfo(win, getCssSelector, computeElementCFI) {
     else {
     }
     return {
+        textFragment: undefined,
         rangeInfo,
         cleanBefore: textInfo.cleanBefore,
         cleanText: textInfo.cleanText,
@@ -521,6 +527,85 @@ function getChildTextNodeCfiIndex(element, child) {
     return found;
 }
 function normalizeRange(r) {
+    const range = r.cloneRange();
+    const documant = range.startContainer.ownerDocument;
+    if (!documant) {
+        range.collapse();
+        return range;
+    }
+    const walker = documant.createTreeWalker(documant, NodeFilter.SHOW_TEXT);
+    const resStart = snapBoundaryPointToTextNode(range.startContainer, range.startOffset, walker);
+    if (!resStart) {
+        range.collapse();
+        return range;
+    }
+    let startContainer = resStart[0];
+    let startOffset = resStart[1];
+    walker.currentNode = startContainer;
+    while (startOffset === startContainer.length && walker.nextNode()) {
+        startContainer = walker.currentNode;
+        startOffset = 0;
+    }
+    range.setStart(startContainer, startOffset);
+    const resEnd = snapBoundaryPointToTextNode(range.endContainer, range.endOffset, walker);
+    if (!resEnd) {
+        range.collapse();
+        return range;
+    }
+    let endContainer = resEnd[0];
+    let endOffset = resEnd[1];
+    walker.currentNode = endContainer;
+    while (endOffset === 0 && walker.previousNode()) {
+        endContainer = walker.currentNode;
+        endOffset = endContainer.length;
+    }
+    range.setEnd(endContainer, endOffset);
+    return range;
+}
+function snapBoundaryPointToTextNode(node, offset, walker) {
+    if (isText(node)) {
+        return [node, offset];
+    }
+    let curNode;
+    if (isCharacterData(node)) {
+        curNode = node;
+    }
+    else if (offset < node.childNodes.length) {
+        curNode = node.childNodes[offset];
+    }
+    else {
+        curNode = node;
+        while (!curNode.nextSibling) {
+            if (!curNode.parentNode) {
+                return undefined;
+            }
+            curNode = curNode.parentNode;
+        }
+        curNode = curNode.nextSibling;
+    }
+    if (isText(curNode)) {
+        return [curNode, 0];
+    }
+    walker.currentNode = curNode;
+    if (walker.nextNode()) {
+        return [walker.currentNode, 0];
+    }
+    else if (walker.previousNode()) {
+        return [walker.currentNode, walker.currentNode.length];
+    }
+    else {
+        return undefined;
+    }
+}
+function isText(node) {
+    return node.nodeType === Node.TEXT_NODE;
+}
+function isCharacterData(node) {
+    return (node.nodeType === Node.PROCESSING_INSTRUCTION_NODE ||
+        node.nodeType === Node.COMMENT_NODE ||
+        node.nodeType === Node.TEXT_NODE);
+}
+function normalizeRange_(r) {
     const range = r.cloneRange();
     let sc = range.startContainer;
     let so = range.startOffset;

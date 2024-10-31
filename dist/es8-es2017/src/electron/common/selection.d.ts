@@ -1,3 +1,9 @@
+export type TextFragment = {
+    prefix?: string;
+    textStart: string;
+    textEnd?: string;
+    suffix?: string;
+};
 export interface IRangeInfo {
     startContainerElementCssSelector: string;
     startContainerElementCFI: string | undefined;
@@ -20,5 +26,6 @@ export interface ISelectedTextInfo {
 }
 export interface ISelectionInfo extends ISelectedTextInfo {
     rangeInfo: IRangeInfo;
+    textFragment: TextFragment | undefined;
 }
 export declare function sameSelections(sel1: ISelectionInfo, sel2: ISelectionInfo): boolean;

@@ -25,4 +25,5 @@ export declare function getTtsQueueLength(items: ITtsQueueItem[]): number;
 export declare function getTtsQueueItemRefText(obj: ITtsQueueItemReference): string;
 export declare function getTtsQueueItemRef(items: ITtsQueueItem[], index: number): ITtsQueueItemReference | undefined;
 export declare function findTtsQueueItemIndex(ttsQueue: ITtsQueueItem[], element: Element, startTextNode: Node | undefined, startTextNodeOffset: number, rootElem: Element): number;
+export declare const computeEpubTypes: (childElement: Element) => string[];
 export declare function generateTtsQueue(rootElement: Element, splitSentences: boolean): ITtsQueueItem[];

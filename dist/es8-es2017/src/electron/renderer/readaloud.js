@@ -236,7 +236,7 @@ function ttsResume() {
         }, 0);
     }
 }
-function ttsPrevious(skipSentences = false) {
+function ttsPrevious(skipSentences, escape = false) {
     const activeWebViews = win.READIUM2.getActiveWebViews();
     for (const activeWebView of activeWebViews) {
         if (_lastTTSWebView && _lastTTSWebView !== activeWebView) {
@@ -246,6 +246,7 @@ function ttsPrevious(skipSentences = false) {
             var _a;
             const payload = {
                 skipSentences,
+                escape,
             };
             if ((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady) {
                 await activeWebView.send(events_1.R2_EVENT_TTS_DO_PREVIOUS, payload);
@@ -253,7 +254,7 @@ function ttsPrevious(skipSentences = false) {
         }, 0);
     }
 }
-function ttsNext(skipSentences = false) {
+function ttsNext(skipSentences, escape = false) {
     const activeWebViews = win.READIUM2.getActiveWebViews();
     for (const activeWebView of activeWebViews) {
         if (_lastTTSWebView && _lastTTSWebView !== activeWebView) {
@@ -263,6 +264,7 @@ function ttsNext(skipSentences = false) {
             var _a;
             const payload = {
                 skipSentences,
+                escape,
             };
             if ((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady) {
                 await activeWebView.send(events_1.R2_EVENT_TTS_DO_NEXT, payload);

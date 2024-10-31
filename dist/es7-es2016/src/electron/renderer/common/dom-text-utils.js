@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.computeEpubTypes = void 0;
 exports.combineTextNodes = combineTextNodes;
 exports.getLanguage = getLanguage;
 exports.getDirection = getDirection;
@@ -269,6 +270,7 @@ const computeEpubTypes = (childElement) => {
     const epubTypes = epubType ? epubType.split(" ") : [];
     return epubTypes;
 };
+exports.computeEpubTypes = computeEpubTypes;
 function generateTtsQueue(rootElement, splitSentences) {
     let ttsQueue = [];
     const elementStack = [];
@@ -288,7 +290,7 @@ function generateTtsQueue(rootElement, splitSentences) {
         const dir = textNode.parentElement ? getDirection(textNode.parentElement) : undefined;
         if (!current || current.parentElement !== parentElement || current.lang !== lang || current.dir !== dir) {
             if (win.READIUM2.ttsSkippabilityEnabled) {
-                const epubTypes = computeEpubTypes(parentElement);
+                const epubTypes = (0, exports.computeEpubTypes)(parentElement);
                 const isSkippable = epubTypes.find((et) => _skippables.includes(et)) ? true : undefined;
                 if (isSkippable) {
                     return;
@@ -358,7 +360,7 @@ function generateTtsQueue(rootElement, splitSentences) {
             return;
         }
         if (win.READIUM2.ttsSkippabilityEnabled) {
-            const epubTypes = computeEpubTypes(element);
+            const epubTypes = (0, exports.computeEpubTypes)(element);
             const isSkippable = epubTypes.find((et) => _skippables.includes(et)) ? true : undefined;
             if (isSkippable) {
                 first = false;
@@ -378,7 +380,7 @@ function generateTtsQueue(rootElement, splitSentences) {
                     const childElement = childNode;
                     const childTagNameLow = childElement.tagName ? childElement.tagName.toLowerCase() : undefined;
                     const hidden = isHidden(childElement);
-                    const epubTypes = computeEpubTypes(childElement);
+                    const epubTypes = (0, exports.computeEpubTypes)(childElement);
                     const isSkippable = epubTypes.find((et) => _skippables.includes(et)) ? true : undefined;
                     if (win.READIUM2.ttsSkippabilityEnabled && isSkippable) {
                         continue;
@@ -688,12 +690,23 @@ function generateTtsQueue(rootElement, splitSentences) {
                             }
                             if (!done) {
                                 const iter = win.document.createNodeIterator(childElement, NodeFilter.SHOW_ELEMENT, {
-                                    acceptNode: (node) => node.nodeName.toLowerCase() === "text" ?
-                                        NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT,
+                                    acceptNode: (node) => {
+                                        const low = node.nodeName.toLowerCase();
+                                        return low === "text"
+                                            || low === "math"
+                                            ?
+                                                NodeFilter.FILTER_ACCEPT
+                                            :
+                                                NodeFilter.FILTER_REJECT;
+                                    },
                                 });
                                 let n;
                                 while (n = iter.nextNode()) {
                                     const el = n;
+                                    const parentElement = elementStack[elementStack.length - 1];
+                                    if (parentElement !== el) {
+                                        elementStack.push(el);
+                                    }
                                     try {
                                         processElement(el);
                                     }
@@ -715,6 +728,7 @@ function generateTtsQueue(rootElement, splitSentences) {
                                             });
                                         }
                                     }
+                                    elementStack.pop();
                                 }
                             }
                         }

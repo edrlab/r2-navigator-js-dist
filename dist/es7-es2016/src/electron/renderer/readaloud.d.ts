@@ -12,8 +12,8 @@ export declare function ttsPlay(speed: number, voice: SpeechSynthesisVoice | nul
 export declare function ttsPause(): void;
 export declare function ttsStop(): void;
 export declare function ttsResume(): void;
-export declare function ttsPrevious(skipSentences?: boolean): void;
-export declare function ttsNext(skipSentences?: boolean): void;
+export declare function ttsPrevious(skipSentences: boolean, escape?: boolean): void;
+export declare function ttsNext(skipSentences: boolean, escape?: boolean): void;
 export declare function ttsOverlayEnable(doEnable: boolean): void;
 export declare function ttsClickEnable(doEnable: boolean): void;
 export declare function ttsVoice(voice: SpeechSynthesisVoice | null): void;

@@ -12,3 +12,4 @@ export declare function convertRange(range: Range, getCssSelector: (element: Ele
 ] | undefined;
 export declare function convertRangeInfo(documant: Document, rangeInfo: IRangeInfo): Range | undefined;
 export declare function normalizeRange(r: Range): Range;
+export declare function normalizeRange_(r: Range): Range;

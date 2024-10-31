@@ -171,7 +171,7 @@ function classNames(input) {
 const ELEMENT_NAMESPACE_PREFIX = /^(.+:)(.+)$/;
 const ELEMENT_NAMESPACE_PREFIX_ = /^\*\|(a|script|style)$/;
 function tagName(input) {
-    const name = input.tagName.toLowerCase();
+    const name = input.tagName === "foreignObject" ? input.tagName : input.tagName.toLowerCase();
     if (config.tagName(name)) {
         const n = name.replace(ELEMENT_NAMESPACE_PREFIX, "*|$2").replace(ELEMENT_NAMESPACE_PREFIX_, "*|$1:not(|$1)");
         return {

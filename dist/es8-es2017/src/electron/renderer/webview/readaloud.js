@@ -256,17 +256,63 @@ function ttsQueueCurrentText() {
     }
     return undefined;
 }
-function ttsNext(skipSentences = false) {
+const _escapableElementNames = ["svg", "math", "table", "tr", "li", "ol", "ul"];
+const _escapableRoles = ["table", "table-row", "list", "list-item", "figure", "aside", "endnotes", "rearnotes", "footnotes", "marginalia", "glossary", "bibliography", "appendix", "colophon"];
+const isEscapable = (element) => {
+    const name = element.tagName.toLowerCase();
+    if (_escapableElementNames.includes(name)) {
+        return true;
+    }
+    const epubTypes = (0, dom_text_utils_1.computeEpubTypes)(element);
+    if (!!epubTypes.find((et) => _escapableRoles.includes(et))) {
+        return true;
+    }
+    return false;
+};
+function ttsNext(skipSentences, escape = false) {
     if (_dialogState && _dialogState.ttsQueueItem) {
-        let j = _dialogState.ttsQueueItem.iGlobal + 1;
-        if (skipSentences &&
+        let ttsQueueIndex = _dialogState.ttsQueueItem.iGlobal + 1;
+        if (escape) {
+            let escapableSelfOrAncestorInitial = null;
+            let node = _dialogState.ttsQueueItem.item.parentElement;
+            while (node) {
+                if (isEscapable(node)) {
+                    escapableSelfOrAncestorInitial = node;
+                    break;
+                }
+                node = node.parentNode && node.parentNode.nodeType === Node.ELEMENT_NODE ? node.parentNode : null;
+            }
+            if (escapableSelfOrAncestorInitial) {
+                while (_dialogState.ttsQueue && ttsQueueIndex >= 0 && ttsQueueIndex < _dialogState.ttsQueueLength) {
+                    const ttsQueueItem = (0, dom_text_utils_1.getTtsQueueItemRef)(_dialogState.ttsQueue, ttsQueueIndex);
+                    if (!ttsQueueItem) {
+                        break;
+                    }
+                    let escapableSelfOrAncestorLocal = null;
+                    let node = ttsQueueItem.item.parentElement;
+                    while (node) {
+                        if (isEscapable(node)) {
+                            escapableSelfOrAncestorLocal = node;
+                            break;
+                        }
+                        node = node.parentNode && node.parentNode.nodeType === Node.ELEMENT_NODE ? node.parentNode : null;
+                    }
+                    if (escapableSelfOrAncestorLocal === escapableSelfOrAncestorInitial) {
+                        ttsQueueIndex = ttsQueueItem.iGlobal + 1;
+                        continue;
+                    }
+                    break;
+                }
+            }
+        }
+        else if (skipSentences &&
             _dialogState.ttsQueueItem.iSentence !== -1 &&
             _dialogState.ttsQueueItem.item.combinedTextSentences) {
-            j = _dialogState.ttsQueueItem.iGlobal +
+            ttsQueueIndex = _dialogState.ttsQueueItem.iGlobal +
                 (_dialogState.ttsQueueItem.item.combinedTextSentences.length -
                     _dialogState.ttsQueueItem.iSentence);
         }
-        if (j >= _dialogState.ttsQueueLength || j < 0) {
+        if (ttsQueueIndex >= _dialogState.ttsQueueLength || ttsQueueIndex < 0) {
             ttsStop();
             setTimeout(() => {
                 electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_TTS_DOC_END);
@@ -274,21 +320,54 @@ function ttsNext(skipSentences = false) {
             return;
         }
         ttsPause(true);
-        ttsPlayQueueIndexDebounced(j);
+        ttsPlayQueueIndexDebounced(ttsQueueIndex);
     }
     else if (_resumableState) {
         ttsResume();
     }
 }
-function ttsPrevious(skipSentences = false) {
+function ttsPrevious(skipSentences, escape = false) {
     if (_dialogState && _dialogState.ttsQueueItem) {
-        let j = _dialogState.ttsQueueItem.iGlobal - 1;
-        if (skipSentences &&
+        let ttsQueueIndex = _dialogState.ttsQueueItem.iGlobal - 1;
+        if (escape) {
+            let escapableSelfOrAncestorInitial = null;
+            let node = _dialogState.ttsQueueItem.item.parentElement;
+            while (node) {
+                if (isEscapable(node)) {
+                    escapableSelfOrAncestorInitial = node;
+                    break;
+                }
+                node = node.parentNode && node.parentNode.nodeType === Node.ELEMENT_NODE ? node.parentNode : null;
+            }
+            if (escapableSelfOrAncestorInitial) {
+                while (_dialogState.ttsQueue && ttsQueueIndex >= 0 && ttsQueueIndex < _dialogState.ttsQueueLength) {
+                    const ttsQueueItem = (0, dom_text_utils_1.getTtsQueueItemRef)(_dialogState.ttsQueue, ttsQueueIndex);
+                    if (!ttsQueueItem) {
+                        break;
+                    }
+                    let escapableSelfOrAncestorLocal = null;
+                    let node = ttsQueueItem.item.parentElement;
+                    while (node) {
+                        if (isEscapable(node)) {
+                            escapableSelfOrAncestorLocal = node;
+                            break;
+                        }
+                        node = node.parentNode && node.parentNode.nodeType === Node.ELEMENT_NODE ? node.parentNode : null;
+                    }
+                    if (escapableSelfOrAncestorLocal === escapableSelfOrAncestorInitial) {
+                        ttsQueueIndex = ttsQueueItem.iGlobal - 1;
+                        continue;
+                    }
+                    break;
+                }
+            }
+        }
+        else if (skipSentences &&
             _dialogState.ttsQueueItem.iSentence !== -1 &&
             _dialogState.ttsQueueItem.item.combinedTextSentences) {
-            j = _dialogState.ttsQueueItem.iGlobal - _dialogState.ttsQueueItem.iSentence - 1;
+            ttsQueueIndex = _dialogState.ttsQueueItem.iGlobal - _dialogState.ttsQueueItem.iSentence - 1;
         }
-        if (j >= _dialogState.ttsQueueLength || j < 0) {
+        if (ttsQueueIndex >= _dialogState.ttsQueueLength || ttsQueueIndex < 0) {
             ttsStop();
             setTimeout(() => {
                 electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_TTS_DOC_BACK);
@@ -296,7 +375,7 @@ function ttsPrevious(skipSentences = false) {
             return;
         }
         ttsPause(true);
-        ttsPlayQueueIndexDebounced(j);
+        ttsPlayQueueIndexDebounced(ttsQueueIndex);
     }
     else if (_resumableState) {
         ttsResume();
@@ -1007,23 +1086,25 @@ ${win.READIUM2.ttsOverlayEnabled ?
     }
     if (_dialogState.domPrevious) {
         _dialogState.domPrevious.addEventListener("click", (ev) => {
-            const skipSentences = ev.shiftKey && ev.altKey;
+            const skipSentences = ev.shiftKey && ev.altKey && ev.metaKey;
+            const escape = skipSentences && !ev.metaKey;
             if ((0, readium_css_1.isRTL)()) {
-                ttsNext(skipSentences);
+                ttsNext(skipSentences, escape);
             }
             else {
-                ttsPrevious(skipSentences);
+                ttsPrevious(skipSentences, escape);
             }
         });
     }
     if (_dialogState.domNext) {
         _dialogState.domNext.addEventListener("click", (ev) => {
-            const skipSentences = ev.shiftKey && ev.altKey;
+            const skipSentences = ev.shiftKey && ev.altKey && ev.metaKey;
+            const escape = skipSentences && !ev.metaKey;
             if (!(0, readium_css_1.isRTL)()) {
-                ttsNext(skipSentences);
+                ttsNext(skipSentences, escape);
             }
             else {
-                ttsPrevious(skipSentences);
+                ttsPrevious(skipSentences, escape);
             }
         });
     }

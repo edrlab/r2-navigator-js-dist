@@ -2874,10 +2874,10 @@ if (!win.READIUM2.isAudio) {
         (0, readaloud_1.ttsResume)();
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_NEXT, (_event, payload) => {
-        (0, readaloud_1.ttsNext)(payload === null || payload === void 0 ? void 0 : payload.skipSentences);
+        (0, readaloud_1.ttsNext)((payload === null || payload === void 0 ? void 0 : payload.skipSentences) || false, (payload === null || payload === void 0 ? void 0 : payload.escape) || false);
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_PREVIOUS, (_event, payload) => {
-        (0, readaloud_1.ttsPrevious)(payload === null || payload === void 0 ? void 0 : payload.skipSentences);
+        (0, readaloud_1.ttsPrevious)((payload === null || payload === void 0 ? void 0 : payload.skipSentences) || false, (payload === null || payload === void 0 ? void 0 : payload.escape) || false);
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_PLAYBACK_RATE, (_event, payload) => {
         (0, readaloud_1.ttsPlaybackRate)(payload.speed);
