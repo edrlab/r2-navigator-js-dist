@@ -99,7 +99,7 @@ const cleanupStr = (str) => {
     return (0, exports.collapseWhitespaces)(str).trim();
 };
 exports.cleanupStr = cleanupStr;
-function getCurrentSelectionInfo(win, getCssSelector, computeElementCFI) {
+function getCurrentSelectionInfo(win, getCssSelector, computeElementCFI, computeElementXPath) {
     const selection = win.getSelection();
     if (!selection) {
         return undefined;
@@ -148,7 +148,7 @@ function getCurrentSelectionInfo(win, getCssSelector, computeElementCFI) {
             console.log(`${range.endOffset} !== ${r.endOffset}`);
         }
     }
-    const tuple = convertRange(range, getCssSelector, computeElementCFI);
+    const tuple = convertRange(range, getCssSelector, computeElementCFI, computeElementXPath);
     if (!tuple) {
         console.log("^^^ SELECTION RANGE INFO FAIL?!");
         return undefined;
@@ -216,7 +216,7 @@ function createOrderedRange(startNode, startOffset, endNode, endOffset) {
     console.log(">>> createOrderedRange RANGE REVERSE ALSO COLLAPSED?!");
     return undefined;
 }
-function convertRange(range, getCssSelector, computeElementCFI) {
+function convertRange(range, getCssSelector, computeElementCFI, computeElementXPath) {
     var _a, _b;
     const startIsElement = range.startContainer.nodeType === Node.ELEMENT_NODE;
     const startContainerElement = startIsElement ?
@@ -352,7 +352,9 @@ function convertRange(range, getCssSelector, computeElementCFI) {
     }
     const rootElementCfi = computeElementCFI(commonElementAncestor);
     const startElementCfi = computeElementCFI(startContainerElement);
+    const startElementXPath = computeElementXPath(startContainerElement);
     const endElementCfi = computeElementCFI(endContainerElement);
+    const endElementXPath = computeElementXPath(endContainerElement);
     let cfi;
     if (rootElementCfi && startElementCfi && endElementCfi) {
         let startElementOrTextCfi = startElementCfi;
@@ -419,10 +421,12 @@ function convertRange(range, getCssSelector, computeElementCFI) {
             cfi,
             endContainerChildTextNodeIndex,
             endContainerElementCFI: endElementCfi,
+            endContainerElementXPath: endElementXPath,
             endContainerElementCssSelector,
             endOffset: range.endOffset,
             startContainerChildTextNodeIndex,
             startContainerElementCFI: startElementCfi,
+            startContainerElementXPath: startElementXPath,
             startContainerElementCssSelector,
             startOffset: range.startOffset,
         }, {

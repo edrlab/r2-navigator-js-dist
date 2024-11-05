@@ -4,9 +4,9 @@ export declare const setSelectionChangeAction: (win: ReadiumElectronWebviewWindo
 export declare function clearCurrentSelection(win: ReadiumElectronWebviewWindow): void;
 export declare const collapseWhitespaces: (str: string) => string;
 export declare const cleanupStr: (str: string) => string;
-export declare function getCurrentSelectionInfo(win: ReadiumElectronWebviewWindow, getCssSelector: (element: Element) => string, computeElementCFI: (node: Node) => string | undefined): ISelectionInfo | undefined;
+export declare function getCurrentSelectionInfo(win: ReadiumElectronWebviewWindow, getCssSelector: (element: Element) => string, computeElementCFI: (node: Node) => string | undefined, computeElementXPath: (node: Node) => string | undefined): ISelectionInfo | undefined;
 export declare function createOrderedRange(startNode: Node, startOffset: number, endNode: Node, endOffset: number): Range | undefined;
-export declare function convertRange(range: Range, getCssSelector: (element: Element) => string, computeElementCFI: (node: Node) => string | undefined): [
+export declare function convertRange(range: Range, getCssSelector: (element: Element) => string, computeElementCFI: (node: Node) => string | undefined, computeElementXPath: (node: Node) => string | undefined): [
     IRangeInfo,
     ISelectedTextInfo
 ] | undefined;

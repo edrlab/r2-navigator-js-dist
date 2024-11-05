@@ -15,6 +15,7 @@ export interface LocatorText {
 }
 export interface LocatorLocations {
     cfi?: string;
+    xpath?: string;
     cssSelector?: string;
     position?: number;
     progression?: number;

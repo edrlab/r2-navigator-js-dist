@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.computeCFI = exports.computeProgressionData = void 0;
 const tslib_1 = require("tslib");
 const debounce = require("debounce");
 const debug_ = require("debug");
@@ -62,6 +61,7 @@ win.READIUM2 = {
             cssSelector: undefined,
             position: undefined,
             progression: undefined,
+            xpath: undefined,
         },
         paginationInfo: undefined,
         secondWebViewHref: undefined,
@@ -477,6 +477,7 @@ function resetLocationHashOverrideInfo() {
             cssSelector: undefined,
             position: undefined,
             progression: undefined,
+            xpath: undefined,
         },
         paginationInfo: undefined,
         secondWebViewHref: undefined,
@@ -2436,7 +2437,6 @@ const computeProgressionData = () => {
         percentRatio: progressionRatio,
     };
 };
-exports.computeProgressionData = computeProgressionData;
 const _blacklistIdClassForCssSelectors = [styles_1.EXTRA_COLUMN_PAD_ID, styles_1.LINK_TARGET_CLASS, styles_1.LINK_TARGET_ALT_CLASS, styles_1.CSS_CLASS_NO_FOCUS_OUTLINE, styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, styles_1.ID_HIGHLIGHTS_CONTAINER, styles_1.CLASS_HIGHLIGHT_CONTAINER, styles_1.CLASS_HIGHLIGHT_CONTOUR, styles_1.CLASS_HIGHLIGHT_CONTOUR_MARGIN, styles_1.TTS_ID_SPEAKING_DOC_ELEMENT, styles_1.ROOT_CLASS_KEYBOARD_INTERACT, styles_1.ROOT_CLASS_INVISIBLE_MASK, styles_1.ROOT_CLASS_INVISIBLE_MASK_REMOVED, styles_1.CLASS_PAGINATED, styles_1.ROOT_CLASS_NO_FOOTNOTES, styles_1.ROOT_CLASS_NO_RUBY];
 const _blacklistIdClassForCssSelectorsMathJax = ["mathjax", "ctxt", "mjx", "r2-wbr"];
 const _blacklistIdClassForCFI = [styles_1.EXTRA_COLUMN_PAD_ID, styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, styles_1.ID_HIGHLIGHTS_CONTAINER, styles_1.CLASS_HIGHLIGHT_CONTAINER, styles_1.CLASS_HIGHLIGHT_CONTOUR, styles_1.CLASS_HIGHLIGHT_CONTOUR_MARGIN];
@@ -2477,7 +2477,54 @@ const computeCFI = (node) => {
     }
     return "/" + cfi;
 };
-exports.computeCFI = computeCFI;
+const computeXPath = (node) => {
+    if (node.nodeType !== Node.ELEMENT_NODE) {
+        return undefined;
+    }
+    let xpath = "";
+    let currentElement = node;
+    while (currentElement.parentNode && (currentElement.parentNode.nodeType === Node.ELEMENT_NODE || currentElement.parentNode.nodeType === Node.DOCUMENT_NODE)) {
+        const blacklisted = checkBlacklisted(currentElement);
+        if (!blacklisted) {
+            const currentElementParentChildren = currentElement.parentNode.nodeType === Node.ELEMENT_NODE ?
+                currentElement.parentNode.children :
+                [currentElement.parentNode.documentElement];
+            let currentElementIndex = -1;
+            let j = 0;
+            let k = -1;
+            for (let i = 0; i < currentElementParentChildren.length; i++) {
+                const child = currentElementParentChildren[i];
+                if (child.tagName === currentElement.tagName) {
+                    k++;
+                    const childBlacklisted = checkBlacklisted(child);
+                    if (childBlacklisted) {
+                        j++;
+                    }
+                }
+                if (currentElement === child) {
+                    currentElementIndex = k;
+                    break;
+                }
+            }
+            if (currentElementIndex >= 0) {
+                const nodeIndex = currentElementIndex - j + 1;
+                const nsPrefix = currentElement.namespaceURI === "http://www.w3.org/1999/xhtml" ? "" :
+                    currentElement.namespaceURI === "http://www.w3.org/2000/svg" ? "svg:" :
+                        currentElement.namespaceURI === "http://www.w3.org/1998/Math/MathML" ? "m:" :
+                            "";
+                const idAssertion = currentElement.id ? `[@id="${currentElement.id}"]` : "";
+                const qname = `${nsPrefix}${currentElement.tagName}`;
+                xpath = `${qname}[${nodeIndex}]${idAssertion}` +
+                    (xpath.length ? ("/" + xpath) : "");
+            }
+        }
+        else {
+            xpath = "";
+        }
+        currentElement = currentElement.parentNode;
+    }
+    return "/" + xpath;
+};
 const _getCssSelectorOptions = {
     className: (str) => {
         if (_blacklistIdClassForCssSelectors.indexOf(str) >= 0) {
@@ -2741,6 +2788,17 @@ const findFollowingDescendantSiblingElementsWithID = (el) => {
     }
     return followingElementIDs;
 };
+const $_htmlNamespaces = {
+    xhtml: "http://www.w3.org/1999/xhtml",
+    svg: "http://www.w3.org/2000/svg",
+    m: "http://www.w3.org/1998/Math/MathML",
+};
+const $_namespaceResolver = (prefix) => {
+    if (!prefix) {
+        return null;
+    }
+    return $_htmlNamespaces[prefix] || null;
+};
 const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays) => {
     var _a, _b;
     if (!win.READIUM2.locationHashOverride) {
@@ -2756,21 +2814,42 @@ const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays) => {
     }
     let progressionData;
     let cssSelector = getCssSelector(win.READIUM2.locationHashOverride);
-    let cfi = (0, exports.computeCFI)(win.READIUM2.locationHashOverride);
+    let cfi = computeCFI(win.READIUM2.locationHashOverride);
+    let xpath = computeXPath(win.READIUM2.locationHashOverride);
+    if (IS_DEV && xpath) {
+        debug(">>> XPATH original: " + xpath);
+        const xpath_ = xpath.replace(/\/([^\/]+)/g, (m) => {
+            if (m.startsWith("/*") ||
+                /^\/[a-zA-Z0-9\-_]+:[a-zA-Z0-9\-_]+.*$/.test(m)) {
+                return m;
+            }
+            return m.replace(/\/(.+)/g, "/xhtml:$1");
+        });
+        debug(">>> XPATH adapted: " + xpath_);
+        const xpathResult = win.document.evaluate(xpath_, win.document, $_namespaceResolver, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+        debug(">>> XPATH snap: " + xpathResult.snapshotLength);
+        if (xpathResult.snapshotLength === 1 && xpathResult.snapshotItem(0) === win.READIUM2.locationHashOverride) {
+            debug(">>> XPATH OK :)");
+        }
+        else {
+            debug(">>> XPATH NOK :(");
+        }
+    }
     let progression = 0;
     if (win.READIUM2.isFixedLayout) {
         progression = 1;
     }
     else {
-        progressionData = (0, exports.computeProgressionData)();
+        progressionData = computeProgressionData();
         progression = progressionData.percentRatio;
     }
     const pinfo = (progressionData && progressionData.paginationInfo) ?
         progressionData.paginationInfo : undefined;
-    const selInfo = (0, selection_2.getCurrentSelectionInfo)(win, getCssSelector, exports.computeCFI);
+    const selInfo = (0, selection_2.getCurrentSelectionInfo)(win, getCssSelector, computeCFI, computeXPath);
     if (selInfo) {
         cssSelector = selInfo.rangeInfo.startContainerElementCssSelector;
         cfi = selInfo.rangeInfo.startContainerElementCFI;
+        xpath = selInfo.rangeInfo.startContainerElementXPath;
     }
     const text = selInfo ? {
         after: selInfo.cleanAfter,
@@ -2805,7 +2884,7 @@ const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays) => {
         const startOffset = win.READIUM2.lastClickedTextChar.textNodeOffset >= win.READIUM2.lastClickedTextChar.textNode.nodeValue.length ? win.READIUM2.lastClickedTextChar.textNodeOffset - 1 : win.READIUM2.lastClickedTextChar.textNodeOffset;
         range.setStart(win.READIUM2.lastClickedTextChar.textNode, startOffset);
         range.setEnd(win.READIUM2.lastClickedTextChar.textNode, startOffset + 1);
-        const tuple = (0, selection_2.convertRange)(range, getCssSelector, exports.computeCFI);
+        const tuple = (0, selection_2.convertRange)(range, getCssSelector, computeCFI, computeXPath);
         if (tuple) {
             rangeInfo = tuple[0];
         }
@@ -2827,6 +2906,7 @@ const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays) => {
             position: undefined,
             progression,
             rangeInfo,
+            xpath,
         },
         paginationInfo: pinfo,
         secondWebViewHref,
@@ -3045,7 +3125,7 @@ if (!win.READIUM2.isAudio) {
                 },
             ] :
             payloadPing.highlightDefinitions;
-        const selInfo = (0, selection_2.getCurrentSelectionInfo)(win, getCssSelector, exports.computeCFI);
+        const selInfo = (0, selection_2.getCurrentSelectionInfo)(win, getCssSelector, computeCFI, computeXPath);
         for (const highlightDefinition of highlightDefinitions) {
             if (!highlightDefinition.selectionInfo) {
                 highlightDefinition.selectionInfo = selInfo;
