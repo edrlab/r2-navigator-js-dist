@@ -5,6 +5,7 @@ const tslib_1 = require("tslib");
 const path = require("path");
 const styles_1 = require("../../common/styles");
 const popup_dialog_1 = require("../common/popup-dialog");
+const bom_1 = require("r2-utils-js/dist/es7-es2016/src/_utils/bom");
 function popupFootNote(element, focusScrollRaw, href, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
     return tslib_1.__awaiter(this, void 0, void 0, function* () {
         let documant = element.ownerDocument;
@@ -42,7 +43,7 @@ function popupFootNote(element, focusScrollRaw, href, ensureTwoPageSpreadWithOdd
                 const res = yield fetch(href);
                 const txt = yield res.text();
                 const domparser = new DOMParser();
-                documant = domparser.parseFromString(txt, "application/xhtml+xml");
+                documant = domparser.parseFromString((0, bom_1.removeUTF8BOM)(txt), "application/xhtml+xml");
                 const aNodeList = documant.querySelectorAll("a[href]");
                 for (let i = 0; i < aNodeList.length; i++) {
                     const aNode = aNodeList[i];

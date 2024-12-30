@@ -4,6 +4,7 @@ exports.popupFootNote = popupFootNote;
 const path = require("path");
 const styles_1 = require("../../common/styles");
 const popup_dialog_1 = require("../common/popup-dialog");
+const bom_1 = require("r2-utils-js/dist/es8-es2017/src/_utils/bom");
 async function popupFootNote(element, focusScrollRaw, href, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
     let documant = element.ownerDocument;
     if (!documant.documentElement ||
@@ -40,7 +41,7 @@ async function popupFootNote(element, focusScrollRaw, href, ensureTwoPageSpreadW
             const res = await fetch(href);
             const txt = await res.text();
             const domparser = new DOMParser();
-            documant = domparser.parseFromString(txt, "application/xhtml+xml");
+            documant = domparser.parseFromString((0, bom_1.removeUTF8BOM)(txt), "application/xhtml+xml");
             const aNodeList = documant.querySelectorAll("a[href]");
             for (let i = 0; i < aNodeList.length; i++) {
                 const aNode = aNodeList[i];
