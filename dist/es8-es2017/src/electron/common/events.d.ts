@@ -35,6 +35,7 @@ export interface IEventPayload_R2_EVENT_SCROLLTO {
     previous: boolean;
     isSecondWebView: boolean;
 }
+export declare const R2_EVENT_FOCUS_READING_LOC = "R2_EVENT_FOCUS_READING_LOC";
 export declare const R2_EVENT_PAGE_TURN = "R2_EVENT_PAGE_TURN";
 export declare const R2_EVENT_PAGE_TURN_RES = "R2_EVENT_PAGE_TURN_RES";
 export interface IEventPayload_R2_EVENT_PAGE_TURN {

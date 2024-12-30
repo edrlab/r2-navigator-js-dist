@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.setWebViewStyle = setWebViewStyle;
+exports.keyboardFocusRequest = keyboardFocusRequest;
 exports.locationHandleIpcMessage = locationHandleIpcMessage;
 exports.shiftWebview = shiftWebview;
 exports.navPreviousOrNext = navPreviousOrNext;
@@ -72,6 +73,53 @@ function setWebViewStyle(wv, wvSlot, fxl) {
         wv.setAttribute("data-wv-slot", wvSlot === styles_1.WebViewSlotEnum.center ? "center" :
             (wvSlot === styles_1.WebViewSlotEnum.left ? "left" :
                 "right"));
+    }
+}
+function keyboardFocusRequest(deep, webview) {
+    var _a, _b, _c, _d;
+    if (!webview) {
+        const loc = getCurrentReadingLocation();
+        if (loc === null || loc === void 0 ? void 0 : loc.locator) {
+            const activeWebViews = win.READIUM2.getActiveWebViews();
+            for (const activeWebView of activeWebViews) {
+                if (activeWebView.READIUM2.DOMisReady &&
+                    loc.locator.href === ((_a = activeWebView.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href)) {
+                    webview = activeWebView;
+                    debug("KEYBOARD FOCUS REQUEST (222) -- NO WEBVIEW => FOUND", loc.locator.href);
+                    break;
+                }
+            }
+        }
+    }
+    if (!webview) {
+        debug("KEYBOARD FOCUS REQUEST (222) -- NO WEBVIEW??! ... FALLBACK");
+        webview = (_b = win.READIUM2) === null || _b === void 0 ? void 0 : _b.getFirstOrSecondWebView();
+    }
+    if (!webview || !webview.READIUM2.DOMisReady) {
+        debug("KEYBOARD FOCUS REQUEST (222) -- NO WEBVIEW??! FAIL :(", !!webview, webview === null || webview === void 0 ? void 0 : webview.READIUM2.DOMisReady);
+        return;
+    }
+    debug("KEYBOARD FOCUS REQUEST (222) ", webview.id, !!win.document.activeElement, (_c = win.document.activeElement) === null || _c === void 0 ? void 0 : _c.id);
+    if (win.document.activeElement && win.document.activeElement.blur) {
+        debug("KEYBOARD FOCUS REQUEST (222) ... BLUR");
+        win.document.activeElement.blur();
+    }
+    const iframe = (_d = webview.shadowRoot) === null || _d === void 0 ? void 0 : _d.querySelector("iframe");
+    if (iframe) {
+        debug("KEYBOARD FOCUS REQUEST (222) --> IFRAME");
+        iframe.focus();
+    }
+    else {
+        debug("KEYBOARD FOCUS REQUEST (222) --> WEBVIEW (no IFRAME)");
+        webview.focus();
+    }
+    if (deep) {
+        setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+            var _a;
+            if ((_a = webview.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady) {
+                yield webview.send(events_1.R2_EVENT_FOCUS_READING_LOC);
+            }
+        }), 0);
     }
 }
 function locationHandleIpcMessage(eventChannel, eventArgs, eventCurrentTarget) {

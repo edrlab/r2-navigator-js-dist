@@ -5,13 +5,14 @@ const debounce = require("debounce");
 const debug_ = require("debug");
 const electron_1 = require("electron");
 const tabbable_1 = require("tabbable");
+const styles_1 = require("../../common/styles");
 const UrlUtils_1 = require("r2-utils-js/dist/es7-es2016/src/_utils/http/UrlUtils");
 const sessions_1 = require("../../common/sessions");
 const events_1 = require("../../common/events");
 const highlight_1 = require("../../common/highlight");
 const readium_css_inject_1 = require("../../common/readium-css-inject");
 const selection_1 = require("../../common/selection");
-const styles_1 = require("../../common/styles");
+const styles_2 = require("../../common/styles");
 const animateProperty_1 = require("../common/animateProperty");
 const cssselector3_1 = require("../common/cssselector3");
 const dom_text_utils_1 = require("../common/dom-text-utils");
@@ -77,7 +78,7 @@ win.READIUM2 = {
     ttsSentenceDetectionEnabled: true,
     ttsVoice: null,
     urlQueryParams: win.location.search ? (0, querystring_1.getURLQueryParams)(win.location.search) : undefined,
-    webViewSlot: styles_1.WebViewSlotEnum.center,
+    webViewSlot: styles_2.WebViewSlotEnum.center,
 };
 win.alert = (...args) => {
     console.log.apply(win, args);
@@ -233,20 +234,20 @@ if (win.READIUM2.urlQueryParams) {
     win.READIUM2.DEBUG_VISUALS = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_DEBUG_VISUALS] === "true";
     win.READIUM2.isClipboardIntercept = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_CLIPBOARD_INTERCEPT] === "true";
     win.READIUM2.webViewSlot =
-        win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_WEBVIEW_SLOT] === "left" ? styles_1.WebViewSlotEnum.left :
-            (win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_WEBVIEW_SLOT] === "right" ? styles_1.WebViewSlotEnum.right :
-                styles_1.WebViewSlotEnum.center);
+        win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_WEBVIEW_SLOT] === "left" ? styles_2.WebViewSlotEnum.left :
+            (win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_WEBVIEW_SLOT] === "right" ? styles_2.WebViewSlotEnum.right :
+                styles_2.WebViewSlotEnum.center);
 }
 if (IS_DEV) {
     electron_1.ipcRenderer.on(events_1.R2_EVENT_DEBUG_VISUALS, (_event, payload) => {
         win.READIUM2.DEBUG_VISUALS = payload.debugVisuals;
         if (!payload.debugVisuals) {
-            const existings = win.document.querySelectorAll(`*[${styles_1.readPosCssStylesAttr1}], *[${styles_1.readPosCssStylesAttr2}], *[${styles_1.readPosCssStylesAttr3}], *[${styles_1.readPosCssStylesAttr4}]`);
+            const existings = win.document.querySelectorAll(`*[${styles_2.readPosCssStylesAttr1}], *[${styles_2.readPosCssStylesAttr2}], *[${styles_2.readPosCssStylesAttr3}], *[${styles_2.readPosCssStylesAttr4}]`);
             existings.forEach((existing) => {
-                existing.removeAttribute(`${styles_1.readPosCssStylesAttr1}`);
-                existing.removeAttribute(`${styles_1.readPosCssStylesAttr2}`);
-                existing.removeAttribute(`${styles_1.readPosCssStylesAttr3}`);
-                existing.removeAttribute(`${styles_1.readPosCssStylesAttr4}`);
+                existing.removeAttribute(`${styles_2.readPosCssStylesAttr1}`);
+                existing.removeAttribute(`${styles_2.readPosCssStylesAttr2}`);
+                existing.removeAttribute(`${styles_2.readPosCssStylesAttr3}`);
+                existing.removeAttribute(`${styles_2.readPosCssStylesAttr4}`);
             });
         }
         if (payload.cssClass) {
@@ -334,7 +335,7 @@ function isVisible(allowPartial, element, domRect) {
         return false;
     }
     const scrollLeftPotentiallyExcessive = getScrollOffsetIntoView(element, domRect);
-    const extraShift = styles_1.ENABLE_EXTRA_COLUMN_SHIFT_METHOD ? scrollElement.scrollLeftExtra : 0;
+    const extraShift = styles_2.ENABLE_EXTRA_COLUMN_SHIFT_METHOD ? scrollElement.scrollLeftExtra : 0;
     let currentOffset = scrollElement.scrollLeft;
     if (extraShift) {
         currentOffset += (((currentOffset < 0) ? -1 : 1) * extraShift);
@@ -432,7 +433,7 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, (_event, payload) => {
         win.READIUM2.hashElement = win.document.getElementById(payload.hash);
         if (win.READIUM2.DEBUG_VISUALS) {
             if (win.READIUM2.hashElement) {
-                win.READIUM2.hashElement.setAttribute(styles_1.readPosCssStylesAttr1, "R2_EVENT_SCROLLTO hashElement");
+                win.READIUM2.hashElement.setAttribute(styles_2.readPosCssStylesAttr1, "R2_EVENT_SCROLLTO hashElement");
             }
         }
         win.location.href = "#" + payload.hash;
@@ -504,7 +505,7 @@ function elementCapturesKeyboardArrowKeys(target) {
     return false;
 }
 function ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable() {
-    if (!styles_1.ENABLE_EXTRA_COLUMN_SHIFT_METHOD) {
+    if (!styles_2.ENABLE_EXTRA_COLUMN_SHIFT_METHOD) {
         return 0;
     }
     const scrollElement = (0, readium_css_1.getScrollingElement)(win.document);
@@ -517,7 +518,7 @@ function ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable() {
     return val;
 }
 function ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable(scrollLeftExtra) {
-    if (!styles_1.ENABLE_EXTRA_COLUMN_SHIFT_METHOD) {
+    if (!styles_2.ENABLE_EXTRA_COLUMN_SHIFT_METHOD) {
         return;
     }
     const scrollElement = (0, readium_css_1.getScrollingElement)(win.document);
@@ -529,7 +530,7 @@ function ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable(scrollLeftExtra) {
     });
 }
 function ensureTwoPageSpreadWithOddColumnsIsOffset(scrollOffset, maxScrollShift) {
-    if (!styles_1.ENABLE_EXTRA_COLUMN_SHIFT_METHOD) {
+    if (!styles_2.ENABLE_EXTRA_COLUMN_SHIFT_METHOD) {
         return;
     }
     if (!win || !win.document || !win.document.body || !win.document.documentElement) {
@@ -538,9 +539,9 @@ function ensureTwoPageSpreadWithOddColumnsIsOffset(scrollOffset, maxScrollShift)
     const scrollElement = (0, readium_css_1.getScrollingElement)(win.document);
     let dialogPopup = (0, popup_dialog_1.isPopupDialogOpen)(win.document);
     if (dialogPopup) {
-        const diagEl = win.document.getElementById(styles_1.POPUP_DIALOG_CLASS);
+        const diagEl = win.document.getElementById(styles_2.POPUP_DIALOG_CLASS);
         if (diagEl) {
-            const isCollapsed = diagEl.classList.contains(styles_1.POPUP_DIALOG_CLASS_COLLAPSE);
+            const isCollapsed = diagEl.classList.contains(styles_2.POPUP_DIALOG_CLASS_COLLAPSE);
             if (isCollapsed) {
                 dialogPopup = false;
             }
@@ -608,7 +609,7 @@ function onEventPageTurn(payload) {
         return;
     }
     const scrollElement = (0, readium_css_1.getScrollingElement)(win.document);
-    const reduceMotion = win.document.documentElement.classList.contains(styles_1.ROOT_CLASS_REDUCE_MOTION);
+    const reduceMotion = win.document.documentElement.classList.contains(styles_2.ROOT_CLASS_REDUCE_MOTION);
     const isPaged = (0, readium_css_inject_1.isPaginated)(win.document);
     const goPREVIOUS = payload.go === "PREVIOUS";
     const animationTime = 300;
@@ -771,11 +772,16 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_PAGE_TURN, (_event, payload) => {
     }, 100);
 });
 function focusElement(element, preventScroll) {
+    if (preventScroll &&
+        (element === win.document.activeElement)) {
+        debug("KEYBOARD FOCUS REQUEST (1) already FOCUSSED, skip");
+        return;
+    }
     if (element === win.document.body || !(0, tabbable_1.isFocusable)(element)) {
         const attr = element.getAttribute("tabindex");
         if (!attr) {
             element.setAttribute("tabindex", "-1");
-            element.classList.add(styles_1.CSS_CLASS_NO_FOCUS_OUTLINE);
+            element.classList.add(styles_2.CSS_CLASS_NO_FOCUS_OUTLINE);
             if (IS_DEV) {
                 debug("tabindex -1 set (focusable):");
                 debug(getCssSelector(element));
@@ -783,26 +789,27 @@ function focusElement(element, preventScroll) {
         }
     }
     if (element === win.document.body) {
+        debug("KEYBOARD FOCUS REQUEST (1) --> BODY");
         element.focus({ preventScroll: true });
     }
     else {
+        debug("KEYBOARD FOCUS REQUEST (1) --> not BODY", preventScroll);
         element.focus({ preventScroll });
     }
-    electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_KEYBOARD_FOCUS_REQUEST, null);
     if (IS_DEV) {
         debug("KEYBOARD FOCUS REQUEST (1) ", getCssSelector(element));
     }
 }
 const tempLinkTargetOutline = (element, time, alt) => {
     let skip = false;
-    const targets = win.document.querySelectorAll(`.${styles_1.LINK_TARGET_CLASS}`);
+    const targets = win.document.querySelectorAll(`.${styles_2.LINK_TARGET_CLASS}`);
     targets.forEach((t) => {
-        if (alt && !t.classList.contains(styles_1.LINK_TARGET_ALT_CLASS)) {
+        if (alt && !t.classList.contains(styles_2.LINK_TARGET_ALT_CLASS)) {
             skip = true;
             return;
         }
-        t.classList.remove(styles_1.LINK_TARGET_CLASS);
-        t.classList.remove(styles_1.LINK_TARGET_ALT_CLASS);
+        t.classList.remove(styles_2.LINK_TARGET_CLASS);
+        t.classList.remove(styles_2.LINK_TARGET_ALT_CLASS);
     });
     if (skip) {
         return;
@@ -810,9 +817,9 @@ const tempLinkTargetOutline = (element, time, alt) => {
     element.style.animation = "none";
     void element.offsetWidth;
     element.style.animation = "";
-    element.classList.add(styles_1.LINK_TARGET_CLASS);
+    element.classList.add(styles_2.LINK_TARGET_CLASS);
     if (alt) {
-        element.classList.add(styles_1.LINK_TARGET_ALT_CLASS);
+        element.classList.add(styles_2.LINK_TARGET_ALT_CLASS);
     }
     if (element._timeoutTargetClass) {
         clearTimeout(element._timeoutTargetClass);
@@ -820,19 +827,19 @@ const tempLinkTargetOutline = (element, time, alt) => {
     }
     element._timeoutTargetClass = setTimeout(() => {
         debug("ANIMATION TIMEOUT REMOVE");
-        element.classList.remove(styles_1.LINK_TARGET_CLASS);
-        element.classList.remove(styles_1.LINK_TARGET_ALT_CLASS);
+        element.classList.remove(styles_2.LINK_TARGET_CLASS);
+        element.classList.remove(styles_2.LINK_TARGET_ALT_CLASS);
     }, time);
 };
 let _lastAnimState2;
 const animationTime2 = 400;
 function scrollElementIntoView(element, doFocus, animate, domRect) {
     if (win.READIUM2.DEBUG_VISUALS) {
-        const existings = win.document.querySelectorAll(`*[${styles_1.readPosCssStylesAttr3}]`);
+        const existings = win.document.querySelectorAll(`*[${styles_2.readPosCssStylesAttr3}]`);
         existings.forEach((existing) => {
-            existing.removeAttribute(`${styles_1.readPosCssStylesAttr3}`);
+            existing.removeAttribute(`${styles_2.readPosCssStylesAttr3}`);
         });
-        element.setAttribute(styles_1.readPosCssStylesAttr3, "scrollElementIntoView");
+        element.setAttribute(styles_2.readPosCssStylesAttr3, "scrollElementIntoView");
     }
     if (win.READIUM2.isFixedLayout) {
         debug("scrollElementIntoView_ SKIP FXL");
@@ -883,7 +890,7 @@ function scrollElementIntoView(element, doFocus, animate, domRect) {
                 }
                 const targetProp = vwm ? "scrollLeft" : "scrollTop";
                 if (animate) {
-                    const reduceMotion = win.document.documentElement.classList.contains(styles_1.ROOT_CLASS_REDUCE_MOTION);
+                    const reduceMotion = win.document.documentElement.classList.contains(styles_2.ROOT_CLASS_REDUCE_MOTION);
                     if (_lastAnimState2 && _lastAnimState2.animating) {
                         win.cancelAnimationFrame(_lastAnimState2.id);
                         _lastAnimState2.object[_lastAnimState2.property] = _lastAnimState2.destVal;
@@ -1133,21 +1140,21 @@ const scrollToHashDebounced = debounce((animate) => {
 }, 100);
 let _ignoreScrollEvent = false;
 function showHideContentMask(doHide, isFixedLayout) {
-    if (!styles_1.ENABLE_VISIBILITY_MASK) {
+    if (!styles_2.ENABLE_VISIBILITY_MASK) {
         return;
     }
     if (doHide) {
-        win.document.documentElement.classList.add(styles_1.ROOT_CLASS_INVISIBLE_MASK);
-        win.document.documentElement.classList.remove(styles_1.ROOT_CLASS_INVISIBLE_MASK_REMOVED);
+        win.document.documentElement.classList.add(styles_2.ROOT_CLASS_INVISIBLE_MASK);
+        win.document.documentElement.classList.remove(styles_2.ROOT_CLASS_INVISIBLE_MASK_REMOVED);
     }
     else {
-        if (styles_1.ENABLE_EXTRA_COLUMN_SHIFT_METHOD) {
+        if (styles_2.ENABLE_EXTRA_COLUMN_SHIFT_METHOD) {
             electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_SHOW, null);
         }
         if (isFixedLayout) {
-            win.document.documentElement.classList.add(styles_1.ROOT_CLASS_INVISIBLE_MASK_REMOVED);
+            win.document.documentElement.classList.add(styles_2.ROOT_CLASS_INVISIBLE_MASK_REMOVED);
         }
-        win.document.documentElement.classList.remove(styles_1.ROOT_CLASS_INVISIBLE_MASK);
+        win.document.documentElement.classList.remove(styles_2.ROOT_CLASS_INVISIBLE_MASK);
     }
 }
 function focusScrollRaw(el, doFocus, animate, domRect) {
@@ -1197,7 +1204,7 @@ win.addEventListener("DOMContentLoaded", () => {
         win.READIUM2.hashElement = win.document.getElementById(win.location.hash.substr(1));
         if (win.READIUM2.DEBUG_VISUALS) {
             if (win.READIUM2.hashElement) {
-                win.READIUM2.hashElement.setAttribute(styles_1.readPosCssStylesAttr1, "DOMContentLoaded hashElement");
+                win.READIUM2.hashElement.setAttribute(styles_2.readPosCssStylesAttr1, "DOMContentLoaded hashElement");
             }
         }
     }
@@ -1232,8 +1239,8 @@ win.addEventListener("DOMContentLoaded", () => {
     }
     if (!win.READIUM2.isFixedLayout && !win.READIUM2.isAudio) {
         const scrollElement = (0, readium_css_1.getScrollingElement)(win.document);
-        if (!scrollElement.classList.contains(styles_1.ZERO_TRANSFORM_CLASS)) {
-            scrollElement.classList.add(styles_1.ZERO_TRANSFORM_CLASS);
+        if (!scrollElement.classList.contains(styles_2.ZERO_TRANSFORM_CLASS)) {
+            scrollElement.classList.add(styles_2.ZERO_TRANSFORM_CLASS);
         }
     }
     const w = (readiumcssJson && readiumcssJson.fixedLayoutWebViewWidth) || win.innerWidth;
@@ -1355,13 +1362,13 @@ const onScrollRaw = () => {
     if (!win.document || !win.document.documentElement) {
         return;
     }
-    if (win.document.documentElement.classList.contains(styles_1.R2_MO_CLASS_PLAYING)) {
+    if (win.document.documentElement.classList.contains(styles_2.R2_MO_CLASS_PLAYING)) {
         debug("onScrollRaw Media OVerlays PLAYING/PAUSED ... skip");
         return;
     }
     if (!win.READIUM2.ttsClickEnabled &&
-        !win.document.documentElement.classList.contains(styles_1.TTS_CLASS_PLAYING) &&
-        !win.document.documentElement.classList.contains(styles_1.TTS_CLASS_PAUSED)) {
+        !win.document.documentElement.classList.contains(styles_2.TTS_CLASS_PLAYING) &&
+        !win.document.documentElement.classList.contains(styles_2.TTS_CLASS_PAUSED)) {
         const el = win.READIUM2.locationHashOverride;
         if (el && isVisible(false, el, undefined)) {
             debug("onScrollRaw VISIBLE SKIP");
@@ -1375,10 +1382,10 @@ const onScrollDebounced = debounce(() => {
     onScrollRaw();
 }, 300);
 const appendExtraColumnPadIfNecessary = (skipResizeObserver) => {
-    if (styles_1.ENABLE_EXTRA_COLUMN_SHIFT_METHOD) {
+    if (styles_2.ENABLE_EXTRA_COLUMN_SHIFT_METHOD) {
         return;
     }
-    let elPad = win.document.getElementById(styles_1.EXTRA_COLUMN_PAD_ID);
+    let elPad = win.document.getElementById(styles_2.EXTRA_COLUMN_PAD_ID);
     const isPaged = (0, readium_css_inject_1.isPaginated)(win.document);
     const isTwo = (0, readium_css_1.isTwoPageSpread)();
     const isVWM = (0, readium_css_1.isVerticalWritingMode)();
@@ -1388,7 +1395,7 @@ const appendExtraColumnPadIfNecessary = (skipResizeObserver) => {
         const { maxScrollShift, maxScrollShiftAdjusted } = (0, readium_css_1.calculateMaxScrollShift)();
         if (maxScrollShiftAdjusted > maxScrollShift) {
             elPad = win.document.createElement("div");
-            elPad.setAttribute("id", styles_1.EXTRA_COLUMN_PAD_ID);
+            elPad.setAttribute("id", styles_2.EXTRA_COLUMN_PAD_ID);
             elPad.style.breakBefore = "column";
             elPad.innerHTML = "&#8203;";
             if (!skipResizeObserver) {
@@ -1405,6 +1412,21 @@ const appendExtraColumnPadIfNecessary = (skipResizeObserver) => {
         }
     }
 };
+function focusCurrentReadingLocationElement(invert) {
+    if (IS_DEV) {
+        debug(">>>> focus link click: ");
+        debug(win.READIUM2.hashElement ?
+            getCssSelector(win.READIUM2.hashElement) : "!hashElement");
+        debug(win.READIUM2.locationHashOverride ?
+            getCssSelector(win.READIUM2.locationHashOverride) : "!locationHashOverride");
+    }
+    const el = invert ?
+        (win.READIUM2.locationHashOverride || win.READIUM2.hashElement) :
+        (win.READIUM2.hashElement || win.READIUM2.locationHashOverride);
+    if (el) {
+        focusScrollDebounced(el, true, false, undefined);
+    }
+}
 let _firstResizeObserver = true;
 let _firstResizeObserverTimeout = undefined;
 let _loaded = false;
@@ -1457,9 +1479,9 @@ function loaded(forced) {
             showHideContentMask(false, win.READIUM2.isFixedLayout);
             debug("++++ scrollToHashDebounced FROM LOAD");
             scrollToHashDebounced(false);
-            if (win.document.body) {
+            if (styles_1.ENABLE_SKIP_LINK && win.document.body) {
                 const focusLink = win.document.createElement("a");
-                focusLink.setAttribute("id", styles_1.SKIP_LINK_ID);
+                focusLink.setAttribute("id", styles_2.SKIP_LINK_ID);
                 focusLink.appendChild(win.document.createTextNode(" "));
                 focusLink.setAttribute("title", INJECTED_LINK_TXT);
                 focusLink.setAttribute("aria-label", INJECTED_LINK_TXT);
@@ -1469,17 +1491,7 @@ function loaded(forced) {
                 setTimeout(() => {
                     focusLink.addEventListener("click", (ev) => {
                         ev.preventDefault();
-                        if (IS_DEV) {
-                            debug(">>>> focus link click: ");
-                            debug(win.READIUM2.hashElement ?
-                                getCssSelector(win.READIUM2.hashElement) : "!hashElement");
-                            debug(win.READIUM2.locationHashOverride ?
-                                getCssSelector(win.READIUM2.locationHashOverride) : "!locationHashOverride");
-                        }
-                        const el = win.READIUM2.hashElement || win.READIUM2.locationHashOverride;
-                        if (el) {
-                            focusScrollDebounced(el, true, false, undefined);
-                        }
+                        focusCurrentReadingLocationElement(false);
                     });
                 }, 200);
             }
@@ -1493,7 +1505,7 @@ function loaded(forced) {
     }
     win.document.documentElement.addEventListener("keydown", (ev) => {
         if (win.document && win.document.documentElement) {
-            win.document.documentElement.classList.add(styles_1.ROOT_CLASS_KEYBOARD_INTERACT);
+            win.document.documentElement.classList.add(styles_2.ROOT_CLASS_KEYBOARD_INTERACT);
         }
         if (ev.code === "ArrowLeft" || ev.code === "ArrowRight") {
             if (ev.target && elementCapturesKeyboardArrowKeys(ev.target)) {
@@ -1506,7 +1518,7 @@ function loaded(forced) {
     }, true);
     win.document.documentElement.addEventListener("mousedown", (_ev) => {
         if (win.document && win.document.documentElement) {
-            win.document.documentElement.classList.remove(styles_1.ROOT_CLASS_KEYBOARD_INTERACT);
+            win.document.documentElement.classList.remove(styles_2.ROOT_CLASS_KEYBOARD_INTERACT);
         }
     }, true);
     if (win.READIUM2.isAudio) {
@@ -1524,12 +1536,12 @@ function loaded(forced) {
                 if (low === "body") {
                     ignoreIncomingMouseClickOnFocusable = true;
                 }
-                else if (!win.document.documentElement.classList.contains(styles_1.ROOT_CLASS_KEYBOARD_INTERACT)) {
+                else if (!win.document.documentElement.classList.contains(styles_2.ROOT_CLASS_KEYBOARD_INTERACT)) {
                     if (low === "a" &&
                         ev.target.href
                         ||
                             ev.target.getAttribute("tabindex") === "-1" &&
-                                ev.target.classList.contains(styles_1.CSS_CLASS_NO_FOCUS_OUTLINE)) {
+                                ev.target.classList.contains(styles_2.CSS_CLASS_NO_FOCUS_OUTLINE)) {
                         ignoreIncomingMouseClickOnFocusable = true;
                     }
                 }
@@ -1556,7 +1568,7 @@ function loaded(forced) {
                     return;
                 }
                 win.document.body.tabbables = undefined;
-                const elPad = win.document.getElementById(styles_1.EXTRA_COLUMN_PAD_ID);
+                const elPad = win.document.getElementById(styles_2.EXTRA_COLUMN_PAD_ID);
                 if (elPad) {
                     setTimeout(() => {
                         elPad === null || elPad === void 0 ? void 0 : elPad.remove();
@@ -1582,10 +1594,10 @@ function loaded(forced) {
             win.clearTimeout(_mouseMoveTimeout);
             _mouseMoveTimeout = undefined;
         }
-        win.document.documentElement.classList.remove(styles_1.HIDE_CURSOR_CLASS);
+        win.document.documentElement.classList.remove(styles_2.HIDE_CURSOR_CLASS);
         _mouseMoveTimeout = win.setTimeout(() => {
             _mouseMoveTimeout = undefined;
-            win.document.documentElement.classList.add(styles_1.HIDE_CURSOR_CLASS);
+            win.document.documentElement.classList.add(styles_2.HIDE_CURSOR_CLASS);
         }, 1000);
     });
     win.document.addEventListener("auxclick", (ev) => tslib_1.__awaiter(this, void 0, void 0, function* () {
@@ -1597,7 +1609,7 @@ function loaded(forced) {
     }), true);
     win.document.addEventListener("click", (ev) => tslib_1.__awaiter(this, void 0, void 0, function* () {
         debug(`!AUX __CLICK: ${ev.button} ...`);
-        if (win.document.documentElement.classList.contains(styles_1.R2_MO_CLASS_PAUSED) || win.document.documentElement.classList.contains(styles_1.R2_MO_CLASS_PLAYING)) {
+        if (win.document.documentElement.classList.contains(styles_2.R2_MO_CLASS_PAUSED) || win.document.documentElement.classList.contains(styles_2.R2_MO_CLASS_PLAYING)) {
             debug("!AUX __CLICK skip because MO playing/paused");
             ev.preventDefault();
             ev.stopPropagation();
@@ -1619,7 +1631,7 @@ function loaded(forced) {
                 return;
             }
         }
-        if (win.READIUM2.ttsClickEnabled || win.document.documentElement.classList.contains(styles_1.TTS_CLASS_PAUSED) || win.document.documentElement.classList.contains(styles_1.TTS_CLASS_PLAYING)) {
+        if (win.READIUM2.ttsClickEnabled || win.document.documentElement.classList.contains(styles_2.TTS_CLASS_PAUSED) || win.document.documentElement.classList.contains(styles_2.TTS_CLASS_PLAYING)) {
             debug("!AUX __CLICK skip because TTS playing/paused");
             ev.preventDefault();
             return;
@@ -1634,7 +1646,7 @@ function loaded(forced) {
         while (currentElement && currentElement.nodeType === Node.ELEMENT_NODE) {
             const tagName = currentElement.tagName.toLowerCase();
             if ((tagName === "img" || tagName === "image" || tagName === "svg")
-                && !currentElement.classList.contains(styles_1.POPOUTIMAGE_CONTAINER_ID)) {
+                && !currentElement.classList.contains(styles_2.POPOUTIMAGE_CONTAINER_ID)) {
                 isSVG = false;
                 if (tagName === "svg") {
                     if (imageElement) {
@@ -1768,7 +1780,7 @@ function loaded(forced) {
             return;
         }
         debug(`HREF SRC: ${href_src} ${href_src_image_nested_in_link} (${win.location.href})`);
-        const has = imageElement === null || imageElement === void 0 ? void 0 : imageElement.hasAttribute(`data-${styles_1.POPOUTIMAGE_CONTAINER_ID}`);
+        const has = imageElement === null || imageElement === void 0 ? void 0 : imageElement.hasAttribute(`data-${styles_2.POPOUTIMAGE_CONTAINER_ID}`);
         if (imageElement && href_src && (has ||
             ((!linkElement && !win.READIUM2.isFixedLayout && !isSVG) || ev.shiftKey))) {
             if (linkElement && href_src_image_nested_in_link) {
@@ -1788,7 +1800,7 @@ function loaded(forced) {
                 (0, popoutImages_1.popoutImage)(win, imageElement, href_src, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
             }
             else {
-                imageElement.setAttribute(`data-${styles_1.POPOUTIMAGE_CONTAINER_ID}`, "1");
+                imageElement.setAttribute(`data-${styles_2.POPOUTIMAGE_CONTAINER_ID}`, "1");
             }
             return;
         }
@@ -2014,8 +2026,8 @@ function loaded(forced) {
         if ((0, popup_dialog_1.isPopupDialogOpen)(win.document)) {
             return;
         }
-        if (win.document.activeElement &&
-            win.document.activeElement === win.document.getElementById(styles_1.SKIP_LINK_ID)) {
+        if (styles_1.ENABLE_SKIP_LINK && win.document.activeElement &&
+            win.document.activeElement === win.document.getElementById(styles_2.SKIP_LINK_ID)) {
             debug(".hashElement = 5 => SKIP_LINK_ID mouse click event - screen reader VoiceOver generates mouse click / non-keyboard event");
             return;
         }
@@ -2066,7 +2078,7 @@ win.addEventListener("load", () => {
 function checkBlacklisted(el) {
     const id = el.getAttribute("id");
     if (id && _blacklistIdClassForCFI.indexOf(id) >= 0) {
-        if (IS_DEV && id !== styles_1.SKIP_LINK_ID) {
+        if (IS_DEV && id !== styles_2.SKIP_LINK_ID) {
             debug("checkBlacklisted ID: " + id);
         }
         return true;
@@ -2079,7 +2091,7 @@ function checkBlacklisted(el) {
             return true;
         }
     }
-    const mathJax = win.document.documentElement.classList.contains(styles_1.ROOT_CLASS_MATHJAX);
+    const mathJax = win.document.documentElement.classList.contains(styles_2.ROOT_CLASS_MATHJAX);
     if (mathJax) {
         const low = el.tagName.toLowerCase();
         for (const item of _blacklistIdClassForCFIMathJax) {
@@ -2261,8 +2273,8 @@ const processXYRaw = (x, y, reverse, userInteract) => {
             }
             else if (win.READIUM2.hashElement !== win.READIUM2.locationHashOverride &&
                 (win.READIUM2.ttsClickEnabled ||
-                    win.document.documentElement.classList.contains(styles_1.TTS_CLASS_PLAYING) ||
-                    win.document.documentElement.classList.contains(styles_1.TTS_CLASS_PAUSED))) {
+                    win.document.documentElement.classList.contains(styles_2.TTS_CLASS_PLAYING) ||
+                    win.document.documentElement.classList.contains(styles_2.TTS_CLASS_PAUSED))) {
                 debug(".hashElement = 8");
                 win.READIUM2.hashElement = userInteract ? domPointData.element : win.READIUM2.hashElement;
                 win.READIUM2.locationHashOverride = domPointData.element;
@@ -2274,13 +2286,16 @@ const processXYRaw = (x, y, reverse, userInteract) => {
         else {
             notifyReadingLocationDebounced(userInteract);
         }
+        if (userInteract && win.READIUM2.locationHashOverride) {
+            focusElement(win.READIUM2.locationHashOverride, true);
+        }
         if (win.READIUM2.DEBUG_VISUALS) {
             const el = win.READIUM2.locationHashOverride ? win.READIUM2.locationHashOverride : domPointData.element;
-            const existings = win.document.querySelectorAll(`*[${styles_1.readPosCssStylesAttr2}]`);
+            const existings = win.document.querySelectorAll(`*[${styles_2.readPosCssStylesAttr2}]`);
             existings.forEach((existing) => {
-                existing.removeAttribute(`${styles_1.readPosCssStylesAttr2}`);
+                existing.removeAttribute(`${styles_2.readPosCssStylesAttr2}`);
             });
-            el.setAttribute(styles_1.readPosCssStylesAttr2, "processXYRaw");
+            el.setAttribute(styles_2.readPosCssStylesAttr2, "processXYRaw");
         }
     }
     debug("processXYRaw EXIT");
@@ -2304,7 +2319,7 @@ const computeProgressionData = () => {
                 progressionRatio = scrollElement.scrollTop / maxScrollShift;
             }
             else {
-                extraShift = styles_1.ENABLE_EXTRA_COLUMN_SHIFT_METHOD ? scrollElement.scrollLeftExtra : 0;
+                extraShift = styles_2.ENABLE_EXTRA_COLUMN_SHIFT_METHOD ? scrollElement.scrollLeftExtra : 0;
                 if (extraShift) {
                     progressionRatio = ((((0, readium_css_1.isRTL)() ? -1 : 1) * scrollElement.scrollLeft) + extraShift) /
                         maxScrollShiftAdjusted;
@@ -2437,9 +2452,9 @@ const computeProgressionData = () => {
         percentRatio: progressionRatio,
     };
 };
-const _blacklistIdClassForCssSelectors = [styles_1.EXTRA_COLUMN_PAD_ID, styles_1.LINK_TARGET_CLASS, styles_1.LINK_TARGET_ALT_CLASS, styles_1.CSS_CLASS_NO_FOCUS_OUTLINE, styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, styles_1.ID_HIGHLIGHTS_CONTAINER, styles_1.CLASS_HIGHLIGHT_CONTAINER, styles_1.CLASS_HIGHLIGHT_CONTOUR, styles_1.CLASS_HIGHLIGHT_CONTOUR_MARGIN, styles_1.TTS_ID_SPEAKING_DOC_ELEMENT, styles_1.ROOT_CLASS_KEYBOARD_INTERACT, styles_1.ROOT_CLASS_INVISIBLE_MASK, styles_1.ROOT_CLASS_INVISIBLE_MASK_REMOVED, styles_1.CLASS_PAGINATED, styles_1.ROOT_CLASS_NO_FOOTNOTES, styles_1.ROOT_CLASS_NO_RUBY];
+const _blacklistIdClassForCssSelectors = [styles_2.EXTRA_COLUMN_PAD_ID, styles_2.LINK_TARGET_CLASS, styles_2.LINK_TARGET_ALT_CLASS, styles_2.CSS_CLASS_NO_FOCUS_OUTLINE, styles_2.SKIP_LINK_ID, styles_2.POPUP_DIALOG_CLASS, styles_2.ID_HIGHLIGHTS_CONTAINER, styles_2.CLASS_HIGHLIGHT_CONTAINER, styles_2.CLASS_HIGHLIGHT_CONTOUR, styles_2.CLASS_HIGHLIGHT_CONTOUR_MARGIN, styles_2.TTS_ID_SPEAKING_DOC_ELEMENT, styles_2.ROOT_CLASS_KEYBOARD_INTERACT, styles_2.ROOT_CLASS_INVISIBLE_MASK, styles_2.ROOT_CLASS_INVISIBLE_MASK_REMOVED, styles_2.CLASS_PAGINATED, styles_2.ROOT_CLASS_NO_FOOTNOTES, styles_2.ROOT_CLASS_NO_RUBY];
 const _blacklistIdClassForCssSelectorsMathJax = ["mathjax", "ctxt", "mjx", "r2-wbr"];
-const _blacklistIdClassForCFI = [styles_1.EXTRA_COLUMN_PAD_ID, styles_1.SKIP_LINK_ID, styles_1.POPUP_DIALOG_CLASS, styles_1.ID_HIGHLIGHTS_CONTAINER, styles_1.CLASS_HIGHLIGHT_CONTAINER, styles_1.CLASS_HIGHLIGHT_CONTOUR, styles_1.CLASS_HIGHLIGHT_CONTOUR_MARGIN];
+const _blacklistIdClassForCFI = [styles_2.EXTRA_COLUMN_PAD_ID, styles_2.SKIP_LINK_ID, styles_2.POPUP_DIALOG_CLASS, styles_2.ID_HIGHLIGHTS_CONTAINER, styles_2.CLASS_HIGHLIGHT_CONTAINER, styles_2.CLASS_HIGHLIGHT_CONTOUR, styles_2.CLASS_HIGHLIGHT_CONTOUR_MARGIN];
 const _blacklistIdClassForCFIMathJax = ["mathjax", "ctxt", "mjx", "r2-wbr"];
 const computeCFI = (node) => {
     if (node.nodeType !== Node.ELEMENT_NODE) {
@@ -2530,7 +2545,7 @@ const _getCssSelectorOptions = {
         if (_blacklistIdClassForCssSelectors.indexOf(str) >= 0) {
             return false;
         }
-        const mathJax = win.document.documentElement.classList.contains(styles_1.ROOT_CLASS_MATHJAX);
+        const mathJax = win.document.documentElement.classList.contains(styles_2.ROOT_CLASS_MATHJAX);
         if (mathJax) {
             const low = str.toLowerCase();
             for (const item of _blacklistIdClassForCssSelectorsMathJax) {
@@ -2545,7 +2560,7 @@ const _getCssSelectorOptions = {
         if (_blacklistIdClassForCssSelectors.indexOf(str) >= 0) {
             return false;
         }
-        const mathJax = win.document.documentElement.classList.contains(styles_1.ROOT_CLASS_MATHJAX);
+        const mathJax = win.document.documentElement.classList.contains(styles_2.ROOT_CLASS_MATHJAX);
         if (mathJax) {
             const low = str.toLowerCase();
             for (const item of _blacklistIdClassForCssSelectorsMathJax) {
@@ -2557,7 +2572,7 @@ const _getCssSelectorOptions = {
         return true;
     },
     tagName: (str) => {
-        const mathJax = win.document.documentElement.classList.contains(styles_1.ROOT_CLASS_MATHJAX);
+        const mathJax = win.document.documentElement.classList.contains(styles_2.ROOT_CLASS_MATHJAX);
         if (mathJax) {
             for (const item of _blacklistIdClassForCssSelectorsMathJax) {
                 if (str.startsWith(item)) {
@@ -2731,15 +2746,15 @@ const MAX_FOLLOWING_ELEMENTS_IDS = 100;
 let _elementsWithID;
 const findFollowingDescendantSiblingElementsWithID = (el) => {
     let followingElementIDs;
-    if (win.document.documentElement.classList.contains(styles_1.R2_MO_CLASS_PLAYING) || win.document.documentElement.classList.contains(styles_1.R2_MO_CLASS_PAUSED) || win.document.documentElement.classList.contains(styles_1.R2_MO_CLASS_STOPPED)) {
+    if (win.document.documentElement.classList.contains(styles_2.R2_MO_CLASS_PLAYING) || win.document.documentElement.classList.contains(styles_2.R2_MO_CLASS_PAUSED) || win.document.documentElement.classList.contains(styles_2.R2_MO_CLASS_STOPPED)) {
         followingElementIDs = [];
         if (!_elementsWithID) {
-            _elementsWithID = Array.from(win.document.querySelectorAll(`*:not(#${styles_1.ID_HIGHLIGHTS_CONTAINER}):not(#${styles_1.POPUP_DIALOG_CLASS}):not(#${styles_1.EXTRA_COLUMN_PAD_ID}):not(#${styles_1.SKIP_LINK_ID}) *[id]:not(#${styles_1.ID_HIGHLIGHTS_CONTAINER}):not(#${styles_1.POPUP_DIALOG_CLASS}):not(#${styles_1.EXTRA_COLUMN_PAD_ID}):not(#${styles_1.SKIP_LINK_ID})`));
+            _elementsWithID = Array.from(win.document.querySelectorAll(`*:not(#${styles_2.ID_HIGHLIGHTS_CONTAINER}):not(#${styles_2.POPUP_DIALOG_CLASS}):not(#${styles_2.EXTRA_COLUMN_PAD_ID}):not(#${styles_2.SKIP_LINK_ID}) *[id]:not(#${styles_2.ID_HIGHLIGHTS_CONTAINER}):not(#${styles_2.POPUP_DIALOG_CLASS}):not(#${styles_2.EXTRA_COLUMN_PAD_ID}):not(#${styles_2.SKIP_LINK_ID})`));
         }
-        const elHighlightsContainer = win.document.getElementById(styles_1.ID_HIGHLIGHTS_CONTAINER);
-        const elPopupDialog = win.document.getElementById(styles_1.POPUP_DIALOG_CLASS);
-        const elSkipLink = win.document.getElementById(styles_1.SKIP_LINK_ID);
-        const elPad = win.document.getElementById(styles_1.EXTRA_COLUMN_PAD_ID);
+        const elHighlightsContainer = win.document.getElementById(styles_2.ID_HIGHLIGHTS_CONTAINER);
+        const elPopupDialog = win.document.getElementById(styles_2.POPUP_DIALOG_CLASS);
+        const elSkipLink = styles_1.ENABLE_SKIP_LINK ? win.document.getElementById(styles_2.SKIP_LINK_ID) : null;
+        const elPad = win.document.getElementById(styles_2.EXTRA_COLUMN_PAD_ID);
         for (let i = 0; i < _elementsWithID.length; i++) {
             const elementWithID = _elementsWithID[i];
             const id = elementWithID.id || elementWithID.getAttribute("id");
@@ -2922,15 +2937,16 @@ const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays) => {
     if (!ignoreMediaOverlays) {
         mediaOverlaysClickRaw(win.READIUM2.locationHashOverride, userInteract ? true : false);
     }
-    if (!win.document.documentElement.classList.contains(styles_1.R2_MO_CLASS_PLAYING)) {
+    if (!win.document.documentElement.classList.contains(styles_2.R2_MO_CLASS_PLAYING)) {
         tempLinkTargetOutline(win.READIUM2.locationHashOverride, 1000, true);
     }
+    focusElement(win.READIUM2.locationHashOverride, true);
     if (win.READIUM2.DEBUG_VISUALS) {
-        const existings = win.document.querySelectorAll(`*[${styles_1.readPosCssStylesAttr4}]`);
+        const existings = win.document.querySelectorAll(`*[${styles_2.readPosCssStylesAttr4}]`);
         existings.forEach((existing) => {
-            existing.removeAttribute(`${styles_1.readPosCssStylesAttr4}`);
+            existing.removeAttribute(`${styles_2.readPosCssStylesAttr4}`);
         });
-        win.READIUM2.locationHashOverride.setAttribute(styles_1.readPosCssStylesAttr4, "notifyReadingLocationRaw");
+        win.READIUM2.locationHashOverride.setAttribute(styles_2.readPosCssStylesAttr4, "notifyReadingLocationRaw");
     }
 };
 const notifyReadingLocationDebounced = debounce((userInteract, ignoreMediaOverlays) => {
@@ -2980,17 +2996,17 @@ if (!win.READIUM2.isAudio) {
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_MEDIA_OVERLAY_STATE, (_event, payload) => {
         (0, readium_css_1.clearImageZoomOutlineDebounced)();
-        win.document.documentElement.classList.remove(styles_1.R2_MO_CLASS_PAUSED, styles_1.R2_MO_CLASS_PLAYING, styles_1.R2_MO_CLASS_STOPPED);
-        win.document.documentElement.classList.add(payload.state === events_1.MediaOverlaysStateEnum.PAUSED ? styles_1.R2_MO_CLASS_PAUSED :
-            (payload.state === events_1.MediaOverlaysStateEnum.PLAYING ? styles_1.R2_MO_CLASS_PLAYING : styles_1.R2_MO_CLASS_STOPPED));
+        win.document.documentElement.classList.remove(styles_2.R2_MO_CLASS_PAUSED, styles_2.R2_MO_CLASS_PLAYING, styles_2.R2_MO_CLASS_STOPPED);
+        win.document.documentElement.classList.add(payload.state === events_1.MediaOverlaysStateEnum.PAUSED ? styles_2.R2_MO_CLASS_PAUSED :
+            (payload.state === events_1.MediaOverlaysStateEnum.PLAYING ? styles_2.R2_MO_CLASS_PLAYING : styles_2.R2_MO_CLASS_STOPPED));
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT, (_event, payload) => {
         const styleAttr = win.document.documentElement.getAttribute("style");
         const isNight = styleAttr ? styleAttr.indexOf("readium-night-on") > 0 : false;
         const isSepia = styleAttr ? styleAttr.indexOf("readium-sepia-on") > 0 : false;
-        const activeClass = (isNight || isSepia) ? styles_1.R2_MO_CLASS_ACTIVE :
-            (payload.classActive ? payload.classActive : styles_1.R2_MO_CLASS_ACTIVE);
-        const activeClassPlayback = payload.classActivePlayback ? payload.classActivePlayback : styles_1.R2_MO_CLASS_ACTIVE_PLAYBACK;
+        const activeClass = (isNight || isSepia) ? styles_2.R2_MO_CLASS_ACTIVE :
+            (payload.classActive ? payload.classActive : styles_2.R2_MO_CLASS_ACTIVE);
+        const activeClassPlayback = payload.classActivePlayback ? payload.classActivePlayback : styles_2.R2_MO_CLASS_ACTIVE_PLAYBACK;
         if (payload.classActive) {
             const activeMoElements = win.document.body.querySelectorAll(`.${payload.classActive}`);
             activeMoElements.forEach((elem) => {
@@ -2999,13 +3015,13 @@ if (!win.READIUM2.isAudio) {
                 }
             });
         }
-        const activeMoElements_ = win.document.body.querySelectorAll(`.${styles_1.R2_MO_CLASS_ACTIVE}`);
+        const activeMoElements_ = win.document.body.querySelectorAll(`.${styles_2.R2_MO_CLASS_ACTIVE}`);
         activeMoElements_.forEach((elem) => {
-            elem.classList.remove(styles_1.R2_MO_CLASS_ACTIVE);
+            elem.classList.remove(styles_2.R2_MO_CLASS_ACTIVE);
         });
         let removeCaptionContainer = true;
         if (!payload.id) {
-            win.document.documentElement.classList.remove(styles_1.R2_MO_CLASS_ACTIVE_PLAYBACK, activeClassPlayback);
+            win.document.documentElement.classList.remove(styles_2.R2_MO_CLASS_ACTIVE_PLAYBACK, activeClassPlayback);
         }
         else {
             if (true || !payload.captionsMode) {
@@ -3091,11 +3107,11 @@ if (!win.READIUM2.isAudio) {
                 notifyReadingLocationRaw(false, true);
                 if (win.READIUM2.DEBUG_VISUALS) {
                     const el = win.READIUM2.locationHashOverride;
-                    const existings = win.document.querySelectorAll(`*[${styles_1.readPosCssStylesAttr2}]`);
+                    const existings = win.document.querySelectorAll(`*[${styles_2.readPosCssStylesAttr2}]`);
                     existings.forEach((existing) => {
-                        existing.removeAttribute(`${styles_1.readPosCssStylesAttr2}`);
+                        existing.removeAttribute(`${styles_2.readPosCssStylesAttr2}`);
                     });
-                    el.setAttribute(styles_1.readPosCssStylesAttr2, "R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT");
+                    el.setAttribute(styles_2.readPosCssStylesAttr2, "R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT");
                 }
             }
         }
@@ -3155,6 +3171,9 @@ if (!win.READIUM2.isAudio) {
         else {
             (0, highlight_2.destroyAllhighlights)(win.document);
         }
+    });
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_FOCUS_READING_LOC, (_event, _payload) => {
+        focusCurrentReadingLocationElement(true);
     });
 }
 //# sourceMappingURL=preload.js.map

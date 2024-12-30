@@ -1,7 +1,6 @@
 import { Locator } from "../common/locator";
 import { Publication } from "r2-shared-js/dist/es8-es2017/src/models/publication";
 import { IEventPayload_R2_EVENT_CLIPBOARD_COPY, IEventPayload_R2_EVENT_READIUMCSS, IKeyboardEvent } from "../common/events";
-export declare function stealFocusDisable(doDisable: boolean): void;
 export declare function fixedLayoutZoomPercent(zoomPercent: number): void;
 export declare function readiumCssOnOff(rcss?: IEventPayload_R2_EVENT_READIUMCSS): void;
 export declare function readiumCssUpdate(rcss: IEventPayload_R2_EVENT_READIUMCSS): void;

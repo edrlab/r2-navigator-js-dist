@@ -9,6 +9,7 @@ import { ISelectionInfo } from "../common/selection";
 import { WebViewSlotEnum } from "../common/styles";
 import { IReadiumElectronWebview } from "./webview/state";
 export declare function setWebViewStyle(wv: IReadiumElectronWebview, wvSlot: WebViewSlotEnum, fxl?: IwidthHeight | null): void;
+export declare function keyboardFocusRequest(deep: boolean, webview?: IReadiumElectronWebview): void;
 export declare function locationHandleIpcMessage(eventChannel: string, eventArgs: any[], eventCurrentTarget: IReadiumElectronWebview): boolean;
 export declare function shiftWebview(webview: IReadiumElectronWebview, offset: number, backgroundColor: string | undefined): void;
 export declare function navPreviousOrNext(goPREVIOUS: boolean, spineNav?: boolean, ignorePageSpreadHandling?: boolean): Link | undefined;
