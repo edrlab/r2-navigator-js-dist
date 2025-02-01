@@ -262,6 +262,12 @@ function readiumCSSSet(documant, messageJson, isVerticalWritingMode, isRTL) {
     else {
         docElement.classList.remove(styles_1.ROOT_CLASS_NO_FOOTNOTES);
     }
+    if (setCSS.noTemporaryNavTargetOutline) {
+        docElement.classList.add(styles_1.DISABLE_TEMPORARY_NAV_TARGET_OUTLINE_CLASS);
+    }
+    else {
+        docElement.classList.remove(styles_1.DISABLE_TEMPORARY_NAV_TARGET_OUTLINE_CLASS);
+    }
     if (setCSS.mathJax) {
         docElement.classList.add(styles_1.ROOT_CLASS_MATHJAX);
     }

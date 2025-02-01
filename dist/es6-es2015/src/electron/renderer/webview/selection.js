@@ -115,6 +115,7 @@ function getCurrentSelectionInfo(win, getCssSelector, computeElementCFI, compute
         return undefined;
     }
     if (!selection.anchorNode || !selection.focusNode) {
+        console.log("^^^ SELECTION NO ANCHOR/FOCUS NODE?");
         return undefined;
     }
     const r = selection.rangeCount === 1 ? selection.getRangeAt(0) :

@@ -800,6 +800,9 @@ function focusElement(element, preventScroll) {
     }
 }
 const tempLinkTargetOutline = (element, time, alt) => {
+    if (win.document.documentElement.classList.contains(styles_1.DISABLE_TEMPORARY_NAV_TARGET_OUTLINE_CLASS)) {
+        return;
+    }
     let skip = false;
     const targets = win.document.querySelectorAll(`.${styles_2.LINK_TARGET_CLASS}`);
     targets.forEach((t) => {

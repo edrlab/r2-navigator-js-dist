@@ -281,7 +281,7 @@ const readiumCSS = (documant, messageJson) => {
         console.log("_____ readiumCssJson.urlRoot (readiumCSS()): ", messageJson.urlRoot);
     }
     (0, readium_css_inject_1.readiumCSSSet)(documant, messageJson, _isVerticalWritingMode, _isRTL);
-    if ((messageJson && messageJson.setCSS && !messageJson.setCSS.noFootnotes)) {
+    if (messageJson && messageJson.setCSS && !messageJson.setCSS.noFootnotes) {
         checkHiddenFootNotes(documant);
     }
 };
