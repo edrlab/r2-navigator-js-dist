@@ -6,6 +6,11 @@ import { IHighlight, IHighlightDefinition } from "./highlight";
 import { IPaginationInfo } from "./pagination";
 import { IReadiumCSS } from "./readium-css-settings";
 import { ISelectionInfo } from "./selection";
+export declare const R2_EVENT_IMAGE_CLICK = "R2_EVENT_IMAGE_CLICK";
+export interface IEventPayload_R2_EVENT_IMAGE_CLICK {
+    href: string;
+    imageCssSelector: string;
+}
 export declare const R2_EVENT_LOCATOR_VISIBLE = "R2_EVENT_LOCATOR_VISIBLE";
 export interface IEventPayload_R2_EVENT_LOCATOR_VISIBLE {
     visible: boolean;

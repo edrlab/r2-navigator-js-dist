@@ -1800,7 +1800,13 @@ function loaded(forced) {
                     href_src = destUrl.toString();
                     debug(`IMG CLICK ABSOLUTE-ized: ${href_src}`);
                 }
-                (0, popoutImages_1.popoutImage)(win, imageElement, href_src, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+                const imageCssSelector = getCssSelector(imageElement);
+                debug("R2_EVENT_IMAGE_CLICK (ipcRenderer.sendToHost) href: " + href_src + " ___ " + imageCssSelector);
+                const payload = {
+                    href: href_src,
+                    imageCssSelector,
+                };
+                electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_IMAGE_CLICK, payload);
             }
             else {
                 imageElement.setAttribute(`data-${styles_2.POPOUTIMAGE_CONTAINER_ID}`, "1");
@@ -1839,6 +1845,13 @@ function loaded(forced) {
             electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_LINK, payload);
         }
     }), true);
+    electron_1.ipcRenderer.on("R2_EVENT_IMAGE_CLICK", (_event, href_src, imageCssSelector) => {
+        debug("R2_EVENT_IMAGE_CLICK (ipcRenderer.on) href: " + href_src + " ___ " + imageCssSelector);
+        const imageElement = win.document.querySelector(imageCssSelector);
+        if (imageElement) {
+            (0, popoutImages_1.popoutImage)(win, imageElement, href_src, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+        }
+    });
     electron_1.ipcRenderer.on("R2_EVENT_WINDOW_RESIZE", (_event, zoomPercent) => {
         debug("R2_EVENT_WINDOW_RESIZE zoomPercent " + zoomPercent);
         win.READIUM2.fxlZoomPercent = zoomPercent;

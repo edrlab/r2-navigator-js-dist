@@ -31,12 +31,21 @@ const makeNewSegmenter = () => {
     const lang = window.document.documentElement.lang || navigator.languages;
     return new Intl.Segmenter(lang, { granularity: "word" });
 };
+const isHiddenUntilFound = (elt) => {
+    if (elt.hidden === "until-found") {
+        return true;
+    }
+    return false;
+};
 const isNodeVisible = (node) => {
     let elt = node;
     while (elt && !isElement(elt)) {
         elt = elt.parentNode;
     }
     if (elt) {
+        if (isHiddenUntilFound(elt)) {
+            return true;
+        }
         const nodeStyle = window.getComputedStyle(elt);
         if (nodeStyle.visibility === "hidden"
             || nodeStyle.display === "none" ||

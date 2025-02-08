@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.fixedLayoutZoomPercent = fixedLayoutZoomPercent;
 exports.readiumCssOnOff = readiumCssOnOff;
 exports.readiumCssUpdate = readiumCssUpdate;
+exports.setImageClickHandler = setImageClickHandler;
 exports.installNavigatorDOM = installNavigatorDOM;
 exports.setKeyDownEventHandler = setKeyDownEventHandler;
 exports.setKeyUpEventHandler = setKeyUpEventHandler;
@@ -213,6 +214,11 @@ function readiumCssUpdate(rcss) {
 }
 let _webview1;
 let _webview2;
+let _imageClickHandler;
+function setImageClickHandler(cb) {
+    _imageClickHandler = cb;
+}
+;
 function createWebViewInternal(preloadScriptPath) {
     const wv = document.createElement("webview");
     wv.setAttribute("webpreferences", `enableRemoteModule=0, allowRunningInsecureContent=0, backgroundThrottling=0, nodeIntegration=0, contextIsolation=0, nodeIntegrationInWorker=0, sandbox=0, webSecurity=1, webviewTag=0, partition=${sessions_1.R2_SESSION_WEBVIEW}`);
@@ -334,6 +340,17 @@ function createWebViewInternal(preloadScriptPath) {
         else if (event.channel === events_1.R2_EVENT_PAGE_TURN_RES &&
             event.args[0].go === "") {
             (0, readaloud_1.checkTtsState)(wv);
+        }
+        else if (event.channel === events_1.R2_EVENT_IMAGE_CLICK) {
+            const payload = event.args[0];
+            if (_imageClickHandler) {
+                debug("R2_EVENT_IMAGE_CLICK (ipc-message) href [_imageClickHandler]: " + payload.href + " ___ " + payload.imageCssSelector);
+                _imageClickHandler(payload.href);
+            }
+            else {
+                debug("R2_EVENT_IMAGE_CLICK (ipc-message) href [NOT _imageClickHandler => webview.send(R2_EVENT_IMAGE_CLICK]: " + payload.href + " ___ " + payload.imageCssSelector);
+                webview.send(events_1.R2_EVENT_IMAGE_CLICK, payload.href, payload.imageCssSelector);
+            }
         }
         else if (!(0, highlight_1.highlightsHandleIpcMessage)(event.channel, event.args, webview) &&
             !(0, readaloud_1.ttsHandleIpcMessage)(event.channel, event.args, webview) &&
