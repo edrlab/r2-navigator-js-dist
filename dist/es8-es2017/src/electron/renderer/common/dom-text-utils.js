@@ -275,6 +275,7 @@ function generateTtsQueue(rootElement, splitSentences) {
     let ttsQueue = [];
     const elementStack = [];
     function processTextNode(textNode) {
+        var _a;
         if (textNode.nodeType !== Node.TEXT_NODE) {
             return;
         }
@@ -284,6 +285,19 @@ function generateTtsQueue(rootElement, splitSentences) {
         const parentElement = elementStack[elementStack.length - 1];
         if (!parentElement) {
             return;
+        }
+        const documant = (textNode.parentElement || parentElement).ownerDocument;
+        const lower = (_a = (textNode.parentElement || parentElement).tagName) === null || _a === void 0 ? void 0 : _a.toLowerCase();
+        if (documant.documentElement.classList.contains(styles_1.ROOT_CLASS_NO_RUBY)) {
+            if (lower === "rp" || lower === "rt") {
+                return;
+            }
+        }
+        else {
+            if (true
+                && (lower === "ruby" || lower === "rb")) {
+                return;
+            }
         }
         let current = ttsQueue[ttsQueue.length - 1];
         const lang = textNode.parentElement ? getLanguage(textNode.parentElement) : undefined;
@@ -317,14 +331,23 @@ function generateTtsQueue(rootElement, splitSentences) {
             first = false;
             return;
         }
+        const documant = element.ownerDocument;
         function isHidden(el) {
             var _a, _b;
             if (el.getAttribute("id") === styles_1.SKIP_LINK_ID) {
                 return true;
             }
             const lower = (_a = el.tagName) === null || _a === void 0 ? void 0 : _a.toLowerCase();
-            if (lower === "rt" || lower === "rp") {
-                return true;
+            if (documant.documentElement.classList.contains(styles_1.ROOT_CLASS_NO_RUBY)) {
+                if (lower === "rt" || lower === "rp") {
+                    return true;
+                }
+            }
+            else {
+                if (true
+                    && (lower === "rb")) {
+                    return true;
+                }
             }
             let curEl = el;
             do {
