@@ -15,6 +15,7 @@ exports.ttsOverlayEnable = ttsOverlayEnable;
 exports.ttsClickEnable = ttsClickEnable;
 exports.ttsVoice = ttsVoice;
 exports.ttsPlaybackRate = ttsPlaybackRate;
+exports.ttsAndMediaOverlaysManualPlayNext = ttsAndMediaOverlaysManualPlayNext;
 exports.ttsSkippabilityEnable = ttsSkippabilityEnable;
 exports.ttsSentenceDetectionEnable = ttsSentenceDetectionEnable;
 const debounce = require("debounce");
@@ -336,6 +337,23 @@ function ttsPlaybackRate(speed) {
             var _a;
             if ((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady) {
                 await activeWebView.send(events_1.R2_EVENT_TTS_PLAYBACK_RATE, payload);
+            }
+        }, 0);
+    }
+}
+function ttsAndMediaOverlaysManualPlayNext(doEnable) {
+    if (win.READIUM2) {
+        win.READIUM2.ttsAndMediaOverlaysManualPlayNext = doEnable;
+    }
+    const activeWebViews = win.READIUM2.getActiveWebViews();
+    for (const activeWebView of activeWebViews) {
+        setTimeout(async () => {
+            var _a;
+            const payload = {
+                doEnable,
+            };
+            if ((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady) {
+                await activeWebView.send(events_1.R2_EVENT_TTS_MEDIAOVERLAYS_MANUAL_PLAY_NEXT, payload);
             }
         }, 0);
     }

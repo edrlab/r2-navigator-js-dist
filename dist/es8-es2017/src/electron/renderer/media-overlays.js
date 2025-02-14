@@ -162,7 +162,12 @@ const ontimeupdate = async (ev) => {
         if (IS_DEV) {
             debug("ontimeupdate - mediaOverlaysNext()");
         }
-        mediaOverlaysNext();
+        if (win.READIUM2.ttsAndMediaOverlaysManualPlayNext) {
+            mediaOverlaysPause();
+        }
+        else {
+            mediaOverlaysNext();
+        }
     }
 };
 const ensureOnTimeUpdate = (remove) => {
@@ -1184,6 +1189,13 @@ function mediaOverlaysResume() {
         }
         ensureOnTimeUpdate(false);
         if (_currentAudioElement) {
+            if (_currentAudioEnd && _currentAudioElement.currentTime >= (_currentAudioEnd - 0.05)) {
+                if (IS_DEV) {
+                    debug("mediaOverlaysResume --- ontimeupdate - mediaOverlaysNext()");
+                }
+                mediaOverlaysNext();
+                return;
+            }
             setTimeout(async () => {
                 if (_currentAudioElement) {
                     _currentAudioElement.playbackRate = _mediaOverlaysPlaybackRate;

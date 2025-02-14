@@ -250,6 +250,7 @@ function createWebViewInternal(preloadScriptPath) {
             (0, readaloud_1.ttsPlaybackRate)(win.READIUM2.ttsPlaybackRate);
             (0, readaloud_1.ttsClickEnable)(win.READIUM2.ttsClickEnabled);
             (0, readaloud_1.ttsSentenceDetectionEnable)(win.READIUM2.ttsSentenceDetectionEnabled);
+            (0, readaloud_1.ttsAndMediaOverlaysManualPlayNext)(win.READIUM2.ttsAndMediaOverlaysManualPlayNext);
             (0, readaloud_1.ttsSkippabilityEnable)(win.READIUM2.ttsSkippabilityEnabled);
             (0, readaloud_1.ttsOverlayEnable)(win.READIUM2.ttsOverlayEnabled);
         }
@@ -467,6 +468,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
         ttsClickEnabled: false,
         ttsOverlayEnabled: false,
         ttsPlaybackRate: 1,
+        ttsAndMediaOverlaysManualPlayNext: false,
         ttsSkippabilityEnabled: false,
         ttsSentenceDetectionEnabled: true,
         ttsVoice: null,
