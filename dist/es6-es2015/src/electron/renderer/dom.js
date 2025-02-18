@@ -131,7 +131,7 @@ win.addEventListener("resize", () => {
                 }
             }
         }
-    }), 1000);
+    }), 500);
 });
 electron_1.ipcRenderer.on("accessibility-support-changed", (_e, accessibilitySupportEnabled) => {
     if (!win.READIUM2) {
