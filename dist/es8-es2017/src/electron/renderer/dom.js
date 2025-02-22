@@ -23,6 +23,7 @@ const media_overlays_2 = require("./media-overlays");
 const readaloud_1 = require("./readaloud");
 const readium_css_1 = require("./readium-css");
 const soundtrack_1 = require("./soundtrack");
+const highlight_2 = require("../common/highlight");
 const ELEMENT_ID_SLIDING_VIEWPORT = "r2_navigator_sliding_viewport";
 const ELEMENT_ID_CAPTIONS = "r2_navigator_captions_overlay";
 const ELEMENT_ID_READIUM_CSS_STYLE = "r2_navigator_readium_css";
@@ -245,7 +246,8 @@ function createWebViewInternal(preloadScriptPath) {
             electron_1.ipcRenderer.send(context_menu_1.CONTEXT_MENU_SETUP, wv.getWebContentsId());
         }
         if (win.READIUM2) {
-            (0, readaloud_1.ttsVoice)(win.READIUM2.ttsVoice);
+            (0, readaloud_1.ttsVoices)(win.READIUM2.ttsVoices);
+            (0, readaloud_1.ttsHighlightStyle)(win.READIUM2.ttsHighlightStyle, win.READIUM2.ttsHighlightColor, win.READIUM2.ttsHighlightStyle_WORD, win.READIUM2.ttsHighlightColor_WORD);
             (0, readaloud_1.ttsPlaybackRate)(win.READIUM2.ttsPlaybackRate);
             (0, readaloud_1.ttsClickEnable)(win.READIUM2.ttsClickEnabled);
             (0, readaloud_1.ttsSentenceDetectionEnable)(win.READIUM2.ttsSentenceDetectionEnabled);
@@ -344,12 +346,12 @@ function createWebViewInternal(preloadScriptPath) {
         else if (event.channel === events_1.R2_EVENT_IMAGE_CLICK) {
             const payload = event.args[0];
             if (_imageClickHandler) {
-                debug("R2_EVENT_IMAGE_CLICK (ipc-message) href [_imageClickHandler]: " + payload.href + " ___ " + payload.imageCssSelector);
-                _imageClickHandler(payload.href);
+                debug("R2_EVENT_IMAGE_CLICK (ipc-message) href [_imageClickHandler]: " + JSON.stringify(payload, null, 4));
+                _imageClickHandler(Object.assign({}, payload));
             }
             else {
-                debug("R2_EVENT_IMAGE_CLICK (ipc-message) href [NOT _imageClickHandler => webview.send(R2_EVENT_IMAGE_CLICK]: " + payload.href + " ___ " + payload.imageCssSelector);
-                webview.send(events_1.R2_EVENT_IMAGE_CLICK, payload.href, payload.imageCssSelector);
+                debug("R2_EVENT_IMAGE_CLICK (ipc-message) href [NOT _imageClickHandler => webview.send(R2_EVENT_IMAGE_CLICK]: " + JSON.stringify(payload, null, 4));
+                webview.send(events_1.R2_EVENT_IMAGE_CLICK, Object.assign({}, payload));
             }
         }
         else if (!(0, highlight_1.highlightsHandleIpcMessage)(event.channel, event.args, webview) &&
@@ -464,13 +466,17 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
         publication,
         publicationURL,
         sessionInfo,
+        ttsHighlightStyle: highlight_2.HighlightDrawTypeBackground,
+        ttsHighlightColor: undefined,
+        ttsHighlightColor_WORD: undefined,
+        ttsHighlightStyle_WORD: undefined,
         ttsClickEnabled: false,
         ttsOverlayEnabled: false,
         ttsPlaybackRate: 1,
         ttsAndMediaOverlaysManualPlayNext: false,
         ttsSkippabilityEnabled: false,
         ttsSentenceDetectionEnabled: true,
-        ttsVoice: null,
+        ttsVoices: null,
         highlightsDrawMargin: false,
     };
     electron_1.ipcRenderer.send("accessibility-support-changed");

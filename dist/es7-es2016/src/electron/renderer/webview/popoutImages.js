@@ -3,7 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.popoutImage = popoutImage;
 const styles_1 = require("../../common/styles");
 const popup_dialog_1 = require("../common/popup-dialog");
-function popoutImage(win, element, href_src, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
+function popoutImage(win, _cssSelectorOf_HTMLImg_SVGImage_SVGFragment, HTMLImg_SVGImage_SVGFragment, HTMLImgSrc_SVGImageHref_SVGFragmentMarkup, isSVGFragment, _isSVGImage, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable) {
+    const element = HTMLImg_SVGImage_SVGFragment;
+    let href_src = HTMLImgSrc_SVGImageHref_SVGFragmentMarkup;
     win.wheelzoom = (img) => {
         const zoomStep = 0.10;
         const panStep = 20;
@@ -293,8 +295,7 @@ function popoutImage(win, element, href_src, focusScrollRaw, ensureTwoPageSpread
         }
         init();
     };
-    const isSVG = href_src.startsWith("<svg");
-    if (isSVG) {
+    if (isSVGFragment) {
         href_src = "data:image/svg+xml;base64," + Buffer.from(href_src).toString("base64");
     }
     const onloadhandler = "onload=\"javascript: " +

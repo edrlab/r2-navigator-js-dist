@@ -71,13 +71,17 @@ win.READIUM2 = {
         title: undefined,
         userInteract: false,
     },
+    ttsHighlightStyle: highlight_1.HighlightDrawTypeBackground,
+    ttsHighlightColor: undefined,
+    ttsHighlightColor_WORD: undefined,
+    ttsHighlightStyle_WORD: undefined,
     ttsClickEnabled: false,
     ttsOverlayEnabled: false,
     ttsPlaybackRate: 1,
     ttsAndMediaOverlaysManualPlayNext: false,
     ttsSkippabilityEnabled: false,
     ttsSentenceDetectionEnabled: true,
-    ttsVoice: null,
+    ttsVoices: null,
     urlQueryParams: win.location.search ? (0, querystring_1.getURLQueryParams)(win.location.search) : undefined,
     webViewSlot: styles_2.WebViewSlotEnum.center,
 };
@@ -802,7 +806,11 @@ function focusElement(element, preventScroll) {
     }
 }
 const tempLinkTargetOutline = (element, time, alt) => {
-    if (win.document.documentElement.classList.contains(styles_1.DISABLE_TEMPORARY_NAV_TARGET_OUTLINE_CLASS)) {
+    if (win.document.documentElement.classList.contains(styles_1.DISABLE_TEMPORARY_NAV_TARGET_OUTLINE_CLASS)
+        ||
+            win.document.documentElement.classList.contains(styles_2.TTS_CLASS_PLAYING)
+        ||
+            win.document.documentElement.classList.contains(styles_2.TTS_CLASS_PAUSED)) {
         return;
     }
     let skip = false;
@@ -1213,6 +1221,7 @@ win.addEventListener("DOMContentLoaded", () => {
         }
     }
     win.READIUM2.locationHashOverride = undefined;
+    win.READIUM2.ttsHighlightStyle = highlight_1.HighlightDrawTypeBackground;
     win.READIUM2.ttsClickEnabled = false;
     win.READIUM2.ttsAndMediaOverlaysManualPlayNext = false;
     win.READIUM2.ttsSkippabilityEnabled = false;
@@ -1629,10 +1638,10 @@ function loaded(forced) {
                 ev.preventDefault();
                 ev.stopPropagation();
                 if (ev.altKey) {
-                    (0, readaloud_1.ttsPlay)(win.READIUM2.ttsPlaybackRate, win.READIUM2.ttsVoice, focusScrollRaw, domPointData.element, undefined, undefined, -1, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+                    (0, readaloud_1.ttsPlay)(win.READIUM2.ttsPlaybackRate, win.READIUM2.ttsVoices, focusScrollRaw, domPointData.element, undefined, undefined, -1, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
                     return;
                 }
-                (0, readaloud_1.ttsPlay)(win.READIUM2.ttsPlaybackRate, win.READIUM2.ttsVoice, focusScrollRaw, domPointData.element.ownerDocument.body, domPointData.element, domPointData.textNode, domPointData.textNodeOffset, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+                (0, readaloud_1.ttsPlay)(win.READIUM2.ttsPlaybackRate, win.READIUM2.ttsVoices, focusScrollRaw, domPointData.element.ownerDocument.body, domPointData.element, domPointData.textNode, domPointData.textNodeOffset, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
                 return;
             }
         }
@@ -1642,23 +1651,25 @@ function loaded(forced) {
             return;
         }
         let linkElement;
-        let imageElement;
+        let HTMLImg_SVGImage_SVGFragment;
         let href_src;
         let href_src_image_nested_in_link;
-        let isSVG = false;
+        let isSVGFragment = false;
+        let isSVGImage = false;
         let globalSVGDefs;
         let currentElement = ev.target;
         while (currentElement && currentElement.nodeType === Node.ELEMENT_NODE) {
             const tagName = currentElement.tagName.toLowerCase();
             if ((tagName === "img" || tagName === "image" || tagName === "svg")
                 && !currentElement.classList.contains(styles_2.POPOUTIMAGE_CONTAINER_ID)) {
-                isSVG = false;
+                isSVGFragment = false;
                 if (tagName === "svg") {
-                    if (imageElement) {
+                    if (HTMLImg_SVGImage_SVGFragment) {
                         currentElement = currentElement.parentNode;
+                        isSVGImage = true;
                         continue;
                     }
-                    isSVG = true;
+                    isSVGFragment = true;
                     href_src = currentElement.outerHTML;
                     const defs = currentElement.querySelectorAll("defs > *[id]");
                     debug("SVG INNER defs: ", defs.length);
@@ -1743,7 +1754,7 @@ function loaded(forced) {
                     }
                     debug(`IMG CLICK: ${href_src} (${href_src_})`);
                 }
-                imageElement = currentElement;
+                HTMLImg_SVGImage_SVGFragment = currentElement;
             }
             else if (tagName === "a") {
                 if (href_src) {
@@ -1758,7 +1769,7 @@ function loaded(forced) {
             currentElement = currentElement.parentNode;
         }
         currentElement = undefined;
-        if (!href_src || (!imageElement && !linkElement)) {
+        if (!href_src || (!HTMLImg_SVGImage_SVGFragment && !linkElement)) {
             (0, readium_css_1.clearImageZoomOutline)();
             return;
         }
@@ -1785,9 +1796,9 @@ function loaded(forced) {
             return;
         }
         debug(`HREF SRC: ${href_src} ${href_src_image_nested_in_link} (${win.location.href})`);
-        const has = imageElement === null || imageElement === void 0 ? void 0 : imageElement.hasAttribute(`data-${styles_2.POPOUTIMAGE_CONTAINER_ID}`);
-        if (imageElement && href_src && (has ||
-            ((!linkElement && !win.READIUM2.isFixedLayout && !isSVG) || ev.shiftKey))) {
+        const has = HTMLImg_SVGImage_SVGFragment === null || HTMLImg_SVGImage_SVGFragment === void 0 ? void 0 : HTMLImg_SVGImage_SVGFragment.hasAttribute(`data-${styles_2.POPOUTIMAGE_CONTAINER_ID}`);
+        if (HTMLImg_SVGImage_SVGFragment && href_src && (has ||
+            ((!linkElement && !win.READIUM2.isFixedLayout && !isSVGFragment) || ev.shiftKey))) {
             if (linkElement && href_src_image_nested_in_link) {
                 href_src = href_src_image_nested_in_link;
             }
@@ -1795,23 +1806,53 @@ function loaded(forced) {
             ev.preventDefault();
             ev.stopPropagation();
             if (has) {
-                if (!isSVG &&
+                if (!isSVGFragment &&
                     !/^(https?|thoriumhttps):\/\//.test(href_src) &&
                     !href_src.startsWith((sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://"))) {
                     const destUrl = new URL(href_src, win.location.origin + win.location.pathname);
                     href_src = destUrl.toString();
                     debug(`IMG CLICK ABSOLUTE-ized: ${href_src}`);
                 }
-                const imageCssSelector = getCssSelector(imageElement);
-                debug("R2_EVENT_IMAGE_CLICK (ipcRenderer.sendToHost) href: " + href_src + " ___ " + imageCssSelector);
+                const cssSelectorOf_HTMLImg_SVGImage_SVGFragment = getCssSelector(HTMLImg_SVGImage_SVGFragment);
+                debug("R2_EVENT_IMAGE_CLICK (ipcRenderer.sendToHost) href: " + href_src + " ___ " + cssSelectorOf_HTMLImg_SVGImage_SVGFragment);
                 const payload = {
-                    href: href_src,
-                    imageCssSelector,
+                    isSVGFragment,
+                    isSVGImage,
+                    HTMLImgSrc_SVGImageHref_SVGFragmentMarkup: href_src,
+                    cssSelectorOf_HTMLImg_SVGImage_SVGFragment,
+                    languageOf_HTMLImg_SVGImage_SVGFragment: (0, dom_text_utils_1.getLanguage)(HTMLImg_SVGImage_SVGFragment),
+                    directionOf_HTMLImg_SVGImage_SVGFragment: (0, dom_text_utils_1.getDirection)(HTMLImg_SVGImage_SVGFragment),
+                    altAttributeOf_HTMLImg_SVGImage_SVGFragment: HTMLImg_SVGImage_SVGFragment.getAttribute("alt"),
+                    titleAttributeOf_HTMLImg_SVGImage_SVGFragment: HTMLImg_SVGImage_SVGFragment.getAttribute("title"),
+                    ariaLabelAttributeOf_HTMLImg_SVGImage_SVGFragment: HTMLImg_SVGImage_SVGFragment.getAttribute("aria-label"),
+                    naturalWidthOf_HTMLImg_SVGImage: isSVGFragment ? undefined :
+                        isSVGImage ? (HTMLImg_SVGImage_SVGFragment.naturalWidth || undefined) :
+                            HTMLImg_SVGImage_SVGFragment.naturalWidth,
+                    naturalHeightOf_HTMLImg_SVGImage: isSVGFragment ? undefined :
+                        isSVGImage ? (HTMLImg_SVGImage_SVGFragment.naturalHeight || undefined) :
+                            HTMLImg_SVGImage_SVGFragment.naturalHeight,
                 };
-                electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_IMAGE_CLICK, payload);
+                payload.naturalWidthOf_HTMLImg_SVGImage = payload.naturalWidthOf_HTMLImg_SVGImage || undefined;
+                payload.naturalHeightOf_HTMLImg_SVGImage = payload.naturalHeightOf_HTMLImg_SVGImage || undefined;
+                if (!isSVGFragment &&
+                    !payload.naturalWidthOf_HTMLImg_SVGImage || !payload.naturalHeightOf_HTMLImg_SVGImage) {
+                    const imageObject = new Image();
+                    imageObject.onload = function () {
+                        payload.naturalWidthOf_HTMLImg_SVGImage = imageObject.naturalWidth || undefined;
+                        payload.naturalHeightOf_HTMLImg_SVGImage = imageObject.naturalHeight || undefined;
+                        electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_IMAGE_CLICK, payload);
+                    };
+                    imageObject.onerror = function () {
+                        electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_IMAGE_CLICK, payload);
+                    };
+                    imageObject.src = href_src;
+                }
+                else {
+                    electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_IMAGE_CLICK, payload);
+                }
             }
             else {
-                imageElement.setAttribute(`data-${styles_2.POPOUTIMAGE_CONTAINER_ID}`, "1");
+                HTMLImg_SVGImage_SVGFragment.setAttribute(`data-${styles_2.POPOUTIMAGE_CONTAINER_ID}`, "1");
             }
             return;
         }
@@ -1847,11 +1888,11 @@ function loaded(forced) {
             electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_LINK, payload);
         }
     }), true);
-    electron_1.ipcRenderer.on("R2_EVENT_IMAGE_CLICK", (_event, href_src, imageCssSelector) => {
-        debug("R2_EVENT_IMAGE_CLICK (ipcRenderer.on) href: " + href_src + " ___ " + imageCssSelector);
-        const imageElement = win.document.querySelector(imageCssSelector);
-        if (imageElement) {
-            (0, popoutImages_1.popoutImage)(win, imageElement, href_src, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+    electron_1.ipcRenderer.on("R2_EVENT_IMAGE_CLICK", (_event, payload) => {
+        debug("R2_EVENT_IMAGE_CLICK (ipcRenderer.on) href: " + JSON.stringify(payload, null, 4));
+        const HTMLImg_SVGImage_SVGFragment = win.document.querySelector(payload.cssSelectorOf_HTMLImg_SVGImage_SVGFragment);
+        if (HTMLImg_SVGImage_SVGFragment) {
+            (0, popoutImages_1.popoutImage)(win, payload.cssSelectorOf_HTMLImg_SVGImage_SVGFragment, HTMLImg_SVGImage_SVGFragment, payload.HTMLImgSrc_SVGImageHref_SVGFragmentMarkup, payload.isSVGFragment, payload.isSVGImage, focusScrollRaw, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
         }
     });
     electron_1.ipcRenderer.on("R2_EVENT_WINDOW_RESIZE", (_event, zoomPercent) => {
@@ -1895,6 +1936,7 @@ function loaded(forced) {
         if (_firstWindowResize) {
             debug("Window resize (WEBVIEW), SKIP FIRST");
             _firstWindowResize = false;
+            (0, highlight_2.recreateAllHighlights)(win);
             return;
         }
         onResizeDebounced();
@@ -2977,7 +3019,7 @@ if (!win.READIUM2.isAudio) {
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_PLAY, (_event, payload) => {
         const rootElement = win.document.querySelector(payload.rootElement);
         const startElement = payload.startElement ? win.document.querySelector(payload.startElement) : null;
-        (0, readaloud_1.ttsPlay)(payload.speed, payload.voice, focusScrollRaw, rootElement ? rootElement : undefined, startElement ? startElement : undefined, undefined, -1, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+        (0, readaloud_1.ttsPlay)(payload.speed, payload.voices, focusScrollRaw, rootElement ? rootElement : undefined, startElement ? startElement : undefined, undefined, -1, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_STOP, (_event) => {
         (0, readaloud_1.ttsStop)();
@@ -2998,13 +3040,19 @@ if (!win.READIUM2.isAudio) {
         (0, readaloud_1.ttsPlaybackRate)(payload.speed);
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_VOICE, (_event, payload) => {
-        (0, readaloud_1.ttsVoice)(payload.voice);
+        (0, readaloud_1.ttsVoices)(payload.voices);
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_MEDIAOVERLAYS_MANUAL_PLAY_NEXT, (_event, payload) => {
         win.READIUM2.ttsAndMediaOverlaysManualPlayNext = payload.doEnable;
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_SKIP_ENABLE, (_event, payload) => {
         win.READIUM2.ttsSkippabilityEnabled = payload.doEnable;
+    });
+    electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_HIGHLIGHT_STYLE, (_event, payload) => {
+        win.READIUM2.ttsHighlightStyle = payload.ttsHighlightStyle;
+        win.READIUM2.ttsHighlightColor = payload.ttsHighlightColor;
+        win.READIUM2.ttsHighlightStyle_WORD = payload.ttsHighlightStyle_WORD;
+        win.READIUM2.ttsHighlightColor_WORD = payload.ttsHighlightColor_WORD;
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_SENTENCE_DETECT_ENABLE, (_event, payload) => {
         win.READIUM2.ttsSentenceDetectionEnabled = payload.doEnable;

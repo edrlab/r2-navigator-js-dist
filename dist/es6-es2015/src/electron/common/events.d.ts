@@ -2,14 +2,23 @@ import { Locator, LocatorLocations } from "./locator";
 import { IAudioPlaybackInfo } from "./audiobook";
 import { IDocInfo } from "./document";
 import { IwidthHeight } from "./fxl";
-import { IHighlight, IHighlightDefinition } from "./highlight";
+import { IColor, IHighlight, IHighlightDefinition } from "./highlight";
 import { IPaginationInfo } from "./pagination";
 import { IReadiumCSS } from "./readium-css-settings";
 import { ISelectionInfo } from "./selection";
 export declare const R2_EVENT_IMAGE_CLICK = "R2_EVENT_IMAGE_CLICK";
 export interface IEventPayload_R2_EVENT_IMAGE_CLICK {
-    href: string;
-    imageCssSelector: string;
+    isSVGFragment: boolean;
+    isSVGImage: boolean;
+    HTMLImgSrc_SVGImageHref_SVGFragmentMarkup: string;
+    cssSelectorOf_HTMLImg_SVGImage_SVGFragment: string;
+    languageOf_HTMLImg_SVGImage_SVGFragment: string | undefined;
+    directionOf_HTMLImg_SVGImage_SVGFragment: string | undefined;
+    naturalWidthOf_HTMLImg_SVGImage: number | undefined;
+    naturalHeightOf_HTMLImg_SVGImage: number | undefined;
+    altAttributeOf_HTMLImg_SVGImage_SVGFragment: string | null;
+    titleAttributeOf_HTMLImg_SVGImage_SVGFragment: string | null;
+    ariaLabelAttributeOf_HTMLImg_SVGImage_SVGFragment: string | null;
 }
 export declare const R2_EVENT_LOCATOR_VISIBLE = "R2_EVENT_LOCATOR_VISIBLE";
 export interface IEventPayload_R2_EVENT_LOCATOR_VISIBLE {
@@ -138,7 +147,7 @@ export interface IEventPayload_R2_EVENT_TTS_PLAYBACK_RATE {
 }
 export declare const R2_EVENT_TTS_VOICE = "R2_EVENT_TTS_VOICE";
 export interface IEventPayload_R2_EVENT_TTS_VOICE {
-    voice: SpeechSynthesisVoice | null;
+    voices: SpeechSynthesisVoice[] | null;
 }
 export declare const R2_EVENT_TTS_MEDIAOVERLAYS_MANUAL_PLAY_NEXT = "R2_EVENT_TTS_MEDIAOVERLAYS_MANUAL_PLAY_NEXT";
 export interface IEventPayload_R2_EVENT_TTS_MEDIAOVERLAYS_MANUAL_PLAY_NEXT {
@@ -152,12 +161,19 @@ export declare const R2_EVENT_TTS_SENTENCE_DETECT_ENABLE = "R2_EVENT_TTS_SENTENC
 export interface IEventPayload_R2_EVENT_TTS_SENTENCE_DETECT_ENABLE {
     doEnable: boolean;
 }
+export declare const R2_EVENT_TTS_HIGHLIGHT_STYLE = "R2_EVENT_TTS_HIGHLIGHT_STYLE";
+export interface IEventPayload_R2_EVENT_TTS_HIGHLIGHT_STYLE {
+    ttsHighlightStyle: number;
+    ttsHighlightColor: IColor | undefined;
+    ttsHighlightStyle_WORD: number | undefined;
+    ttsHighlightColor_WORD: IColor | undefined;
+}
 export declare const R2_EVENT_TTS_DO_PLAY = "R2_EVENT_TTS_DO_PLAY";
 export interface IEventPayload_R2_EVENT_TTS_DO_PLAY {
     rootElement: string;
     startElement: string | undefined;
     speed: number;
-    voice: SpeechSynthesisVoice | null;
+    voices: SpeechSynthesisVoice[] | null;
 }
 export declare const R2_EVENT_TTS_DO_PAUSE = "R2_EVENT_TTS_DO_PAUSE";
 export declare const R2_EVENT_TTS_DO_RESUME = "R2_EVENT_TTS_DO_RESUME";

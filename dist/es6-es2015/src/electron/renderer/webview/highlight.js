@@ -926,7 +926,7 @@ const computeHighContrastForegroundColourForBackground = (color) => {
 };
 const JAPANESE_RUBY_TO_SKIP = ["rt", "rp"];
 function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
-    var _a;
+    var _a, _b, _c;
     const DEBUG_RECTS = window.DEBUG_RECTS;
     const documant = win.document;
     const scrollElement = (0, readium_css_1.getScrollingElement)(documant);
@@ -963,11 +963,12 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     const drawUnderline = highlight.drawType === highlight_1.HighlightDrawTypeUnderline;
     const drawStrikeThrough = highlight.drawType === highlight_1.HighlightDrawTypeStrikethrough;
     const drawOutline = highlight.drawType === highlight_1.HighlightDrawTypeOutline;
+    const drawOpacityMask = highlight.drawType === highlight_1.HighlightDrawTypeOpacityMask;
+    const drawOpacityMaskRuler = highlight.drawType === highlight_1.HighlightDrawTypeOpacityMaskRuler;
     const paginated = (0, readium_css_inject_1.isPaginated)(documant);
     const rtl = (0, readium_css_2.isRTL)();
     const vertical = (0, readium_css_1.isVerticalWritingMode)();
     const doDrawMargin = drawMargin(highlight);
-    ;
     const underlineThickness = 3;
     const strikeThroughLineThickness = 4;
     if (exports.ENABLE_CSS_HIGHLIGHTS && !doDrawMargin && !rangeHasSVG && (drawBackground || (drawUnderline && !vertical) || (drawStrikeThrough && !vertical))) {
@@ -1023,7 +1024,11 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     if (drawBackground) {
         highlightParent.classList.add(styles_1.CLASS_HIGHLIGHT_BEHIND);
     }
-    if (highlight.rangeCssHighlight && !highlight.pointerInteraction) {
+    if (drawOpacityMask || drawOpacityMaskRuler) {
+        highlightParent.classList.add(styles_1.CLASS_HIGHLIGHT_MASK);
+    }
+    if (!highlight.pointerInteraction &&
+        (highlight.rangeCssHighlight)) {
         return highlightParent;
     }
     const xOffset = paginated ? (-scrollElement.scrollLeft) : bodyRect.left;
@@ -1040,10 +1045,14 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     else {
         clientRects = (0, rect_utils_1.getClientRectsNoOverlap)(rangeClientRects, false, vertical, highlight.expand ? highlight.expand : 0);
     }
+    const bodyPaddingLeft = parseInt(bodyComputedStyle.paddingLeft, 10);
+    const bodyPaddingRight = parseInt(bodyComputedStyle.paddingRight, 10);
     const bodyWidth = parseInt(bodyComputedStyle.width, 10);
+    const bodyHeight = parseInt(bodyComputedStyle.height, 10);
     const paginatedTwo = paginated && (0, readium_css_1.isTwoPageSpread)();
     const paginatedWidth = scrollElement.clientWidth / (paginatedTwo ? 2 : 1);
-    const paginatedOffset = (paginatedWidth - bodyWidth) / 2 + parseInt(bodyComputedStyle.paddingLeft, 10);
+    const paginatedGap = (paginatedWidth - bodyWidth) / 2;
+    const paginatedOffset = paginatedGap + bodyPaddingLeft;
     const gap = 2;
     const gapX = ((drawOutline || drawBackground) ? gap : 0);
     const boxesNoGapExpanded = [];
@@ -1132,6 +1141,321 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
         }
     });
     cleanupPolygon(polygonCountourUnionPoly, gap);
+    const useFastBoundingRect = true;
+    if (drawOpacityMask || drawOpacityMaskRuler) {
+        let boundingRectMaskBase;
+        const polygonMaskBaseRects = [];
+        const bodyRect_ = {
+            left: win.READIUM2.isFixedLayout
+                ?
+                    0
+                :
+                    (rtl
+                        ?
+                            (paginated
+                                ?
+                                    -(paginatedGap + paginatedGap + bodyRect.width - (paginatedWidth * (paginatedTwo ? 2 : 1)))
+                                :
+                                    0)
+                        :
+                            (paginated
+                                ?
+                                    0
+                                :
+                                    0)),
+            top: win.READIUM2.isFixedLayout ? 0 : rtl ? 0 : 0,
+            width: win.READIUM2.isFixedLayout
+                ?
+                    bodyRect.width * scale
+                :
+                    (rtl
+                        ?
+                            (paginated
+                                ?
+                                    bodyRect.width + paginatedGap + paginatedGap
+                                :
+                                    bodyRect.width)
+                        :
+                            (paginated
+                                ?
+                                    bodyRect.width + paginatedGap + paginatedGap
+                                :
+                                    bodyRect.width)),
+            height: win.READIUM2.isFixedLayout
+                ?
+                    bodyRect.height * scale
+                :
+                    bodyRect.height,
+            right: 0,
+            bottom: 0,
+        };
+        bodyRect_.right = bodyRect_.left + bodyRect_.width;
+        bodyRect_.bottom = bodyRect_.top + bodyRect_.height;
+        boundingRectMaskBase = boundingRectMaskBase ? (0, rect_utils_1.getBoundingRect)(boundingRectMaskBase, bodyRect_) : bodyRect_;
+        polygonMaskBaseRects.push(bodyRect_);
+        let polygonMaskBaseUnionPoly;
+        if (paginated) {
+            const tolerance = 1;
+            const groups = [];
+            for (const r of polygonMaskBaseRects) {
+                const group = groups.find((g) => {
+                    return !(r.left < (g.x - tolerance) || r.left > (g.x + tolerance));
+                });
+                if (!group) {
+                    groups.push({
+                        x: r.left,
+                        boxes: [r],
+                    });
+                }
+                else {
+                    (_a = group.boxes) === null || _a === void 0 ? void 0 : _a.push(r);
+                }
+            }
+            boundingRectMaskBase = groups.map((g) => {
+                return g.boxes.reduce((prev, cur) => {
+                    if (prev === cur) {
+                        return cur;
+                    }
+                    return (0, rect_utils_1.getBoundingRect)(prev, cur);
+                }, g.boxes[0]);
+            });
+            if (boundingRectMaskBase.length === 1) {
+                boundingRectMaskBase = boundingRectMaskBase[0];
+            }
+        }
+        if (useFastBoundingRect) {
+            if (boundingRectMaskBase) {
+                polygonMaskBaseUnionPoly = new core_1.Polygon();
+                if (Array.isArray(boundingRectMaskBase)) {
+                    for (const b of boundingRectMaskBase) {
+                        const f = polygonMaskBaseUnionPoly.addFace(new core_1.Box(b.left, b.top, b.right, b.bottom));
+                        if (f.orientation() !== BASE_ORIENTATION) {
+                            console.log("--POLYGON FACE ORIENTATION CCW/CW reverse() 6");
+                            f.reverse();
+                        }
+                    }
+                }
+                else {
+                    const f = polygonMaskBaseUnionPoly.addFace(new core_1.Box(boundingRectMaskBase.left, boundingRectMaskBase.top, boundingRectMaskBase.right, boundingRectMaskBase.bottom));
+                    if (f.orientation() !== BASE_ORIENTATION) {
+                        console.log("--POLYGON FACE ORIENTATION CCW/CW reverse() 7");
+                        f.reverse();
+                    }
+                }
+            }
+            else {
+                const poly = new core_1.Polygon();
+                for (const r of polygonMaskBaseRects) {
+                    const f = poly.addFace(new core_1.Box(r.left, r.top, r.right, r.bottom));
+                    if (f.orientation() !== BASE_ORIENTATION) {
+                        console.log("--POLYGON FACE ORIENTATION CCW/CW reverse() 8");
+                        f.reverse();
+                    }
+                }
+                polygonMaskBaseUnionPoly = new core_1.Polygon();
+                const f = polygonMaskBaseUnionPoly.addFace(poly.box);
+                if (f.orientation() !== BASE_ORIENTATION) {
+                    console.log("--POLYGON FACE ORIENTATION CCW/CW reverse() 9");
+                    f.reverse();
+                }
+            }
+        }
+        else {
+            polygonMaskBaseUnionPoly = polygonMaskBaseRects.reduce((previousPolygon, r) => {
+                const b = new core_1.Box(r.left, r.top, r.right, r.bottom);
+                const p = new core_1.Polygon();
+                const f = p.addFace(b);
+                if (f.orientation() !== BASE_ORIENTATION) {
+                    console.log("--POLYGON FACE ORIENTATION CCW/CW reverse() 10");
+                    f.reverse();
+                }
+                return unify(previousPolygon, p);
+            }, new core_1.Polygon());
+        }
+        if (drawOpacityMaskRuler) {
+            polygonMaskBaseUnionPoly = offset(polygonMaskBaseUnionPoly, 20, true);
+        }
+        let polygonMaskUnionPoly;
+        if (drawOpacityMaskRuler) {
+            let boundingRectMask;
+            const polygonMaskRects = [];
+            for (const f of polygonCountourUnionPoly.faces) {
+                const face = f;
+                const b = face.box;
+                const left = vertical
+                    ?
+                        b.xmin
+                    :
+                        paginated
+                            ?
+                                ((rtl
+                                    ?
+                                        paginatedGap + bodyPaddingLeft
+                                    :
+                                        paginatedGap + bodyPaddingLeft)
+                                    + Math.floor(b.xmin / paginatedWidth) * paginatedWidth)
+                            :
+                                (rtl
+                                    ?
+                                        0
+                                    :
+                                        win.READIUM2.isFixedLayout
+                                            ?
+                                                0
+                                            :
+                                                0);
+                const top = vertical
+                    ?
+                        0
+                    :
+                        b.ymin;
+                const width = vertical
+                    ?
+                        b.width
+                    :
+                        paginated
+                            ?
+                                (rtl
+                                    ?
+                                        bodyWidth - bodyPaddingLeft - bodyPaddingRight
+                                    :
+                                        bodyWidth - bodyPaddingLeft - bodyPaddingRight)
+                            :
+                                bodyWidth;
+                const height = vertical
+                    ?
+                        bodyHeight
+                    :
+                        b.height;
+                const extra = 0;
+                const r = {
+                    left: left - (vertical ? extra : 0),
+                    top: top - (vertical ? 0 : extra),
+                    right: left + width + (vertical ? extra : 0),
+                    bottom: top + height + (vertical ? 0 : extra),
+                    width: width + extra * 2,
+                    height: height + extra * 2,
+                };
+                boundingRectMask = boundingRectMask ? (0, rect_utils_1.getBoundingRect)(boundingRectMask, r) : r;
+                polygonMaskRects.push(r);
+            }
+            if (paginated) {
+                const tolerance = 1;
+                const groups = [];
+                for (const r of polygonMaskRects) {
+                    const group = groups.find((g) => {
+                        return !(r.left < (g.x - tolerance) || r.left > (g.x + tolerance));
+                    });
+                    if (!group) {
+                        groups.push({
+                            x: r.left,
+                            boxes: [r],
+                        });
+                    }
+                    else {
+                        (_b = group.boxes) === null || _b === void 0 ? void 0 : _b.push(r);
+                    }
+                }
+                boundingRectMask = groups.map((g) => {
+                    return g.boxes.reduce((prev, cur) => {
+                        if (prev === cur) {
+                            return cur;
+                        }
+                        return (0, rect_utils_1.getBoundingRect)(prev, cur);
+                    }, g.boxes[0]);
+                });
+                if (boundingRectMask.length === 1) {
+                    boundingRectMask = boundingRectMask[0];
+                }
+            }
+            if (useFastBoundingRect) {
+                if (boundingRectMask) {
+                    polygonMaskUnionPoly = new core_1.Polygon();
+                    if (Array.isArray(boundingRectMask)) {
+                        for (const b of boundingRectMask) {
+                            const f = polygonMaskUnionPoly.addFace(new core_1.Box(b.left, b.top, b.right, b.bottom));
+                            if (f.orientation() !== BASE_ORIENTATION) {
+                                console.log("--POLYGON FACE ORIENTATION CCW/CW reverse() 6");
+                                f.reverse();
+                            }
+                        }
+                    }
+                    else {
+                        const f = polygonMaskUnionPoly.addFace(new core_1.Box(boundingRectMask.left, boundingRectMask.top, boundingRectMask.right, boundingRectMask.bottom));
+                        if (f.orientation() !== BASE_ORIENTATION) {
+                            console.log("--POLYGON FACE ORIENTATION CCW/CW reverse() 7");
+                            f.reverse();
+                        }
+                    }
+                }
+                else {
+                    const poly = new core_1.Polygon();
+                    for (const r of polygonMaskRects) {
+                        const f = poly.addFace(new core_1.Box(r.left, r.top, r.right, r.bottom));
+                        if (f.orientation() !== BASE_ORIENTATION) {
+                            console.log("--POLYGON FACE ORIENTATION CCW/CW reverse() 8");
+                            f.reverse();
+                        }
+                    }
+                    polygonMaskUnionPoly = new core_1.Polygon();
+                    const f = polygonMaskUnionPoly.addFace(poly.box);
+                    if (f.orientation() !== BASE_ORIENTATION) {
+                        console.log("--POLYGON FACE ORIENTATION CCW/CW reverse() 9");
+                        f.reverse();
+                    }
+                }
+            }
+            else {
+                polygonMaskUnionPoly = polygonMaskRects.reduce((previousPolygon, r) => {
+                    const b = new core_1.Box(r.left, r.top, r.right, r.bottom);
+                    const p = new core_1.Polygon();
+                    const f = p.addFace(b);
+                    if (f.orientation() !== BASE_ORIENTATION) {
+                        console.log("--POLYGON FACE ORIENTATION CCW/CW reverse() 10");
+                        f.reverse();
+                    }
+                    return unify(previousPolygon, p);
+                }, new core_1.Polygon());
+            }
+            polygonMaskUnionPoly = offset(polygonMaskUnionPoly, 10, false);
+        }
+        const polyToDraw = polygonMaskUnionPoly ?
+            subtract(polygonMaskBaseUnionPoly, polygonMaskUnionPoly) :
+            subtract(polygonMaskBaseUnionPoly, polygonCountourUnionPoly);
+        const highlightMaskSVG = documant.createElementNS(SVG_XML_NAMESPACE, "svg");
+        highlightMaskSVG.setAttribute("class", `${styles_1.CLASS_HIGHLIGHT_COMMON_SVG} ${styles_1.CLASS_HIGHLIGHT_SVG}`);
+        highlightMaskSVG.polygon = polyToDraw;
+        let docStyle;
+        let rsBackground = bodyComputedStyle.getPropertyValue("--RS__backgroundColor");
+        if (!rsBackground) {
+            docStyle = win.getComputedStyle(documant.documentElement);
+            rsBackground = docStyle.getPropertyValue("--RS__backgroundColor");
+        }
+        if (rsBackground === "transparent") {
+            rsBackground = "";
+        }
+        let rsForeground = bodyComputedStyle.getPropertyValue("--RS__textColor");
+        if (!rsForeground) {
+            if (!docStyle) {
+                docStyle = win.getComputedStyle(documant.documentElement);
+            }
+            rsForeground = docStyle.getPropertyValue("--RS__textColor");
+        }
+        const svgPathMask = highlightMaskSVG.polygon.svg({
+            fillRule: "evenodd",
+            fill: rsBackground ? rsBackground : "white",
+            fillOpacity: 0.9,
+            stroke: drawOpacityMaskRuler ? (rsForeground ? rsForeground : "black") : "transparent",
+            strokeWidth: drawOpacityMaskRuler ? 1.5 : 0,
+            className: undefined,
+        });
+        highlightMaskSVG.innerHTML = svgPathMask;
+        highlightParent.append(highlightMaskSVG);
+    }
+    if (!highlight.pointerInteraction &&
+        (((drawOpacityMask || drawOpacityMaskRuler) && highlight.group === exports.HIGHLIGHT_GROUP_TTS))) {
+        return highlightParent;
+    }
     let polygonSurface;
     if (highlight.rangeCssHighlight) {
         polygonSurface = undefined;
@@ -1179,7 +1503,7 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
                 polygonSurface.deleteFace(face);
             }
         });
-        if (drawOutline || drawBackground) {
+        if (drawOutline || drawBackground || drawOpacityMask || drawOpacityMaskRuler) {
             if (DEBUG_RECTS) {
                 console.log("--==========--==========--==========--==========--==========--==========");
                 console.log("--POLY FACES BEFORE ...");
@@ -1329,38 +1653,34 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     if (doDrawMargin && highlight.pointerInteraction) {
         const MARGIN_MARKER_THICKNESS = 14 * (win.READIUM2.isFixedLayout ? scale : 1);
         const MARGIN_MARKER_OFFSET = 6 * (win.READIUM2.isFixedLayout ? scale : 1);
-        const paginatedOffset_ = paginatedOffset - MARGIN_MARKER_OFFSET - MARGIN_MARKER_THICKNESS;
-        let boundingRect;
+        let boundingRectCountourMargin;
         const polygonCountourMarginRects = [];
         for (const f of polygonCountourUnionPoly.faces) {
             const face = f;
             const b = face.box;
-            const left = vertical ?
-                b.xmin :
-                paginated ?
-                    ((rtl
+            const left = vertical
+                ?
+                    b.xmin
+                :
+                    paginated
                         ?
-                            paginatedWidth - MARGIN_MARKER_THICKNESS
+                            ((rtl
+                                ?
+                                    MARGIN_MARKER_OFFSET - paginatedOffset + paginatedWidth
+                                :
+                                    paginatedOffset - MARGIN_MARKER_OFFSET - MARGIN_MARKER_THICKNESS)
+                                +
+                                    Math.floor((b.xmin) / paginatedWidth) * paginatedWidth)
                         :
-                            0)
-                        +
                             (rtl
                                 ?
-                                    -1 * paginatedOffset_
+                                    MARGIN_MARKER_OFFSET + bodyRect.width - bodyPaddingRight
                                 :
-                                    paginatedOffset_)
-                        +
-                            Math.floor((b.xmin) / paginatedWidth) * paginatedWidth)
-                    :
-                        (rtl
-                            ?
-                                MARGIN_MARKER_OFFSET + bodyRect.width - parseInt(bodyComputedStyle.paddingRight, 10)
-                            :
-                                win.READIUM2.isFixedLayout
-                                    ?
-                                        MARGIN_MARKER_OFFSET
-                                    :
-                                        parseInt(bodyComputedStyle.paddingLeft, 10) - MARGIN_MARKER_THICKNESS - MARGIN_MARKER_OFFSET);
+                                    win.READIUM2.isFixedLayout
+                                        ?
+                                            MARGIN_MARKER_OFFSET
+                                        :
+                                            bodyPaddingLeft - MARGIN_MARKER_THICKNESS - MARGIN_MARKER_OFFSET);
             const top = vertical
                 ?
                     parseInt(bodyComputedStyle.paddingTop, 10) - MARGIN_MARKER_THICKNESS - MARGIN_MARKER_OFFSET
@@ -1377,10 +1697,9 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
                 width: width + extra * 2,
                 height: height + extra * 2,
             };
-            boundingRect = boundingRect ? (0, rect_utils_1.getBoundingRect)(boundingRect, r) : r;
+            boundingRectCountourMargin = boundingRectCountourMargin ? (0, rect_utils_1.getBoundingRect)(boundingRectCountourMargin, r) : r;
             polygonCountourMarginRects.push(r);
         }
-        const useFastBoundingRect = true;
         let polygonMarginUnionPoly;
         if (paginated) {
             const tolerance = 1;
@@ -1396,10 +1715,10 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
                     });
                 }
                 else {
-                    (_a = group.boxes) === null || _a === void 0 ? void 0 : _a.push(r);
+                    (_c = group.boxes) === null || _c === void 0 ? void 0 : _c.push(r);
                 }
             }
-            boundingRect = groups.map((g) => {
+            boundingRectCountourMargin = groups.map((g) => {
                 return g.boxes.reduce((prev, cur) => {
                     if (prev === cur) {
                         return cur;
@@ -1407,15 +1726,15 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
                     return (0, rect_utils_1.getBoundingRect)(prev, cur);
                 }, g.boxes[0]);
             });
-            if (boundingRect.length === 1) {
-                boundingRect = boundingRect[0];
+            if (boundingRectCountourMargin.length === 1) {
+                boundingRectCountourMargin = boundingRectCountourMargin[0];
             }
         }
         if (useFastBoundingRect) {
-            if (boundingRect) {
+            if (boundingRectCountourMargin) {
                 polygonMarginUnionPoly = new core_1.Polygon();
-                if (Array.isArray(boundingRect)) {
-                    for (const b of boundingRect) {
+                if (Array.isArray(boundingRectCountourMargin)) {
+                    for (const b of boundingRectCountourMargin) {
                         const f = polygonMarginUnionPoly.addFace(new core_1.Box(b.left, b.top, b.right, b.bottom));
                         if (f.orientation() !== BASE_ORIENTATION) {
                             console.log("--POLYGON FACE ORIENTATION CCW/CW reverse() 6");
@@ -1424,7 +1743,7 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
                     }
                 }
                 else {
-                    const f = polygonMarginUnionPoly.addFace(new core_1.Box(boundingRect.left, boundingRect.top, boundingRect.right, boundingRect.bottom));
+                    const f = polygonMarginUnionPoly.addFace(new core_1.Box(boundingRectCountourMargin.left, boundingRectCountourMargin.top, boundingRectCountourMargin.right, boundingRectCountourMargin.bottom));
                     if (f.orientation() !== BASE_ORIENTATION) {
                         console.log("--POLYGON FACE ORIENTATION CCW/CW reverse() 7");
                         f.reverse();

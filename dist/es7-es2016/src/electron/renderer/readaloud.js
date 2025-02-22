@@ -13,11 +13,13 @@ exports.ttsPrevious = ttsPrevious;
 exports.ttsNext = ttsNext;
 exports.ttsOverlayEnable = ttsOverlayEnable;
 exports.ttsClickEnable = ttsClickEnable;
+exports.ttsVoices = ttsVoices;
 exports.ttsVoice = ttsVoice;
 exports.ttsPlaybackRate = ttsPlaybackRate;
 exports.ttsAndMediaOverlaysManualPlayNext = ttsAndMediaOverlaysManualPlayNext;
 exports.ttsSkippabilityEnable = ttsSkippabilityEnable;
 exports.ttsSentenceDetectionEnable = ttsSentenceDetectionEnable;
+exports.ttsHighlightStyle = ttsHighlightStyle;
 const tslib_1 = require("tslib");
 const debounce = require("debounce");
 const events_1 = require("../common/events");
@@ -86,7 +88,7 @@ function playTtsOnReadingLocation(href) {
                 done = true;
                 activeWebView.removeEventListener("ipc-message", cb);
                 if (((_a = activeWebView.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href) === href) {
-                    ttsPlay(win.READIUM2.ttsPlaybackRate, win.READIUM2.ttsVoice);
+                    ttsPlay(win.READIUM2.ttsPlaybackRate, undefined);
                 }
             }
         };
@@ -105,7 +107,7 @@ function playTtsOnReadingLocation(href) {
                 return ((_a = webview.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href) === href;
             });
             if (activeWebView_) {
-                ttsPlay(win.READIUM2.ttsPlaybackRate, win.READIUM2.ttsVoice);
+                ttsPlay(win.READIUM2.ttsPlaybackRate, undefined);
             }
         }, 1000);
         activeWebView.addEventListener("ipc-message", cb);
@@ -157,9 +159,17 @@ function ttsListen(ttsListener) {
 }
 function ttsPlay(speed, voice) {
     var _a;
-    if (win.READIUM2) {
-        win.READIUM2.ttsPlaybackRate = speed;
-        win.READIUM2.ttsVoice = voice;
+    if (!win.READIUM2) {
+        return;
+    }
+    win.READIUM2.ttsPlaybackRate = speed;
+    if (typeof voice === "undefined") {
+    }
+    else if (voice && Array.isArray(voice)) {
+        ttsVoices(voice);
+    }
+    else {
+        ttsVoice(voice);
     }
     let startElementCSSSelector;
     const loc = (0, location_1.getCurrentReadingLocation)();
@@ -183,7 +193,7 @@ function ttsPlay(speed, voice) {
         rootElement: "html > body",
         speed,
         startElement: startElementCSSSelector,
-        voice,
+        voices: win.READIUM2.ttsVoices,
     };
     setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
         var _a;
@@ -308,14 +318,14 @@ function ttsClickEnable(doEnable) {
         }), 0);
     }
 }
-function ttsVoice(voice) {
+function ttsVoices(voices) {
     if (win.READIUM2) {
-        win.READIUM2.ttsVoice = voice;
+        win.READIUM2.ttsVoices = voices;
     }
     const activeWebViews = win.READIUM2.getActiveWebViews();
     for (const activeWebView of activeWebViews) {
         const payload = {
-            voice,
+            voices,
         };
         setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
             var _a;
@@ -323,6 +333,22 @@ function ttsVoice(voice) {
                 yield activeWebView.send(events_1.R2_EVENT_TTS_VOICE, payload);
             }
         }), 0);
+    }
+}
+function ttsVoice(voice) {
+    if (win.READIUM2) {
+        if (voice === null) {
+            win.READIUM2.ttsVoices = null;
+            ttsVoices(win.READIUM2.ttsVoices);
+        }
+        else if (voice) {
+            if (!win.READIUM2.ttsVoices) {
+                win.READIUM2.ttsVoices = [];
+            }
+            win.READIUM2.ttsVoices = win.READIUM2.ttsVoices.filter((v) => v.lang !== voice.lang);
+            win.READIUM2.ttsVoices.push(voice);
+            ttsVoices(win.READIUM2.ttsVoices);
+        }
     }
 }
 function ttsPlaybackRate(speed) {
@@ -389,6 +415,26 @@ function ttsSentenceDetectionEnable(doEnable) {
             };
             if ((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady) {
                 yield activeWebView.send(events_1.R2_EVENT_TTS_SENTENCE_DETECT_ENABLE, payload);
+            }
+        }), 0);
+    }
+}
+function ttsHighlightStyle(ttsHighlightStyle, ttsHighlightColor, ttsHighlightStyle_WORD, ttsHighlightColor_WORD) {
+    if (win.READIUM2) {
+        win.READIUM2.ttsHighlightStyle = ttsHighlightStyle;
+    }
+    const activeWebViews = win.READIUM2.getActiveWebViews();
+    for (const activeWebView of activeWebViews) {
+        setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
+            var _a;
+            const payload = {
+                ttsHighlightStyle,
+                ttsHighlightColor,
+                ttsHighlightStyle_WORD,
+                ttsHighlightColor_WORD,
+            };
+            if ((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady) {
+                yield activeWebView.send(events_1.R2_EVENT_TTS_HIGHLIGHT_STYLE, payload);
             }
         }), 0);
     }

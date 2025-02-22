@@ -3,7 +3,7 @@ import { Link } from "r2-shared-js/dist/es6-es2015/src/models/publication-link";
 import { IEventPayload_R2_EVENT_CLIPBOARD_COPY, IEventPayload_R2_EVENT_READING_LOCATION, IEventPayload_R2_EVENT_READIUMCSS } from "../../common/events";
 import { WebViewSlotEnum } from "../../common/styles";
 import { IStringMap } from "../common/querystring";
-import { IHighlight } from "src/electron/common/highlight";
+import { IColor, IHighlight } from "src/electron/common/highlight";
 export type TWindow = typeof window;
 export interface IReadiumElectronWebviewWindowState {
     urlQueryParams: IStringMap | undefined;
@@ -24,12 +24,16 @@ export interface IReadiumElectronWebviewWindowState {
     webViewSlot: WebViewSlotEnum;
     DEBUG_VISUALS: boolean;
     ttsAndMediaOverlaysManualPlayNext: boolean;
+    ttsHighlightStyle: number;
+    ttsHighlightColor: IColor | undefined;
+    ttsHighlightStyle_WORD: number | undefined;
+    ttsHighlightColor_WORD: IColor | undefined;
     ttsSkippabilityEnabled: boolean;
     ttsSentenceDetectionEnabled: boolean;
     ttsClickEnabled: boolean;
     ttsOverlayEnabled: boolean;
     ttsPlaybackRate: number;
-    ttsVoice: SpeechSynthesisVoice | null;
+    ttsVoices: SpeechSynthesisVoice[] | null;
     isClipboardIntercept: boolean;
 }
 export interface IReadiumElectronWebviewWindow {
@@ -55,12 +59,16 @@ export interface IReadiumElectronBrowserWindow {
     domSlidingViewport: HTMLElement;
     DEBUG_VISUALS: boolean;
     ttsAndMediaOverlaysManualPlayNext: boolean;
+    ttsHighlightStyle: number;
+    ttsHighlightColor: IColor | undefined;
+    ttsHighlightStyle_WORD: number | undefined;
+    ttsHighlightColor_WORD: IColor | undefined;
     ttsSkippabilityEnabled: boolean;
     ttsSentenceDetectionEnabled: boolean;
     ttsClickEnabled: boolean;
     ttsOverlayEnabled: boolean;
     ttsPlaybackRate: number;
-    ttsVoice: SpeechSynthesisVoice | null;
+    ttsVoices: SpeechSynthesisVoice[] | null;
     fixedLayoutZoomPercent: number;
     clipboardInterceptor: ((data: IEventPayload_R2_EVENT_CLIPBOARD_COPY) => void) | undefined;
     preloadScriptPath: string;
