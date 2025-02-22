@@ -660,11 +660,25 @@ function processMouseEvent(win, ev) {
         }
     }
 }
+const computeInverseZoom = (bodyComputedStyle, rootComputedStyle) => {
+    let zoomStr = rootComputedStyle.zoom;
+    if (!rootComputedStyle.zoom || rootComputedStyle.zoom === "1") {
+        zoomStr = bodyComputedStyle.zoom;
+    }
+    if (zoomStr) {
+        const zoomFactor = parseFloat(zoomStr);
+        if (zoomFactor !== 0) {
+            const inverseZoom = 1 / zoomFactor;
+            return inverseZoom;
+        }
+    }
+    return 1;
+};
 let lastMouseDownX = -1;
 let lastMouseDownY = -1;
 let bodyEventListenersSet = false;
 let _highlightsContainer;
-function ensureHighlightsContainer(win) {
+function ensureHighlightsContainer(win, bodyComputedStyle, rootComputedStyle) {
     const documant = win.document;
     if (!_highlightsContainer) {
         if (!bodyEventListenersSet) {
@@ -690,6 +704,8 @@ function ensureHighlightsContainer(win) {
             "height: auto !important; ");
         documant.body.append(_highlightsContainer);
     }
+    const inverseZoom = computeInverseZoom(bodyComputedStyle, rootComputedStyle);
+    _highlightsContainer.style.zoom = `${inverseZoom}`;
     return _highlightsContainer;
 }
 function hideAllhighlights(_documant) {
@@ -795,15 +811,16 @@ function recreateAllHighlightsRaw(win, highlights) {
     }
     hideAllhighlights(documant);
     const bodyRect = getBoundingClientRectOfDocumentBody(win);
+    const rootComputedStyle = win.getComputedStyle(documant.documentElement);
     const bodyComputedStyle = win.getComputedStyle(documant.body);
     const docFrag = documant.createDocumentFragment();
     for (const highlight of _highlights) {
-        const div = createHighlightDom(win, highlight, bodyRect, bodyComputedStyle);
+        const div = createHighlightDom(win, highlight, bodyRect, bodyComputedStyle, rootComputedStyle);
         if (div) {
             docFrag.append(div);
         }
     }
-    const highlightsContainer = ensureHighlightsContainer(win);
+    const highlightsContainer = ensureHighlightsContainer(win, bodyComputedStyle, rootComputedStyle);
     highlightsContainer.append(docFrag);
 }
 exports.recreateAllHighlightsDebounced = debounce((win) => {
@@ -826,6 +843,7 @@ function createHighlights(win, highDefs, pointerInteraction) {
     const documant = win.document;
     const highlights = [];
     const bodyRect = getBoundingClientRectOfDocumentBody(win);
+    const rootComputedStyle = win.getComputedStyle(documant.documentElement);
     const bodyComputedStyle = win.getComputedStyle(documant.body);
     const docFrag = documant.createDocumentFragment();
     for (const highDef of highDefs) {
@@ -833,13 +851,13 @@ function createHighlights(win, highDefs, pointerInteraction) {
             highlights.push(null);
             continue;
         }
-        const [high, div] = createHighlight(win, highDef.selectionInfo, highDef.range, highDef.color, pointerInteraction, highDef.drawType, highDef.expand, highDef.group, highDef.marginText, bodyRect, bodyComputedStyle);
+        const [high, div] = createHighlight(win, highDef.selectionInfo, highDef.range, highDef.color, pointerInteraction, highDef.drawType, highDef.expand, highDef.group, highDef.marginText, bodyRect, bodyComputedStyle, rootComputedStyle);
         highlights.push(high);
         if (div) {
             docFrag.append(div);
         }
     }
-    const highlightsContainer = ensureHighlightsContainer(win);
+    const highlightsContainer = ensureHighlightsContainer(win, bodyComputedStyle, rootComputedStyle);
     highlightsContainer.append(docFrag);
     return highlights;
 }
@@ -871,7 +889,7 @@ const computeCFI = (node) => {
     }
     return "/" + cfi;
 };
-function createHighlight(win, selectionInfo, range, color, pointerInteraction, drawType, expand, group, marginText, bodyRect, bodyComputedStyle) {
+function createHighlight(win, selectionInfo, range, color, pointerInteraction, drawType, expand, group, marginText, bodyRect, bodyComputedStyle, rootComputedStyle) {
     const uniqueStr = selectionInfo ? `${selectionInfo.rangeInfo.startContainerElementCssSelector}${selectionInfo.rangeInfo.startContainerChildTextNodeIndex}${selectionInfo.rangeInfo.startOffset}${selectionInfo.rangeInfo.endContainerElementCssSelector}${selectionInfo.rangeInfo.endContainerChildTextNodeIndex}${selectionInfo.rangeInfo.endOffset}` : range ? `${range.startOffset}-${range.endOffset}-${computeCFI(range.startContainer)}-${computeCFI(range.endContainer)}` : "_RANGE_";
     const checkSum = crypto.createHash("sha1");
     checkSum.update(uniqueStr);
@@ -898,7 +916,7 @@ function createHighlight(win, selectionInfo, range, color, pointerInteraction, d
         marginText,
     };
     _highlights.push(highlight);
-    const div = createHighlightDom(win, highlight, bodyRect, bodyComputedStyle);
+    const div = createHighlightDom(win, highlight, bodyRect, bodyComputedStyle, rootComputedStyle);
     return [highlight, div];
 }
 const computeCssHighlightRGBID = (highlight) => {
@@ -925,7 +943,7 @@ const computeHighContrastForegroundColourForBackground = (color) => {
     return foregroundColour;
 };
 const JAPANESE_RUBY_TO_SKIP = ["rt", "rp"];
-function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
+function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle, rootComputedStyle) {
     var _a, _b, _c;
     const DEBUG_RECTS = window.DEBUG_RECTS;
     const documant = win.document;
@@ -969,8 +987,9 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     const rtl = (0, readium_css_2.isRTL)();
     const vertical = (0, readium_css_1.isVerticalWritingMode)();
     const doDrawMargin = drawMargin(highlight);
-    const underlineThickness = 3;
+    const underlineThickness = 4;
     const strikeThroughLineThickness = 4;
+    const inverseZoom = computeInverseZoom(bodyComputedStyle, rootComputedStyle);
     if (exports.ENABLE_CSS_HIGHLIGHTS && !doDrawMargin && !rangeHasSVG && (drawBackground || (drawUnderline && !vertical) || (drawStrikeThrough && !vertical))) {
         highlight.rangeCssHighlight = range;
         const [strRGB, cssHighlightID] = computeCssHighlightRGBID(highlight);
@@ -983,7 +1002,7 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
 ::highlight(${cssHighlightID}) {
     text-decoration-color: rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue});
     text-decoration-style: solid;
-    text-decoration-thickness: 0.16em;
+    text-decoration-thickness: ${0.16 / inverseZoom}em;
     text-decoration-line: ${drawUnderline ? "underline" : "line-through"};
 }
 `
@@ -1045,14 +1064,6 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
     else {
         clientRects = (0, rect_utils_1.getClientRectsNoOverlap)(rangeClientRects, false, vertical, highlight.expand ? highlight.expand : 0);
     }
-    const bodyPaddingLeft = parseInt(bodyComputedStyle.paddingLeft, 10);
-    const bodyPaddingRight = parseInt(bodyComputedStyle.paddingRight, 10);
-    const bodyWidth = parseInt(bodyComputedStyle.width, 10);
-    const bodyHeight = parseInt(bodyComputedStyle.height, 10);
-    const paginatedTwo = paginated && (0, readium_css_1.isTwoPageSpread)();
-    const paginatedWidth = scrollElement.clientWidth / (paginatedTwo ? 2 : 1);
-    const paginatedGap = (paginatedWidth - bodyWidth) / 2;
-    const paginatedOffset = paginatedGap + bodyPaddingLeft;
     const gap = 2;
     const gapX = ((drawOutline || drawBackground) ? gap : 0);
     const boxesNoGapExpanded = [];
@@ -1141,6 +1152,14 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
         }
     });
     cleanupPolygon(polygonCountourUnionPoly, gap);
+    const bodyPaddingLeft = parseInt(bodyComputedStyle.paddingLeft, 10) / inverseZoom;
+    const bodyPaddingRight = parseInt(bodyComputedStyle.paddingRight, 10) / inverseZoom;
+    const bodyWidth = parseInt(bodyComputedStyle.width, 10) / inverseZoom;
+    const bodyHeight = parseInt(bodyComputedStyle.height, 10) / inverseZoom;
+    const paginatedTwo = paginated && (0, readium_css_1.isTwoPageSpread)();
+    const paginatedWidth = scrollElement.clientWidth / (paginatedTwo ? 2 : 1);
+    const paginatedGap = (paginatedWidth - bodyWidth) / 2;
+    const paginatedOffset = paginatedGap + bodyPaddingLeft;
     const useFastBoundingRect = true;
     if (drawOpacityMask || drawOpacityMaskRuler) {
         let boundingRectMaskBase;
@@ -1425,21 +1444,16 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
         const highlightMaskSVG = documant.createElementNS(SVG_XML_NAMESPACE, "svg");
         highlightMaskSVG.setAttribute("class", `${styles_1.CLASS_HIGHLIGHT_COMMON_SVG} ${styles_1.CLASS_HIGHLIGHT_SVG}`);
         highlightMaskSVG.polygon = polyToDraw;
-        let docStyle;
         let rsBackground = bodyComputedStyle.getPropertyValue("--RS__backgroundColor");
         if (!rsBackground) {
-            docStyle = win.getComputedStyle(documant.documentElement);
-            rsBackground = docStyle.getPropertyValue("--RS__backgroundColor");
+            rsBackground = rootComputedStyle.getPropertyValue("--RS__backgroundColor");
         }
         if (rsBackground === "transparent") {
             rsBackground = "";
         }
         let rsForeground = bodyComputedStyle.getPropertyValue("--RS__textColor");
         if (!rsForeground) {
-            if (!docStyle) {
-                docStyle = win.getComputedStyle(documant.documentElement);
-            }
-            rsForeground = docStyle.getPropertyValue("--RS__textColor");
+            rsForeground = rootComputedStyle.getPropertyValue("--RS__textColor");
         }
         const svgPathMask = highlightMaskSVG.polygon.svg({
             fillRule: "evenodd",
@@ -1651,8 +1665,8 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
                 });
     highlightParent.append(highlightAreaSVG);
     if (doDrawMargin && highlight.pointerInteraction) {
-        const MARGIN_MARKER_THICKNESS = 14 * (win.READIUM2.isFixedLayout ? scale : 1);
-        const MARGIN_MARKER_OFFSET = 6 * (win.READIUM2.isFixedLayout ? scale : 1);
+        const MARGIN_MARKER_THICKNESS = 14 * (win.READIUM2.isFixedLayout ? scale : (1 / inverseZoom));
+        const MARGIN_MARKER_OFFSET = 6 * (win.READIUM2.isFixedLayout ? scale : (1 / inverseZoom));
         let boundingRectCountourMargin;
         const polygonCountourMarginRects = [];
         for (const f of polygonCountourUnionPoly.faces) {
@@ -1783,8 +1797,8 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle) {
         highlightMarginSVG.setAttribute("class", `${styles_1.CLASS_HIGHLIGHT_COMMON} ${styles_1.CLASS_HIGHLIGHT_CONTOUR_MARGIN}`);
         highlightMarginSVG.polygon = polygonMarginUnionPoly;
         const svgPath = polygonMarginUnionPoly.svg({
-            fill: `rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue})`,
             fillRule: "evenodd",
+            fill: `rgb(${highlight.color.red}, ${highlight.color.green}, ${highlight.color.blue})`,
             stroke: "transparent",
             strokeWidth: 0,
             fillOpacity: 1,

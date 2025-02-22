@@ -5,7 +5,6 @@ exports.parseDOM = parseDOM;
 const xmldom = require("@xmldom/xmldom");
 function serializeDOM(documant) {
     const isWeb = typeof window !== "undefined" && documant instanceof window.Document;
-    console.log("--DOMDOM: SERIALIZE--", isWeb);
     const serialized = isWeb
         ? new XMLSerializer().serializeToString(documant)
         : new xmldom.XMLSerializer().serializeToString(documant);
@@ -16,7 +15,6 @@ function parseDOM(htmlStrToParse, mediaType) {
         mediaType = "application/xml";
     }
     const isWeb = typeof window !== "undefined" && (mediaType === "application/xhtml+xml" || mediaType === "application/xml" || mediaType === "image/svg+xml" || mediaType === "text/html" || mediaType === "text/xml");
-    console.log("--DOMDOM: PARSE--", isWeb);
     const documant = isWeb
         ? new DOMParser().parseFromString(htmlStrToParse, mediaType)
         : new xmldom.DOMParser().parseFromString(htmlStrToParse, mediaType);

@@ -8,6 +8,7 @@ import { IReadiumCSS } from "./readium-css-settings";
 import { ISelectionInfo } from "./selection";
 export declare const R2_EVENT_IMAGE_CLICK = "R2_EVENT_IMAGE_CLICK";
 export interface IEventPayload_R2_EVENT_IMAGE_CLICK {
+    hostDocumentURL: string;
     isSVGFragment: boolean;
     isSVGImage: boolean;
     HTMLImgSrc_SVGImageHref_SVGFragmentMarkup: string;

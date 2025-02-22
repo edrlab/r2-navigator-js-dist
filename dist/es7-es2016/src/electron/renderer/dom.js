@@ -55,12 +55,39 @@ const captionsOverlayParaCssStyles = `
     text-align: center;
 `.replace(/[\r\n]/g, " ").replace(/\s\s+/g, " ").trim();
 const readiumCssStyle = `
+/*
 @font-face {
 font-family: AccessibleDfA;
 font-style: normal;
 font-weight: normal;
 src: local("AccessibleDfA"),
 url("{RCSS_BASE_URL}fonts/AccessibleDfA.otf") format("opentype");
+}
+*/
+
+@font-face {
+font-family: AccessibleDfA;
+src: local("AccessibleDfA"),
+url("{RCSS_BASE_URL}fonts/AccessibleDfA-Regular.woff2") format("woff2"),
+url("{RCSS_BASE_URL}fonts/AccessibleDfA-Regular.woff") format("woff");
+font-weight: normal;
+font-style: normal;
+}
+
+@font-face {
+font-family: AccessibleDfA;
+src: local("AccessibleDfA"),
+url("{RCSS_BASE_URL}fonts/AccessibleDfA-Bold.woff2") format("woff2");
+font-weight: bold;
+font-style: normal;
+}
+
+@font-face {
+font-family: AccessibleDfA;
+src: local("AccessibleDfA"),
+url("{RCSS_BASE_URL}fonts/AccessibleDfA-Italic.woff2") format("woff2");
+font-weight: normal;
+font-style: italic;
 }
 
 @font-face {
@@ -259,6 +286,7 @@ function createWebViewInternal(preloadScriptPath) {
         (0, readaloud_1.checkTtsState)(wv);
     });
     wv.addEventListener("ipc-message", (event) => {
+        var _a;
         const webview = event.currentTarget;
         if (webview !== wv) {
             debug("Wrong navigator webview?!");
@@ -346,6 +374,9 @@ function createWebViewInternal(preloadScriptPath) {
         }
         else if (event.channel === events_1.R2_EVENT_IMAGE_CLICK) {
             const payload = event.args[0];
+            if (((_a = webview.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href) && webview.READIUM2.link.Href !== payload.hostDocumentURL) {
+                payload.hostDocumentURL = webview.READIUM2.link.Href;
+            }
             if (_imageClickHandler) {
                 debug("R2_EVENT_IMAGE_CLICK (ipc-message) href [_imageClickHandler]: " + JSON.stringify(payload, null, 4));
                 _imageClickHandler(Object.assign({}, payload));
