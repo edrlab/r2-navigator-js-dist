@@ -1221,6 +1221,9 @@ win.addEventListener("DOMContentLoaded", () => {
     }
     win.READIUM2.locationHashOverride = undefined;
     win.READIUM2.ttsHighlightStyle = highlight_1.HighlightDrawTypeBackground;
+    win.READIUM2.ttsHighlightColor = undefined;
+    win.READIUM2.ttsHighlightColor_WORD = undefined;
+    win.READIUM2.ttsHighlightStyle_WORD = undefined;
     win.READIUM2.ttsClickEnabled = false;
     win.READIUM2.ttsAndMediaOverlaysManualPlayNext = false;
     win.READIUM2.ttsSkippabilityEnabled = false;
