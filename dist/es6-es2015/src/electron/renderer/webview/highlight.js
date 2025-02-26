@@ -1065,7 +1065,7 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle, rootCom
         clientRects = (0, rect_utils_1.getClientRectsNoOverlap)(rangeClientRects, false, vertical, highlight.expand ? highlight.expand : 0);
     }
     const gap = 2;
-    const gapX = ((drawOutline || drawBackground) ? gap : 0);
+    const gapX = ((drawOutline || drawBackground) ? 4 : 0);
     const boxesNoGapExpanded = [];
     const boxesGapExpanded = [];
     for (const clientRect of clientRects) {
@@ -1115,7 +1115,7 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle, rootCom
                             ?
                                 rect.left
                             :
-                                (rect.left - (thickness / 2)))
+                                (rect.left - (thickness + thickness / 2)))
                     :
                         rect.left) * scale;
                 const yy = (vertical

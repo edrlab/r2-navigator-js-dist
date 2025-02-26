@@ -22,7 +22,9 @@ function combineTextNodes(textNodes, skipNormalize) {
         let str = "";
         for (const textNode of textNodes) {
             let txt = textNode.nodeValue;
-            if (txt) {
+            if (textNode.__RUBY) {
+            }
+            else if (txt) {
                 if (!txt.trim().length) {
                     txt = " ";
                     str += txt;
@@ -151,6 +153,9 @@ function findTtsQueueItemIndex(ttsQueue, element, startTextNode, startTextNodeOf
                         if (!txtNode.nodeValue && txtNode.nodeValue !== "") {
                             continue;
                         }
+                        if (txtNode.__RUBY) {
+                            continue;
+                        }
                         if (txtNode === startTextNode) {
                             offset += startTextNodeOffset;
                             break;
@@ -197,6 +202,9 @@ function findTtsQueueItemIndex(ttsQueue, element, startTextNode, startTextNodeOf
                 let offset = 0;
                 for (const txtNode of ttsQueueItem.textNodes) {
                     if (!txtNode.nodeValue && txtNode.nodeValue !== "") {
+                        continue;
+                    }
+                    if (txtNode.__RUBY) {
                         continue;
                     }
                     if (txtNode === startTextNode) {
@@ -275,7 +283,7 @@ function generateTtsQueue(rootElement, splitSentences) {
     let ttsQueue = [];
     const elementStack = [];
     function processTextNode(textNode) {
-        var _a;
+        var _a, _b;
         if (textNode.nodeType !== Node.TEXT_NODE) {
             return;
         }
@@ -287,16 +295,18 @@ function generateTtsQueue(rootElement, splitSentences) {
             return;
         }
         const documant = (textNode.parentElement || parentElement).ownerDocument;
-        const lower = (_a = (textNode.parentElement || parentElement).tagName) === null || _a === void 0 ? void 0 : _a.toLowerCase();
+        const lowerTagName = (_b = (_a = textNode.parentElement) === null || _a === void 0 ? void 0 : _a.tagName) === null || _b === void 0 ? void 0 : _b.toLowerCase();
         if (documant.documentElement.classList.contains(styles_1.ROOT_CLASS_NO_RUBY)) {
-            if (lower === "rp" || lower === "rt") {
+            if (lowerTagName === "rp" || lowerTagName === "rt") {
                 return;
+            }
+            if ((lowerTagName === "ruby" || lowerTagName === "rb") && textNode.__RUBY) {
+                textNode.__RUBY = false;
             }
         }
         else {
-            if (true
-                && (lower === "ruby" || lower === "rb")) {
-                return;
+            if (lowerTagName === "ruby" || lowerTagName === "rb") {
+                textNode.__RUBY = true;
             }
         }
         let current = ttsQueue[ttsQueue.length - 1];
@@ -346,7 +356,6 @@ function generateTtsQueue(rootElement, splitSentences) {
             else {
                 if (true
                     && (lower === "rb")) {
-                    return true;
                 }
             }
             let curEl = el;
