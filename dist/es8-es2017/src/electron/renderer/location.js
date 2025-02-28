@@ -490,6 +490,7 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
                 data[url_params_1.URL_PARAM_CSS] = undefined;
                 data[url_params_1.URL_PARAM_EPUBREADINGSYSTEM] = undefined;
                 data[url_params_1.URL_PARAM_DEBUG_VISUALS] = undefined;
+                data[url_params_1.URL_PARAM_A11Y_SUPPORT_ENABLED] = undefined;
                 data[url_params_1.URL_PARAM_CLIPBOARD_INTERCEPT] = undefined;
                 data[url_params_1.URL_PARAM_REFRESH] = undefined;
                 data[url_params_1.URL_PARAM_WEBVIEW_SLOT] = undefined;
@@ -706,6 +707,7 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
             data[url_params_1.URL_PARAM_CSS] = undefined;
             data[url_params_1.URL_PARAM_EPUBREADINGSYSTEM] = undefined;
             data[url_params_1.URL_PARAM_DEBUG_VISUALS] = undefined;
+            data[url_params_1.URL_PARAM_A11Y_SUPPORT_ENABLED] = undefined;
             data[url_params_1.URL_PARAM_CLIPBOARD_INTERCEPT] = undefined;
             data[url_params_1.URL_PARAM_REFRESH] = undefined;
             data[url_params_1.URL_PARAM_WEBVIEW_SLOT] = undefined;
@@ -738,6 +740,9 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
             data[url_params_1.URL_PARAM_DEBUG_VISUALS] = (IS_DEV &&
                 win.READIUM2.DEBUG_VISUALS) ?
                 "true" : "false";
+            data[url_params_1.URL_PARAM_A11Y_SUPPORT_ENABLED] =
+                win.READIUM2.accessibilitySupportEnabled ?
+                    "true" : "false";
             data[url_params_1.URL_PARAM_CLIPBOARD_INTERCEPT] =
                 win.READIUM2.clipboardInterceptor ?
                     "true" : "false";
@@ -753,7 +758,7 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
     }
     const webviewNeedsHardRefresh = !isAudio &&
         (win.READIUM2.enableScreenReaderAccessibilityWebViewHardRefresh
-            && win.READIUM2.isScreenReaderMounted);
+            && win.READIUM2.accessibilitySupportEnabled);
     if (!isAudio && !webviewNeedsHardRefresh && !webviewNeedsForcedRefresh &&
         activeWebView && activeWebView.READIUM2.link === pubLink && !(0, readium_css_1.isFixedLayout)(pubLink)) {
         const goto = useGoto ? hrefToLoadHttpUri.search(true)[url_params_1.URL_PARAM_GOTO] : undefined;

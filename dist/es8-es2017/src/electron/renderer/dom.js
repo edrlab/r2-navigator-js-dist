@@ -165,7 +165,7 @@ electron_1.ipcRenderer.on("accessibility-support-changed", (_e, accessibilitySup
         return;
     }
     debug("accessibility-support-changed event received in WebView ", accessibilitySupportEnabled);
-    win.READIUM2.isScreenReaderMounted = accessibilitySupportEnabled;
+    win.READIUM2.accessibilitySupportEnabled = accessibilitySupportEnabled;
 });
 function readiumCssApplyToWebview(loc, activeWebView, pubLink, rcss) {
     var _a;
@@ -492,7 +492,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
             }
             return _webview2;
         },
-        isScreenReaderMounted: false,
+        accessibilitySupportEnabled: false,
         preloadScriptPath,
         publication,
         publicationURL,

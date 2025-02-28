@@ -34,6 +34,7 @@ export interface IReadiumElectronWebviewWindowState {
     ttsOverlayEnabled: boolean;
     ttsPlaybackRate: number;
     ttsVoices: SpeechSynthesisVoice[] | null;
+    accessibilitySupportEnabled: boolean;
     isClipboardIntercept: boolean;
 }
 export interface IReadiumElectronWebviewWindow {
@@ -81,7 +82,7 @@ export interface IReadiumElectronBrowserWindow {
     getFirstOrSecondWebView: () => IReadiumElectronWebview | undefined;
     getActiveWebViews: () => IReadiumElectronWebview[];
     enableScreenReaderAccessibilityWebViewHardRefresh: boolean;
-    isScreenReaderMounted: boolean;
+    accessibilitySupportEnabled: boolean;
     highlightsDrawMargin: boolean | string[];
 }
 export interface IWithIReadiumElectronBrowserWindow {

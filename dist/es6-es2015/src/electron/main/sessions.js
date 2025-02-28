@@ -317,6 +317,7 @@ const transformerHttpBaseIframes = (_publication, link, url, htmlStr, _sessionIn
     const r2CSS = url_.searchParams.get(url_params_1.URL_PARAM_CSS);
     const r2ERS = url_.searchParams.get(url_params_1.URL_PARAM_EPUBREADINGSYSTEM);
     const r2DEBUG = url_.searchParams.get(url_params_1.URL_PARAM_DEBUG_VISUALS);
+    const r2A11YSUPPORTENABLED = url_.searchParams.get(url_params_1.URL_PARAM_A11Y_SUPPORT_ENABLED);
     const r2CLIPBOARDINTERCEPT = url_.searchParams.get(url_params_1.URL_PARAM_CLIPBOARD_INTERCEPT);
     const r2SESSIONINFO = url_.searchParams.get(url_params_1.URL_PARAM_SESSION_INFO);
     const r2WEBVIEWSLOT = url_.searchParams.get(url_params_1.URL_PARAM_WEBVIEW_SLOT);
@@ -336,6 +337,9 @@ const transformerHttpBaseIframes = (_publication, link, url, htmlStr, _sessionIn
         }
         src_ = `${urlStr}/../${src_}`;
         const iframeUrl = new URL(src_);
+        if (r2A11YSUPPORTENABLED) {
+            iframeUrl.searchParams.append(url_params_1.URL_PARAM_A11Y_SUPPORT_ENABLED, r2A11YSUPPORTENABLED);
+        }
         if (r2CLIPBOARDINTERCEPT) {
             iframeUrl.searchParams.append(url_params_1.URL_PARAM_CLIPBOARD_INTERCEPT, r2CLIPBOARDINTERCEPT);
         }

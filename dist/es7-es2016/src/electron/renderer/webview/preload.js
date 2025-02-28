@@ -47,6 +47,7 @@ win.READIUM2 = {
     hashElement: null,
     isAudio: false,
     ignorekeyDownUpEvents: false,
+    accessibilitySupportEnabled: false,
     isClipboardIntercept: false,
     isFixedLayout: false,
     locationHashOverride: undefined,
@@ -98,7 +99,7 @@ win.prompt = (...args) => {
 };
 const CSS_PIXEL_TOLERANCE = 5;
 (0, selection_2.setSelectionChangeAction)(win, () => {
-    notifyReadingLocationDebounced(true);
+    notifyReadingLocationDebounced(true, false, true);
 });
 const TOUCH_SWIPE_DELTA_MIN = 80;
 const TOUCH_SWIPE_LONG_PRESS_MAX_TIME = 500;
@@ -237,6 +238,7 @@ if (win.READIUM2.urlQueryParams) {
         (0, epubReadingSystem_1.setWindowNavigatorEpubReadingSystem)(win, readiumEpubReadingSystemJson);
     }
     win.READIUM2.DEBUG_VISUALS = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_DEBUG_VISUALS] === "true";
+    win.READIUM2.accessibilitySupportEnabled = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_A11Y_SUPPORT_ENABLED] === "true";
     win.READIUM2.isClipboardIntercept = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_CLIPBOARD_INTERCEPT] === "true";
     win.READIUM2.webViewSlot =
         win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_WEBVIEW_SLOT] === "left" ? styles_2.WebViewSlotEnum.left :
@@ -428,7 +430,7 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, (_event, payload) => {
         resetLocationHashOverrideInfo();
         debug("processXYRaw BODY");
         const x = ((0, readium_css_1.isRTL)() ? win.document.documentElement.offsetWidth - 1 : 0);
-        processXYRaw(x, 0, false);
+        processXYRaw(x, 0, false, false);
         notifyReadingLocationDebounced();
         return;
     }
@@ -1013,7 +1015,7 @@ const scrollToHashRaw = (animate, skipRedraw) => {
                 resetLocationHashOverrideInfo();
                 setTimeout(() => {
                     const x = ((0, readium_css_1.isRTL)() ? win.document.documentElement.offsetWidth - 1 : 0);
-                    processXYRaw(x, 0, false);
+                    processXYRaw(x, 0, false, false);
                     showHideContentMask(false, win.READIUM2.isFixedLayout);
                     if (!win.READIUM2.locationHashOverride) {
                         notifyReadingLocationDebounced();
@@ -1102,7 +1104,7 @@ const scrollToHashRaw = (animate, skipRedraw) => {
                     resetLocationHashOverrideInfo();
                     focusElement(win.READIUM2.locationHashOverride, false);
                     const x = ((0, readium_css_1.isRTL)() ? win.document.documentElement.offsetWidth - 1 : 0);
-                    processXYRaw(x, 0, false);
+                    processXYRaw(x, 0, false, false);
                     if (!win.READIUM2.locationHashOverride) {
                         notifyReadingLocationDebounced();
                     }
@@ -1124,7 +1126,7 @@ const scrollToHashRaw = (animate, skipRedraw) => {
                 resetLocationHashOverrideInfo();
                 focusElement(win.READIUM2.locationHashOverride, false);
                 const x = ((0, readium_css_1.isRTL)() ? win.document.documentElement.offsetWidth - 1 : 0);
-                processXYRaw(x, 0, false);
+                processXYRaw(x, 0, false, false);
                 if (!win.READIUM2.locationHashOverride) {
                     notifyReadingLocationDebounced();
                 }
@@ -1142,7 +1144,7 @@ const scrollToHashRaw = (animate, skipRedraw) => {
         focusElement(win.READIUM2.locationHashOverride, false);
         debug("processXYRaw BODY");
         const x = ((0, readium_css_1.isRTL)() ? win.document.documentElement.offsetWidth - 1 : 0);
-        processXYRaw(x, 0, false);
+        processXYRaw(x, 0, false, false);
     }
     notifyReadingLocationDebounced();
 };
@@ -1393,7 +1395,7 @@ const onScrollRaw = () => {
         }
     }
     const x = ((0, readium_css_1.isRTL)() ? win.document.documentElement.offsetWidth - 1 : 0);
-    processXYRaw(x, 0, false);
+    processXYRaw(x, 0, false, false, true);
 };
 const onScrollDebounced = debounce(() => {
     onScrollRaw();
@@ -2266,7 +2268,7 @@ const domDataFromPoint = (x, y) => {
     }
     return domPointData;
 };
-const processXYRaw = (x, y, reverse, userInteract) => {
+const processXYRaw = (x, y, reverse, userInteract, fromViewportScroll) => {
     var _a, _b;
     debug("processXYRaw ENTRY");
     if ((0, popup_dialog_1.isPopupDialogOpen)(win.document)) {
@@ -2355,7 +2357,12 @@ const processXYRaw = (x, y, reverse, userInteract) => {
             notifyReadingLocationDebouncedImmediate(userInteract);
         }
         else {
-            notifyReadingLocationDebounced(userInteract);
+            if (fromViewportScroll && win.READIUM2.accessibilitySupportEnabled) {
+                notifyReadingLocationDebounced(userInteract, false, true);
+            }
+            else {
+                notifyReadingLocationDebounced(userInteract);
+            }
         }
         if (userInteract && win.READIUM2.locationHashOverride) {
             focusElement(win.READIUM2.locationHashOverride, true);
@@ -2895,7 +2902,7 @@ const $_namespaceResolver = (prefix) => {
     }
     return $_htmlNamespaces[prefix] || null;
 };
-const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays) => {
+const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays, doNotFocus) => {
     var _a, _b;
     if (!win.READIUM2.locationHashOverride) {
         return;
@@ -2909,9 +2916,9 @@ const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays) => {
         return;
     }
     let progressionData;
-    let cssSelector = getCssSelector(win.READIUM2.locationHashOverride);
-    let cfi = computeCFI(win.READIUM2.locationHashOverride);
-    let xpath = computeXPath(win.READIUM2.locationHashOverride);
+    const cssSelector = getCssSelector(win.READIUM2.locationHashOverride);
+    const cfi = computeCFI(win.READIUM2.locationHashOverride);
+    const xpath = computeXPath(win.READIUM2.locationHashOverride);
     if (IS_DEV && xpath) {
         debug(">>> XPATH original: " + xpath);
         const xpath_ = xpath.replace(/\/([^\/]+)/g, (m) => {
@@ -2942,11 +2949,6 @@ const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays) => {
     const pinfo = (progressionData && progressionData.paginationInfo) ?
         progressionData.paginationInfo : undefined;
     const selInfo = (0, selection_2.getCurrentSelectionInfo)(win, getCssSelector, computeCFI, computeXPath);
-    if (selInfo) {
-        cssSelector = selInfo.rangeInfo.startContainerElementCssSelector;
-        cfi = selInfo.rangeInfo.startContainerElementCFI;
-        xpath = selInfo.rangeInfo.startContainerElementXPath;
-    }
     const text = selInfo ? {
         after: selInfo.cleanAfter,
         before: selInfo.cleanBefore,
@@ -3021,7 +3023,9 @@ const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays) => {
     if (!win.document.documentElement.classList.contains(styles_2.R2_MO_CLASS_PLAYING)) {
         tempLinkTargetOutline(win.READIUM2.locationHashOverride, 1000, true);
     }
-    focusElement(win.READIUM2.locationHashOverride, true);
+    if (!doNotFocus) {
+        focusElement(win.READIUM2.locationHashOverride, true);
+    }
     if (win.READIUM2.DEBUG_VISUALS) {
         const existings = win.document.querySelectorAll(`*[${styles_2.readPosCssStylesAttr4}]`);
         existings.forEach((existing) => {
@@ -3030,8 +3034,8 @@ const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays) => {
         win.READIUM2.locationHashOverride.setAttribute(styles_2.readPosCssStylesAttr4, "notifyReadingLocationRaw");
     }
 };
-const notifyReadingLocationDebounced = debounce((userInteract, ignoreMediaOverlays) => {
-    notifyReadingLocationRaw(userInteract, ignoreMediaOverlays);
+const notifyReadingLocationDebounced = debounce((userInteract, ignoreMediaOverlays, doNotFocus) => {
+    notifyReadingLocationRaw(userInteract, ignoreMediaOverlays, doNotFocus);
 }, 250);
 const notifyReadingLocationDebouncedImmediate = debounce((userInteract, ignoreMediaOverlays) => {
     notifyReadingLocationRaw(userInteract, ignoreMediaOverlays);
