@@ -1461,13 +1461,15 @@ function loaded(forced) {
         debug(">>> LOAD EVENT was not forced.");
     }
     const systemVoices = win.speechSynthesis.getVoices();
-    console.log("loaded() -- window.speechSynthesis.getVoices()", JSON.stringify(systemVoices.map(v => ({
-        name: v.name,
-        lang: v.lang,
-        voiceURI: v.voiceURI,
-        default: v.default,
-        localService: v.localService,
-    })), null, 4));
+    if (!!(systemVoices === null || systemVoices === void 0 ? void 0 : systemVoices.length) && false) {
+        console.log("loaded() -- window.speechSynthesis.getVoices()", JSON.stringify(systemVoices.map(v => ({
+            name: v.name,
+            lang: v.lang,
+            voiceURI: v.voiceURI,
+            default: v.default,
+            localService: v.localService,
+        })), null, 4));
+    }
     _elementsWithID = undefined;
     _allEpubPageBreaks = undefined;
     _allHeadings = undefined;
