@@ -13,4 +13,5 @@ export declare function ttsQueueCurrentText(): string | undefined;
 export declare function ttsNext(skipSentences: boolean, escape?: boolean): void;
 export declare function ttsPrevious(skipSentences: boolean, escape?: boolean): void;
 export declare function ttsPreviewAndEventuallyPlayQueueIndex(n: number): void;
+export declare function assignUtteranceVoice(utterance: SpeechSynthesisUtterance): void;
 export declare function ttsPlayQueueIndex(ttsQueueIndex: number, ttsAndMediaOverlaysManualPlayNext?: boolean): void;

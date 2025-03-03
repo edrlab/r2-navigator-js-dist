@@ -1459,6 +1459,14 @@ function loaded(forced) {
     else {
         debug(">>> LOAD EVENT was not forced.");
     }
+    const systemVoices = win.speechSynthesis.getVoices();
+    console.log("loaded() -- window.speechSynthesis.getVoices()", JSON.stringify(systemVoices.map(v => ({
+        name: v.name,
+        lang: v.lang,
+        voiceURI: v.voiceURI,
+        default: v.default,
+        localService: v.localService,
+    })), null, 4));
     _elementsWithID = undefined;
     _allEpubPageBreaks = undefined;
     _allHeadings = undefined;
@@ -3093,6 +3101,7 @@ if (!win.READIUM2.isAudio) {
         win.document.documentElement.classList.add(payload.state === events_1.MediaOverlaysStateEnum.PAUSED ? styles_2.R2_MO_CLASS_PAUSED :
             (payload.state === events_1.MediaOverlaysStateEnum.PLAYING ? styles_2.R2_MO_CLASS_PLAYING : styles_2.R2_MO_CLASS_STOPPED));
     });
+    let _textToSpeechUtterance;
     electron_1.ipcRenderer.on(events_1.R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT, (_event, payload) => {
         const styleAttr = win.document.documentElement.getAttribute("style");
         const isNight = styleAttr ? styleAttr.indexOf("readium-night-on") > 0 : false;
@@ -3112,6 +3121,21 @@ if (!win.READIUM2.isAudio) {
         activeMoElements_.forEach((elem) => {
             elem.classList.remove(styles_2.R2_MO_CLASS_ACTIVE);
         });
+        if (_textToSpeechUtterance) {
+            const p = _textToSpeechUtterance._textToSpeechPayload;
+            _textToSpeechUtterance = undefined;
+            if (p) {
+                p.id = undefined;
+                electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT, p);
+            }
+            try {
+                if (true || win.speechSynthesis.speaking || win.speechSynthesis.pending || win.speechSynthesis.paused) {
+                    win.speechSynthesis.cancel();
+                }
+            }
+            catch (_ex) {
+            }
+        }
         let removeCaptionContainer = true;
         if (!payload.id) {
             win.document.documentElement.classList.remove(styles_2.R2_MO_CLASS_ACTIVE_PLAYBACK, activeClassPlayback);
@@ -3127,8 +3151,40 @@ if (!win.READIUM2.isAudio) {
             const targetEl = win.document.getElementById(payload.id);
             if (targetEl) {
                 targetEl.classList.add(activeClass);
+                let text = null;
+                if (payload.captionsMode || payload.speech) {
+                    text = targetEl.textContent;
+                }
+                if (payload.speech) {
+                    if (text) {
+                        const utterance = new SpeechSynthesisUtterance(text);
+                        _textToSpeechUtterance = utterance;
+                        const lang = (0, dom_text_utils_1.getLanguage)(targetEl);
+                        utterance.lang = lang;
+                        (0, readaloud_1.assignUtteranceVoice)(utterance);
+                        if (payload.speechRate) {
+                            utterance.rate = payload.speechRate;
+                        }
+                        else if (win.READIUM2.ttsPlaybackRate >= 0.1 && win.READIUM2.ttsPlaybackRate <= 10) {
+                            utterance.rate = win.READIUM2.ttsPlaybackRate;
+                        }
+                        utterance.onend = (_ev) => {
+                            var _a;
+                            if (utterance === _textToSpeechUtterance) {
+                                _textToSpeechUtterance = undefined;
+                                if ((_a = utterance._textToSpeechPayload) === null || _a === void 0 ? void 0 : _a.id) {
+                                    electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT, utterance._textToSpeechPayload);
+                                }
+                            }
+                        };
+                        utterance._textToSpeechPayload = payload;
+                        win.speechSynthesis.speak(utterance);
+                    }
+                    else {
+                        electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT, payload);
+                    }
+                }
                 if (payload.captionsMode) {
-                    let text = targetEl.textContent;
                     if (text) {
                         text = (0, dom_text_utils_1.normalizeText)(text).trim();
                         if (text) {

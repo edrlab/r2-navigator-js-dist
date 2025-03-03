@@ -15,6 +15,7 @@ exports.ttsQueueCurrentText = ttsQueueCurrentText;
 exports.ttsNext = ttsNext;
 exports.ttsPrevious = ttsPrevious;
 exports.ttsPreviewAndEventuallyPlayQueueIndex = ttsPreviewAndEventuallyPlayQueueIndex;
+exports.assignUtteranceVoice = assignUtteranceVoice;
 exports.ttsPlayQueueIndex = ttsPlayQueueIndex;
 const debounce = require("debounce");
 const electron_1 = require("electron");
@@ -891,6 +892,56 @@ function updateTTSInfo(charIndex, charLength, utteranceText) {
 const ttsPlayQueueIndexDebounced = debounce((ttsQueueIndex, ttsAndMediaOverlaysManualPlayNext = false) => {
     ttsPlayQueueIndex(ttsQueueIndex, ttsAndMediaOverlaysManualPlayNext);
 }, 150);
+function assignUtteranceVoice(utterance) {
+    const systemVoices = win.speechSynthesis.getVoices();
+    const userVoices = systemVoices.filter((sysVoice) => {
+        var _a;
+        return !!((_a = win.READIUM2.ttsVoices) === null || _a === void 0 ? void 0 : _a.find((userVoice) => (userVoice.name === sysVoice.name &&
+            userVoice.lang === sysVoice.lang &&
+            userVoice.voiceURI === sysVoice.voiceURI &&
+            userVoice.localService === sysVoice.localService)));
+    });
+    utterance.voice = null;
+    if (!utterance.lang) {
+        return;
+    }
+    const voicesCascade = [userVoices, systemVoices];
+    for (const voices of voicesCascade) {
+        const utteranceLang = utterance.lang.toLowerCase();
+        let utteranceLangShort = utteranceLang;
+        const i = utteranceLangShort.indexOf("-");
+        const utteranceLangIsSpecific = i > 0;
+        if (utteranceLangIsSpecific) {
+            utteranceLangShort = utteranceLangShort.substring(0, i);
+        }
+        let found = false;
+        for (const usrVoice of voices) {
+            if (!usrVoice.lang) {
+                continue;
+            }
+            const usrVoiceLang = usrVoice.lang.toLowerCase();
+            if (utteranceLang === usrVoiceLang) {
+                utterance.voice = usrVoice;
+                found = true;
+                break;
+            }
+            let usrVoiceLangShort = usrVoiceLang;
+            const j = usrVoiceLangShort.indexOf("-");
+            const usrVoiceLangIsSpecific = j > 0;
+            if (usrVoiceLangIsSpecific) {
+                usrVoiceLangShort = usrVoiceLangShort.substring(0, j);
+            }
+            if (utteranceLangShort === usrVoiceLangShort) {
+                utterance.voice = usrVoice;
+                found = true;
+                break;
+            }
+        }
+        if (found) {
+            break;
+        }
+    }
+}
 function ttsPlayQueueIndex(ttsQueueIndex, ttsAndMediaOverlaysManualPlayNext = false) {
     if (!_dialogState ||
         !_dialogState.ttsRootElement ||
@@ -956,55 +1007,9 @@ function ttsPlayQueueIndex(ttsQueueIndex, ttsAndMediaOverlaysManualPlayNext = fa
     if (_dialogState.ttsQueueItem.item.lang) {
         utterance.lang = _dialogState.ttsQueueItem.item.lang;
     }
+    assignUtteranceVoice(utterance);
     if (win.READIUM2.ttsPlaybackRate >= 0.1 && win.READIUM2.ttsPlaybackRate <= 10) {
         utterance.rate = win.READIUM2.ttsPlaybackRate;
-    }
-    const systemVoices = speechSynthesis.getVoices();
-    const userVoices = systemVoices.filter((sysVoice) => {
-        var _a;
-        return !!((_a = win.READIUM2.ttsVoices) === null || _a === void 0 ? void 0 : _a.find((userVoice) => (userVoice.name === sysVoice.name &&
-            userVoice.lang === sysVoice.lang &&
-            userVoice.voiceURI === sysVoice.voiceURI &&
-            userVoice.localService === sysVoice.localService)));
-    });
-    utterance.voice = null;
-    if (utterance.lang) {
-        const voicesCascade = [userVoices, systemVoices];
-        for (const voices of voicesCascade) {
-            const utteranceLang = utterance.lang.toLowerCase();
-            let utteranceLangShort = utteranceLang;
-            const i = utteranceLangShort.indexOf("-");
-            const utteranceLangIsSpecific = i > 0;
-            if (utteranceLangIsSpecific) {
-                utteranceLangShort = utteranceLangShort.substring(0, i);
-            }
-            let found = false;
-            for (const usrVoice of voices) {
-                if (!usrVoice.lang) {
-                    continue;
-                }
-                const usrVoiceLang = usrVoice.lang.toLowerCase();
-                if (utteranceLang === usrVoiceLang) {
-                    utterance.voice = usrVoice;
-                    found = true;
-                    break;
-                }
-                let usrVoiceLangShort = usrVoiceLang;
-                const j = usrVoiceLangShort.indexOf("-");
-                const usrVoiceLangIsSpecific = j > 0;
-                if (usrVoiceLangIsSpecific) {
-                    usrVoiceLangShort = usrVoiceLangShort.substring(0, j);
-                }
-                if (utteranceLangShort === usrVoiceLangShort) {
-                    utterance.voice = usrVoice;
-                    found = true;
-                    break;
-                }
-            }
-            if (found) {
-                break;
-            }
-        }
     }
     utterance.onboundary = (ev) => {
         if (utterance.r2_cancel) {

@@ -1,5 +1,5 @@
 export declare function combineTextNodes(textNodes: Node[], skipNormalize?: boolean): string;
-export declare function getLanguage(el: Element): string | undefined;
+export declare function getLanguage(el: Element): string;
 export declare function getDirection(el: Element): string | undefined;
 export declare function normalizeHtmlText(str: string): string;
 export declare function normalizeText(str: string): string;
