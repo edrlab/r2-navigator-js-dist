@@ -700,8 +700,8 @@ function ensureHighlightsContainer(win, bodyComputedStyle, rootComputedStyle) {
         _highlightsContainer = documant.createElement("div");
         _highlightsContainer.setAttribute("id", styles_1.ID_HIGHLIGHTS_CONTAINER);
         _highlightsContainer.setAttribute("class", styles_1.CLASS_HIGHLIGHT_COMMON);
-        _highlightsContainer.setAttribute("style", "width: auto !important; " +
-            "height: auto !important; ");
+        _highlightsContainer.setAttribute("style", `width: ${win.READIUM2.isFixedLayout ? "-webkit-fill-available" : "auto"} !important; ` +
+            `height: ${win.READIUM2.isFixedLayout ? "-webkit-fill-available" : "auto"} !important; `);
         documant.body.append(_highlightsContainer);
     }
     const inverseZoom = computeInverseZoom(bodyComputedStyle, rootComputedStyle);
