@@ -182,10 +182,10 @@ function readiumCSSSet(documant, messageJson, isVerticalWritingMode, isRTL) {
     }
     if (docElement.hasAttribute("data-readiumcss")) {
         let reset = false;
-        const isV = docElement.hasAttribute("data-rss-isVWM");
-        if (isV !== isVerticalWritingMode) {
+        const isVWM = docElement.hasAttribute("data-rss-isVWM");
+        if (isVWM !== isVerticalWritingMode) {
             reset = true;
-            if (isV) {
+            if (isVWM) {
                 docElement.removeAttribute("data-rss-isVWM");
             }
         }

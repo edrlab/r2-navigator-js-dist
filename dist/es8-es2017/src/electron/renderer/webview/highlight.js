@@ -985,12 +985,12 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle, rootCom
     const drawOpacityMaskRuler = highlight.drawType === highlight_1.HighlightDrawTypeOpacityMaskRuler;
     const paginated = (0, readium_css_inject_1.isPaginated)(documant);
     const rtl = (0, readium_css_2.isRTL)();
-    const vertical = (0, readium_css_1.isVerticalWritingMode)();
+    const isVWM = (0, readium_css_1.isVerticalWritingMode)();
     const doDrawMargin = drawMargin(highlight);
     const underlineThickness = 4;
     const strikeThroughLineThickness = 4;
     const inverseZoom = computeInverseZoom(bodyComputedStyle, rootComputedStyle);
-    if (exports.ENABLE_CSS_HIGHLIGHTS && !doDrawMargin && !rangeHasSVG && (drawBackground || (drawUnderline && !vertical) || (drawStrikeThrough && !vertical))) {
+    if (exports.ENABLE_CSS_HIGHLIGHTS && !doDrawMargin && !rangeHasSVG && (drawBackground || (drawUnderline && !isVWM) || (drawStrikeThrough && !isVWM))) {
         highlight.rangeCssHighlight = range;
         const [strRGB, cssHighlightID] = computeCssHighlightRGBID(highlight);
         const styleElement = win.document.getElementById("Readium2-" + strRGB);
@@ -1058,11 +1058,11 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle, rootCom
     const rangeClientRects = (0, rect_utils_1.DOMRectListToArray)(range.getClientRects());
     if (doNotMergeHorizontallyAlignedRects) {
         const textClientRects = (0, rect_utils_1.getTextClientRects)(range, JAPANESE_RUBY_TO_SKIP);
-        const textReducedClientRects = (0, rect_utils_1.getClientRectsNoOverlap)(textClientRects, true, vertical, highlight.expand ? highlight.expand : 0);
+        const textReducedClientRects = (0, rect_utils_1.getClientRectsNoOverlap)(textClientRects, true, isVWM, highlight.expand ? highlight.expand : 0);
         clientRects = (DEBUG_RECTS && drawStrikeThrough) ? textClientRects : textReducedClientRects;
     }
     else {
-        clientRects = (0, rect_utils_1.getClientRectsNoOverlap)(rangeClientRects, false, vertical, highlight.expand ? highlight.expand : 0);
+        clientRects = (0, rect_utils_1.getClientRectsNoOverlap)(rangeClientRects, false, isVWM, highlight.expand ? highlight.expand : 0);
     }
     const gap = 2;
     const gapX = ((drawOutline || drawBackground) ? 4 : 0);
@@ -1081,10 +1081,10 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle, rootCom
         const y = rect.top * scale;
         boxesGapExpanded.push(new core_1.Box(Number((x - gap).toPrecision(12)), Number((y - gap).toPrecision(12)), Number((x + w + gap).toPrecision(12)), Number((y + h + gap).toPrecision(12))));
         if (drawStrikeThrough) {
-            const thickness = DEBUG_RECTS ? (vertical ? rect.width : rect.height) : strikeThroughLineThickness;
-            const ww = (vertical ? thickness : rect.width) * scale;
-            const hh = (vertical ? rect.height : thickness) * scale;
-            const xx = (vertical
+            const thickness = DEBUG_RECTS ? (isVWM ? rect.width : rect.height) : strikeThroughLineThickness;
+            const ww = (isVWM ? thickness : rect.width) * scale;
+            const hh = (isVWM ? rect.height : thickness) * scale;
+            const xx = (isVWM
                 ?
                     (DEBUG_RECTS
                         ?
@@ -1093,7 +1093,7 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle, rootCom
                             (rect.left + (rect.width / 2) - (thickness / 2)))
                 :
                     rect.left) * scale;
-            const yy = (vertical
+            const yy = (isVWM
                 ?
                     rect.top
                 :
@@ -1105,11 +1105,11 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle, rootCom
             boxesNoGapExpanded.push(new core_1.Box(Number((xx - gapX).toPrecision(12)), Number((yy - gapX).toPrecision(12)), Number((xx + ww + gapX).toPrecision(12)), Number((yy + hh + gapX).toPrecision(12))));
         }
         else {
-            const thickness = DEBUG_RECTS ? (vertical ? rect.width : rect.height) : underlineThickness;
+            const thickness = DEBUG_RECTS ? (isVWM ? rect.width : rect.height) : underlineThickness;
             if (drawUnderline) {
-                const ww = (vertical ? thickness : rect.width) * scale;
-                const hh = (vertical ? rect.height : thickness) * scale;
-                const xx = (vertical
+                const ww = (isVWM ? thickness : rect.width) * scale;
+                const hh = (isVWM ? rect.height : thickness) * scale;
+                const xx = (isVWM
                     ?
                         (DEBUG_RECTS
                             ?
@@ -1118,7 +1118,7 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle, rootCom
                                 (rect.left - (thickness + thickness / 2)))
                     :
                         rect.left) * scale;
-                const yy = (vertical
+                const yy = (isVWM
                     ?
                         rect.top
                     :
@@ -1301,7 +1301,7 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle, rootCom
             for (const f of polygonCountourUnionPoly.faces) {
                 const face = f;
                 const b = face.box;
-                const left = vertical
+                const left = isVWM
                     ?
                         b.xmin
                     :
@@ -1323,12 +1323,12 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle, rootCom
                                                 0
                                             :
                                                 0);
-                const top = vertical
+                const top = isVWM
                     ?
                         0
                     :
                         b.ymin;
-                const width = vertical
+                const width = isVWM
                     ?
                         b.width
                     :
@@ -1341,17 +1341,17 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle, rootCom
                                         bodyWidth - bodyPaddingLeft - bodyPaddingRight)
                             :
                                 bodyWidth;
-                const height = vertical
+                const height = isVWM
                     ?
                         bodyHeight
                     :
                         b.height;
                 const extra = 0;
                 const r = {
-                    left: left - (vertical ? extra : 0),
-                    top: top - (vertical ? 0 : extra),
-                    right: left + width + (vertical ? extra : 0),
-                    bottom: top + height + (vertical ? 0 : extra),
+                    left: left - (isVWM ? extra : 0),
+                    top: top - (isVWM ? 0 : extra),
+                    right: left + width + (isVWM ? extra : 0),
+                    bottom: top + height + (isVWM ? 0 : extra),
                     width: width + extra * 2,
                     height: height + extra * 2,
                 };
@@ -1672,7 +1672,7 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle, rootCom
         for (const f of polygonCountourUnionPoly.faces) {
             const face = f;
             const b = face.box;
-            const left = vertical
+            const left = isVWM
                 ?
                     b.xmin
                 :
@@ -1695,19 +1695,19 @@ function createHighlightDom(win, highlight, bodyRect, bodyComputedStyle, rootCom
                                             MARGIN_MARKER_OFFSET
                                         :
                                             bodyPaddingLeft - MARGIN_MARKER_THICKNESS - MARGIN_MARKER_OFFSET);
-            const top = vertical
+            const top = isVWM
                 ?
                     parseInt(bodyComputedStyle.paddingTop, 10) - MARGIN_MARKER_THICKNESS - MARGIN_MARKER_OFFSET
                 :
                     b.ymin;
-            const width = vertical ? b.width : MARGIN_MARKER_THICKNESS;
-            const height = vertical ? MARGIN_MARKER_THICKNESS : b.height;
+            const width = isVWM ? b.width : MARGIN_MARKER_THICKNESS;
+            const height = isVWM ? MARGIN_MARKER_THICKNESS : b.height;
             const extra = 0;
             const r = {
-                left: left - (vertical ? extra : 0),
-                top: top - (vertical ? 0 : extra),
-                right: left + width + (vertical ? extra : 0),
-                bottom: top + height + (vertical ? 0 : extra),
+                left: left - (isVWM ? extra : 0),
+                top: top - (isVWM ? 0 : extra),
+                right: left + width + (isVWM ? extra : 0),
+                bottom: top + height + (isVWM ? 0 : extra),
                 width: width + extra * 2,
                 height: height + extra * 2,
             };

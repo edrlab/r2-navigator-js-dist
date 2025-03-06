@@ -81,6 +81,7 @@ function highlightsRemove(href, highlightIDs) {
         }, 0);
     }
 }
+let __eventIDCounter = 0;
 async function highlightsCreate(href, highlightDefinitions) {
     return new Promise((resolve, reject) => {
         var _a;
@@ -90,6 +91,10 @@ async function highlightsCreate(href, highlightDefinitions) {
             if (((_a = activeWebView.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href) !== href) {
                 continue;
             }
+            if (__eventIDCounter >= Number.MAX_SAFE_INTEGER) {
+                __eventIDCounter = 0;
+            }
+            const eventID = __eventIDCounter++;
             const cb = (event) => {
                 if (event.channel === events_1.R2_EVENT_HIGHLIGHT_CREATE) {
                     const webview = event.currentTarget;
@@ -98,16 +103,18 @@ async function highlightsCreate(href, highlightDefinitions) {
                         return;
                     }
                     const payloadPong = event.args[0];
-                    webview.removeEventListener("ipc-message", cb);
-                    if (!payloadPong.highlights) {
-                        reject("highlightCreate fail?!");
-                    }
-                    else {
-                        if (!webview.READIUM2.highlights) {
-                            webview.READIUM2.highlights = [];
+                    if (event.args[1] === eventID) {
+                        webview.removeEventListener("ipc-message", cb);
+                        if (!payloadPong.highlights) {
+                            reject("highlightCreate fail?!");
                         }
-                        webview.READIUM2.highlights.push(...payloadPong.highlights.filter((h) => !!h));
-                        resolve(payloadPong.highlights);
+                        else {
+                            if (!webview.READIUM2.highlights) {
+                                webview.READIUM2.highlights = [];
+                            }
+                            webview.READIUM2.highlights.push(...payloadPong.highlights.filter((h) => !!h));
+                            resolve(payloadPong.highlights);
+                        }
                     }
                 }
             };
@@ -119,7 +126,7 @@ async function highlightsCreate(href, highlightDefinitions) {
             setTimeout(async () => {
                 var _a;
                 if ((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady) {
-                    await activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_CREATE, payloadPing);
+                    await activeWebView.send(events_1.R2_EVENT_HIGHLIGHT_CREATE, payloadPing, eventID);
                 }
             }, 0);
             return;

@@ -1308,6 +1308,7 @@ const _saveReadingLocation = (activeWebView, locator) => {
 function setReadingLocationSaver(func) {
     _readingLocationSaver = func;
 }
+let __eventIDCounter = 0;
 function isLocatorVisible(locator) {
     return tslib_1.__awaiter(this, void 0, void 0, function* () {
         return new Promise((resolve, reject) => {
@@ -1317,6 +1318,10 @@ function isLocatorVisible(locator) {
                 if (((_a = activeWebView.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href) !== locator.href) {
                     continue;
                 }
+                if (__eventIDCounter >= Number.MAX_SAFE_INTEGER) {
+                    __eventIDCounter = 0;
+                }
+                const eventID = __eventIDCounter++;
                 const cb = (event) => {
                     if (event.channel === events_1.R2_EVENT_LOCATOR_VISIBLE) {
                         const webview = event.currentTarget;
@@ -1325,8 +1330,10 @@ function isLocatorVisible(locator) {
                             return;
                         }
                         const payloadPong = event.args[0];
-                        activeWebView.removeEventListener("ipc-message", cb);
-                        resolve(payloadPong.visible);
+                        if (event.args[1] === eventID) {
+                            activeWebView.removeEventListener("ipc-message", cb);
+                            resolve(payloadPong.visible);
+                        }
                     }
                 };
                 activeWebView.addEventListener("ipc-message", cb);
@@ -1334,7 +1341,7 @@ function isLocatorVisible(locator) {
                 setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {
                     var _a;
                     if ((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady) {
-                        yield activeWebView.send(events_1.R2_EVENT_LOCATOR_VISIBLE, payloadPing);
+                        yield activeWebView.send(events_1.R2_EVENT_LOCATOR_VISIBLE, payloadPing, eventID);
                     }
                 }), 0);
                 return;

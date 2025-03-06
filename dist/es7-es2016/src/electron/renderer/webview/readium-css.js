@@ -54,7 +54,7 @@ const calculateDocumentColumnizedWidthAdjustedForTwoPageSpread = () => {
         isVerticalWritingMode();
     if (!noChange) {
         const columnizedDocWidth = w;
-        const twoColWidth = win.document.documentElement.offsetWidth;
+        const twoColWidth = scrollElement.offsetWidth;
         const nSpreads = columnizedDocWidth / twoColWidth;
         const nWholeSpread = Math.floor(nSpreads);
         const fractionalSpread = nSpreads - nWholeSpread;
@@ -70,19 +70,19 @@ const calculateMaxScrollShift = () => {
     }
     const isPaged = (0, readium_css_inject_1.isPaginated)(win.document);
     const scrollElement = (0, exports.getScrollingElement)(win.document);
-    const vwm = isVerticalWritingMode();
+    const isVWM = isVerticalWritingMode();
     const maxScrollShift = isPaged ?
-        ((vwm ?
-            (scrollElement.scrollHeight - win.document.documentElement.offsetHeight) :
-            (scrollElement.scrollWidth - win.document.documentElement.offsetWidth))) :
-        ((vwm ?
-            (scrollElement.scrollWidth - win.document.documentElement.clientWidth) :
-            (scrollElement.scrollHeight - win.document.documentElement.clientHeight)));
+        ((isVWM ?
+            (scrollElement.scrollHeight - scrollElement.offsetHeight) :
+            (scrollElement.scrollWidth - scrollElement.offsetWidth))) :
+        ((isVWM ?
+            (scrollElement.scrollWidth - scrollElement.clientWidth) :
+            (scrollElement.scrollHeight - scrollElement.clientHeight)));
     const maxScrollShiftAdjusted = isPaged ?
-        ((vwm ?
+        ((isVWM ?
             maxScrollShift :
-            (calculateDocumentColumnizedWidthAdjustedForTwoPageSpread() - win.document.documentElement.offsetWidth))) :
-        ((vwm ?
+            (calculateDocumentColumnizedWidthAdjustedForTwoPageSpread() - scrollElement.offsetWidth))) :
+        ((isVWM ?
             maxScrollShift :
             maxScrollShift));
     return { maxScrollShift, maxScrollShiftAdjusted };
@@ -123,6 +123,7 @@ const calculateTotalColumns = () => {
     else {
         totalColumns = Math.ceil(win.document.body.offsetHeight / scrollElement.scrollHeight);
     }
+    console.log("totalColumns", totalColumns);
     return totalColumns;
 };
 exports.calculateTotalColumns = calculateTotalColumns;
@@ -130,13 +131,14 @@ function calculateColumnDimension() {
     if (!win.document || !win.document.documentElement || !win.document.body || !(0, readium_css_inject_1.isPaginated)(win.document)) {
         return 0;
     }
+    const scrollElement = (0, exports.getScrollingElement)(win.document);
     const isTwoPage = (0, exports.isTwoPageSpread)();
     let columnDimension = 0;
     if (isVerticalWritingMode()) {
-        columnDimension = win.document.documentElement.offsetHeight;
+        columnDimension = scrollElement.offsetHeight;
     }
     else {
-        columnDimension = (win.document.documentElement.offsetWidth * (isTwoPage ? 0.5 : 1));
+        columnDimension = (scrollElement.offsetWidth * (isTwoPage ? 0.5 : 1));
     }
     return columnDimension;
 }

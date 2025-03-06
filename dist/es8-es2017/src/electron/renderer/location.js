@@ -1307,6 +1307,7 @@ const _saveReadingLocation = (activeWebView, locator) => {
 function setReadingLocationSaver(func) {
     _readingLocationSaver = func;
 }
+let __eventIDCounter = 0;
 async function isLocatorVisible(locator) {
     return new Promise((resolve, reject) => {
         var _a;
@@ -1315,6 +1316,10 @@ async function isLocatorVisible(locator) {
             if (((_a = activeWebView.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href) !== locator.href) {
                 continue;
             }
+            if (__eventIDCounter >= Number.MAX_SAFE_INTEGER) {
+                __eventIDCounter = 0;
+            }
+            const eventID = __eventIDCounter++;
             const cb = (event) => {
                 if (event.channel === events_1.R2_EVENT_LOCATOR_VISIBLE) {
                     const webview = event.currentTarget;
@@ -1323,8 +1328,10 @@ async function isLocatorVisible(locator) {
                         return;
                     }
                     const payloadPong = event.args[0];
-                    activeWebView.removeEventListener("ipc-message", cb);
-                    resolve(payloadPong.visible);
+                    if (event.args[1] === eventID) {
+                        activeWebView.removeEventListener("ipc-message", cb);
+                        resolve(payloadPong.visible);
+                    }
                 }
             };
             activeWebView.addEventListener("ipc-message", cb);
@@ -1332,7 +1339,7 @@ async function isLocatorVisible(locator) {
             setTimeout(async () => {
                 var _a;
                 if ((_a = activeWebView.READIUM2) === null || _a === void 0 ? void 0 : _a.DOMisReady) {
-                    await activeWebView.send(events_1.R2_EVENT_LOCATOR_VISIBLE, payloadPing);
+                    await activeWebView.send(events_1.R2_EVENT_LOCATOR_VISIBLE, payloadPing, eventID);
                 }
             }, 0);
             return;
