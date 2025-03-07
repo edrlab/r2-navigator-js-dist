@@ -437,6 +437,7 @@ exports.ttsCssStyles = `
     border-left: 0;
     border-right: 0;
     border-top: 0;
+    border-bottom: 0;
 }
 
 :root[style] div#${exports.TTS_ID_CONTAINER},
@@ -1303,8 +1304,8 @@ exports.targetCssStyles = `
 :root[style] *.${exports.LINK_TARGET_CLASS}.${exports.LINK_TARGET_ALT_CLASS},
 :root *.${exports.LINK_TARGET_CLASS}.${exports.LINK_TARGET_ALT_CLASS}
 {
-    outline-color: orange !important;
-    outline-style: solid !important;
+    outline-color: gray !important;
+    outline-style: dotted !important;
     outline-width: 1px !important;
     outline-offset: 2px !important;
 

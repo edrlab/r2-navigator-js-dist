@@ -1218,7 +1218,7 @@ function getCurrentReadingLocation() {
 }
 let _readingLocationSaver;
 const _saveReadingLocation = (activeWebView, locator) => {
-    var _a, _b;
+    var _a, _b, _c, _d;
     const docHref = (_a = activeWebView.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href;
     if (!docHref) {
         return;
@@ -1269,6 +1269,7 @@ const _saveReadingLocation = (activeWebView, locator) => {
         }
     }
     _lastSavedReadingLocation = {
+        locEventID: locator.locEventID,
         audioPlaybackInfo: locator.audioPlaybackInfo,
         docInfo: locator.docInfo,
         epubPage: locator.epubPage,
@@ -1300,6 +1301,7 @@ const _saveReadingLocation = (activeWebView, locator) => {
     if (IS_DEV) {
         debug(">->->");
         debug(_lastSavedReadingLocation);
+        debug((_d = (_c = _lastSavedReadingLocation === null || _lastSavedReadingLocation === void 0 ? void 0 : _lastSavedReadingLocation.locator) === null || _c === void 0 ? void 0 : _c.locations) === null || _d === void 0 ? void 0 : _d.rangeInfo);
     }
     if (_readingLocationSaver) {
         _readingLocationSaver(_lastSavedReadingLocation);

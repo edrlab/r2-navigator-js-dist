@@ -4,6 +4,8 @@ export declare function getDirection(el: Element): string | undefined;
 export declare function normalizeHtmlText(str: string): string;
 export declare function normalizeText(str: string): string;
 export interface ITtsQueueItem {
+    lastUtteranceRange?: Range;
+    lastWordRange?: Range;
     dir: string | undefined;
     lang: string | undefined;
     parentElement: Element;

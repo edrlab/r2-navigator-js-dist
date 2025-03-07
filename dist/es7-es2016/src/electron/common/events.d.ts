@@ -66,6 +66,7 @@ export declare const R2_EVENT_KEYBOARD_FOCUS_REQUEST = "R2_EVENT_KEYBOARD_FOCUS_
 export declare const R2_EVENT_READING_LOCATION = "R2_EVENT_READING_LOCATION";
 export declare const R2_EVENT_READING_LOCATION_CLEAR_SELECTION = "R2_EVENT_READING_LOCATION_CLEAR_SELECTION";
 export interface IEventPayload_R2_EVENT_READING_LOCATION extends Locator {
+    locEventID?: number;
     audioPlaybackInfo: IAudioPlaybackInfo | undefined;
     paginationInfo: IPaginationInfo | undefined;
     selectionInfo: ISelectionInfo | undefined;

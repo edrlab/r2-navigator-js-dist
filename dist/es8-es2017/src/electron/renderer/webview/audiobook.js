@@ -7,6 +7,7 @@ const audiobook_1 = require("../../common/audiobook");
 const events_1 = require("../../common/events");
 const styles_1 = require("../../common/styles");
 const win = global.window;
+let __locEventID = 0;
 function throttle(fn, time) {
     let called = false;
     return (...args) => {
@@ -195,7 +196,11 @@ function setupAudioBook(_docTitle, audioPlaybackRate) {
         refreshTimeElements(p);
         sliderElement.valueAsNumber = p;
         sliderElement.style.setProperty("--audiopercent", `${p}%`);
+        if (__locEventID >= Number.MAX_SAFE_INTEGER) {
+            __locEventID = 0;
+        }
         win.READIUM2.locationHashOverrideInfo = {
+            locEventID: ++__locEventID,
             audioPlaybackInfo: {
                 globalDuration: undefined,
                 globalProgression: undefined,

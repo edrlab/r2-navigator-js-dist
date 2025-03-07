@@ -19,6 +19,7 @@ export declare function handleLinkUrl(href: string, rcss?: IEventPayload_R2_EVEN
 export declare function handleLinkLocator(location: Locator | undefined, rcss?: IEventPayload_R2_EVENT_READIUMCSS): void;
 export declare function reloadContent(): void;
 export interface LocatorExtended {
+    locEventID?: number;
     audioPlaybackInfo: IAudioPlaybackInfo | undefined;
     locator: Locator;
     paginationInfo: IPaginationInfo | undefined;
