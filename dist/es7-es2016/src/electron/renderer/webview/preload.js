@@ -958,7 +958,7 @@ function getScrollOffsetIntoView(element, domRect) {
     const columnIndex = Math.floor(fullOffset / columnDimension);
     const spreadIndex = isTwoPage ? Math.floor(columnIndex / 2) : columnIndex;
     const off = ((0, readium_css_1.isRTL)() ? -1 : 1) * (spreadIndex * (columnDimension * (isTwoPage ? 2 : 1)));
-    const fullOffsetEnd = fullOffset + (((0, readium_css_1.isRTL)() ? -1 : 1) * rect.width);
+    const fullOffsetEnd = fullOffset + (((0, readium_css_1.isRTL)() ? 1 : 1) * rect.width);
     const columnIndexEnd = Math.floor(fullOffsetEnd / columnDimension);
     const spreadIndexEnd = isTwoPage ? Math.floor(columnIndexEnd / 2) : columnIndexEnd;
     const offEnd = ((0, readium_css_1.isRTL)() ? -1 : 1) * (spreadIndexEnd * (columnDimension * (isTwoPage ? 2 : 1)));
