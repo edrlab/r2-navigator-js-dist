@@ -411,9 +411,9 @@ function throttle(fn, time) {
     };
     return func;
 }
-const focusScrollImmediate = throttle((el, doFocus, animate, domRect) => {
+const focusScrollImmediate = throttle((el, doFocus, animate, domRect, center) => {
     if (_dialogState && _dialogState.focusScrollRaw) {
-        _dialogState.focusScrollRaw(el, doFocus, animate, domRect);
+        _dialogState.focusScrollRaw(el, doFocus, animate, domRect, center);
     }
 }, 500);
 const isOnlyWhiteSpace = (str) => {
@@ -621,7 +621,7 @@ function wrapHighlight(doHighlight, ttsQueueItemRef, expectNext) {
             ttsQueueItem.lastUtteranceRange = range;
             if (_dialogState && _dialogState.focusScrollRaw) {
                 const domRect = range.getBoundingClientRect();
-                focusScrollImmediate(ttsQueueItemRef.item.parentElement, false, true, domRect);
+                _dialogState.focusScrollRaw(ttsQueueItemRef.item.parentElement, false, true, domRect, true);
             }
             const ttsHighlightStyle = typeof ((_a = win.READIUM2) === null || _a === void 0 ? void 0 : _a.ttsHighlightStyle) !== "undefined" ? win.READIUM2.ttsHighlightStyle : highlight_1.HighlightDrawTypeBackground;
             const ttsColor = ((_b = win.READIUM2) === null || _b === void 0 ? void 0 : _b.ttsHighlightColor) || {

@@ -858,7 +858,7 @@ const tempLinkTargetOutline = (element, time, alt) => {
 };
 let _lastAnimState2;
 const animationTime2 = 400;
-function scrollElementIntoView(element, doFocus, animate, domRect) {
+function scrollElementIntoView(element, doFocus, animate, domRect, center) {
     if (win.READIUM2.DEBUG_VISUALS) {
         const existings = win.document.querySelectorAll(`*[${styles_2.readPosCssStylesAttr3}]`);
         existings.forEach((existing) => {
@@ -882,7 +882,7 @@ function scrollElementIntoView(element, doFocus, animate, domRect) {
         else {
             const scrollElement = (0, readium_css_1.getScrollingElement)(win.document);
             const rect = domRect || element.getBoundingClientRect();
-            if (isVisible(false, element, domRect)) {
+            if (!center && isVisible(false, element, domRect)) {
                 console.log("scrollElementIntoView already visible");
             }
             else {
@@ -891,8 +891,8 @@ function scrollElementIntoView(element, doFocus, animate, domRect) {
                     ((0, readium_css_1.isRTL)() ? -1 : 1) * (scrollElement.scrollWidth - win.document.documentElement.clientWidth) :
                     scrollElement.scrollHeight - win.document.documentElement.clientHeight;
                 let offset = isVWM ?
-                    scrollElement.scrollLeft + (rect.left - (win.document.documentElement.clientWidth / 2)) :
-                    scrollElement.scrollTop + (rect.top - (win.document.documentElement.clientHeight / 2));
+                    scrollElement.scrollLeft + (rect.left - (win.document.documentElement.clientWidth / 2) + (rect.width / 2)) :
+                    scrollElement.scrollTop + (rect.top - (win.document.documentElement.clientHeight / 2) + (rect.height / 2));
                 if (isVWM && (0, readium_css_1.isRTL)()) {
                     if (offset < scrollTopMax) {
                         offset = scrollTopMax;
@@ -1191,9 +1191,10 @@ function showHideContentMask(doHide, isFixedLayout) {
         win.document.documentElement.classList.remove(styles_2.ROOT_CLASS_INVISIBLE_MASK);
     }
 }
-function focusScrollRaw(el, doFocus, animate, domRect) {
-    if (!isVisible(false, el, domRect)) {
-        scrollElementIntoView(el, doFocus, animate, domRect);
+function focusScrollRaw(el, doFocus, animate, domRect, center) {
+    if ((!(0, readium_css_inject_1.isPaginated)(win.document) && !win.READIUM2.isFixedLayout && center) ||
+        !isVisible(false, el, domRect)) {
+        scrollElementIntoView(el, doFocus, animate, domRect, center);
     }
     if (win.READIUM2.locationHashOverride === el) {
         return;

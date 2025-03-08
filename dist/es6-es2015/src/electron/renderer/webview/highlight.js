@@ -701,6 +701,7 @@ function ensureHighlightsContainer(win, bodyComputedStyle, rootComputedStyle) {
             }, false);
         }
         _highlightsContainer = documant.createElement("div");
+        _highlightsContainer.setAttribute("aria-hidden", "true");
         _highlightsContainer.setAttribute("id", styles_1.ID_HIGHLIGHTS_CONTAINER);
         _highlightsContainer.setAttribute("class", styles_1.CLASS_HIGHLIGHT_COMMON);
         _highlightsContainer.setAttribute("style", `width: ${win.READIUM2.isFixedLayout ? "-webkit-fill-available" : "auto"} !important; ` +
