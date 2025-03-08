@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.cleanupStr = exports.collapseWhitespaces = exports.setSelectionChangeAction = void 0;
+exports.temporarilySelectElementToExtractVisibleRange = temporarilySelectElementToExtractVisibleRange;
 exports.clearCurrentSelection = clearCurrentSelection;
 exports.getCurrentSelectionInfo = getCurrentSelectionInfo;
 exports.createOrderedRange = createOrderedRange;
@@ -74,6 +75,27 @@ const setSelectionChangeAction = (win, func) => {
     });
 };
 exports.setSelectionChangeAction = setSelectionChangeAction;
+function temporarilySelectElementToExtractVisibleRange(win, el) {
+    var _a, _b, _c, _d, _e, _f;
+    const selection = win.getSelection();
+    if (!selection) {
+        return;
+    }
+    clearCurrentSelection(win);
+    const range = new Range();
+    range.selectNode(el);
+    _ignoreSelectionChangeEvent = true;
+    _selectionChangeTimeout = win.setTimeout(() => {
+        _selectionChangeTimeout = undefined;
+        _ignoreSelectionChangeEvent = false;
+    }, 200);
+    selection.addRange(range);
+    console.log("selection.addRange(range)", el.tagName);
+    console.log("selection.anchorNode", ((_a = selection.anchorNode) === null || _a === void 0 ? void 0 : _a.nodeType) === 3 ? (_b = selection.anchorNode) === null || _b === void 0 ? void 0 : _b.nodeValue : (_c = selection.anchorNode) === null || _c === void 0 ? void 0 : _c.nodeName);
+    console.log("selection.anchorOffset", selection.anchorOffset);
+    console.log("selection.focusNode", ((_d = selection.focusNode) === null || _d === void 0 ? void 0 : _d.nodeType) === 3 ? (_e = selection.focusNode) === null || _e === void 0 ? void 0 : _e.nodeValue : (_f = selection.focusNode) === null || _f === void 0 ? void 0 : _f.nodeName);
+    console.log("selection.focusOffset", selection.focusOffset);
+}
 function clearCurrentSelection(win) {
     var _a;
     const selection = win.getSelection();

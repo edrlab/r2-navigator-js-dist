@@ -1,6 +1,7 @@
 import { IRangeInfo, ISelectedTextInfo, ISelectionInfo } from "../../common/selection";
 import { ReadiumElectronWebviewWindow } from "./state";
 export declare const setSelectionChangeAction: (win: ReadiumElectronWebviewWindow, func: () => void) => void;
+export declare function temporarilySelectElementToExtractVisibleRange(win: ReadiumElectronWebviewWindow, el: Element): void;
 export declare function clearCurrentSelection(win: ReadiumElectronWebviewWindow): void;
 export declare const collapseWhitespaces: (str: string) => string;
 export declare const cleanupStr: (str: string) => string;

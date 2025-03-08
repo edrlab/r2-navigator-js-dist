@@ -10,6 +10,7 @@ export declare const HighlightDrawTypeStrikethrough = 2;
 export declare const HighlightDrawTypeOutline = 3;
 export declare const HighlightDrawTypeOpacityMask = 4;
 export declare const HighlightDrawTypeOpacityMaskRuler = 5;
+export declare const HighlightDrawTypeMarginBookmark = 6;
 export interface IHighlight {
     id: string;
     selectionInfo?: ISelectionInfo;
