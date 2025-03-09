@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TTS_CLASS_UTTERANCE_HEADING2 = exports.TTS_CLASS_UTTERANCE_HEADING1 = exports.TTS_CLASS_UTTERANCE = exports.TTS_ID_ACTIVE_UTTERANCE = exports.TTS_ID_ACTIVE_WORD = exports.TTS_ID_SLIDER = exports.TTS_ID_NEXT = exports.TTS_ID_PREVIOUS = exports.TTS_CLASS_STOPPED = exports.TTS_CLASS_PLAYING = exports.TTS_CLASS_PAUSED = exports.TTS_CLASS_IS_ACTIVE = exports.TTS_CLASS_THEME1 = exports.mediaOverlaysCssStyles = exports.R2_MO_CLASS_STOPPED = exports.R2_MO_CLASS_PAUSED = exports.R2_MO_CLASS_PLAYING = exports.R2_MO_CLASS_ACTIVE_PLAYBACK = exports.R2_MO_CLASS_ACTIVE = exports.footnotesCssStyles = exports.CSS_CLASS_NO_FOCUS_OUTLINE = exports.ROOT_CLASS_KEYBOARD_INTERACT = exports.POPUP_DIALOG_CLASS_COLLAPSE = exports.POPUP_DIALOG_CLASS = exports.POPOUTIMAGE_RESET_ID = exports.POPOUTIMAGE_PLUS_ID = exports.POPOUTIMAGE_MINUS_ID = exports.POPOUTIMAGE_CONTROLS_ID = exports.POPOUTIMAGE_CLOSE_ID = exports.POPOUTIMAGE_CONTAINER_ID = exports.FOOTNOTE_FORCE_SHOW = exports.FOOTNOTES_CLOSE_BUTTON_CLASS = exports.FOOTNOTES_CONTAINER_CLASS = exports.ROOT_CLASS_NO_RUBY = exports.ROOT_CLASS_NO_FOOTNOTES = exports.ROOT_CLASS_FIXED_LAYOUT = exports.ROOT_CLASS_MATHJAX = exports.ROOT_CLASS_REDUCE_MOTION = exports.DISABLE_TEMPORARY_NAV_TARGET_OUTLINE_CLASS = exports.LINK_TARGET_ALT_CLASS = exports.LINK_TARGET_CLASS = exports.SKIP_LINK_ID = exports.ENABLE_SKIP_LINK = exports.ZERO_TRANSFORM_CLASS = exports.HIDE_CURSOR_CLASS = exports.CLASS_PAGINATED = exports.CLASS_VWM = exports.EXTRA_COLUMN_PAD_ID = exports.WebViewSlotEnum = exports.ENABLE_EXTRA_COLUMN_SHIFT_METHOD = void 0;
-exports.AUDIO_FORWARD_ID = exports.AUDIO_REWIND_ID = exports.AUDIO_NEXT_ID = exports.AUDIO_PREVIOUS_ID = exports.AUDIO_PLAYPAUSE_ID = exports.AUDIO_RATE_ID = exports.AUDIO_PERCENT_ID = exports.AUDIO_TIME_ID = exports.AUDIO_SLIDER_ID = exports.AUDIO_TITLE_ID = exports.AUDIO_COVER_ID = exports.AUDIO_CONTROLS_ID = exports.AUDIO_SECTION_ID = exports.AUDIO_BODY_ID = exports.AUDIO_ID = exports.AUDIO_PROGRESS_CLASS = exports.AUDIO_BUFFER_CANVAS_ID = exports.readPosCssStyles = exports.readPosCssStylesAttr4 = exports.readPosCssStylesAttr3 = exports.readPosCssStylesAttr2 = exports.readPosCssStylesAttr1 = exports.scrollBarCssStyles = exports.selectionCssStyles = exports.targetCssStyles = exports.focusCssStyles = exports.visibilityMaskCssStyles = exports.ROOT_CLASS_INVISIBLE_MASK_REMOVED = exports.ROOT_CLASS_INVISIBLE_MASK = exports.ENABLE_VISIBILITY_MASK = exports.CLASS_HIGHLIGHT_CURSOR2 = exports.CLASS_HIGHLIGHT_HOVER = exports.CLASS_HIGHLIGHT_MASK = exports.CLASS_HIGHLIGHT_BEHIND = exports.CLASS_HIGHLIGHT_MARGIN = exports.CLASS_HIGHLIGHT_CONTAINER = exports.CLASS_HIGHLIGHT_CONTOUR_MARGIN = exports.CLASS_HIGHLIGHT_CONTOUR = exports.CLASS_HIGHLIGHT_SVG = exports.CLASS_HIGHLIGHT_COMMON_SVG = exports.CLASS_HIGHLIGHT_COMMON = exports.ID_HIGHLIGHTS_CONTAINER = exports.ttsCssStyles = exports.TTS_POPUP_DIALOG_CLASS = exports.TTS_ID_SPEAKING_DOC_ELEMENT = exports.TTS_NAV_BUTTON_CLASS = exports.TTS_ID_CONTAINER = exports.TTS_CLASS_UTTERANCE_HEADING5 = exports.TTS_CLASS_UTTERANCE_HEADING4 = exports.TTS_CLASS_UTTERANCE_HEADING3 = void 0;
-exports.audioCssStyles = void 0;
+exports.AUDIO_REWIND_ID = exports.AUDIO_NEXT_ID = exports.AUDIO_PREVIOUS_ID = exports.AUDIO_PLAYPAUSE_ID = exports.AUDIO_RATE_ID = exports.AUDIO_PERCENT_ID = exports.AUDIO_TIME_ID = exports.AUDIO_SLIDER_ID = exports.AUDIO_TITLE_ID = exports.AUDIO_COVER_ID = exports.AUDIO_CONTROLS_ID = exports.AUDIO_SECTION_ID = exports.AUDIO_BODY_ID = exports.AUDIO_ID = exports.AUDIO_PROGRESS_CLASS = exports.AUDIO_BUFFER_CANVAS_ID = exports.readPosCssStyles = exports.readPosCssStylesAttr4 = exports.readPosCssStylesAttr3 = exports.readPosCssStylesAttr2 = exports.readPosCssStylesAttr1 = exports.scrollBarCssStyles = exports.selectionCssStyles = exports.targetCssStyles = exports.focusCssStyles = exports.visibilityMaskCssStyles = exports.ROOT_CLASS_INVISIBLE_MASK_REMOVED = exports.ROOT_CLASS_INVISIBLE_MASK = exports.ENABLE_VISIBILITY_MASK = exports.CLASS_HIGHLIGHT_CURSOR2 = exports.CLASS_HIGHLIGHT_HOVER = exports.CLASS_HIGHLIGHT_MASK = exports.CLASS_HIGHLIGHT_BEHIND = exports.CLASS_HIGHLIGHT_MARGIN = exports.CLASS_HIGHLIGHT_CONTAINER = exports.CLASS_HIGHLIGHT_CONTOUR_MARGIN = exports.CLASS_HIGHLIGHT_CONTOUR = exports.CLASS_HIGHLIGHT_SVG = exports.CLASS_HIGHLIGHT_COMMON_SVG = exports.CLASS_HIGHLIGHT_COMMON = exports.ID_HIGHLIGHTS_FLOATING = exports.ID_HIGHLIGHTS_CONTAINER = exports.ttsCssStyles = exports.TTS_POPUP_DIALOG_CLASS = exports.TTS_ID_SPEAKING_DOC_ELEMENT = exports.TTS_NAV_BUTTON_CLASS = exports.TTS_ID_CONTAINER = exports.TTS_CLASS_UTTERANCE_HEADING5 = exports.TTS_CLASS_UTTERANCE_HEADING4 = exports.TTS_CLASS_UTTERANCE_HEADING3 = void 0;
+exports.audioCssStyles = exports.AUDIO_FORWARD_ID = void 0;
 exports.ENABLE_EXTRA_COLUMN_SHIFT_METHOD = false;
 var WebViewSlotEnum;
 (function (WebViewSlotEnum) {
@@ -781,6 +781,7 @@ exports.ttsCssStyles = `
 }
 `;
 exports.ID_HIGHLIGHTS_CONTAINER = "R2_ID_HIGHLIGHTS_CONTAINER";
+exports.ID_HIGHLIGHTS_FLOATING = "R2_ID_HIGHLIGHTS_FLOATING";
 exports.CLASS_HIGHLIGHT_COMMON = "R2_CLASS_HIGHLIGHT_COMMON";
 exports.CLASS_HIGHLIGHT_COMMON_SVG = "R2_CLASS_HIGHLIGHT_COMMON_SVG";
 exports.CLASS_HIGHLIGHT_SVG = "R2_CLASS_HIGHLIGHT_SVG";
@@ -818,6 +819,145 @@ r2-wbr::before,
 wbr::before {
 content: ' ';
 }
+
+:root[style].${exports.CLASS_PAGINATED} > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > #${exports.ID_HIGHLIGHTS_FLOATING},
+:root.${exports.CLASS_PAGINATED} > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > #${exports.ID_HIGHLIGHTS_FLOATING},
+:root[style].${exports.CLASS_PAGINATED} > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > #${exports.ID_HIGHLIGHTS_FLOATING}_,
+:root.${exports.CLASS_PAGINATED} > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > #${exports.ID_HIGHLIGHTS_FLOATING}_
+{
+    position: fixed;
+}
+:root[style]:not(.${exports.CLASS_PAGINATED}) > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > #${exports.ID_HIGHLIGHTS_FLOATING},
+:root:not(.${exports.CLASS_PAGINATED}) > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > #${exports.ID_HIGHLIGHTS_FLOATING},
+:root[style]:not(.${exports.CLASS_PAGINATED}) > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > #${exports.ID_HIGHLIGHTS_FLOATING}_,
+:root:not(.${exports.CLASS_PAGINATED}) > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > #${exports.ID_HIGHLIGHTS_FLOATING}_
+{
+    position: absolute;
+}
+:root[style].${exports.CLASS_VWM} > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > #${exports.ID_HIGHLIGHTS_FLOATING},
+:root.${exports.CLASS_VWM} > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > #${exports.ID_HIGHLIGHTS_FLOATING}
+/*
+,
+:root[style].${exports.CLASS_VWM} > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > #${exports.ID_HIGHLIGHTS_FLOATING}_,
+:root.${exports.CLASS_VWM} > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > #${exports.ID_HIGHLIGHTS_FLOATING}_
+*/
+{
+width: max-content !important;
+
+/* width: 200px !important;
+height: 100px !important; */
+
+max-width: 200px !important;
+max-height: 100px !important;
+/*
+height: max-content !important;
+
+max-width: 100px !important;
+max-height: 200px !important;
+*/
+}
+:root[style]:not(.${exports.CLASS_VWM}) > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > #${exports.ID_HIGHLIGHTS_FLOATING},
+:root:not(.${exports.CLASS_VWM}) > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > #${exports.ID_HIGHLIGHTS_FLOATING}
+/*
+,
+:root[style]:not(.${exports.CLASS_VWM}) > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > #${exports.ID_HIGHLIGHTS_FLOATING}_,
+:root:not(.${exports.CLASS_VWM}) > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > #${exports.ID_HIGHLIGHTS_FLOATING}_
+*/
+{
+width: max-content !important;
+
+/* width: 200px !important;
+height: 100px !important; */
+
+max-width: 200px !important;
+max-height: 100px !important;
+}
+
+:root[style] > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > #${exports.ID_HIGHLIGHTS_FLOATING},
+:root > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > #${exports.ID_HIGHLIGHTS_FLOATING},
+:root[style] > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > #${exports.ID_HIGHLIGHTS_FLOATING}_,
+:root > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > #${exports.ID_HIGHLIGHTS_FLOATING}_
+{
+user-select: none !important;
+pointer-events: none !important;
+
+z-index: 999;
+
+display: none;
+
+top: 0;
+left: 0;
+
+overflow-x: clip !important;
+overflow-y: clip !important;
+
+text-overflow: ellipsis !important;
+
+background: white !important;
+color: black !important;
+
+font-weight: bold !important;
+font-size: 0.8rem !important;
+
+box-sizing: border-box !important;
+
+padding: 0.6rem !important;
+
+margin: 0 !important;
+}
+:root[style] > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > #${exports.ID_HIGHLIGHTS_FLOATING},
+:root > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > #${exports.ID_HIGHLIGHTS_FLOATING}
+{
+    border-radius: 8px !important;
+    border-width: 1px !important;
+    border-color: black !important;
+    border-style: solid !important;
+    box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 1);
+}
+/*
+:root[style*="--USER__fontFamily"] > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > #${exports.ID_HIGHLIGHTS_FLOATING}
+{
+    font-family: var(--USER__fontFamily);
+}
+:root[style*="--USER__lineHeight"] > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > #${exports.ID_HIGHLIGHTS_FLOATING}
+{
+    line-height: var(--USER__lineHeight);
+}
+:root[style*="readium-night-on"] > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > #${exports.ID_HIGHLIGHTS_FLOATING} {
+    background: #333333 !important;
+    border-color: white !important;
+}
+*/
+:root[style*="readium-night-on"] > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > #${exports.ID_HIGHLIGHTS_FLOATING} {
+    background: var(--RS__backgroundColor) !important;
+    color: var(--RS__textColor) !important;
+    border-color: var(--RS__textColor) !important;
+    box-shadow: 0px 0px 4px 0px var(--RS__textColor);
+}
+:root[style*="readium-sepia-on"] > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > #${exports.ID_HIGHLIGHTS_FLOATING} {
+    background: var(--RS__backgroundColor) !important;
+    color: var(--RS__textColor) !important;
+    border-color: var(--RS__textColor) !important;
+    box-shadow: 0px 0px 4px 0px var(--RS__textColor);
+}
+:root[style*="--USER__backgroundColor"] > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > #${exports.ID_HIGHLIGHTS_FLOATING} {
+    background: var(--USER__backgroundColor) !important;
+}
+:root[style*="--USER__textColor"] > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > #${exports.ID_HIGHLIGHTS_FLOATING} {
+    color: var(--USER__textColor) !important;
+    border-color: var(--USER__textColor) !important;
+    box-shadow: 0px 0px 4px 0px var(--USER__textColor);
+}
+
+/*
+:root[style] > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > #${exports.ID_HIGHLIGHTS_FLOATING}_,
+:root > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > #${exports.ID_HIGHLIGHTS_FLOATING}_
+{
+z-index: 1000 !important;
+opacity: 0.5 !important;
+pointer-events: none !important;
+}
+*/
 
 :root[style] > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > .${exports.CLASS_HIGHLIGHT_CONTAINER}.${exports.CLASS_HIGHLIGHT_MARGIN}:not(${hover}) > svg.${exports.CLASS_HIGHLIGHT_CONTOUR},
 :root > body > #${exports.ID_HIGHLIGHTS_CONTAINER} > .${exports.CLASS_HIGHLIGHT_CONTAINER}.${exports.CLASS_HIGHLIGHT_MARGIN}:not(${hover}) > svg.${exports.CLASS_HIGHLIGHT_CONTOUR}
@@ -1052,7 +1192,7 @@ We cannot completely disable "scroll" event (prevent default) because we need to
 
 :root[style]:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}):not(.${exports.CLASS_VWM}),
 :root:not(.${exports.CLASS_PAGINATED}):not(.${exports.ROOT_CLASS_FIXED_LAYOUT}):not(.${exports.CLASS_VWM}) {
-    /* overflow-x: clip !important; */
+    overflow-x: clip !important;
 
     padding: 0 !important;
     margin: 0 !important;

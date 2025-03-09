@@ -22,6 +22,12 @@ export interface IHighlight {
     expand?: number;
     group: string | undefined;
     marginText?: string;
+    textPopup?: ITextPopup;
+}
+export interface ITextPopup {
+    text: string;
+    dir?: "ltr" | "rtl";
+    lang?: string;
 }
 export interface IHighlightDefinition {
     selectionInfo: ISelectionInfo | undefined;
@@ -31,5 +37,6 @@ export interface IHighlightDefinition {
     expand?: number;
     group: string | undefined;
     marginText?: string;
+    textPopup?: ITextPopup;
 }
 export declare function convertColorHexadecimalToRGBA(cssHex: string, alpha?: number): string | undefined;

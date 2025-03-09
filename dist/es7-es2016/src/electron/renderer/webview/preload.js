@@ -2580,9 +2580,9 @@ const computeProgressionData = () => {
         percentRatio: progressionRatio,
     };
 };
-const _blacklistIdClassForCssSelectors = [styles_2.EXTRA_COLUMN_PAD_ID, styles_2.LINK_TARGET_CLASS, styles_2.LINK_TARGET_ALT_CLASS, styles_2.CSS_CLASS_NO_FOCUS_OUTLINE, styles_2.SKIP_LINK_ID, styles_2.POPUP_DIALOG_CLASS, styles_2.ID_HIGHLIGHTS_CONTAINER, styles_2.CLASS_HIGHLIGHT_CONTAINER, styles_2.CLASS_HIGHLIGHT_CONTOUR, styles_2.CLASS_HIGHLIGHT_CONTOUR_MARGIN, styles_2.TTS_ID_SPEAKING_DOC_ELEMENT, styles_2.ROOT_CLASS_KEYBOARD_INTERACT, styles_2.ROOT_CLASS_INVISIBLE_MASK, styles_2.ROOT_CLASS_INVISIBLE_MASK_REMOVED, styles_2.CLASS_PAGINATED, styles_2.ROOT_CLASS_NO_FOOTNOTES, styles_2.ROOT_CLASS_NO_RUBY];
+const _blacklistIdClassForCssSelectors = [styles_2.EXTRA_COLUMN_PAD_ID, styles_2.LINK_TARGET_CLASS, styles_2.LINK_TARGET_ALT_CLASS, styles_2.CSS_CLASS_NO_FOCUS_OUTLINE, styles_2.SKIP_LINK_ID, styles_2.POPUP_DIALOG_CLASS, styles_2.ID_HIGHLIGHTS_CONTAINER, styles_1.ID_HIGHLIGHTS_FLOATING, styles_1.ID_HIGHLIGHTS_FLOATING + "_", styles_2.CLASS_HIGHLIGHT_CONTAINER, styles_2.CLASS_HIGHLIGHT_CONTOUR, styles_2.CLASS_HIGHLIGHT_CONTOUR_MARGIN, styles_2.TTS_ID_SPEAKING_DOC_ELEMENT, styles_2.ROOT_CLASS_KEYBOARD_INTERACT, styles_2.ROOT_CLASS_INVISIBLE_MASK, styles_2.ROOT_CLASS_INVISIBLE_MASK_REMOVED, styles_2.CLASS_PAGINATED, styles_2.ROOT_CLASS_NO_FOOTNOTES, styles_2.ROOT_CLASS_NO_RUBY];
 const _blacklistIdClassForCssSelectorsMathJax = ["mathjax", "ctxt", "mjx", "r2-wbr"];
-const _blacklistIdClassForCFI = [styles_2.EXTRA_COLUMN_PAD_ID, styles_2.SKIP_LINK_ID, styles_2.POPUP_DIALOG_CLASS, styles_2.ID_HIGHLIGHTS_CONTAINER, styles_2.CLASS_HIGHLIGHT_CONTAINER, styles_2.CLASS_HIGHLIGHT_CONTOUR, styles_2.CLASS_HIGHLIGHT_CONTOUR_MARGIN];
+const _blacklistIdClassForCFI = [styles_2.EXTRA_COLUMN_PAD_ID, styles_2.SKIP_LINK_ID, styles_2.POPUP_DIALOG_CLASS, styles_2.ID_HIGHLIGHTS_CONTAINER, styles_1.ID_HIGHLIGHTS_FLOATING, styles_1.ID_HIGHLIGHTS_FLOATING + "_", styles_2.CLASS_HIGHLIGHT_CONTAINER, styles_2.CLASS_HIGHLIGHT_CONTOUR, styles_2.CLASS_HIGHLIGHT_CONTOUR_MARGIN];
 const _blacklistIdClassForCFIMathJax = ["mathjax", "ctxt", "mjx", "r2-wbr"];
 const computeCFI = (node) => {
     if (node.nodeType !== Node.ELEMENT_NODE) {
@@ -2837,6 +2837,7 @@ const findPrecedingAncestorSiblingEpubPageBreak = (element) => {
                     group: highlight_2.HIGHLIGHT_GROUP_PAGEBREAK,
                     range,
                     marginText: pageBreak.text ? pageBreak.text : undefined,
+                    textPopup: undefined,
                 });
             }
             (0, highlight_2.createHighlights)(win, highlightDefinitions, true);
@@ -2880,7 +2881,7 @@ const findFollowingDescendantSiblingElementsWithID = (el) => {
             const elPopupDialog = win.document.getElementById(styles_2.POPUP_DIALOG_CLASS);
             const elSkipLink = styles_1.ENABLE_SKIP_LINK ? win.document.getElementById(styles_2.SKIP_LINK_ID) : null;
             const elPad = win.document.getElementById(styles_2.EXTRA_COLUMN_PAD_ID);
-            _elementsWithID = Array.from(win.document.querySelectorAll(`*:not(#${styles_2.ID_HIGHLIGHTS_CONTAINER}):not(#${styles_2.POPUP_DIALOG_CLASS}):not(#${styles_2.EXTRA_COLUMN_PAD_ID}):not(#${styles_2.SKIP_LINK_ID}) *[id]:not(#${styles_2.ID_HIGHLIGHTS_CONTAINER}):not(#${styles_2.POPUP_DIALOG_CLASS}):not(#${styles_2.EXTRA_COLUMN_PAD_ID}):not(#${styles_2.SKIP_LINK_ID})`));
+            _elementsWithID = Array.from(win.document.querySelectorAll(`*:not(#${styles_2.ID_HIGHLIGHTS_CONTAINER}):not(#${styles_1.ID_HIGHLIGHTS_FLOATING}):not(#${styles_1.ID_HIGHLIGHTS_FLOATING}_):not(#${styles_2.POPUP_DIALOG_CLASS}):not(#${styles_2.EXTRA_COLUMN_PAD_ID}):not(#${styles_2.SKIP_LINK_ID}) *[id]:not(#${styles_2.ID_HIGHLIGHTS_CONTAINER}):not(#${styles_1.ID_HIGHLIGHTS_FLOATING}):not(#${styles_1.ID_HIGHLIGHTS_FLOATING}_):not(#${styles_2.POPUP_DIALOG_CLASS}):not(#${styles_2.EXTRA_COLUMN_PAD_ID}):not(#${styles_2.SKIP_LINK_ID})`));
             for (let i = 0; i < _elementsWithID.length; i++) {
                 const elementWithID = _elementsWithID[i];
                 const id = elementWithID.id || elementWithID.getAttribute("id");
