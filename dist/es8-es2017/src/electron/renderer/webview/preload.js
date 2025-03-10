@@ -1255,6 +1255,10 @@ win.addEventListener("DOMContentLoaded", () => {
     win.READIUM2.ttsOverlayEnabled = false;
     let readiumcssJson;
     if (win.READIUM2.urlQueryParams) {
+        const publicationHasMediaOverlays = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_EPUBMEDIAOVERLAYS] === "1";
+        if (publicationHasMediaOverlays) {
+            win.document.documentElement.classList.add(styles_2.R2_MO_CLASS_STOPPED);
+        }
         const base64ReadiumCSS = win.READIUM2.urlQueryParams[url_params_1.URL_PARAM_CSS];
         if (base64ReadiumCSS) {
             let str;
@@ -2874,7 +2878,9 @@ const MAX_FOLLOWING_ELEMENTS_IDS = 100;
 let _elementsWithID;
 const findFollowingDescendantSiblingElementsWithID = (el) => {
     let followingElementIDs;
-    if (win.document.documentElement.classList.contains(styles_2.R2_MO_CLASS_PLAYING) || win.document.documentElement.classList.contains(styles_2.R2_MO_CLASS_PAUSED) || win.document.documentElement.classList.contains(styles_2.R2_MO_CLASS_STOPPED)) {
+    if (win.document.documentElement.classList.contains(styles_2.R2_MO_CLASS_PLAYING) ||
+        win.document.documentElement.classList.contains(styles_2.R2_MO_CLASS_PAUSED) ||
+        win.document.documentElement.classList.contains(styles_2.R2_MO_CLASS_STOPPED)) {
         if (!_elementsWithID) {
             const elHighlightsContainer = win.document.getElementById(styles_2.ID_HIGHLIGHTS_CONTAINER);
             const elPopupDialog = win.document.getElementById(styles_2.POPUP_DIALOG_CLASS);

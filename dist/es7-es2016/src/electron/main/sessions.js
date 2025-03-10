@@ -315,6 +315,7 @@ const transformerHttpBaseIframes = (_publication, link, url, htmlStr, _sessionIn
     }
     const url_ = new URL(urlHttp);
     const r2CSS = url_.searchParams.get(url_params_1.URL_PARAM_CSS);
+    const r2isMO = url_.searchParams.get(url_params_1.URL_PARAM_EPUBMEDIAOVERLAYS);
     const r2ERS = url_.searchParams.get(url_params_1.URL_PARAM_EPUBREADINGSYSTEM);
     const r2DEBUG = url_.searchParams.get(url_params_1.URL_PARAM_DEBUG_VISUALS);
     const r2A11YSUPPORTENABLED = url_.searchParams.get(url_params_1.URL_PARAM_A11Y_SUPPORT_ENABLED);
@@ -354,6 +355,9 @@ const transformerHttpBaseIframes = (_publication, link, url, htmlStr, _sessionIn
         }
         if (r2CSS) {
             iframeUrl.searchParams.append(url_params_1.URL_PARAM_CSS, r2CSS);
+        }
+        if (r2isMO) {
+            iframeUrl.searchParams.append(url_params_1.URL_PARAM_EPUBMEDIAOVERLAYS, r2isMO);
         }
         if (r2WEBVIEWSLOT) {
             iframeUrl.searchParams.append(url_params_1.URL_PARAM_WEBVIEW_SLOT, r2WEBVIEWSLOT);

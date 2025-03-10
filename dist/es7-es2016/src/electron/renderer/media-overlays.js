@@ -137,6 +137,10 @@ function playMediaOverlays(textHref, rootMo, textFragmentIDChain, isInteract) {
                 debug("playMediaOverlays() - findDepthFirstTextAudioPair() SECOND CHANCE FALLBACK...");
                 moTextAudioPair = findDepthFirstTextAudioPair(textHref, rootMo, textFragmentIDChain_, true);
             }
+            if (!moTextAudioPair && !isInteract) {
+                debug("playMediaOverlays() - findDepthFirstTextAudioPair() THIRD CHANCE FALLBACK...");
+                moTextAudioPair = findDepthFirstTextAudioPair(textHref, rootMo, undefined, false);
+            }
         }
         if (moTextAudioPair) {
             if (moTextAudioPair.Audio || moTextAudioPair.Video) {
@@ -167,7 +171,9 @@ const ontimeupdate = (ev) => tslib_1.__awaiter(void 0, void 0, void 0, function*
         _currentAudioElement.style.display = "block";
     }
     const currentAudioElement = ev.currentTarget;
-    if (_currentAudioEnd && currentAudioElement.currentTime >= (_currentAudioEnd - 0.05)) {
+    if (_currentAudioEnd && currentAudioElement.currentTime >= (_currentAudioEnd - 0.05)
+        ||
+            !_currentAudioEnd && ev.type === "ended") {
         if (IS_DEV) {
             debug("ontimeupdate - mediaOverlaysNext()");
         }
@@ -185,12 +191,14 @@ const ensureOnTimeUpdate = (remove) => {
             if (_currentAudioElement.__ontimeupdate) {
                 _currentAudioElement.__ontimeupdate = false;
                 _currentAudioElement.removeEventListener("timeupdate", ontimeupdate);
+                _currentAudioElement.removeEventListener("ended", ontimeupdate);
             }
         }
         else {
             if (!_currentAudioElement.__ontimeupdate) {
                 _currentAudioElement.__ontimeupdate = true;
                 _currentAudioElement.addEventListener("timeupdate", ontimeupdate);
+                _currentAudioElement.addEventListener("ended", ontimeupdate);
             }
         }
     }
@@ -318,7 +326,7 @@ function ensureVideoFrameDraggable() {
 function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
     return tslib_1.__awaiter(this, void 0, void 0, function* () {
         if (IS_DEV) {
-            debug("playMediaOverlaysAudio()");
+            debug("playMediaOverlaysAudio()", begin, end, moTextAudioPair.Audio, moTextAudioPair.AudioClipBegin, moTextAudioPair.AudioClipEnd);
         }
         ensureKillAutoNextTimeout();
         _mediaOverlayActive = true;
@@ -351,19 +359,29 @@ function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
                 const matches = urlObjFull.hash.match(/t=([0-9\.]+)(,([0-9\.]+))?/);
                 if (matches && matches.length >= 1) {
                     const b = matches[1];
-                    try {
-                        _currentAudioBegin = parseFloat(b);
-                    }
-                    catch (err) {
-                        debug(err);
-                    }
-                    if (matches.length >= 3) {
-                        const e = matches[3];
+                    if (b) {
                         try {
-                            _currentAudioEnd = parseFloat(e);
+                            _currentAudioBegin = parseFloat(b);
                         }
                         catch (err) {
                             debug(err);
+                        }
+                    }
+                    if (typeof _currentAudioBegin !== "undefined" && isNaN(_currentAudioBegin)) {
+                        _currentAudioBegin = undefined;
+                    }
+                    if (matches.length >= 3) {
+                        const e = matches[3];
+                        if (e) {
+                            try {
+                                _currentAudioEnd = parseFloat(e);
+                            }
+                            catch (err) {
+                                debug(err);
+                            }
+                        }
+                        if (typeof _currentAudioEnd !== "undefined" && isNaN(_currentAudioEnd)) {
+                            _currentAudioEnd = undefined;
                         }
                     }
                 }
@@ -374,7 +392,7 @@ function playMediaOverlaysAudio(moTextAudioPair, begin, end) {
             _currentAudioEnd = end;
         }
         if (IS_DEV) {
-            debug(`${urlFull} => [${_currentAudioBegin}-${_currentAudioEnd}]`);
+            debug(`playMediaOverlaysAudio() ${urlFull} => [${_currentAudioBegin}-${_currentAudioEnd}]`);
         }
         const playClip = (initial) => tslib_1.__awaiter(this, void 0, void 0, function* () {
             if (!_currentAudioElement) {
@@ -743,7 +761,7 @@ function findPreviousTextAudioPair(mo, moToMatch, previousMo) {
 function findDepthFirstTextAudioPair(textHref, mo, textFragmentIDChain, allowFallbackSeek) {
     var _a;
     if (audiobook_1.DEBUG_AUDIO) {
-        debug("findDepthFirstTextAudioPair()");
+        debug("findDepthFirstTextAudioPair()", textFragmentIDChain);
     }
     const isSkip = _mediaOverlaySkippabilityIsEnabled && isSkippable(mo);
     let isTextUrlMatch;
@@ -772,10 +790,10 @@ function findDepthFirstTextAudioPair(textHref, mo, textFragmentIDChain, allowFal
         debug("isFragmentIDMatch: " + isFragmentIDMatch);
         debug("isTextUrlMatch: " + isTextUrlMatch);
     }
-    const isLeaf = (_a = mo.Children) === null || _a === void 0 ? void 0 : _a.length;
-    if (!isLeaf) {
+    const hasChildren = (_a = mo.Children) === null || _a === void 0 ? void 0 : _a.length;
+    if (!hasChildren) {
         if (audiobook_1.DEBUG_AUDIO) {
-            debug("findDepthFirstTextAudioPair() - leaf text/audio pair");
+            debug("findDepthFirstTextAudioPair() - leaf text/audio pair", isFragmentIDMatch, isTextUrlMatch, textFragmentIDChain);
         }
         if (!isTextUrlMatch) {
             if (audiobook_1.DEBUG_AUDIO) {

@@ -489,6 +489,7 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
                 data[url_params_1.URL_PARAM_GOTO] = undefined;
                 data[url_params_1.URL_PARAM_GOTO_DOM_RANGE] = undefined;
                 data[url_params_1.URL_PARAM_CSS] = undefined;
+                data[url_params_1.URL_PARAM_EPUBMEDIAOVERLAYS] = undefined;
                 data[url_params_1.URL_PARAM_EPUBREADINGSYSTEM] = undefined;
                 data[url_params_1.URL_PARAM_DEBUG_VISUALS] = undefined;
                 data[url_params_1.URL_PARAM_A11Y_SUPPORT_ENABLED] = undefined;
@@ -706,6 +707,7 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
             data[url_params_1.URL_PARAM_GOTO] = undefined;
             data[url_params_1.URL_PARAM_GOTO_DOM_RANGE] = undefined;
             data[url_params_1.URL_PARAM_CSS] = undefined;
+            data[url_params_1.URL_PARAM_EPUBMEDIAOVERLAYS] = undefined;
             data[url_params_1.URL_PARAM_EPUBREADINGSYSTEM] = undefined;
             data[url_params_1.URL_PARAM_DEBUG_VISUALS] = undefined;
             data[url_params_1.URL_PARAM_A11Y_SUPPORT_ENABLED] = undefined;
@@ -737,6 +739,7 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
         const rersJsonstrBase64 = Buffer.from(rersJsonstr).toString("base64");
         hrefToLoadHttpUri.search((data) => {
             data[url_params_1.URL_PARAM_CSS] = rcssJsonstrBase64;
+            data[url_params_1.URL_PARAM_EPUBMEDIAOVERLAYS] = win.READIUM2.publication ? ((0, media_overlays_1.publicationHasMediaOverlays)(win.READIUM2.publication) ? "1" : "0") : "0";
             data[url_params_1.URL_PARAM_EPUBREADINGSYSTEM] = rersJsonstrBase64;
             data[url_params_1.URL_PARAM_DEBUG_VISUALS] = (IS_DEV &&
                 win.READIUM2.DEBUG_VISUALS) ?
