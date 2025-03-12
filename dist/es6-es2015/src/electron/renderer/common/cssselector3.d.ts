@@ -9,4 +9,4 @@ export type Options = {
     threshold: number;
     maxNumberOfTries: number;
 };
-export declare function uniqueCssSelector(input: Element, doc: Document, options?: Partial<Options>): string;
+export declare function uniqueCssSelector(input: Element, doc: Document, options?: Partial<Options>): any;

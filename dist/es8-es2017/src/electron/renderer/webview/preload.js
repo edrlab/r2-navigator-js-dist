@@ -29,6 +29,7 @@ const readaloud_1 = require("./readaloud");
 const readium_css_1 = require("./readium-css");
 const selection_2 = require("./selection");
 const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
+const DEBUG_TRACE = true && IS_DEV;
 if (IS_DEV) {
     const cr = require("../common/console-redirect");
     cr.consoleRedirect("r2:navigator#electron/renderer/webview/preload", process.stdout, process.stderr, true);
@@ -100,6 +101,8 @@ win.prompt = (...args) => {
 };
 const CSS_PIXEL_TOLERANCE = 5;
 (0, selection_2.setSelectionChangeAction)(win, () => {
+    if (DEBUG_TRACE)
+        debug("setSelectionChangeAction: notifyReadingLocationDebounced()...");
     notifyReadingLocationDebounced(true, false, true);
 });
 const TOUCH_SWIPE_DELTA_MIN = 80;
@@ -285,6 +288,10 @@ if (IS_DEV) {
     });
 }
 function isVisible(allowPartial, element, domRect) {
+    if (DEBUG_TRACE)
+        debug("isVisible:", getCssSelector(element), allowPartial);
+    if (DEBUG_TRACE && domRect)
+        debug("isVisible domRect:", domRect.x, domRect.y, domRect.width, domRect.height);
     if (win.READIUM2.isFixedLayout) {
         return true;
     }
@@ -292,6 +299,8 @@ function isVisible(allowPartial, element, domRect) {
         return false;
     }
     if (element === win.document.body || element === win.document.documentElement) {
+        if (DEBUG_TRACE)
+            debug("isVisible: HTML BODY always true");
         return true;
     }
     const blacklisted = checkBlacklisted(element);
@@ -351,14 +360,20 @@ function isVisible(allowPartial, element, domRect) {
     }
     if (scrollLeftPotentiallyExcessive[0] >= (currentOffset - 10) &&
         scrollLeftPotentiallyExcessive[0] <= (currentOffset + 10)) {
+        if (DEBUG_TRACE)
+            debug("isVisible TRUE (!!!allowPartial)", scrollLeftPotentiallyExcessive[0], scrollLeftPotentiallyExcessive[1], currentOffset);
         return true;
     }
     if (allowPartial) {
         if (scrollLeftPotentiallyExcessive[1] >= (currentOffset - 10) &&
             scrollLeftPotentiallyExcessive[1] <= (currentOffset + 10)) {
+            if (DEBUG_TRACE)
+                debug("isVisible TRUE (allowPartial)", scrollLeftPotentiallyExcessive[0], scrollLeftPotentiallyExcessive[1], currentOffset);
             return true;
         }
     }
+    if (DEBUG_TRACE)
+        debug("isVisible FALSE", scrollLeftPotentiallyExcessive[0], scrollLeftPotentiallyExcessive[1], currentOffset);
     return false;
 }
 function isVisible_(location) {
@@ -394,6 +409,8 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_LOCATOR_VISIBLE, (_event, payload, e
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_LOCATOR_VISIBLE, payload, eventID);
 });
 electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, (_event, payload) => {
+    if (DEBUG_TRACE)
+        debug("R2_EVENT_SCROLLTO");
     if (win.READIUM2.isAudio) {
         return;
     }
@@ -436,11 +453,14 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, (_event, payload) => {
     if (win.READIUM2.isFixedLayout) {
         win.READIUM2.locationHashOverride = win.document.body;
         resetLocationHashOverrideInfo();
-        debug("processXYRaw BODY1");
         const isVWM = (0, readium_css_1.isVerticalWritingMode)();
         const x = ((isVWM || (0, readium_css_1.isRTL)()) ? win.document.documentElement.clientWidth - 2 : 1);
         const y = 1;
+        if (DEBUG_TRACE)
+            debug("R2_EVENT_SCROLLTO: processXYRaw()...");
         processXYRaw(x, y, false, false);
+        if (DEBUG_TRACE)
+            debug("R2_EVENT_SCROLLTO: notifyReadingLocationDebounced()...");
         notifyReadingLocationDebounced();
         return;
     }
@@ -473,12 +493,14 @@ electron_1.ipcRenderer.on(events_1.R2_EVENT_SCROLLTO, (_event, payload) => {
     resetLocationHashOverrideInfo();
     if (delayScrollIntoView) {
         setTimeout(() => {
-            debug("++++ scrollToHashRaw FROM DELAYED SCROLL_TO");
+            if (DEBUG_TRACE)
+                debug("R2_EVENT_SCROLLTO: delayScrollIntoView + scrollToHashRaw()...");
             scrollToHashRaw(false, true);
         }, 100);
     }
     else {
-        debug("++++ scrollToHashRaw FROM SCROLL_TO");
+        if (DEBUG_TRACE)
+            debug("R2_EVENT_SCROLLTO: !delayScrollIntoView + scrollToHashRaw()...");
         scrollToHashRaw(false, true);
     }
 });
@@ -597,6 +619,8 @@ function ensureTwoPageSpreadWithOddColumnsIsOffset(scrollOffset, maxScrollShift)
     });
 }
 function onEventPageTurn(payload) {
+    if (DEBUG_TRACE)
+        debug("onEventPageTurn");
     let leftRightKeyWasUsedInsideKeyboardCapture = false;
     if (win.document.activeElement &&
         elementCapturesKeyboardArrowKeys(win.document.activeElement)) {
@@ -672,12 +696,16 @@ function onEventPageTurn(payload) {
                 const targetProp = isVWM ? "scrollTop" : "scrollLeft";
                 if (reduceMotion) {
                     _lastAnimState = undefined;
+                    if (DEBUG_TRACE)
+                        debug("onEventPageTurn: !goPREVIOUS + isPaged + reduceMotion + scroll?...");
                     targetObj[targetProp] = scrollOffset;
                 }
                 else {
                     _ignoreScrollEvent = true;
                     _lastAnimState = (0, animateProperty_1.animateProperty)(win.cancelAnimationFrame, (_cancelled) => {
                         _ignoreScrollEvent = false;
+                        if (DEBUG_TRACE)
+                            debug("onEventPageTurn: !goPREVIOUS + isPaged + !reduceMotion + onScrollDebounced()...");
                         onScrollDebounced();
                     }, targetProp, animationTime, targetObj, scrollOffset, win.requestAnimationFrame, easings_1.easings.easeInOutQuad);
                 }
@@ -696,12 +724,16 @@ function onEventPageTurn(payload) {
                 const targetProp = isVWM ? "scrollLeft" : "scrollTop";
                 if (reduceMotion) {
                     _lastAnimState = undefined;
+                    if (DEBUG_TRACE)
+                        debug("onEventPageTurn: !goPREVIOUS + !isPaged + reduceMotion + scroll?...");
                     targetObj[targetProp] = newVal;
                 }
                 else {
                     _ignoreScrollEvent = true;
                     _lastAnimState = (0, animateProperty_1.animateProperty)(win.cancelAnimationFrame, (_cancelled) => {
                         _ignoreScrollEvent = false;
+                        if (DEBUG_TRACE)
+                            debug("onEventPageTurn: !goPREVIOUS + !isPaged + !reduceMotion + onScrollDebounced()...");
                         onScrollDebounced();
                     }, targetProp, animationTime, targetObj, newVal, win.requestAnimationFrame, easings_1.easings.easeInOutQuad);
                 }
@@ -743,12 +775,16 @@ function onEventPageTurn(payload) {
                 const targetProp = isVWM ? "scrollTop" : "scrollLeft";
                 if (reduceMotion) {
                     _lastAnimState = undefined;
+                    if (DEBUG_TRACE)
+                        debug("onEventPageTurn: goPREVIOUS + isPaged + reduceMotion + scroll?...");
                     targetObj[targetProp] = scrollOffset;
                 }
                 else {
                     _ignoreScrollEvent = true;
                     _lastAnimState = (0, animateProperty_1.animateProperty)(win.cancelAnimationFrame, (_cancelled) => {
                         _ignoreScrollEvent = false;
+                        if (DEBUG_TRACE)
+                            debug("onEventPageTurn: goPREVIOUS + isPaged + !reduceMotion + onScrollDebounced()...");
                         onScrollDebounced();
                     }, targetProp, animationTime, targetObj, scrollOffset, win.requestAnimationFrame, easings_1.easings.easeInOutQuad);
                 }
@@ -767,12 +803,16 @@ function onEventPageTurn(payload) {
                 const targetProp = isVWM ? "scrollLeft" : "scrollTop";
                 if (reduceMotion) {
                     _lastAnimState = undefined;
+                    if (DEBUG_TRACE)
+                        debug("onEventPageTurn: goPREVIOUS + !isPaged + reduceMotion + scroll?...");
                     targetObj[targetProp] = newVal;
                 }
                 else {
                     _ignoreScrollEvent = true;
                     _lastAnimState = (0, animateProperty_1.animateProperty)(win.cancelAnimationFrame, (_cancelled) => {
                         _ignoreScrollEvent = false;
+                        if (DEBUG_TRACE)
+                            debug("onEventPageTurn: goPREVIOUS + !isPaged + !reduceMotion + onScrollDebounced()...");
                         onScrollDebounced();
                     }, targetProp, animationTime, targetObj, newVal, win.requestAnimationFrame, easings_1.easings.easeInOutQuad);
                 }
@@ -785,14 +825,28 @@ function onEventPageTurn(payload) {
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_PAGE_TURN_RES, payload);
 }
 electron_1.ipcRenderer.on(events_1.R2_EVENT_PAGE_TURN, (_event, payload) => {
+    if (DEBUG_TRACE)
+        debug("R2_EVENT_PAGE_TURN");
+    focusScrollDebounced.clear();
+    processXYDebouncedImmediate.clear();
+    notifyReadingLocationDebounced.clear();
+    notifyReadingLocationDebouncedImmediate.clear();
+    scrollToHashDebounced.clear();
+    onScrollDebounced.clear();
+    handleFocusInDebounced.clear();
     setTimeout(() => {
+        if (DEBUG_TRACE)
+            debug("R2_EVENT_PAGE_TURN: onEventPageTurn()...");
         onEventPageTurn(payload);
     }, 100);
 });
 function focusElement(element, preventScroll) {
+    if (DEBUG_TRACE)
+        debug("focusElement", getCssSelector(element));
     if (preventScroll &&
         (element === win.document.activeElement)) {
-        debug("KEYBOARD FOCUS REQUEST (1) already FOCUSSED, skip");
+        if (DEBUG_TRACE)
+            debug("focusElement: preventScroll && document.activeElement");
         return;
     }
     if (element === win.document.body || !(0, tabbable_1.isFocusable)(element)) {
@@ -800,25 +854,24 @@ function focusElement(element, preventScroll) {
         if (!attr) {
             element.setAttribute("tabindex", "-1");
             element.classList.add(styles_2.CSS_CLASS_NO_FOCUS_OUTLINE);
-            if (IS_DEV) {
-                debug("tabindex -1 set (focusable):");
-                debug(getCssSelector(element));
-            }
+            if (DEBUG_TRACE)
+                debug("focusElement: tabindex -1");
         }
     }
     if (element === win.document.body) {
-        debug("KEYBOARD FOCUS REQUEST (1) --> BODY");
+        if (DEBUG_TRACE)
+            debug("focusElement: body, preventScroll");
         element.focus({ preventScroll: true });
     }
     else {
-        debug("KEYBOARD FOCUS REQUEST (1) --> not BODY", preventScroll);
+        if (DEBUG_TRACE)
+            debug("focusElement: !body, preventScroll?", preventScroll);
         element.focus({ preventScroll });
-    }
-    if (IS_DEV) {
-        debug("KEYBOARD FOCUS REQUEST (1) ", getCssSelector(element));
     }
 }
 const tempLinkTargetOutline = (element, time, alt) => {
+    if (DEBUG_TRACE)
+        debug("tempLinkTargetOutline", getCssSelector(element));
     if (win.document.documentElement.classList.contains(styles_1.DISABLE_TEMPORARY_NAV_TARGET_OUTLINE_CLASS)
         ||
             win.document.documentElement.classList.contains(styles_2.TTS_CLASS_PLAYING)
@@ -851,7 +904,6 @@ const tempLinkTargetOutline = (element, time, alt) => {
         element._timeoutTargetClass = undefined;
     }
     element._timeoutTargetClass = setTimeout(() => {
-        debug("ANIMATION TIMEOUT REMOVE");
         element.classList.remove(styles_2.LINK_TARGET_CLASS);
         element.classList.remove(styles_2.LINK_TARGET_ALT_CLASS);
     }, time);
@@ -859,6 +911,8 @@ const tempLinkTargetOutline = (element, time, alt) => {
 let _lastAnimState2;
 const animationTime2 = 400;
 function scrollElementIntoView(element, doFocus, animate, domRect, center) {
+    if (DEBUG_TRACE)
+        debug("scrollElementIntoView", getCssSelector(element));
     if (win.READIUM2.DEBUG_VISUALS) {
         const existings = win.document.querySelectorAll(`*[${styles_2.readPosCssStylesAttr3}]`);
         existings.forEach((existing) => {
@@ -867,23 +921,29 @@ function scrollElementIntoView(element, doFocus, animate, domRect, center) {
         element.setAttribute(styles_2.readPosCssStylesAttr3, "scrollElementIntoView");
     }
     if (win.READIUM2.isFixedLayout) {
-        debug("scrollElementIntoView_ SKIP FXL");
+        if (DEBUG_TRACE)
+            debug("scrollElementIntoView: isFixedLayout");
         return;
     }
     if (doFocus) {
         tempLinkTargetOutline(element, 2000, false);
+        if (DEBUG_TRACE)
+            debug("scrollElementIntoView: doFocus + focusElement()");
         focusElement(element, !!domRect);
     }
     setTimeout(() => {
         const isPaged = (0, readium_css_inject_1.isPaginated)(win.document);
         if (isPaged) {
+            if (DEBUG_TRACE)
+                debug("scrollElementIntoView: isPaged + scrollIntoView()");
             scrollIntoView(element, domRect);
         }
         else {
             const scrollElement = (0, readium_css_1.getScrollingElement)(win.document);
             const rect = domRect || element.getBoundingClientRect();
             if (!center && isVisible(false, element, domRect)) {
-                console.log("scrollElementIntoView already visible");
+                if (DEBUG_TRACE)
+                    debug("scrollElementIntoView: !center && isVisible");
             }
             else {
                 const isVWM = (0, readium_css_1.isVerticalWritingMode)();
@@ -923,17 +983,23 @@ function scrollElementIntoView(element, doFocus, animate, domRect, center) {
                     const targetObj = scrollElement;
                     if (reduceMotion) {
                         _lastAnimState2 = undefined;
+                        if (DEBUG_TRACE)
+                            debug("scrollElementIntoView: animate + reduceMotion + scroll?...");
                         targetObj[targetProp] = offset;
                     }
                     else {
                         _ignoreScrollEvent = true;
                         _lastAnimState2 = (0, animateProperty_1.animateProperty)(win.cancelAnimationFrame, (_cancelled) => {
                             _ignoreScrollEvent = false;
+                            if (DEBUG_TRACE)
+                                debug("scrollElementIntoView: animate + !reduceMotion + onScrollDebounced()...");
                             onScrollDebounced();
                         }, targetProp, animationTime2, targetObj, offset, win.requestAnimationFrame, easings_1.easings.easeInOutQuad);
                     }
                 }
                 else {
+                    if (DEBUG_TRACE)
+                        debug("scrollElementIntoView: !animate + scroll?...");
                     scrollElement[targetProp] = offset;
                 }
             }
@@ -976,23 +1042,34 @@ function scrollIntoView(element, domRect) {
     scrollElement.scrollLeft = scrollOffset;
 }
 const scrollToHashRaw = (animate, skipRedraw) => {
+    if (DEBUG_TRACE)
+        debug("scrollToHashRaw");
     if (!win.document || !win.document.body || !win.document.documentElement) {
         return;
     }
     if (!skipRedraw) {
+        if (DEBUG_TRACE)
+            debug("scrollToHashRaw: recreateAllHighlightsRaw()...");
         (0, highlight_2.recreateAllHighlightsRaw)(win);
     }
-    debug("++++ scrollToHashRaw");
     const isPaged = (0, readium_css_inject_1.isPaginated)(win.document);
     const isVWM = (0, readium_css_1.isVerticalWritingMode)();
     if (win.READIUM2.locationHashOverride) {
+        if (DEBUG_TRACE)
+            debug("scrollToHashRaw: locationHashOverride + scrollElementIntoView()...");
         scrollElementIntoView(win.READIUM2.locationHashOverride, true, animate, undefined);
+        if (DEBUG_TRACE)
+            debug("scrollToHashRaw: locationHashOverride + notifyReadingLocationDebounced()...");
         notifyReadingLocationDebounced();
         return;
     }
     else if (win.READIUM2.hashElement) {
         win.READIUM2.locationHashOverride = win.READIUM2.hashElement;
+        if (DEBUG_TRACE)
+            debug("scrollToHashRaw: hashElement + scrollElementIntoView()...");
         scrollElementIntoView(win.READIUM2.hashElement, true, animate, undefined);
+        if (DEBUG_TRACE)
+            debug("scrollToHashRaw: hashElement + notifyReadingLocationDebounced()...");
         notifyReadingLocationDebounced();
         return;
     }
@@ -1032,9 +1109,13 @@ const scrollToHashRaw = (animate, skipRedraw) => {
                 setTimeout(() => {
                     const x = ((isVWM || (0, readium_css_1.isRTL)()) ? win.document.documentElement.clientWidth - 2 : 1);
                     const y = 1;
+                    if (DEBUG_TRACE)
+                        debug("scrollToHashRaw: urlQueryParams + isPreviousNavDirection + processXYRaw()...");
                     processXYRaw(x, y, false, false);
                     showHideContentMask(false, win.READIUM2.isFixedLayout);
                     if (!win.READIUM2.locationHashOverride) {
+                        if (DEBUG_TRACE)
+                            debug("scrollToHashRaw: urlQueryParams + isPreviousNavDirection + notifyReadingLocationDebounced()...");
                         notifyReadingLocationDebounced();
                     }
                     setTimeout(() => {
@@ -1085,7 +1166,11 @@ const scrollToHashRaw = (animate, skipRedraw) => {
                             debug("gtoDomRange", err);
                         }
                     }
+                    if (DEBUG_TRACE)
+                        debug("scrollToHashRaw: urlQueryParams + gotoCssSelector + scrollElementIntoView()...");
                     scrollElementIntoView(selected, true, animate, domRect);
+                    if (DEBUG_TRACE)
+                        debug("scrollToHashRaw: urlQueryParams + gotoCssSelector + notifyReadingLocationDebounced()...");
                     notifyReadingLocationDebounced();
                     return;
                 }
@@ -1119,11 +1204,17 @@ const scrollToHashRaw = (animate, skipRedraw) => {
                     }, 10);
                     win.READIUM2.locationHashOverride = win.document.body;
                     resetLocationHashOverrideInfo();
+                    if (DEBUG_TRACE)
+                        debug("scrollToHashRaw: urlQueryParams + gotoProgression + isPaged + focusElement()...");
                     focusElement(win.READIUM2.locationHashOverride, false);
                     const x = ((isVWM || (0, readium_css_1.isRTL)()) ? win.document.documentElement.clientWidth - 2 : 1);
                     const y = 1;
+                    if (DEBUG_TRACE)
+                        debug("scrollToHashRaw: urlQueryParams + gotoProgression + isPaged + processXYRaw()...");
                     processXYRaw(x, y, false, false);
                     if (!win.READIUM2.locationHashOverride) {
+                        if (DEBUG_TRACE)
+                            debug("scrollToHashRaw: urlQueryParams + gotoProgression + isPaged + notifyReadingLocationDebounced()...");
                         notifyReadingLocationDebounced();
                     }
                     return;
@@ -1142,11 +1233,17 @@ const scrollToHashRaw = (animate, skipRedraw) => {
                 }, 10);
                 win.READIUM2.locationHashOverride = win.document.body;
                 resetLocationHashOverrideInfo();
+                if (DEBUG_TRACE)
+                    debug("scrollToHashRaw: urlQueryParams + gotoProgression + !isPaged + focusElement()...");
                 focusElement(win.READIUM2.locationHashOverride, false);
                 const x = ((isVWM || (0, readium_css_1.isRTL)()) ? win.document.documentElement.clientWidth - 2 : 1);
                 const y = 1;
+                if (DEBUG_TRACE)
+                    debug("scrollToHashRaw: urlQueryParams + gotoProgression + !isPaged + processXYRaw()...");
                 processXYRaw(x, y, false, false);
                 if (!win.READIUM2.locationHashOverride) {
+                    if (DEBUG_TRACE)
+                        debug("scrollToHashRaw: urlQueryParams + gotoProgression + !isPaged + notifyReadingLocationDebounced()...");
                     notifyReadingLocationDebounced();
                 }
                 return;
@@ -1160,16 +1257,22 @@ const scrollToHashRaw = (animate, skipRedraw) => {
         }, 10);
         win.READIUM2.locationHashOverride = win.document.body;
         resetLocationHashOverrideInfo();
+        if (DEBUG_TRACE)
+            debug("scrollToHashRaw: !urlQueryParams focusElement()...");
         focusElement(win.READIUM2.locationHashOverride, false);
-        debug("processXYRaw BODY2");
         const x = ((isVWM || (0, readium_css_1.isRTL)()) ? win.document.documentElement.clientWidth - 2 : 1);
         const y = 1;
+        if (DEBUG_TRACE)
+            debug("scrollToHashRaw: !urlQueryParams processXYRaw()...");
         processXYRaw(x, y, false, false);
     }
+    if (DEBUG_TRACE)
+        debug("scrollToHashRaw: notifyReadingLocationDebounced()...");
     notifyReadingLocationDebounced();
 };
 const scrollToHashDebounced = debounce((animate) => {
-    debug("++++ scrollToHashRaw FROM DEBOUNCED");
+    if (DEBUG_TRACE)
+        debug("scrollToHashDebounced: scrollToHashRaw()...");
     scrollToHashRaw(animate);
 }, 100);
 let _ignoreScrollEvent = false;
@@ -1192,8 +1295,12 @@ function showHideContentMask(doHide, isFixedLayout) {
     }
 }
 function focusScrollRaw(el, doFocus, animate, domRect, center) {
+    if (DEBUG_TRACE)
+        debug("focusScrollRaw: ", getCssSelector(el));
     if ((!(0, readium_css_inject_1.isPaginated)(win.document) && !win.READIUM2.isFixedLayout && center) ||
         !isVisible(false, el, domRect)) {
+        if (DEBUG_TRACE)
+            debug("focusScrollRaw: scrollElementIntoView()...");
         scrollElementIntoView(el, doFocus, animate, domRect, center);
     }
     if (win.READIUM2.locationHashOverride === el) {
@@ -1203,21 +1310,30 @@ function focusScrollRaw(el, doFocus, animate, domRect, center) {
     if (blacklisted) {
         return;
     }
-    debug(".hashElement = 3");
     win.READIUM2.hashElement = doFocus ? el : win.READIUM2.hashElement;
     win.READIUM2.locationHashOverride = el;
+    if (DEBUG_TRACE)
+        debug("focusScrollRaw: notifyReadingLocationDebounced()...");
     notifyReadingLocationDebounced();
 }
 const focusScrollDebounced = debounce((el, doFocus, animate, domRect) => {
+    if (DEBUG_TRACE)
+        debug("focusScrollDebounced: focusScrollRaw()...", getCssSelector(el));
     focusScrollRaw(el, doFocus, animate, domRect);
 }, 100);
 const handleFocusInDebounced = debounce((target, tabKeyDownEvent) => {
+    if (DEBUG_TRACE)
+        debug("handleFocusInDebounced: handleFocusInRaw()...", getCssSelector(target));
     handleFocusInRaw(target, tabKeyDownEvent);
 }, 100);
 function handleFocusInRaw(target, _tabKeyDownEvent) {
+    if (DEBUG_TRACE)
+        debug("handleFocusInRaw:", getCssSelector(target));
     if (!target || !win.document.body) {
         return;
     }
+    if (DEBUG_TRACE)
+        debug("handleFocusInRaw: focusScrollRaw()...");
     focusScrollRaw(target, false, false, undefined);
 }
 electron_1.ipcRenderer.on(events_1.R2_EVENT_READIUMCSS, (_event, payload) => {
@@ -1402,7 +1518,8 @@ function mediaOverlaysClickRaw(element, userInteract) {
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_MEDIA_OVERLAY_CLICK, payload);
 }
 const onScrollRaw = (fromScrollEvent) => {
-    debug("onScrollRaw");
+    if (DEBUG_TRACE)
+        debug("onScrollRaw: fromScrollEvent", fromScrollEvent);
     if (!win.document || !win.document.documentElement) {
         return;
     }
@@ -1417,6 +1534,8 @@ const onScrollRaw = (fromScrollEvent) => {
         if (el && isVisible(false, el, undefined)) {
             debug("onScrollRaw VISIBLE SKIP");
             if (fromScrollEvent && !(0, readium_css_inject_1.isPaginated)(win.document)) {
+                if (DEBUG_TRACE)
+                    debug("onScrollRaw: notifyReadingLocationRaw()...");
                 notifyReadingLocationRaw(true, true, true);
             }
             return;
@@ -1425,9 +1544,13 @@ const onScrollRaw = (fromScrollEvent) => {
     const isVWM = (0, readium_css_1.isVerticalWritingMode)();
     const x = ((isVWM || (0, readium_css_1.isRTL)()) ? win.document.documentElement.clientWidth - 2 : 1);
     const y = 1;
+    if (DEBUG_TRACE)
+        debug("onScrollRaw: processXYRaw()...");
     processXYRaw(x, y, false, false, true);
 };
 const onScrollDebounced = debounce((fromScrollEvent) => {
+    if (DEBUG_TRACE)
+        debug("onScrollDebounced: onScrollRaw()...");
     onScrollRaw(fromScrollEvent);
 }, 300);
 const appendExtraColumnPadIfNecessary = (skipResizeObserver) => {
@@ -1448,6 +1571,7 @@ const appendExtraColumnPadIfNecessary = (skipResizeObserver) => {
             elPad.style.breakBefore = "column";
             elPad.innerHTML = "&#8203;";
             if (!skipResizeObserver) {
+                debug("appendExtraColumnPadIfNecessary !skipResizeObserver");
                 _firstResizeObserver = true;
                 _firstResizeObserverTimeout = win.setTimeout(() => {
                     _firstResizeObserverTimeout = undefined;
@@ -1457,6 +1581,7 @@ const appendExtraColumnPadIfNecessary = (skipResizeObserver) => {
                     }
                 }, 400);
             }
+            debug("appendExtraColumnPadIfNecessary APPEND DIV");
             win.document.body.appendChild(elPad);
         }
     }
@@ -1473,6 +1598,8 @@ function focusCurrentReadingLocationElement(invert) {
         (win.READIUM2.locationHashOverride || win.READIUM2.hashElement) :
         (win.READIUM2.hashElement || win.READIUM2.locationHashOverride);
     if (el) {
+        if (DEBUG_TRACE)
+            debug("focusCurrentReadingLocationElement: focusScrollDebounced()...");
         focusScrollDebounced(el, true, false, undefined);
     }
 }
@@ -1536,7 +1663,8 @@ function loaded(forced) {
         if (!win.READIUM2.isFixedLayout) {
             appendExtraColumnPadIfNecessary(true);
             showHideContentMask(false, win.READIUM2.isFixedLayout);
-            debug("++++ scrollToHashDebounced FROM LOAD");
+            if (DEBUG_TRACE)
+                debug("LOADED !FXL: scrollToHashDebounced()...");
             scrollToHashDebounced(false);
             if (styles_1.ENABLE_SKIP_LINK && win.document.body) {
                 const focusLink = win.document.createElement("a");
@@ -1550,6 +1678,8 @@ function loaded(forced) {
                 setTimeout(() => {
                     focusLink.addEventListener("click", (ev) => {
                         ev.preventDefault();
+                        if (DEBUG_TRACE)
+                            debug("focusLink CLICK: focusCurrentReadingLocationElement()...");
                         focusCurrentReadingLocationElement(false);
                     });
                 }, 200);
@@ -1558,6 +1688,8 @@ function loaded(forced) {
         else {
             showHideContentMask(false, win.READIUM2.isFixedLayout);
             win.READIUM2.locationHashOverride = win.document.body;
+            if (DEBUG_TRACE)
+                debug("loaded() FXL: notifyReadingLocationDebounced()...");
             notifyReadingLocationDebounced();
         }
         checkSoundtrack(win.document);
@@ -1606,6 +1738,8 @@ function loaded(forced) {
                 }
             }
             if (!ignoreIncomingMouseClickOnFocusable) {
+                if (DEBUG_TRACE)
+                    debug("loaded() FOCUSIN: handleFocusInDebounced()...");
                 handleFocusInDebounced(ev.target, undefined);
             }
             else {
@@ -1616,7 +1750,19 @@ function loaded(forced) {
     const useResizeObserver = !win.READIUM2.isFixedLayout;
     if (useResizeObserver && win.document.body) {
         setTimeout(() => {
-            const resizeObserver = new win.ResizeObserver((_entries) => {
+            const resizeObserver = new win.ResizeObserver((entries) => {
+                if (DEBUG_TRACE)
+                    debug("ResizeObserver ...");
+                for (const entry of entries) {
+                    const rect = entry.contentRect;
+                    const element = entry.target;
+                    if (DEBUG_TRACE)
+                        debug("element.id", element.id);
+                    if (DEBUG_TRACE)
+                        debug("element.innerHTML", element.innerHTML.substring(0, 100));
+                    if (DEBUG_TRACE)
+                        debug("rect", rect.x, rect.y, rect.width, rect.height);
+                }
                 if (_firstResizeObserverTimeout !== undefined) {
                     win.clearTimeout(_firstResizeObserverTimeout);
                     _firstResizeObserverTimeout = undefined;
@@ -1629,12 +1775,16 @@ function loaded(forced) {
                 win.document.body.tabbables = undefined;
                 const elPad = win.document.getElementById(styles_2.EXTRA_COLUMN_PAD_ID);
                 if (elPad) {
+                    debug("ResizeObserver appendExtraColumnPadIfNecessary EXTRA_COLUMN_PAD_ID will remove...");
                     setTimeout(() => {
+                        debug("ResizeObserver appendExtraColumnPadIfNecessary EXTRA_COLUMN_PAD_ID removing");
                         elPad === null || elPad === void 0 ? void 0 : elPad.remove();
                     }, 100);
                     return;
                 }
                 appendExtraColumnPadIfNecessary(false);
+                if (DEBUG_TRACE)
+                    debug("ResizeObserver: scrollToHashDebounced()...");
                 scrollToHashDebounced(false);
             });
             resizeObserver.observe(win.document.body);
@@ -1984,10 +2134,13 @@ function loaded(forced) {
             debug("scrollToHashRaw skipped, FXL");
             return;
         }
-        debug("++++ scrollToHashDebounced FROM RESIZE");
+        if (DEBUG_TRACE)
+            debug("onResizeRaw: scrollToHashDebounced()...");
         scrollToHashDebounced(false);
     };
     const onResizeDebounced = debounce(() => {
+        if (DEBUG_TRACE)
+            debug("onResizeDebounced: onResizeRaw()...");
         onResizeRaw();
     }, 200);
     let _firstWindowResize = true;
@@ -1998,6 +2151,8 @@ function loaded(forced) {
             (0, highlight_2.recreateAllHighlights)(win);
             return;
         }
+        if (DEBUG_TRACE)
+            debug(" loaded() RESIZE: onResizeDebounced()...");
         onResizeDebounced();
     });
     let _wheelTimeStamp = -1;
@@ -2138,6 +2293,8 @@ function loaded(forced) {
             if (!win.document || !win.document.documentElement) {
                 return;
             }
+            if (DEBUG_TRACE)
+                debug("loaded() SCROLL: onScrollDebounced()...");
             onScrollDebounced(true);
         });
     }, 200);
@@ -2153,6 +2310,8 @@ function loaded(forced) {
         const x = ev.clientX;
         const y = ev.clientY;
         console.log("MOUSEUP ev.clientX/Y", ev.clientX, ev.clientY);
+        if (DEBUG_TRACE)
+            debug("handleMouseEvent: processXYDebouncedImmediate()...");
         processXYDebouncedImmediate(x, y, false, true);
     }
     win.document.documentElement.addEventListener("mouseup", (ev) => {
@@ -2316,34 +2475,61 @@ const domDataFromPoint = (x, y) => {
     return domPointData;
 };
 const processXYRaw = (x, y, reverse, userInteract, fromViewportScroll) => {
-    var _a, _b;
-    debug("processXYRaw ENTRY x y: ", x, y);
-    debug("document.documentElement.clientWidth/Height: ", win.document.documentElement.clientWidth, win.document.documentElement.clientHeight);
-    debug("document.documentElement.offsetWidth/Height: ", win.document.documentElement.offsetWidth, win.document.documentElement.offsetHeight);
-    debug("document.documentElement.scrollWidth/Height: ", win.document.documentElement.scrollWidth, win.document.documentElement.scrollHeight);
-    debug("document.documentElement.scrollTop/Left: ", win.document.documentElement.scrollTop, win.document.documentElement.scrollLeft);
-    debug("document.body.clientWidth/Height: ", win.document.body.clientWidth, win.document.body.clientHeight);
-    debug("document.body.offsetWidth/Height: ", win.document.body.offsetWidth, win.document.body.offsetHeight);
-    debug("document.body.scrollWidth/Height: ", win.document.body.scrollWidth, win.document.body.scrollHeight);
-    debug("document.body.scrollTop/Left: ", win.document.body.scrollTop, win.document.body.scrollLeft);
+    var _a, _b, _c, _d, _e, _f;
+    if (DEBUG_TRACE)
+        debug("processXYRaw");
+    if (DEBUG_TRACE)
+        debug("reverse", reverse);
+    if (DEBUG_TRACE)
+        debug("userInteract", userInteract);
+    if (DEBUG_TRACE)
+        debug("fromViewportScroll", fromViewportScroll);
+    if (DEBUG_TRACE)
+        debug("x y: ", x, y);
+    if (DEBUG_TRACE)
+        debug("document.documentElement.clientWidth/Height: ", win.document.documentElement.clientWidth, win.document.documentElement.clientHeight);
+    if (DEBUG_TRACE)
+        debug("document.documentElement.offsetWidth/Height: ", win.document.documentElement.offsetWidth, win.document.documentElement.offsetHeight);
+    if (DEBUG_TRACE)
+        debug("document.documentElement.scrollWidth/Height: ", win.document.documentElement.scrollWidth, win.document.documentElement.scrollHeight);
+    if (DEBUG_TRACE)
+        debug("document.documentElement.scrollTop/Left: ", win.document.documentElement.scrollTop, win.document.documentElement.scrollLeft);
+    if (DEBUG_TRACE)
+        debug("document.body.clientWidth/Height: ", win.document.body.clientWidth, win.document.body.clientHeight);
+    if (DEBUG_TRACE)
+        debug("document.body.offsetWidth/Height: ", win.document.body.offsetWidth, win.document.body.offsetHeight);
+    if (DEBUG_TRACE)
+        debug("document.body.scrollWidth/Height: ", win.document.body.scrollWidth, win.document.body.scrollHeight);
+    if (DEBUG_TRACE)
+        debug("document.body.scrollTop/Left: ", win.document.body.scrollTop, win.document.body.scrollLeft);
     if ((0, popup_dialog_1.isPopupDialogOpen)(win.document)) {
-        debug("processXYRaw isPopupDialogOpen SKIP");
+        debug("processXYRaw: isPopupDialogOpen SKIP");
         return;
     }
     win.READIUM2.lastClickedTextChar = undefined;
     const domPointData = domDataFromPoint(x, y);
+    if (DEBUG_TRACE)
+        debug("processXYRaw: domDataFromPoint => ", domPointData.element ? getCssSelector(domPointData.element) : "!!!? domPointData.element");
     if (!domPointData.element ||
         domPointData.element === win.document.body ||
         domPointData.element === win.document.documentElement) {
         const root = win.document.body;
         domPointData.element = findFirstVisibleElement(root);
         if (!domPointData.element) {
-            debug("|||||||||||||| cannot find visible element inside BODY / HTML????");
+            if (DEBUG_TRACE)
+                debug("processXYRaw: findFirstVisibleElement1 FAIL? (BODY fallback)");
             domPointData.element = win.document.body;
+            domPointData.textNode = undefined;
+            domPointData.textNodeOffset = -1;
+        }
+        else {
+            if (DEBUG_TRACE)
+                debug("processXYRaw: findFirstVisibleElement1 => ", getCssSelector(domPointData.element));
         }
     }
     else if (!userInteract &&
-        domPointData.element && !isVisible(false, domPointData.element, undefined)) {
+        domPointData.element &&
+        !isVisible(false, domPointData.element, undefined)) {
         let next = domPointData.element;
         let found;
         while (next) {
@@ -2366,23 +2552,32 @@ const processXYRaw = (x, y, reverse, userInteract, fromViewportScroll) => {
             next = sibling ? sibling : undefined;
         }
         if (found) {
+            if (DEBUG_TRACE)
+                debug("processXYRaw: findFirstVisibleElement2 => ", getCssSelector(domPointData.element));
             domPointData.element = found;
+            domPointData.textNode = undefined;
+            domPointData.textNodeOffset = -1;
         }
         else {
-            debug("|||||||||||||| cannot find visible element after current????");
+            if (DEBUG_TRACE)
+                debug("processXYRaw: findFirstVisibleElement *AFTER* FAIL?");
         }
     }
     if (domPointData.element === win.document.body ||
         domPointData.element === win.document.documentElement) {
-        debug("|||||||||||||| BODY/HTML selected????");
+        if (DEBUG_TRACE)
+            debug("processXYRaw: domPointData.element HTML BODY?");
     }
     if (domPointData.element) {
+        if (DEBUG_TRACE)
+            debug("processXYRaw: branch1 => ", getCssSelector(domPointData.element), win.READIUM2.locationHashOverride ? getCssSelector(win.READIUM2.locationHashOverride) : "!!!win.READIUM2.locationHashOverride");
         if (userInteract ||
             !win.READIUM2.locationHashOverride ||
             win.READIUM2.locationHashOverride === win.document.body ||
             win.READIUM2.locationHashOverride === win.document.documentElement) {
-            debug(".hashElement = 5 ", userInteract);
-            if (userInteract && ((_b = (_a = domPointData.textNode) === null || _a === void 0 ? void 0 : _a.nodeValue) === null || _b === void 0 ? void 0 : _b.length) && domPointData.textNodeOffset >= 0 && domPointData.textNodeOffset <= domPointData.textNode.nodeValue.length) {
+            if (DEBUG_TRACE)
+                debug("processXYRaw: branch1.1");
+            if (((_b = (_a = domPointData.textNode) === null || _a === void 0 ? void 0 : _a.nodeValue) === null || _b === void 0 ? void 0 : _b.length) && domPointData.textNodeOffset >= 0 && domPointData.textNodeOffset <= domPointData.textNode.nodeValue.length) {
                 win.READIUM2.lastClickedTextChar = {
                     textNode: domPointData.textNode,
                     textNodeOffset: domPointData.textNodeOffset,
@@ -2392,8 +2587,17 @@ const processXYRaw = (x, y, reverse, userInteract, fromViewportScroll) => {
             win.READIUM2.locationHashOverride = domPointData.element;
         }
         else {
+            if (DEBUG_TRACE)
+                debug("processXYRaw: branch1.2");
             if (!isVisible(false, win.READIUM2.locationHashOverride, undefined)) {
-                debug(".hashElement = 6");
+                if (DEBUG_TRACE)
+                    debug("processXYRaw: branch1.2.1");
+                if (((_d = (_c = domPointData.textNode) === null || _c === void 0 ? void 0 : _c.nodeValue) === null || _d === void 0 ? void 0 : _d.length) && domPointData.textNodeOffset >= 0 && domPointData.textNodeOffset <= domPointData.textNode.nodeValue.length) {
+                    win.READIUM2.lastClickedTextChar = {
+                        textNode: domPointData.textNode,
+                        textNodeOffset: domPointData.textNodeOffset,
+                    };
+                }
                 win.READIUM2.hashElement = userInteract ? domPointData.element : win.READIUM2.hashElement;
                 win.READIUM2.locationHashOverride = domPointData.element;
             }
@@ -2401,23 +2605,38 @@ const processXYRaw = (x, y, reverse, userInteract, fromViewportScroll) => {
                 (win.READIUM2.ttsClickEnabled ||
                     win.document.documentElement.classList.contains(styles_2.TTS_CLASS_PLAYING) ||
                     win.document.documentElement.classList.contains(styles_2.TTS_CLASS_PAUSED))) {
-                debug(".hashElement = 8");
+                if (DEBUG_TRACE)
+                    debug("processXYRaw: branch1.2.2");
+                if (((_f = (_e = domPointData.textNode) === null || _e === void 0 ? void 0 : _e.nodeValue) === null || _f === void 0 ? void 0 : _f.length) && domPointData.textNodeOffset >= 0 && domPointData.textNodeOffset <= domPointData.textNode.nodeValue.length) {
+                    win.READIUM2.lastClickedTextChar = {
+                        textNode: domPointData.textNode,
+                        textNodeOffset: domPointData.textNodeOffset,
+                    };
+                }
                 win.READIUM2.hashElement = userInteract ? domPointData.element : win.READIUM2.hashElement;
                 win.READIUM2.locationHashOverride = domPointData.element;
             }
         }
         if (userInteract && win.READIUM2.DEBUG_VISUALS) {
+            if (DEBUG_TRACE)
+                debug("processXYRaw: notifyReadingLocationDebouncedImmediate()...");
             notifyReadingLocationDebouncedImmediate(userInteract);
         }
         else {
             if (fromViewportScroll && win.READIUM2.accessibilitySupportEnabled) {
+                if (DEBUG_TRACE)
+                    debug("processXYRaw: scroll-screen-reader + notifyReadingLocationDebounced()...");
                 notifyReadingLocationDebounced(userInteract, false, true);
             }
             else {
+                if (DEBUG_TRACE)
+                    debug("processXYRaw: !scroll-screen-reader + notifyReadingLocationDebounced()...");
                 notifyReadingLocationDebounced(userInteract);
             }
         }
         if (userInteract && win.READIUM2.locationHashOverride) {
+            if (DEBUG_TRACE)
+                debug("processXYRaw: focusElement()...");
             focusElement(win.READIUM2.locationHashOverride, true);
         }
         if (win.READIUM2.DEBUG_VISUALS) {
@@ -2432,6 +2651,10 @@ const processXYRaw = (x, y, reverse, userInteract, fromViewportScroll) => {
     debug("processXYRaw EXIT");
 };
 const processXYDebouncedImmediate = debounce((x, y, reverse, userInteract) => {
+    if (DEBUG_TRACE)
+        debug("processXYDebouncedImmediate: processXYRaw()...");
+    if (DEBUG_TRACE)
+        debug("x y: ", x, y);
     processXYRaw(x, y, reverse, userInteract);
 }, 300, { immediate: true });
 const computeProgressionData = () => {
@@ -2591,6 +2814,9 @@ const computeCFI = (node) => {
     if (node.nodeType !== Node.ELEMENT_NODE) {
         return undefined;
     }
+    if (node.__r2Cfi) {
+        return node.__r2Cfi;
+    }
     let cfi = "";
     let currentElement = node;
     while (currentElement.parentNode && currentElement.parentNode.nodeType === Node.ELEMENT_NODE) {
@@ -2621,11 +2847,15 @@ const computeCFI = (node) => {
         }
         currentElement = currentElement.parentNode;
     }
-    return "/" + cfi;
+    node.__r2Cfi = "/" + cfi;
+    return node.__r2Cfi;
 };
 const computeXPath = (node) => {
     if (node.nodeType !== Node.ELEMENT_NODE) {
         return undefined;
+    }
+    if (node.__r2Xpath) {
+        return node.__r2Xpath;
     }
     let xpath = "";
     let currentElement = node;
@@ -2669,7 +2899,8 @@ const computeXPath = (node) => {
         }
         currentElement = currentElement.parentNode;
     }
-    return "/" + xpath;
+    node.__r2Xpath = "/" + xpath;
+    return node.__r2Xpath;
 };
 const _getCssSelectorOptions = {
     className: (str) => {
@@ -2960,6 +3191,8 @@ const $_namespaceResolver = (prefix) => {
 };
 const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays, doNotFocus) => {
     var _a, _b;
+    if (DEBUG_TRACE)
+        debug("notifyReadingLocationRaw", win.READIUM2.locationHashOverride ? getCssSelector(win.READIUM2.locationHashOverride) : "!!!? win.READIUM2.locationHashOverride");
     if (!win.READIUM2.locationHashOverride) {
         return;
     }
@@ -2974,8 +3207,9 @@ const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays, doNotFocus)
     let progressionData;
     const cssSelector = getCssSelector(win.READIUM2.locationHashOverride);
     const cfi = computeCFI(win.READIUM2.locationHashOverride);
+    const xpathalreadychecked = !!win.READIUM2.locationHashOverride.__r2Xpath;
     const xpath = computeXPath(win.READIUM2.locationHashOverride);
-    if (IS_DEV && xpath) {
+    if (IS_DEV && xpath && !xpathalreadychecked) {
         debug(">>> XPATH original: " + xpath);
         const xpath_ = xpath.replace(/\/([^\/]+)/g, (m) => {
             if (m.startsWith("/*") ||
@@ -3075,6 +3309,8 @@ const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays, doNotFocus)
         userInteract: userInteract ? true : false,
         followingElementIDs,
     };
+    if (DEBUG_TRACE)
+        debug("notifyReadingLocationRaw: locationHashOverrideInfo", win.READIUM2.locationHashOverrideInfo);
     const payload = win.READIUM2.locationHashOverrideInfo;
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_READING_LOCATION, payload);
     if (!ignoreMediaOverlays) {
@@ -3084,6 +3320,8 @@ const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays, doNotFocus)
         tempLinkTargetOutline(win.READIUM2.locationHashOverride, 1000, true);
     }
     if (!doNotFocus) {
+        if (DEBUG_TRACE)
+            debug("notifyReadingLocationRaw: focusElement()...");
         focusElement(win.READIUM2.locationHashOverride, true);
     }
     if (win.READIUM2.DEBUG_VISUALS) {
@@ -3095,16 +3333,84 @@ const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays, doNotFocus)
     }
 };
 const notifyReadingLocationDebounced = debounce((userInteract, ignoreMediaOverlays, doNotFocus) => {
+    if (DEBUG_TRACE)
+        debug("notifyReadingLocationDebounced: notifyReadingLocationRaw()...");
     notifyReadingLocationRaw(userInteract, ignoreMediaOverlays, doNotFocus);
 }, 250);
 const notifyReadingLocationDebouncedImmediate = debounce((userInteract, ignoreMediaOverlays) => {
+    if (DEBUG_TRACE)
+        debug("notifyReadingLocationDebouncedImmediate: notifyReadingLocationRaw()...");
     notifyReadingLocationRaw(userInteract, ignoreMediaOverlays);
 }, 250, { immediate: true });
 if (!win.READIUM2.isAudio) {
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_PLAY, (_event, payload) => {
         const rootElement = win.document.querySelector(payload.rootElement);
         const startElement = payload.startElement ? win.document.querySelector(payload.startElement) : null;
-        (0, readaloud_1.ttsPlay)(payload.speed, payload.voices, focusScrollRaw, rootElement ? rootElement : undefined, startElement ? startElement : undefined, undefined, -1, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
+        let startTextNode;
+        let startTextNodeOffset = -1;
+        if (payload.rangeInfo) {
+            if (DEBUG_TRACE)
+                debug("R2_EVENT_TTS_DO_PLAY: payload.rangeInfo", payload.rangeInfo);
+            const textNodeParentElement = win.document.querySelector(payload.rangeInfo.startContainerElementCssSelector);
+            if (textNodeParentElement && payload.rangeInfo.startContainerChildTextNodeIndex >= 0 && payload.rangeInfo.startContainerChildTextNodeIndex < textNodeParentElement.childNodes.length) {
+                const textNode = textNodeParentElement.childNodes[payload.rangeInfo.startContainerChildTextNodeIndex];
+                if (textNode && textNode.nodeValue && payload.rangeInfo.startOffset >= 0 && payload.rangeInfo.startOffset < textNode.nodeValue.length) {
+                    startTextNode = textNode;
+                    startTextNodeOffset = payload.rangeInfo.startOffset;
+                }
+            }
+        }
+        if (!startTextNode && startElement) {
+            if (DEBUG_TRACE)
+                debug("R2_EVENT_TTS_DO_PLAY: payload.rangeInfo fallback");
+            const rects = startElement.getClientRects();
+            if (rects === null || rects === void 0 ? void 0 : rects.length) {
+                for (const rect of rects) {
+                    if (rect.width <= 2 || rect.height <= 2) {
+                        continue;
+                    }
+                    const domPointData = domDataFromPoint(rect.x + 1, rect.y + 1);
+                    if (DEBUG_TRACE && domPointData.element)
+                        debug("R2_EVENT_TTS_DO_PLAY: domDataFromPoint clientrects method", rect.x, rect.y, " ==> ", getCssSelector(domPointData.element), " --- ", getCssSelector(startElement));
+                    if (!domPointData.element || domPointData.element !== startElement) {
+                        continue;
+                    }
+                    startTextNode = domPointData.textNode;
+                    startTextNodeOffset = domPointData.textNodeOffset;
+                    break;
+                }
+            }
+            if (!startTextNode) {
+                const bbox = startElement.getBoundingClientRect();
+                if (bbox.width > 2 && bbox.height > 2) {
+                    const domPointData = domDataFromPoint(bbox.x + 1, bbox.y + 1);
+                    if (DEBUG_TRACE && domPointData.element)
+                        debug("R2_EVENT_TTS_DO_PLAY: domDataFromPoint clientrects method", bbox.x, bbox.y, " ==> ", getCssSelector(domPointData.element), " --- ", getCssSelector(startElement));
+                    if (domPointData.element && domPointData.element === startElement) {
+                        startTextNode = domPointData.textNode;
+                        startTextNodeOffset = domPointData.textNodeOffset;
+                    }
+                }
+                if (!startTextNode) {
+                    let el = startElement;
+                    let top = 0;
+                    let left = 0;
+                    while (el) {
+                        top += el.offsetTop || 0;
+                        left += el.offsetLeft || 0;
+                        el = el.offsetParent;
+                    }
+                    const domPointData = domDataFromPoint(left, top);
+                    if (DEBUG_TRACE && domPointData.element)
+                        debug("R2_EVENT_TTS_DO_PLAY: domDataFromPoint offset method", left, top, " ==> ", getCssSelector(domPointData.element), " --- ", getCssSelector(startElement));
+                    if (domPointData.element && domPointData.element === startElement) {
+                        startTextNode = domPointData.textNode;
+                        startTextNodeOffset = domPointData.textNodeOffset;
+                    }
+                }
+            }
+        }
+        (0, readaloud_1.ttsPlay)(payload.speed, payload.voices, focusScrollRaw, rootElement ? rootElement : undefined, startElement ? startElement : undefined, startTextNode, startTextNodeOffset, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_TTS_DO_STOP, (_event) => {
         (0, readaloud_1.ttsStop)();
@@ -3303,9 +3609,13 @@ if (!win.READIUM2.isAudio) {
                 win.READIUM2.hashElement = targetEl;
                 win.READIUM2.locationHashOverride = targetEl;
                 if (!isVisible(false, targetEl, undefined)) {
+                    if (DEBUG_TRACE)
+                        debug("R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT: scrollElementIntoView()...");
                     scrollElementIntoView(targetEl, false, true, undefined);
                 }
                 scrollToHashDebounced.clear();
+                if (DEBUG_TRACE)
+                    debug("R2_EVENT_MEDIA_OVERLAY_HIGHLIGHT: notifyReadingLocationRaw()...");
                 notifyReadingLocationRaw(false, true);
                 if (win.READIUM2.DEBUG_VISUALS) {
                     const el = win.READIUM2.locationHashOverride;
@@ -3375,6 +3685,8 @@ if (!win.READIUM2.isAudio) {
         }
     });
     electron_1.ipcRenderer.on(events_1.R2_EVENT_FOCUS_READING_LOC, (_event, _payload) => {
+        if (DEBUG_TRACE)
+            debug("R2_EVENT_FOCUS_READING_LOC: focusCurrentReadingLocationElement()...");
         focusCurrentReadingLocationElement(true);
     });
 }

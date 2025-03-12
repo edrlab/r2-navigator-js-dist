@@ -8,7 +8,11 @@ function uniqueCssSelector(input, doc, options) {
     if (input.nodeType !== Node.ELEMENT_NODE) {
         throw new Error("Can't generate CSS selector for non-element node type.");
     }
+    if (input.__r2CssSelector) {
+        return input.__r2CssSelector;
+    }
     if ("html" === input.tagName.toLowerCase()) {
+        input.__r2CssSelector = "html";
         return "html";
     }
     const defaults = {
@@ -30,7 +34,8 @@ function uniqueCssSelector(input, doc, options) {
         if (optimized.length > 0) {
             path = optimized[0];
         }
-        return selector(path);
+        input.__r2CssSelector = selector(path);
+        return input.__r2CssSelector;
     }
     else {
         throw new Error("Selector was not found.");

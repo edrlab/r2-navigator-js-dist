@@ -172,6 +172,7 @@ function ttsPlay(speed, voice) {
         ttsVoice(voice);
     }
     let startElementCSSSelector;
+    let startElementRangeInfo;
     const loc = (0, location_1.getCurrentReadingLocation)();
     let activeWebView = win.READIUM2.getActiveWebViews().find((webview) => {
         var _a;
@@ -179,6 +180,9 @@ function ttsPlay(speed, voice) {
     });
     if (loc && activeWebView) {
         startElementCSSSelector = loc.locator.locations.cssSelector;
+    }
+    if (loc && activeWebView) {
+        startElementRangeInfo = loc.locator.locations.rangeInfo;
     }
     if (!activeWebView) {
         activeWebView = win.READIUM2.getFirstWebView();
@@ -193,6 +197,7 @@ function ttsPlay(speed, voice) {
         rootElement: "html > body",
         speed,
         startElement: startElementCSSSelector,
+        rangeInfo: startElementRangeInfo,
         voices: win.READIUM2.ttsVoices,
     };
     setTimeout(() => tslib_1.__awaiter(this, void 0, void 0, function* () {

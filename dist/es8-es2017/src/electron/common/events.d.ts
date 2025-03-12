@@ -5,7 +5,7 @@ import { IwidthHeight } from "./fxl";
 import { IColor, IHighlight, IHighlightDefinition } from "./highlight";
 import { IPaginationInfo } from "./pagination";
 import { IReadiumCSS } from "./readium-css-settings";
-import { ISelectionInfo } from "./selection";
+import { IRangeInfo, ISelectionInfo } from "./selection";
 export declare const R2_EVENT_IMAGE_CLICK = "R2_EVENT_IMAGE_CLICK";
 export interface IEventPayload_R2_EVENT_IMAGE_CLICK {
     hostDocumentURL: string;
@@ -176,6 +176,7 @@ export declare const R2_EVENT_TTS_DO_PLAY = "R2_EVENT_TTS_DO_PLAY";
 export interface IEventPayload_R2_EVENT_TTS_DO_PLAY {
     rootElement: string;
     startElement: string | undefined;
+    rangeInfo?: IRangeInfo | undefined;
     speed: number;
     voices: SpeechSynthesisVoice[] | null;
 }
