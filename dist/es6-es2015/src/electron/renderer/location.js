@@ -370,8 +370,8 @@ function handleLinkUrl(href, rcss) {
     handleLink(href, undefined, false, rcss);
 }
 function handleLinkLocator(location, rcss) {
-    var _a;
-    const rangeInfo = (_a = location === null || location === void 0 ? void 0 : location.locations) === null || _a === void 0 ? void 0 : _a.rangeInfo;
+    var _a, _b;
+    const rangeInfo = (_b = (_a = location === null || location === void 0 ? void 0 : location.locations) === null || _a === void 0 ? void 0 : _a.caretInfo) === null || _b === void 0 ? void 0 : _b.rangeInfo;
     const publication = win.READIUM2.publication;
     const publicationURL = win.READIUM2.publicationURL;
     if (!publication || !publicationURL) {
@@ -1281,8 +1281,8 @@ const _saveReadingLocation = (activeWebView, locator) => {
         locator: {
             href: docHref,
             locations: {
-                rangeInfo: locator.locations.rangeInfo ?
-                    locator.locations.rangeInfo : undefined,
+                caretInfo: locator.locations.caretInfo ?
+                    locator.locations.caretInfo : undefined,
                 cfi: locator.locations.cfi ?
                     locator.locations.cfi : undefined,
                 cssSelector: locator.locations.cssSelector ?
@@ -1304,7 +1304,7 @@ const _saveReadingLocation = (activeWebView, locator) => {
     if (IS_DEV) {
         debug(">->->");
         debug(_lastSavedReadingLocation);
-        debug((_d = (_c = _lastSavedReadingLocation === null || _lastSavedReadingLocation === void 0 ? void 0 : _lastSavedReadingLocation.locator) === null || _c === void 0 ? void 0 : _c.locations) === null || _d === void 0 ? void 0 : _d.rangeInfo);
+        debug((_d = (_c = _lastSavedReadingLocation === null || _lastSavedReadingLocation === void 0 ? void 0 : _lastSavedReadingLocation.locator) === null || _c === void 0 ? void 0 : _c.locations) === null || _d === void 0 ? void 0 : _d.caretInfo);
     }
     if (_readingLocationSaver) {
         _readingLocationSaver(_lastSavedReadingLocation);

@@ -1,4 +1,4 @@
-import { IRangeInfo } from "./selection";
+import { ISelectionInfo } from "./selection";
 export interface Locator {
     href: string;
     title?: string;
@@ -19,5 +19,5 @@ export interface LocatorLocations {
     cssSelector?: string;
     position?: number;
     progression?: number;
-    rangeInfo?: IRangeInfo;
+    caretInfo?: ISelectionInfo;
 }

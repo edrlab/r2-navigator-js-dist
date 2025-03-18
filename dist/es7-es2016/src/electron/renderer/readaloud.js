@@ -158,7 +158,7 @@ function ttsListen(ttsListener) {
     _ttsListener = ttsListener;
 }
 function ttsPlay(speed, voice) {
-    var _a;
+    var _a, _b;
     if (!win.READIUM2) {
         return;
     }
@@ -182,7 +182,7 @@ function ttsPlay(speed, voice) {
         startElementCSSSelector = loc.locator.locations.cssSelector;
     }
     if (loc && activeWebView) {
-        startElementRangeInfo = loc.locator.locations.rangeInfo;
+        startElementRangeInfo = (_a = loc.locator.locations.caretInfo) === null || _a === void 0 ? void 0 : _a.rangeInfo;
     }
     if (!activeWebView) {
         activeWebView = win.READIUM2.getFirstWebView();
@@ -192,7 +192,7 @@ function ttsPlay(speed, voice) {
     if (!activeWebView) {
         return;
     }
-    _lastTTSWebViewHref = (_a = activeWebView.READIUM2.link) === null || _a === void 0 ? void 0 : _a.Href;
+    _lastTTSWebViewHref = (_b = activeWebView.READIUM2.link) === null || _b === void 0 ? void 0 : _b.Href;
     const payload = {
         rootElement: "html > body",
         speed,

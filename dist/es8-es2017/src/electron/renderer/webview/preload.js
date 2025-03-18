@@ -3266,7 +3266,7 @@ const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays, doNotFocus)
     if (!secondWebViewHref) {
         secondWebViewHref = undefined;
     }
-    let rangeInfo;
+    let caretInfo;
     if (win.READIUM2.lastClickedTextChar && ((_b = (_a = win.READIUM2.lastClickedTextChar.textNode) === null || _a === void 0 ? void 0 : _a.nodeValue) === null || _b === void 0 ? void 0 : _b.length)) {
         const range = win.document.createRange();
         const startOffset = win.READIUM2.lastClickedTextChar.textNodeOffset >= win.READIUM2.lastClickedTextChar.textNode.nodeValue.length ? win.READIUM2.lastClickedTextChar.textNodeOffset - 1 : win.READIUM2.lastClickedTextChar.textNodeOffset;
@@ -3274,7 +3274,20 @@ const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays, doNotFocus)
         range.setEnd(win.READIUM2.lastClickedTextChar.textNode, startOffset + 1);
         const tuple = (0, selection_2.convertRange)(range, getCssSelector, computeCFI, computeXPath);
         if (tuple) {
-            rangeInfo = tuple[0];
+            const rangeInfo = tuple[0];
+            const textInfo = tuple[1];
+            if (rangeInfo && textInfo) {
+                caretInfo = {
+                    textFragment: undefined,
+                    rangeInfo,
+                    cleanBefore: textInfo.cleanBefore,
+                    cleanText: textInfo.cleanText,
+                    cleanAfter: textInfo.cleanAfter,
+                    rawBefore: textInfo.rawBefore,
+                    rawText: textInfo.rawText,
+                    rawAfter: textInfo.rawAfter,
+                };
+            }
         }
     }
     if (__locEventID >= Number.MAX_SAFE_INTEGER) {
@@ -3297,7 +3310,7 @@ const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays, doNotFocus)
             cssSelector,
             position: undefined,
             progression,
-            rangeInfo,
+            caretInfo,
             xpath,
         },
         paginationInfo: pinfo,
