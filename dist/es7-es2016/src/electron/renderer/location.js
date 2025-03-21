@@ -448,6 +448,9 @@ function reloadWebView(activeWebView) {
 }
 function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
     var _a, _b, _c, _d, _e, _f, _g, _h;
+    if (typeof win.READIUM2.opacityMaskCounter === "undefined" || !secondWebView) {
+        win.READIUM2.opacityMaskCounter = 0;
+    }
     const publication = win.READIUM2.publication;
     const publicationURL = win.READIUM2.publicationURL;
     if (!publication || !publicationURL) {
@@ -635,6 +638,8 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
             }
             if (activeWebView) {
                 debug("loadLink LEFT ... setWebViewStyle");
+                win.READIUM2.domRootElement.style.opacity = "0";
+                win.READIUM2.opacityMaskCounter++;
                 setWebViewStyle(activeWebView, styles_1.WebViewSlotEnum.left);
             }
         }
@@ -659,6 +664,8 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
             }
             if (activeWebView) {
                 debug("loadLink RIGHT ... setWebViewStyle");
+                win.READIUM2.domRootElement.style.opacity = "0";
+                win.READIUM2.opacityMaskCounter++;
                 setWebViewStyle(activeWebView, styles_1.WebViewSlotEnum.right);
             }
         }
@@ -666,6 +673,8 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
             webViewSlot = styles_1.WebViewSlotEnum.center;
             if (activeWebView) {
                 debug("loadLink CENTER ... setWebViewStyle");
+                win.READIUM2.domRootElement.style.opacity = "0";
+                win.READIUM2.opacityMaskCounter++;
                 setWebViewStyle(activeWebView, styles_1.WebViewSlotEnum.center);
             }
         }
@@ -1167,7 +1176,7 @@ ${coverLink ? `<img id="${styles_1.AUDIO_COVER_ID}" src="${coverLink.Href}" alt=
                     newActiveWebView.READIUM2.link = pubLink;
                     newActiveWebView.setAttribute("src", uriStr__);
                 }
-            }), highlights ? 500 : win.READIUM2.ttsClickEnabled ? 100 : 10);
+            }), highlights ? 0 : win.READIUM2.ttsClickEnabled ? 100 : 0);
         }
         else {
             const highlights = activeWebView.READIUM2.link === pubLink ? activeWebView.READIUM2.highlights : undefined;
@@ -1210,7 +1219,7 @@ ${coverLink ? `<img id="${styles_1.AUDIO_COVER_ID}" src="${coverLink.Href}" alt=
                 else {
                     activeWebView.setAttribute("src", uriStr__);
                 }
-            }), highlights ? 500 : win.READIUM2.ttsClickEnabled ? 100 : 10);
+            }), highlights ? 0 : win.READIUM2.ttsClickEnabled ? 100 : 0);
         }
     }
     return true;

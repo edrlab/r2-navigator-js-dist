@@ -56,6 +56,7 @@ export interface IReadiumElectronBrowserWindow {
     publication: Publication;
     publicationURL: string;
     sessionInfo: string | undefined;
+    opacityMaskCounter?: number;
     domRootElement: HTMLElement;
     domSlidingViewport: HTMLElement;
     DEBUG_VISUALS: boolean;
