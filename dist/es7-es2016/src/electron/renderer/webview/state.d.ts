@@ -3,7 +3,7 @@ import { Link } from "r2-shared-js/dist/es7-es2016/src/models/publication-link";
 import { IEventPayload_R2_EVENT_CLIPBOARD_COPY, IEventPayload_R2_EVENT_READING_LOCATION, IEventPayload_R2_EVENT_READIUMCSS } from "../../common/events";
 import { WebViewSlotEnum } from "../../common/styles";
 import { IStringMap } from "../common/querystring";
-import { IColor, IHighlight } from "src/electron/common/highlight";
+import { IColor, IHighlight } from "../../common/highlight";
 export type TWindow = typeof window;
 export interface IReadiumElectronWebviewWindowState {
     urlQueryParams: IStringMap | undefined;

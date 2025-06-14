@@ -491,7 +491,6 @@ function clearSession(sess, str) {
             origin: "*",
             quotas: [
                 "temporary",
-                "syncable",
             ],
             storages: [
                 "serviceworkers",
