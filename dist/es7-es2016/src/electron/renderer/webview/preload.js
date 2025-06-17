@@ -3239,7 +3239,7 @@ const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays, doNotFocus)
     }
     const pinfo = (progressionData && progressionData.paginationInfo) ?
         progressionData.paginationInfo : undefined;
-    const selInfo = (0, selection_2.getCurrentSelectionInfo)(win, getCssSelector, computeCFI, computeXPath);
+    const selInfo = (0, selection_2.getCurrentSelectionInfo)(win, getCssSelector, computeXPath);
     const text = selInfo ? {
         after: selInfo.cleanAfter,
         before: selInfo.cleanBefore,
@@ -3273,7 +3273,7 @@ const notifyReadingLocationRaw = (userInteract, ignoreMediaOverlays, doNotFocus)
         const startOffset = win.READIUM2.lastClickedTextChar.textNodeOffset >= win.READIUM2.lastClickedTextChar.textNode.nodeValue.length ? win.READIUM2.lastClickedTextChar.textNodeOffset - 1 : win.READIUM2.lastClickedTextChar.textNodeOffset;
         range.setStart(win.READIUM2.lastClickedTextChar.textNode, startOffset);
         range.setEnd(win.READIUM2.lastClickedTextChar.textNode, startOffset + 1);
-        const tuple = (0, selection_2.convertRange)(range, getCssSelector, computeCFI, computeXPath);
+        const tuple = (0, selection_2.convertRange)(range, getCssSelector, computeXPath);
         if (tuple) {
             const rangeInfo = tuple[0];
             const textInfo = tuple[1];
@@ -3667,7 +3667,7 @@ if (!win.READIUM2.isAudio) {
                 },
             ] :
             payloadPing.highlightDefinitions;
-        const selInfo = (0, selection_2.getCurrentSelectionInfo)(win, getCssSelector, computeCFI, computeXPath);
+        const selInfo = (0, selection_2.getCurrentSelectionInfo)(win, getCssSelector, computeXPath);
         for (const highlightDefinition of highlightDefinitions) {
             if (!highlightDefinition.selectionInfo) {
                 highlightDefinition.selectionInfo = selInfo;

@@ -1,0 +1,13 @@
+export declare function isDocument(node: any): node is Document;
+export declare function isDocumentFragment(node: any): node is DocumentFragment;
+export declare function isElement(node: any): node is Element;
+export declare function isNonEmptyString(val: any): val is string;
+export declare function isTextNode(node: any): node is Text;
+export declare function clamp(value: number, min: number, max: number): number;
+export declare function copy<T extends object>(src: T): T;
+export declare let isArray: (val: any) => val is Array<any>;
+export declare function isBoolean(val: any): val is boolean;
+export declare function isFunction(val: any): val is Function;
+export declare function isNumber(val: any): val is number;
+export declare function isObject(value: any): value is object;
+export declare function isString(val: any): val is string;

@@ -1,0 +1,34 @@
+import { IEpubCfiPathNode } from '../model/IEpubCfiPathNode.js';
+import { EpubCfiIntendedTargetType } from './EpubCfiIntendedTargetType.js';
+import { EpubCfiResolvedLocalPath } from './EpubCfiResolvedLocalPath.js';
+import { EpubCfiSideBias } from './EpubCfiSideBias.js';
+import { EpubCfiVirtualTarget } from './EpubCfiVirtualTarget.js';
+import { IEpubCfiResolverError } from './IEpubCfiResolverError.js';
+import { IEpubCfiSpatialOffset } from './offset/IEpubCfiSpatialOffset.js';
+import { IEpubCfiTemporalOffset } from './offset/IEpubCfiTemporalOffset.js';
+export declare class EpubCfiResolvedPath {
+    ast: IEpubCfiPathNode;
+    characterOffsetOutOfBounds: boolean;
+    container: Node;
+    documentUrl: URL;
+    elementCharacterOffset: number | null;
+    indirectionsResolved: boolean;
+    intendedTargetType: EpubCfiIntendedTargetType;
+    localPaths: EpubCfiResolvedLocalPath[];
+    offset: number;
+    sideBias: EpubCfiSideBias | null;
+    spatialOffset: IEpubCfiSpatialOffset | null;
+    stepsResolved: boolean;
+    temporalOffset: IEpubCfiTemporalOffset | null;
+    virtualTarget: EpubCfiVirtualTarget | null;
+    constructor(ast: IEpubCfiPathNode, localPath: EpubCfiResolvedLocalPath);
+    addResolvedLocalPath(localPath: EpubCfiResolvedLocalPath): void;
+    getDocument(): Document;
+    getResolverErrors(): IEpubCfiResolverError[];
+    getTargetElement(): Element | null;
+    getTargetNode(): Node | null;
+    getTerminalLocalPath(): EpubCfiResolvedLocalPath;
+    isMissingXmlIdAssertions(): boolean;
+    isRepairedWithXmlIdAssertions(): boolean;
+    isTargetingOpfDocument(): boolean;
+}

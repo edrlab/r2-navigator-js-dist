@@ -1,0 +1,1 @@
+{"version":3,"file":"IEpubCfiCharacterOffset.js","sourceRoot":"","sources":["../../../../../../../../src/electron/common/colibrio-cfi/resolver/offset/IEpubCfiCharacterOffset.ts"],"names":[],"mappings":"","sourcesContent":["/**\n *\n */\nexport declare interface IEpubCfiCharacterOffset {\n    characterOffset: number;\n}\n"]}

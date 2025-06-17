@@ -11,6 +11,11 @@ exports.normalizeRange = normalizeRange;
 exports.normalizeRange_ = normalizeRange_;
 const electron_1 = require("electron");
 const events_1 = require("../../common/events");
+const EpubCfiUtils_1 = require("../../common/colibrio-cfi/EpubCfiUtils");
+const EpubCfiBuilderHelper_1 = require("../../common/colibrio-cfi/builder/EpubCfiBuilderHelper");
+const EpubCfiStringifier_1 = require("../../common/colibrio-cfi/stringifier/EpubCfiStringifier");
+const EpubCfiParser_1 = require("../../common/colibrio-cfi/parser/EpubCfiParser");
+const EpubCfiResolver_1 = require("../../common/colibrio-cfi/resolver/EpubCfiResolver");
 const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 function dumpDebug(msg, startNode, startOffset, endNode, endOffset, getCssSelector) {
     console.log("$$$$$$$$$$$$$$$$$ " + msg);
@@ -121,7 +126,7 @@ const cleanupStr = (str) => {
     return (0, exports.collapseWhitespaces)(str).trim();
 };
 exports.cleanupStr = cleanupStr;
-function getCurrentSelectionInfo(win, getCssSelector, computeElementCFI, computeElementXPath) {
+function getCurrentSelectionInfo(win, getCssSelector, computeElementXPath) {
     const selection = win.getSelection();
     if (!selection) {
         return undefined;
@@ -171,7 +176,7 @@ function getCurrentSelectionInfo(win, getCssSelector, computeElementCFI, compute
             console.log(`${range.endOffset} !== ${r.endOffset}`);
         }
     }
-    const tuple = convertRange(range, getCssSelector, computeElementCFI, computeElementXPath);
+    const tuple = convertRange(range, getCssSelector, computeElementXPath);
     if (!tuple) {
         console.log("^^^ SELECTION RANGE INFO FAIL?!");
         return undefined;
@@ -239,7 +244,7 @@ function createOrderedRange(startNode, startOffset, endNode, endOffset) {
     console.log(">>> createOrderedRange RANGE REVERSE ALSO COLLAPSED?!");
     return undefined;
 }
-function convertRange(range, getCssSelector, computeElementCFI, computeElementXPath) {
+function convertRange(range, getCssSelector, computeElementXPath) {
     var _a, _b;
     const startIsElement = range.startContainer.nodeType === Node.ELEMENT_NODE;
     const startContainerElement = startIsElement ?
@@ -373,82 +378,53 @@ function convertRange(range, getCssSelector, computeElementCFI, computeElementXP
         }
         rawAfter = rawAfter.substring(0, i + 1);
     }
-    const rootElementCfi = computeElementCFI(commonElementAncestor);
-    const startElementCfi = computeElementCFI(startContainerElement);
     const startElementXPath = computeElementXPath(startContainerElement);
-    const endElementCfi = computeElementCFI(endContainerElement);
     const endElementXPath = computeElementXPath(endContainerElement);
-    let cfi;
-    if (rootElementCfi && startElementCfi && endElementCfi) {
-        let startElementOrTextCfi = startElementCfi;
-        if (!startIsElement) {
-            const startContainerChildTextNodeIndexForCfi = getChildTextNodeCfiIndex(startContainerElement, range.startContainer);
-            startElementOrTextCfi = startElementCfi + "/" +
-                startContainerChildTextNodeIndexForCfi + ":" + range.startOffset;
+    const rootNode = EpubCfiUtils_1.EpubCfiUtils.createEmptyRootNode();
+    EpubCfiBuilderHelper_1.EpubCfiBuilderHelper.appendTerminalDomRange(range, rootNode);
+    let cfi = EpubCfiStringifier_1.EpubCfiStringifier.stringifyRootNode(rootNode);
+    const cfi_ = cfi;
+    if (cfi) {
+        cfi = cfi.replace(/^epubcfi\(/, "").replace(/\)$/, "");
+    }
+    if (IS_DEV) {
+        const parser = new EpubCfiParser_1.EpubCfiParser(cfi_);
+        const rootNode_ = parser.parse();
+        const resolver = new EpubCfiResolver_1.EpubCfiResolver(rootNode_);
+        resolver.continueResolving(window.document, new URL("fake://dummy"));
+        const resolved = resolver.getResolvedTarget();
+        if (resolved.hasErrors()) {
+            console.log("Colibrio CFI ERRORS:");
+            console.log(JSON.stringify(resolved.getParserErrors(), null, 4));
+            console.log(JSON.stringify(resolved.getResolverErrors(), null, 4));
         }
         else {
-            if (range.startOffset >= 0 && range.startOffset < startContainerElement.childNodes.length) {
-                const childNode = startContainerElement.childNodes[range.startOffset];
-                if (childNode.nodeType === Node.ELEMENT_NODE) {
-                    startElementOrTextCfi = startElementCfi + "/" + ((range.startOffset + 1) * 2);
-                }
-                else {
-                    const cfiTextNodeIndex = getChildTextNodeCfiIndex(startContainerElement, childNode);
-                    startElementOrTextCfi = startElementCfi + "/" + cfiTextNodeIndex;
+            if (resolved.isDomRange()) {
+                const domRange = resolved.createDomRange();
+                console.log("Colibrio CFI DOM RANGE");
+                console.log(typeof domRange);
+                if (domRange) {
+                    const rangesAreEqual = domRange.startContainer === range.startContainer
+                        && domRange.endContainer === range.endContainer
+                        && domRange.startOffset === range.startOffset
+                        && domRange.endOffset === range.endOffset;
+                    console.log(rangesAreEqual ? "RANGES ARE EQUAL :)" : "RANGES ARE DIFFERENT :(");
                 }
             }
-            else {
-                const cfiIndexOfLastElement = ((startContainerElement.childElementCount) * 2);
-                const lastChildNode = startContainerElement.childNodes[startContainerElement.childNodes.length - 1];
-                if (lastChildNode.nodeType === Node.ELEMENT_NODE) {
-                    startElementOrTextCfi = startElementCfi + "/" + (cfiIndexOfLastElement + 1);
-                }
-                else {
-                    startElementOrTextCfi = startElementCfi + "/" + (cfiIndexOfLastElement + 2);
-                }
+            else if (resolved.isTargetingElement()) {
+                const elem = resolved.getTargetElement();
+                console.log("Colibrio CFI ELEMENT");
+                console.log(elem);
             }
         }
-        let endElementOrTextCfi = endElementCfi;
-        if (!endIsElement) {
-            const endContainerChildTextNodeIndexForCfi = getChildTextNodeCfiIndex(endContainerElement, range.endContainer);
-            endElementOrTextCfi = endElementCfi + "/" +
-                endContainerChildTextNodeIndexForCfi + ":" + range.endOffset;
-        }
-        else {
-            if (range.endOffset >= 0 && range.endOffset < endContainerElement.childNodes.length) {
-                const childNode = endContainerElement.childNodes[range.endOffset];
-                if (childNode.nodeType === Node.ELEMENT_NODE) {
-                    endElementOrTextCfi = endElementCfi + "/" + ((range.endOffset + 1) * 2);
-                }
-                else {
-                    const cfiTextNodeIndex = getChildTextNodeCfiIndex(endContainerElement, childNode);
-                    endElementOrTextCfi = endElementCfi + "/" + cfiTextNodeIndex;
-                }
-            }
-            else {
-                const cfiIndexOfLastElement = ((endContainerElement.childElementCount) * 2);
-                const lastChildNode = endContainerElement.childNodes[endContainerElement.childNodes.length - 1];
-                if (lastChildNode.nodeType === Node.ELEMENT_NODE) {
-                    endElementOrTextCfi = endElementCfi + "/" + (cfiIndexOfLastElement + 1);
-                }
-                else {
-                    endElementOrTextCfi = endElementCfi + "/" + (cfiIndexOfLastElement + 2);
-                }
-            }
-        }
-        cfi = rootElementCfi + "," +
-            startElementOrTextCfi.replace(rootElementCfi, "") + "," +
-            endElementOrTextCfi.replace(rootElementCfi, "");
     }
     return [{
             cfi,
             endContainerChildTextNodeIndex,
-            endContainerElementCFI: endElementCfi,
             endContainerElementXPath: endElementXPath,
             endContainerElementCssSelector,
             endOffset: range.endOffset,
             startContainerChildTextNodeIndex,
-            startContainerElementCFI: startElementCfi,
             startContainerElementXPath: startElementXPath,
             startContainerElementCssSelector,
             startOffset: range.startOffset,
@@ -529,29 +505,6 @@ function getCommonAncestorElement(node1, node2) {
         });
     }
     return commonAncestor;
-}
-function isCfiTextNode(node) {
-    return node.nodeType !== Node.ELEMENT_NODE;
-}
-function getChildTextNodeCfiIndex(element, child) {
-    let found = -1;
-    let textNodeIndex = -1;
-    let previousWasElement = false;
-    for (let i = 0; i < element.childNodes.length; i++) {
-        const childNode = element.childNodes[i];
-        const isText = isCfiTextNode(childNode);
-        if (isText || previousWasElement) {
-            textNodeIndex += 2;
-        }
-        if (isText) {
-            if (childNode === child) {
-                found = textNodeIndex;
-                break;
-            }
-        }
-        previousWasElement = childNode.nodeType === Node.ELEMENT_NODE;
-    }
-    return found;
 }
 function normalizeRange(r) {
     const range = r.cloneRange();

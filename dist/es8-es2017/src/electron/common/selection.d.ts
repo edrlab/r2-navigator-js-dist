@@ -6,12 +6,10 @@ export type TextFragment = {
 };
 export interface IRangeInfo {
     startContainerElementCssSelector: string;
-    startContainerElementCFI: string | undefined;
     startContainerElementXPath: string | undefined;
     startContainerChildTextNodeIndex: number;
     startOffset: number;
     endContainerElementCssSelector: string;
-    endContainerElementCFI: string | undefined;
     endContainerElementXPath: string | undefined;
     endContainerChildTextNodeIndex: number;
     endOffset: number;

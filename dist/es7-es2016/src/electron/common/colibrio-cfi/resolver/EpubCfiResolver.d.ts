@@ -1,0 +1,36 @@
+import { IEpubCfiRootNode } from '../model/IEpubCfiRootNode.js';
+import { EpubCfiResolvedTarget } from './EpubCfiResolvedTarget.js';
+import { IEpubCfiIndirectionResult } from './indirection/IEpubCfiIndirectionResult.js';
+export declare class EpubCfiResolver {
+    private _lastIndirectionElement;
+    private _offsetProcessor;
+    private _parentLocalPathIndex;
+    private _parentOffsetHandled;
+    private _parentPathNode;
+    private _rangeEndLocalPathIndex;
+    private _rangeEndOffsetHandled;
+    private _rangeEndPathNode;
+    private _rangeStartLocalPathIndex;
+    private _rangeStartOffsetHandled;
+    private _rangeStartPathNode;
+    private _resolvedTarget;
+    private _rootNode;
+    constructor(epubCfi: string | IEpubCfiRootNode);
+    continueResolving(targetNode: Element | Document, documentUrl: URL): IEpubCfiIndirectionResult | null;
+    getResolvedTarget(): EpubCfiResolvedTarget;
+    skipNextIndirection(): IEpubCfiIndirectionResult | null;
+    private addResolvedLocalPath;
+    private consumeNextLocalPath;
+    private continueResolvingFromParentPath;
+    private continueResolvingRangeEndPath;
+    private continueResolvingRangeStartPath;
+    private getLocalPathByIndex;
+    private getNextIndirectionResult;
+    private getResolvedPathFromType;
+    private handleSideBiasParameter;
+    private handleUnresolvableIndirection;
+    private hasNextLocalPathIndirection;
+    private maybeProcessOffsetsAndSideBias;
+    private resolveNextLocalPathFromResolvedPath;
+    private resolveNextLocalPathFromStartElement;
+}

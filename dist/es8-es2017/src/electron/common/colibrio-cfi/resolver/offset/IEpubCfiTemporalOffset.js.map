@@ -1,0 +1,1 @@
+{"version":3,"file":"IEpubCfiTemporalOffset.js","sourceRoot":"","sources":["../../../../../../../../src/electron/common/colibrio-cfi/resolver/offset/IEpubCfiTemporalOffset.ts"],"names":[],"mappings":"","sourcesContent":["/**\n *\n */\nexport declare interface IEpubCfiTemporalOffset {\n    seconds: number\n}\n"]}
