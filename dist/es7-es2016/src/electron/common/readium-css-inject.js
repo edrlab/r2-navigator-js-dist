@@ -67,9 +67,7 @@ function isDocRTL(documant) {
         if (langAttr &&
             (langAttr === "ar" || langAttr.startsWith("ar-") ||
                 langAttr === "he" || langAttr.startsWith("he-") ||
-                langAttr === "fa" || langAttr.startsWith("fa-")) ||
-            langAttr === "zh-Hant" ||
-            langAttr === "zh-TW") {
+                langAttr === "fa" || langAttr.startsWith("fa-"))) {
             rtl = true;
         }
     }

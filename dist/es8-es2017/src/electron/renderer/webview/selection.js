@@ -414,7 +414,7 @@ function convertRange(range, getCssSelector, computeElementXPath) {
             else if (resolved.isTargetingElement()) {
                 const elem = resolved.getTargetElement();
                 console.log("Colibrio CFI ELEMENT");
-                console.log(elem);
+                console.log(typeof elem);
             }
         }
     }
