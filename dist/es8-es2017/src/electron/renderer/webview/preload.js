@@ -861,11 +861,13 @@ function focusElement(element, preventScroll) {
     if (element === win.document.body) {
         if (DEBUG_TRACE)
             debug("focusElement: body, preventScroll");
+        _ignoreFocusInEvent = true;
         element.focus({ preventScroll: true });
     }
     else {
         if (DEBUG_TRACE)
             debug("focusElement: !body, preventScroll?", preventScroll);
+        _ignoreFocusInEvent = true;
         element.focus({ preventScroll });
     }
 }
@@ -1321,6 +1323,7 @@ const focusScrollDebounced = debounce((el, doFocus, animate, domRect) => {
         debug("focusScrollDebounced: focusScrollRaw()...", getCssSelector(el));
     focusScrollRaw(el, doFocus, animate, domRect);
 }, 100);
+let _ignoreFocusInEvent = false;
 const handleFocusInDebounced = debounce((target, tabKeyDownEvent) => {
     if (DEBUG_TRACE)
         debug("handleFocusInDebounced: handleFocusInRaw()...", getCssSelector(target));
@@ -1717,6 +1720,11 @@ function loaded(forced) {
         return;
     }
     win.document.body.addEventListener("focusin", (ev) => {
+        if (_ignoreFocusInEvent) {
+            debug("focusin --- IGNORE");
+            _ignoreFocusInEvent = false;
+            return;
+        }
         if ((0, popup_dialog_1.isPopupDialogOpen)(win.document)) {
             return;
         }
@@ -2293,8 +2301,6 @@ function loaded(forced) {
             if (!win.document || !win.document.documentElement) {
                 return;
             }
-            if (DEBUG_TRACE)
-                debug("loaded() SCROLL: onScrollDebounced()...");
             onScrollDebounced(true);
         });
     }, 200);

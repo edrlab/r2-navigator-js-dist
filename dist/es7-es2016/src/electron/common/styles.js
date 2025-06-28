@@ -810,6 +810,17 @@ exports.ROOT_CLASS_INVISIBLE_MASK = "r2-visibility-mask-class";
 exports.ROOT_CLASS_INVISIBLE_MASK_REMOVED = "r2-visibility-mask-removed-class";
 const hover = true ? `.${exports.CLASS_HIGHLIGHT_HOVER}` : "";
 exports.visibilityMaskCssStyles = `
+:root[style],
+:root,
+:root[style] > body,
+:root > body,
+:root[style] > body *,
+:root > body *,
+:root[style] > body *::before,
+:root > body *::after
+{
+scroll-behavior: auto !important;
+}
 
 :root[style].${exports.ROOT_CLASS_NO_RUBY} > body rt,
 :root.${exports.ROOT_CLASS_NO_RUBY} > body rt,

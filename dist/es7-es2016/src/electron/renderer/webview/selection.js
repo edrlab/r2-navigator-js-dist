@@ -16,6 +16,7 @@ const EpubCfiBuilderHelper_1 = require("../../common/colibrio-cfi/builder/EpubCf
 const EpubCfiStringifier_1 = require("../../common/colibrio-cfi/stringifier/EpubCfiStringifier");
 const EpubCfiParser_1 = require("../../common/colibrio-cfi/parser/EpubCfiParser");
 const EpubCfiResolver_1 = require("../../common/colibrio-cfi/resolver/EpubCfiResolver");
+const dom_text_utils_1 = require("../common/dom-text-utils");
 const IS_DEV = (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev");
 function dumpDebug(msg, startNode, startOffset, endNode, endOffset, getCssSelector) {
     console.log("$$$$$$$$$$$$$$$$$ " + msg);
@@ -118,6 +119,34 @@ function clearCurrentSelection(win) {
     }
     electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_READING_LOCATION_CLEAR_SELECTION);
 }
+const removeJapaneseRuby = (str, range) => {
+    const ancestorElement = range.commonAncestorContainer.nodeType === Node.ELEMENT_NODE ?
+        range.commonAncestorContainer :
+        range.commonAncestorContainer.parentElement;
+    if (!ancestorElement || ancestorElement.nodeType !== Node.ELEMENT_NODE) {
+        return str;
+    }
+    const lang = (0, dom_text_utils_1.getLanguage)(ancestorElement);
+    if (lang === "ja" || lang.startsWith("ja-")) {
+        try {
+            const docFrag = range.cloneContents();
+            const rtElems = docFrag.querySelectorAll("rt");
+            for (let i = 0; i < rtElems.length; i++) {
+                const rtElem = rtElems[i];
+                rtElem.remove();
+            }
+            const rpElems = docFrag.querySelectorAll("rp");
+            for (let i = 0; i < rpElems.length; i++) {
+                const rpElem = rpElems[i];
+                rpElem.remove();
+            }
+            return docFrag.textContent || str;
+        }
+        catch (_err) {
+        }
+    }
+    return str;
+};
 const collapseWhitespaces = (str) => {
     return str.replace(/[\r\n]/g, " ").replace(/\s\s+/g, " ");
 };
@@ -133,12 +162,6 @@ function getCurrentSelectionInfo(win, getCssSelector, computeElementXPath) {
     }
     if (selection.isCollapsed) {
         console.log("^^^ SELECTION COLLAPSED.");
-        return undefined;
-    }
-    const rawText = selection.toString();
-    const cleanText = (0, exports.collapseWhitespaces)(rawText);
-    if (cleanText.length === 0) {
-        console.log("^^^ SELECTION TEXT EMPTY.");
         return undefined;
     }
     if (!selection.anchorNode || !selection.focusNode) {
@@ -175,6 +198,12 @@ function getCurrentSelectionInfo(win, getCssSelector, computeElementXPath) {
             console.log(">>>>>>>>>>>>>>>>>>>>>>> SELECTION RANGE NORMALIZE diff: endOffset");
             console.log(`${range.endOffset} !== ${r.endOffset}`);
         }
+    }
+    const rawText = removeJapaneseRuby(selection.toString(), range);
+    const cleanText = (0, exports.collapseWhitespaces)(rawText);
+    if (cleanText.length === 0) {
+        console.log("^^^ SELECTION TEXT EMPTY.");
+        return undefined;
     }
     const tuple = convertRange(range, getCssSelector, computeElementXPath);
     if (!tuple) {
@@ -292,7 +321,7 @@ function convertRange(range, getCssSelector, computeElementXPath) {
     }
     const SELECTION_BEFORE_AFTER_TEXT_LENGTH = 30;
     let rawBefore = "";
-    const rawText = range.toString();
+    const rawText = removeJapaneseRuby(range.toString(), range);
     let rawAfter = "";
     let cleanBefore = "";
     const cleanText = (0, exports.collapseWhitespaces)(rawText);
@@ -312,7 +341,7 @@ function convertRange(range, getCssSelector, computeElementXPath) {
                 const rangeBefore = new Range();
                 rangeBefore.setStartBefore(currentParent);
                 rangeBefore.setEnd(range.startContainer, range.startOffset);
-                rawBefore = rangeBefore.toString();
+                rawBefore = removeJapaneseRuby(rangeBefore.toString(), rangeBefore);
                 cleanBefore = (0, exports.collapseWhitespaces)(rawBefore);
                 if (cleanBefore.length > SELECTION_BEFORE_AFTER_TEXT_LENGTH) {
                     cleanBefore = cleanBefore.substring(cleanBefore.length - SELECTION_BEFORE_AFTER_TEXT_LENGTH, cleanBefore.length);
@@ -327,7 +356,7 @@ function convertRange(range, getCssSelector, computeElementXPath) {
                 const rangeAfter = new Range();
                 rangeAfter.setStart(range.endContainer, range.endOffset);
                 rangeAfter.setEndAfter(currentParent);
-                rawAfter = rangeAfter.toString();
+                rawAfter = removeJapaneseRuby(rangeAfter.toString(), rangeAfter);
                 cleanAfter = (0, exports.collapseWhitespaces)(rawAfter);
                 if (cleanAfter.length > SELECTION_BEFORE_AFTER_TEXT_LENGTH) {
                     cleanAfter = cleanAfter.substring(0, SELECTION_BEFORE_AFTER_TEXT_LENGTH);
