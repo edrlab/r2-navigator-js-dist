@@ -116,14 +116,16 @@ const calculateTotalColumns = () => {
         return 0;
     }
     const scrollElement = (0, exports.getScrollingElement)(win.document);
+    const bodyComputedStyle = win.getComputedStyle(win.document.body);
+    const zoomStr = bodyComputedStyle.zoom || "1";
+    const zoomFactor = parseFloat(zoomStr);
     let totalColumns = 0;
     if (isVerticalWritingMode()) {
-        totalColumns = Math.ceil(win.document.body.offsetWidth / scrollElement.scrollWidth);
+        totalColumns = Math.ceil((win.document.body.scrollWidth * zoomFactor) / scrollElement.scrollWidth);
     }
     else {
-        totalColumns = Math.ceil(win.document.body.offsetHeight / scrollElement.scrollHeight);
+        totalColumns = Math.ceil((win.document.body.scrollHeight * zoomFactor) / scrollElement.scrollHeight);
     }
-    console.log("totalColumns", totalColumns);
     return totalColumns;
 };
 exports.calculateTotalColumns = calculateTotalColumns;

@@ -1043,6 +1043,7 @@ function scrollIntoView(element, domRect) {
     const scrollOffset = (scrollLeftPotentiallyExcessive[0] < 0 ? -1 : 1) *
         Math.min(Math.abs(scrollLeftPotentiallyExcessive[0]), maxScrollShift);
     scrollElement.scrollLeft = scrollOffset;
+    scrollElement.scrollTop = 0;
 }
 const scrollToHashRaw = (animate, skipRedraw) => {
     if (DEBUG_TRACE)
@@ -1198,8 +1199,10 @@ const scrollToHashRaw = (animate, skipRedraw) => {
                     _ignoreScrollEvent = true;
                     if (isVWM) {
                         scrollElement.scrollTop = scrollOffsetPaged;
+                        scrollElement.scrollLeft = 0;
                     }
                     else {
+                        scrollElement.scrollTop = 0;
                         scrollElement.scrollLeft = scrollOffsetPaged;
                     }
                     setTimeout(() => {
@@ -1226,10 +1229,12 @@ const scrollToHashRaw = (animate, skipRedraw) => {
                 debug("gotoProgression, set scroll left/top (scrolled): ", scrollOffset);
                 _ignoreScrollEvent = true;
                 if (isVWM) {
+                    scrollElement.scrollTop = 0;
                     scrollElement.scrollLeft = ((0, readium_css_1.isRTL)() ? -1 : 1) * scrollOffset;
                 }
                 else {
                     scrollElement.scrollTop = scrollOffset;
+                    scrollElement.scrollLeft = 0;
                 }
                 setTimeout(() => {
                     _ignoreScrollEvent = false;
@@ -2509,6 +2514,12 @@ const processXYRaw = (x, y, reverse, userInteract, fromViewportScroll) => {
         debug("document.body.scrollWidth/Height: ", win.document.body.scrollWidth, win.document.body.scrollHeight);
     if (DEBUG_TRACE)
         debug("document.body.scrollTop/Left: ", win.document.body.scrollTop, win.document.body.scrollLeft);
+    if (DEBUG_TRACE) {
+        const bodyComputedStyle = win.getComputedStyle(win.document.body);
+        const zoomStr = bodyComputedStyle.zoom || "1";
+        const zoomFactor = parseFloat(zoomStr);
+        debug("document.body.style.zoom", zoomFactor);
+    }
     if ((0, popup_dialog_1.isPopupDialogOpen)(win.document)) {
         debug("processXYRaw: isPopupDialogOpen SKIP");
         return;
