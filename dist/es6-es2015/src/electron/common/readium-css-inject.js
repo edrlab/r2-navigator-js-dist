@@ -553,13 +553,23 @@ function configureFixedLayout(documant, isFixedLayout, fxlViewportWidth, fxlView
             }
             return undefined;
         }
-        const wMatch = attr.match(/\s*width\s*=\s*([0-9]+)/);
+        const wMatch = attr.match(/\s*width\s*=\s*([0-9]+)(\.([0-9]+))?/);
         if (wMatch && wMatch.length >= 2) {
-            try {
-                width = parseInt(wMatch[1], 10);
+            if (wMatch.length >= 4) {
+                try {
+                    width = parseFloat(wMatch[1] + "." + wMatch[3]);
+                }
+                catch (err) {
+                    debug(err);
+                }
             }
-            catch (err) {
-                debug(err);
+            else {
+                try {
+                    width = parseInt(wMatch[1], 10);
+                }
+                catch (err) {
+                    debug(err);
+                }
             }
         }
         else {
@@ -567,13 +577,23 @@ function configureFixedLayout(documant, isFixedLayout, fxlViewportWidth, fxlView
                 debug("configureFixedLayout NO meta[name=viewport && content WIDTH]");
             }
         }
-        const hMatch = attr.match(/\s*height\s*=\s*([0-9]+)/);
+        const hMatch = attr.match(/\s*height\s*=\s*([0-9]+)(\.([0-9]+))?/);
         if (hMatch && hMatch.length >= 2) {
-            try {
-                height = parseInt(hMatch[1], 10);
+            if (hMatch.length >= 4) {
+                try {
+                    height = parseFloat(hMatch[1] + "." + hMatch[3]);
+                }
+                catch (err) {
+                    debug(err);
+                }
             }
-            catch (err) {
-                debug(err);
+            else {
+                try {
+                    height = parseInt(hMatch[1], 10);
+                }
+                catch (err) {
+                    debug(err);
+                }
             }
         }
         else {

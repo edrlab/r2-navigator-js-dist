@@ -585,7 +585,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
             }
         }), 100);
     });
-    resizeObserver.observe(domSlidingViewport);
+    resizeObserver.observe(domRootElement);
     setTimeout(() => {
         debug("installNavigatorDOM -> handleLinkLocator");
         (0, location_1.handleLinkLocator)(location, rcss);
