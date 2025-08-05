@@ -1045,6 +1045,7 @@ function scrollIntoView(element, domRect) {
     scrollElement.scrollTop = 0;
 }
 const scrollToHashRaw = (animate, skipRedraw) => {
+    var _a;
     if (DEBUG_TRACE)
         debug("scrollToHashRaw");
     if (!win.document || !win.document.body || !win.document.documentElement) {
@@ -1138,6 +1139,11 @@ const scrollToHashRaw = (animate, skipRedraw) => {
             }
             if (gotoCssSelector) {
                 gotoCssSelector = gotoCssSelector.replace(/\+/g, " ");
+                let doHyperlink = false;
+                if (gotoCssSelector.startsWith(url_params_1.FRAG_ID_CSS_SELECTOR_HYPERLINK)) {
+                    doHyperlink = true;
+                    gotoCssSelector = gotoCssSelector.replace(url_params_1.FRAG_ID_CSS_SELECTOR_HYPERLINK, "");
+                }
                 let selected = null;
                 try {
                     selected = win.document.querySelector(gotoCssSelector);
@@ -1175,6 +1181,12 @@ const scrollToHashRaw = (animate, skipRedraw) => {
                     if (DEBUG_TRACE)
                         debug("scrollToHashRaw: urlQueryParams + gotoCssSelector + notifyReadingLocationDebounced()...");
                     notifyReadingLocationDebounced();
+                    if (doHyperlink && ((_a = selected.tagName) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === "a") {
+                        setTimeout(() => {
+                            selected.__skipHistory = true;
+                            selected.click();
+                        }, 100);
+                    }
                     return;
                 }
             }
@@ -2090,12 +2102,25 @@ function loaded(forced) {
         (0, readium_css_1.clearImageZoomOutline)();
         ev.preventDefault();
         ev.stopPropagation();
-        const payload = {
-            url: "#" + url_params_1.FRAG_ID_CSS_SELECTOR + (0, UrlUtils_1.encodeURIComponent_RFC3986)(getCssSelector(linkElement)),
-        };
-        electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_LINK, payload);
+        const skipHistory = !!linkElement.__skipHistory;
+        linkElement.__skipHistory = undefined;
+        const encCssSel = (0, UrlUtils_1.encodeURIComponent_RFC3986)(getCssSelector(linkElement));
+        if (!skipHistory) {
+            const payload = {
+                url: "#" + url_params_1.FRAG_ID_CSS_SELECTOR + encCssSel,
+            };
+            electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_LINK, payload);
+        }
         const done = await (0, popupFootNotes_1.popupFootNote)(linkElement, focusScrollRaw, hrefStr, ensureTwoPageSpreadWithOddColumnsIsOffsetTempDisable, ensureTwoPageSpreadWithOddColumnsIsOffsetReEnable);
-        if (!done) {
+        if (done) {
+            if (!skipHistory) {
+                const payload = {
+                    url: "#" + url_params_1.FRAG_ID_CSS_SELECTOR_ACTIVATE_LINK + encCssSel,
+                };
+                electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_LINK, payload);
+            }
+        }
+        else {
             focusScrollDebounced.clear();
             processXYDebouncedImmediate.clear();
             notifyReadingLocationDebounced.clear();
@@ -2104,10 +2129,12 @@ function loaded(forced) {
             onScrollDebounced.clear();
             onResizeDebounced.clear();
             handleFocusInDebounced.clear();
-            const payload = {
-                url: hrefStr,
-            };
-            electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_LINK, payload);
+            if (!skipHistory) {
+                const payload = {
+                    url: hrefStr,
+                };
+                electron_1.ipcRenderer.sendToHost(events_1.R2_EVENT_LINK, payload);
+            }
         }
     }, true);
     electron_1.ipcRenderer.on("R2_EVENT_IMAGE_CLICK", (_event, payload) => {

@@ -14,3 +14,5 @@ export declare const URL_PARAM_IS_IFRAME = "r2_IS_IFRAME";
 export declare const URL_PARAM_WEBVIEW_SLOT = "r2_WEBVIEW_SLOT";
 export declare const URL_PARAM_SECOND_WEBVIEW = "r2_SECOND_WEBVIEW";
 export declare const FRAG_ID_CSS_SELECTOR = "r2-css-selector_";
+export declare const FRAG_ID_CSS_SELECTOR_HYPERLINK = "r2-hyperlink_";
+export declare const FRAG_ID_CSS_SELECTOR_ACTIVATE_LINK: string;
