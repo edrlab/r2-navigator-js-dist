@@ -41,12 +41,18 @@ exports.CSS_CLASS_NO_FOCUS_OUTLINE = "r2-no-focus-outline";
 exports.footnotesCssStyles = `
 @namespace epub "http://www.idpf.org/2007/ops";
 
+/* TODO: allowlist for DIV etc. ... or blocklist for SPAN etc. ?*/
+div[epub|type~="pagebreak"]:empty {
+    line-height: 0 !important;
+}
+div[role~="doc-pagebreak"]:empty {
+    line-height: 0 !important;
+}
 *[epub|type~="pagebreak"]:empty::before {
     display: contents;
     /*display: inline-block;*/
     content: "\\feff" /* zero width nbsp, instead of &#160; &nbsp; */
 }
-
 *[role~="doc-pagebreak"]:empty::before {
     display: contents;
     /*display: inline-block;*/
