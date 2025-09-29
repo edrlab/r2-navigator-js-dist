@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.contextMenuSetup = void 0;
 exports.trackBrowserWindow = trackBrowserWindow;
+const tslib_1 = require("tslib");
 const debug_ = require("debug");
 const electron_1 = require("electron");
 const context_menu_1 = require("../common/context-menu");
@@ -123,6 +124,19 @@ electron_1.app.on("web-contents-created", (_evt, wc) => {
     _electronBrowserWindows.forEach((win) => {
         if (wc.hostWebContents.id === win.webContents.id) {
             debug("WEBVIEW web-contents-created");
+            wc.setWindowOpenHandler((details) => {
+                if (details.url === win.webContents.getURL()) {
+                    debug("WEBVIEW setWindowOpenHandler PASS", details.url);
+                    return { action: "allow" };
+                }
+                debug("WEBVIEW setWindowOpenHandler EXTERNAL", details.url);
+                if (details.url && /^https?:\/\//.test(details.url)) {
+                    setTimeout(() => tslib_1.__awaiter(void 0, void 0, void 0, function* () {
+                        yield electron_1.shell.openExternal(details.url);
+                    }), 0);
+                }
+                return { action: "deny" };
+            });
             wc.on("will-navigate", (event, url) => {
                 debug("webview.getWebContents().on('will-navigate'");
                 debug(url);

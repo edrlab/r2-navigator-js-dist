@@ -350,7 +350,7 @@ function handleLink(href, previous, useGoto, rcss) {
             if (/^https?:\/\/127\.0\.0\.1/.test(href)) {
                 debug(`Internal link, fails to match publication document: ${href}`);
             }
-            else {
+            else if (href && /^https?:\/\//.test(href)) {
                 debug(`External link: ${href}`);
                 (async () => {
                     try {

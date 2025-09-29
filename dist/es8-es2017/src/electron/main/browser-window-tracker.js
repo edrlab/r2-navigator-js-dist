@@ -123,6 +123,19 @@ electron_1.app.on("web-contents-created", (_evt, wc) => {
     _electronBrowserWindows.forEach((win) => {
         if (wc.hostWebContents.id === win.webContents.id) {
             debug("WEBVIEW web-contents-created");
+            wc.setWindowOpenHandler((details) => {
+                if (details.url === win.webContents.getURL()) {
+                    debug("WEBVIEW setWindowOpenHandler PASS", details.url);
+                    return { action: "allow" };
+                }
+                debug("WEBVIEW setWindowOpenHandler EXTERNAL", details.url);
+                if (details.url && /^https?:\/\//.test(details.url)) {
+                    setTimeout(async () => {
+                        await electron_1.shell.openExternal(details.url);
+                    }, 0);
+                }
+                return { action: "deny" };
+            });
             wc.on("will-navigate", (event, url) => {
                 debug("webview.getWebContents().on('will-navigate'");
                 debug(url);

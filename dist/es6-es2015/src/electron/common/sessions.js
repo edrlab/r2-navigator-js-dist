@@ -9,7 +9,10 @@ const convertHttpUrlToCustomScheme = (url) => {
     if (matches && matches.length > 1) {
         const idMatch = matches[4];
         const decoded = decodeURIComponent(idMatch);
-        const pubID = decoded.replace(/([A-Z])/g, "_$1").replace(/=/g, "-").replace(/\//g, ".");
+        const pubID = decoded.replace(/([A-Z])/g, (match) => {
+            const ret = "_" + match.toLowerCase();
+            return ret;
+        }).replace(/=/g, "-").replace(/\//g, ".");
         const url_ = exports.READIUM2_ELECTRON_HTTP_PROTOCOL + "://" +
             "id" + pubID +
             "/x" + matches[1] +
