@@ -103,7 +103,7 @@ electron_1.ipcRenderer.on("accessibility-support-changed", (_e, accessibilitySup
     if (!win.READIUM2) {
         return;
     }
-    debug("accessibility-support-changed event received in WebView ", accessibilitySupportEnabled);
+    debug("accessibility-support-changed event received in navigator Electron BrowserWindow", accessibilitySupportEnabled);
     win.READIUM2.accessibilitySupportEnabled = accessibilitySupportEnabled;
 });
 function readiumCssApplyToWebview(loc, activeWebView, pubLink, rcss) {
@@ -462,7 +462,7 @@ function installNavigatorDOM(publication, publicationURL, rootHtmlElementID, pre
         ttsVoices: null,
         highlightsDrawMargin: false,
     };
-    electron_1.ipcRenderer.send("accessibility-support-changed");
+    electron_1.ipcRenderer.send("accessibility-support-query");
     if (IS_DEV) {
         debug("||||||++||||| installNavigatorDOM: ", JSON.stringify(location));
         const debugVisualz = (win.localStorage &&

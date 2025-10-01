@@ -23,26 +23,6 @@ function trackBrowserWindow(win, _serverURL) {
         _electronBrowserWindows.splice(i, 1);
     });
 }
-electron_1.app.on("accessibility-support-changed", (_ev, accessibilitySupportEnabled) => {
-    debug("accessibility-support-changed ... ", accessibilitySupportEnabled);
-    if (electron_1.app.accessibilitySupportEnabled !== accessibilitySupportEnabled) {
-        debug("!!?? app.accessibilitySupportEnabled !== accessibilitySupportEnabled");
-    }
-    if (!_electronBrowserWindows || !_electronBrowserWindows.length) {
-        return;
-    }
-    _electronBrowserWindows.forEach((win) => {
-        if (win.webContents) {
-            debug("accessibility-support-changed event to WebViewContents ", accessibilitySupportEnabled);
-            win.webContents.send("accessibility-support-changed", accessibilitySupportEnabled);
-        }
-    });
-});
-electron_1.ipcMain.on("accessibility-support-changed", (ev) => {
-    const accessibilitySupportEnabled = electron_1.app.accessibilitySupportEnabled;
-    debug("accessibility-support-changed REQUEST, sending to WebViewContents ", accessibilitySupportEnabled);
-    ev.sender.send("accessibility-support-changed", accessibilitySupportEnabled);
-});
 const contextMenuSetup = (webContent, webContentID) => {
     debug(`MAIN CONTEXT_MENU_SETUP ${webContentID}`);
     const wc = electron_1.webContents.fromId(webContentID);
