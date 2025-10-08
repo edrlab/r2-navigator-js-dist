@@ -6,7 +6,6 @@ const debug_ = require("debug");
 const electron_1 = require("electron");
 const context_menu_1 = require("../common/context-menu");
 const events_1 = require("../common/events");
-const sessions_1 = require("../common/sessions");
 const debug = debug_("r2:navigator#electron/main/browser-window-tracker");
 let _electronBrowserWindows;
 function trackBrowserWindow(win, _serverURL) {
@@ -87,49 +86,54 @@ electron_1.ipcMain.handle(events_1.R2_EVENT_KEYBOARD_FOCUS_REQUEST, (event, webC
     }
 });
 electron_1.app.on("web-contents-created", (_evt, wc) => {
+    debug("app.on('web-contents-created')", wc.id);
     wc.on("will-attach-webview", (_event, webPreferences, params) => {
-        debug("WEBVIEW will-attach-webview");
+        debug("app.on('web-contents-created') ==> webContents.on('will-attach-webview')");
         if (params.src && !params.src.startsWith("data:")) {
             debug(params.src);
         }
         debug(webPreferences);
     });
     if (!wc.hostWebContents) {
+        debug("app.on('web-contents-created') ==> !webContents.hostWebContents (skip)");
         return;
     }
-    if (!_electronBrowserWindows || !_electronBrowserWindows.length) {
+    if (!(_electronBrowserWindows === null || _electronBrowserWindows === void 0 ? void 0 : _electronBrowserWindows.length)) {
+        debug("app.on('web-contents-created') ==> !_electronBrowserWindows?.length (skip)");
         return;
     }
     _electronBrowserWindows.forEach((win) => {
         if (wc.hostWebContents.id === win.webContents.id) {
-            debug("WEBVIEW web-contents-created");
-            wc.setWindowOpenHandler((details) => {
-                if (details.url === win.webContents.getURL()) {
-                    debug("WEBVIEW setWindowOpenHandler PASS", details.url);
-                    return { action: "allow" };
-                }
-                debug("WEBVIEW setWindowOpenHandler EXTERNAL", details.url);
-                if (details.url && /^https?:\/\//.test(details.url)) {
-                    setTimeout(async () => {
-                        await electron_1.shell.openExternal(details.url);
-                    }, 0);
-                }
-                return { action: "deny" };
-            });
-            wc.on("will-navigate", (event, url) => {
-                debug("webview.getWebContents().on('will-navigate'");
-                debug(url);
-                event.preventDefault();
-                if (!url ||
-                    (!url.startsWith("thoriumhttps") &&
-                        !url.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL))) {
-                    debug("'will-navigate' SKIPPED.");
+            debug("app.on('web-contents-created') ==> webContents.hostWebContents.id === _electronBrowserWindows[x].webContents.id", win.webContents.id);
+            const willNavigate = (navUrl) => {
+                if (!navUrl) {
+                    debug("willNavigate ==> nil: ", navUrl);
                     return;
                 }
+                if (wc.getURL().startsWith("thoriumhttps" + "://")
+                    &&
+                        /^https?:\/\//.test(navUrl)) {
+                    debug("willNavigate ==> EXTERNAL: ", win.webContents.getURL(), " --- ", wc.getURL(), " *** ", navUrl);
+                    setTimeout(async () => {
+                        await electron_1.shell.openExternal(navUrl);
+                    }, 0);
+                    return;
+                }
+                debug("willNavigate ==> R2_EVENT_LINK: ", navUrl);
                 const payload = {
-                    url,
+                    url: navUrl,
                 };
                 win.webContents.send(events_1.R2_EVENT_LINK, payload);
+            };
+            wc.setWindowOpenHandler((details) => {
+                debug("app.on('web-contents-created') ==> webContents.hostWebContents.id === _electronBrowserWindows[x].webContents.id ==> webContents.setWindowOpenHandler (always DENY): ", win.webContents.id, " --- ", details.url, " === ", win.webContents.getURL(), " +++ ", wc.getURL());
+                willNavigate(details.url);
+                return { action: "deny" };
+            });
+            wc.on("will-navigate", (details, url) => {
+                debug("app.on('web-contents-created') ==> webContents.hostWebContents.id === _electronBrowserWindows[x].webContents.id ==> webContents.on('will-navigate') (always PREVENT): ", win.webContents.id, " --- ", details.url, " *** ", url, " === ", win.webContents.getURL(), " +++ ", wc.getURL());
+                details.preventDefault();
+                willNavigate(details.url);
             });
         }
     });

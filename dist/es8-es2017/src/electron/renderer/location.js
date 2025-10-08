@@ -456,10 +456,11 @@ function loadLink(hrefToLoad, previous, useGoto, rcss, secondWebView) {
         return false;
     }
     (0, media_overlays_1.mediaOverlaysInterrupt)();
-    let hrefToLoadHttp = hrefToLoad;
-    if (hrefToLoadHttp.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
-        hrefToLoadHttp = (0, sessions_1.convertCustomSchemeToHttpUrl)(hrefToLoadHttp);
+    if (!hrefToLoad.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
+        debug(`LOAD LINK not internal? ${hrefToLoad} ... ${publicationURL}`);
+        return false;
     }
+    const hrefToLoadHttp = (0, sessions_1.convertCustomSchemeToHttpUrl)(hrefToLoad);
     const pubIsServedViaSpecialUrlProtocol = publicationURL.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://");
     const publicationURLHttp = pubIsServedViaSpecialUrlProtocol ?
         (0, sessions_1.convertCustomSchemeToHttpUrl)(publicationURL) : publicationURL;

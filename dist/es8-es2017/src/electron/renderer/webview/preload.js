@@ -2044,7 +2044,7 @@ function loaded(forced) {
                 const cssSelectorOf_HTMLImg_SVGImage_SVGFragment = getCssSelector(HTMLImg_SVGImage_SVGFragment);
                 debug("R2_EVENT_IMAGE_CLICK (ipcRenderer.sendToHost) href: " + href_src + " ___ " + cssSelectorOf_HTMLImg_SVGImage_SVGFragment);
                 let hostDocumentURL = `${win.document.location.protocol}//${win.document.location.host}${win.document.location.pathname}`;
-                if (hostDocumentURL.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL)) {
+                if (hostDocumentURL.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://")) {
                     hostDocumentURL = (0, sessions_1.convertCustomSchemeToHttpUrl)(hostDocumentURL);
                     const u = new URL(hostDocumentURL);
                     hostDocumentURL = u.pathname.replace("/pub/", "");

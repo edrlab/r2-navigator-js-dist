@@ -277,7 +277,7 @@ function createWebViewInternal(preloadScriptPath) {
             const rootElement = win.document.getElementById(ELEMENT_ID_SLIDING_VIEWPORT);
             if (payload.text && rootElement) {
                 if (!rssStyleElement) {
-                    const urlStr = win.READIUM2.publicationURL.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL) ?
+                    const urlStr = win.READIUM2.publicationURL.startsWith(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL + "://") ?
                         (0, sessions_1.convertCustomSchemeToHttpUrl)(win.READIUM2.publicationURL) :
                         win.READIUM2.publicationURL;
                     const rcssUrl = new URL(urlStr);
