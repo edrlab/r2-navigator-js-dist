@@ -898,20 +898,17 @@ const ttsPlayQueueIndexDebounced = debounce((ttsQueueIndex, ttsAndMediaOverlaysM
 }, 150);
 function assignUtteranceVoice(utterance) {
     const systemVoices = win.speechSynthesis.getVoices();
-    const userVoices = systemVoices.filter((sysVoice) => {
-        var _a;
-        return !!((_a = win.READIUM2.ttsVoices) === null || _a === void 0 ? void 0 : _a.find((userVoice) => (userVoice.name === sysVoice.name &&
-            userVoice.lang === sysVoice.lang &&
-            userVoice.voiceURI === sysVoice.voiceURI &&
-            userVoice.localService === sysVoice.localService)));
-    });
+    const userVoices = (win.READIUM2.ttsVoices || []).map((userVoice) => systemVoices.find((sysVoice) => userVoice.name === sysVoice.name &&
+        userVoice.lang === sysVoice.lang &&
+        userVoice.voiceURI === sysVoice.voiceURI &&
+        userVoice.localService === sysVoice.localService)).filter((v) => !!v);
     utterance.voice = null;
     if (!utterance.lang) {
         return;
     }
+    const utteranceLang = utterance.lang.toLowerCase();
     const voicesCascade = [userVoices, systemVoices];
     for (const voices of voicesCascade) {
-        const utteranceLang = utterance.lang.toLowerCase();
         let utteranceLangShort = utteranceLang;
         const i = utteranceLangShort.indexOf("-");
         const utteranceLangIsSpecific = i > 0;
@@ -922,6 +919,12 @@ function assignUtteranceVoice(utterance) {
         for (const usrVoice of voices) {
             if (!usrVoice.lang) {
                 continue;
+            }
+            if (utterance.lang === "und") {
+                utterance.lang = "";
+                utterance.voice = usrVoice;
+                found = true;
+                break;
             }
             const usrVoiceLang = usrVoice.lang.toLowerCase();
             if (utteranceLang === usrVoiceLang) {

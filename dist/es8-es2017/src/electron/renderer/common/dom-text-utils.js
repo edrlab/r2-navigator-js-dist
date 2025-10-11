@@ -53,7 +53,7 @@ function getLanguage(el) {
         }
         currentElement = currentElement.parentNode;
     }
-    return "en";
+    return "und";
 }
 function getDirection(el) {
     let currentElement = el;
