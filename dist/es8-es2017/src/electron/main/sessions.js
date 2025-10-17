@@ -473,10 +473,17 @@ function initSessions() {
                 webViewSession.protocol.registerHttpProtocol(sessions_1.READIUM2_ELECTRON_HTTP_PROTOCOL, httpProtocolHandler);
             }
             webViewSession.setPermissionRequestHandler((wc, permission, callback) => {
-                debug("setPermissionRequestHandler");
+                debug("setPermissionRequestHandler webViewSession");
                 debug(wc.getURL());
                 debug(permission);
-                callback(true);
+                callback(false);
+            });
+            webViewSession.setPermissionCheckHandler((wc, permission, origin) => {
+                debug("setPermissionCheckHandler webViewSession");
+                debug(wc === null || wc === void 0 ? void 0 : wc.getURL());
+                debug(permission);
+                debug(origin);
+                return false;
             });
         }
     });
