@@ -1464,6 +1464,7 @@ win.addEventListener("DOMContentLoaded", () => {
         if (alreadedInjected) {
             (0, readium_css_1.checkHiddenFootNotes)(win.document);
         }
+        (0, readium_css_1.checkHeightConstrainedTables)(win.document);
     }
     setTimeout(() => {
         loaded(true);

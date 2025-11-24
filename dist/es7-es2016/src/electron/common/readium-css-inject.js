@@ -116,6 +116,7 @@ function isPaginated(documant) {
         documant.documentElement.classList.contains(styles_1.CLASS_PAGINATED);
 }
 function readiumCSSSet(documant, messageJson, isVerticalWritingMode, isRTL) {
+    var _a;
     if (!messageJson) {
         return;
     }
@@ -362,11 +363,19 @@ function readiumCSSSet(documant, messageJson, isVerticalWritingMode, isRTL) {
             docElement.style.removeProperty("--USER__fontFamily");
         }
     }
-    if (setCSS.fontSize && setCSS.fontSize.trim() !== "0" && setCSS.fontSize.trim() !== "100%") {
-        docElement.style.setProperty("--USER__fontSize", setCSS.fontSize);
+    const fontSizeTrimmed = (_a = setCSS.fontSize) === null || _a === void 0 ? void 0 : _a.trim();
+    if (fontSizeTrimmed && fontSizeTrimmed !== "0" && fontSizeTrimmed !== "100%") {
+        docElement.style.setProperty("--USER__fontSize", fontSizeTrimmed);
+        try {
+            docElement.style.setProperty("--USER__fontXSizeX", `${fontSizeTrimmed.endsWith("%") ? (parseFloat(fontSizeTrimmed.replace("%", "")) / 100) : parseFloat(fontSizeTrimmed)}`);
+        }
+        catch (_e) {
+            docElement.style.setProperty("--USER__fontXSizeX", "1.0");
+        }
     }
     else {
         docElement.style.removeProperty("--USER__fontSize");
+        docElement.style.setProperty("--USER__fontXSizeX", "1.0");
     }
     if (setCSS.lineHeight && setCSS.lineHeight.trim() !== "0") {
         docElement.style.setProperty("--USER__lineHeight", setCSS.lineHeight);

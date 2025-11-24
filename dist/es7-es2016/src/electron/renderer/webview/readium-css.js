@@ -5,6 +5,7 @@ exports.calculateColumnDimension = calculateColumnDimension;
 exports.isVerticalWritingMode = isVerticalWritingMode;
 exports.isRTL = isRTL;
 exports.computeVerticalRTL = computeVerticalRTL;
+exports.checkHeightConstrainedTables = checkHeightConstrainedTables;
 exports.checkHiddenFootNotes = checkHiddenFootNotes;
 const debounce = require("debounce");
 const readium_css_inject_1 = require("../../common/readium-css-inject");
@@ -229,6 +230,49 @@ function computeVerticalRTL() {
     }
     _isVerticalWritingMode = vertical;
     _isRTL = rtl;
+}
+let __checkHeightConstrainedTables_DONE = false;
+function checkHeightConstrainedTables(documant) {
+    if (__checkHeightConstrainedTables_DONE) {
+        return;
+    }
+    __checkHeightConstrainedTables_DONE = true;
+    if (!documant.querySelectorAll) {
+        return;
+    }
+    documant.querySelectorAll("table").forEach((table) => {
+        var _a;
+        let parent = table;
+        while (parent) {
+            const computedStyle = win.getComputedStyle(parent);
+            if (!parent.style.maxHeight && computedStyle.maxHeight && computedStyle.maxHeight !== "none") {
+                for (const styleSheet of documant.styleSheets) {
+                    for (const cssRule of styleSheet.cssRules) {
+                        if (cssRule instanceof CSSStyleRule) {
+                            if (((_a = cssRule.style) === null || _a === void 0 ? void 0 : _a.maxHeight) && cssRule.selectorText && !cssRule.selectorText.includes("epub|")) {
+                                try {
+                                    if (parent.matches(cssRule.selectorText)) {
+                                        const maxHeightTrimmed = cssRule.style.maxHeight.trim();
+                                        const hasImportant = maxHeightTrimmed.endsWith("!important");
+                                        const maxHeight = hasImportant ? maxHeightTrimmed.replace("!important", "").trim() : maxHeightTrimmed;
+                                        if (/[0-9]+(\.[0-9]+)?vh/.test(maxHeight)) {
+                                            const vhFactor = parseFloat(maxHeight.replace("vh", ""));
+                                            cssRule.style.maxHeight = `calc(${vhFactor}vh / var(--USER__fontXSizeX, 1.0))${hasImportant ? " !important" : ""}`;
+                                            return;
+                                        }
+                                    }
+                                }
+                                catch (e) {
+                                    console.log(e);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            parent = parent.parentElement;
+        }
+    });
 }
 function checkHiddenFootNotes(documant) {
     if (documant.documentElement.classList.contains(styles_1.ROOT_CLASS_NO_FOOTNOTES)) {
